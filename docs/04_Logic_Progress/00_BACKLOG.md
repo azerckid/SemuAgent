@@ -23,6 +23,7 @@
 | JC-010 | todo | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
 | JC-011 | todo | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
 | JC-012 | todo | Build payroll workspace | `lib/payroll`, `components/ui` | Payroll register with derived totals, withholding/4-insurance deduction, payslip/statement preview, and close (locked until missing-employee issues resolved) match approved 급여 UI; PII masking applied |
+| JC-013 | todo | Build filing support workspace | `lib/bookkeeping`, `lib/payroll`, `components/ui` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 
 ## Implementation Rule
 
@@ -151,4 +152,28 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4e / UI Design 4.5 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 다섯 항목 모두 **UI-First Gate 통과**. JC-006/JC-009는 Component & Library Plan 완료, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), tenant/기간·전표·직원 데이터 모델(JC-005), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
+### JC-013 · Build filing support workspace (신고지원) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — MVP 비범위(자동 홈택스 제출 제외)
+- Related UI Docs: [Screen Flow 4f](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.6](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: [05_filing_support.html](../02_UI_Screens/previews/05_filing_support.html)
+- Related Technical Docs: [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 신고 항목 연동·패키지 생성·접수증 보관·책임 경계(자동 제출 없음) 테스트 시나리오 추가 필요(전제조건에 반영).
+- Prototype Review / 승인: [Filing Support Review](../02_UI_Screens/07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
+- Implementation Preconditions:
+  - [x] UI-First Gate 통과 (사용자 확인 완료)
+  - [ ] Component & Library Plan에 신고지원 전용 컴포넌트(Filing Item Card·Input Guide·Receipts·Checklist) 반영 — **미충족**
+  - [ ] Pre-Code Technical Brief(신고 항목 연동·패키지 생성·접수증 보관·체크리스트 mutation) 정리 — **미충족**
+  - [ ] 부가세(JC-011)·급여(JC-012) 산출물 데이터 모델 선행 — **미충족**
+  - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
+- Acceptance Criteria:
+  - [ ] 신고 항목(부가세/원천세/4대보험)이 선행 화면 산출물과 연동되어 상태와 함께 표시된다.
+  - [ ] 부가세 패키지는 공제 검토 완료 전 잠금이다.
+  - [ ] 홈택스 단계별 입력 가이드가 확정 값과 함께 제공되고 값 복사가 가능하다.
+  - [ ] 제출 접수증을 업로드·보관하고 미제출 항목은 대기로 표시된다.
+  - [ ] 사후 체크리스트로 납부·보관을 확인한다.
+  - [ ] **자동 홈택스 제출·자동 납부·자격증명 서버 저장은 제공하지 않는다**(책임 경계를 화면에 반복 노출).
+  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
+- Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
+
+> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-006/JC-009는 Component & Library Plan 완료, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)·JC-013(Filing Item Card·Input Guide·Receipts·Checklist)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), tenant/기간·전표·직원 데이터 모델(JC-005), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.

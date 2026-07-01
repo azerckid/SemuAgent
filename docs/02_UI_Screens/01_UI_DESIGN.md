@@ -1,6 +1,6 @@
 # JARYO Company UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-01 21:50
+> Last Updated: 2026-07-01 22:20
 
 ## 1. 디자인 방향
 
@@ -120,12 +120,28 @@
 - 원천징수 지급명세서 등은 신고지원 화면으로 전달한다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
-### 4.6 화면 간 내비게이션
+### 4.6 신고지원 (05_filing_support.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Responsibility Banner | 자동 제출·납부 없음(책임 경계) 상단 고지 | accent 배너, 하단 안내와 반복 |
+| Filing Item Card | 신고 항목별(부가세/원천세/4대보험) 패키지 상태 + CTA | 준비됨(ok)/패키지 대기(warn)/확인 필요, 부가세 패키지는 검토 전 잠금 |
+| Hometax Input Guide | 홈택스 단계별 입력 값 안내 | 단계 리스트(done/대기) + 입력 값 강조 + "가이드 값 복사" |
+| Receipts Storage | 제출 접수증 업로드·보관 | 접수증 목록 + 빈 항목(제출 후 업로드 대기) |
+| Post-filing Checklist | 납부·보관 사후 확인 | 체크박스(완료 취소선) |
+| State Card | 로딩/빈/오류 표준 (공용) | 스켈레톤·빈안내(부가세·급여 먼저 확정)·오류+재시도 |
+
+- **책임 경계 규칙**: 자동 홈택스 제출·자동 납부·자격증명 서버 저장은 제공하지 않는다. 배너·항목·하단 안내에 반복 노출한다.
+- 신고 항목은 부가세(JC-011)·급여(JC-012) 산출물과 연동한다. 부가세 패키지는 공제 검토 완료 전 잠금(부가세 화면 규칙과 동일).
+- 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
+
+### 4.7 화면 간 내비게이션
 
 - 사이드바 항목·브랜드·breadcrumb를 모두 `<a>`로 처리(`a { color: inherit; text-decoration: none }`).
-- 회사 홈 → 자료수집/기장검토/부가세: 사이드바 + 해당 Action Row "…열기". 급여는 사이드바로 진입.
-- 운영 흐름 화면(자료수집·기장검토·부가세·급여) → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
-- 운영 흐름 화면 간에도 사이드바로 직접 이동.
+- 회사 홈 → 자료수집/기장검토/부가세: 사이드바 + 해당 Action Row "…열기". 급여·신고지원은 사이드바로 진입.
+- 운영 흐름 화면(자료수집·기장검토·부가세·급여·신고지원) → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
+- 신고지원 항목의 "부가세 열기 / 급여 열기"로 선행 화면과 직접 연동.
+- 운영 흐름 6개 화면 전체가 사이드바로 상호 이동 가능하다.
 - 구현된 화면은 사이드바 "다음" 배지를 제거한다.
 
 ## 5. 핵심 CTA 우선순위
@@ -155,6 +171,11 @@
 2. "급여 마감·확정" — 단, 확인 필요 처리 전에는 잠금(비활성)
 3. 급여명세서/지급명세서 "미리보기", "엑셀 내보내기"
 
+**신고지원**
+1. 신고 항목 "패키지 열기"(준비됨) / "부가세·급여 열기"(선행 화면 연동)
+2. "가이드 값 복사" (홈택스 직접 입력 보조, 자동 제출 아님)
+3. 접수증 업로드, 사후 체크리스트 체크
+
 ## 6. HTML UI Preview
 
 - Preview (회사 홈): [00_company_home.html](./previews/00_company_home.html)
@@ -162,6 +183,7 @@
 - Preview (기장검토): [02_bookkeeping_review.html](./previews/02_bookkeeping_review.html)
 - Preview (부가세): [03_vat.html](./previews/03_vat.html)
 - Preview (급여): [04_payroll.html](./previews/04_payroll.html)
+- Preview (신고지원): [05_filing_support.html](./previews/05_filing_support.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -172,4 +194,5 @@
 - **UI_Screens**: [Bookkeeping Review Prototype Review](./04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) - 기장검토 확인 결과
 - **UI_Screens**: [VAT Prototype Review](./05_VAT_PROTOTYPE_REVIEW.md) - 부가세 확인 결과
 - **UI_Screens**: [Payroll Prototype Review](./06_PAYROLL_PROTOTYPE_REVIEW.md) - 급여 확인 결과
+- **UI_Screens**: [Filing Support Prototype Review](./07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) - 신고지원 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
