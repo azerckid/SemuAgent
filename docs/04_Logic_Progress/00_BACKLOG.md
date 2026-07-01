@@ -36,10 +36,12 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.1](../02_UI_Screens/01_UI_DESIGN.md) · [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md)
 - Related HTML Preview: [00_company_home.html](../02_UI_Screens/previews/00_company_home.html)
+- Related Technical Docs: [Component & Library Plan 7.1](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
 - Prototype Review / 승인: [Company Home Review](../02_UI_Screens/02_COMPANY_HOME_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
-  - [ ] Component & Library Plan 작성 (Layer 3, Component & Library Planning Gate) — **미충족**
+  - [x] Component & Library Plan 작성 (Layer 3, Component & Library Planning Gate) — [7.1 회사 홈 매핑](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
+  - [ ] Pre-Code Technical Brief(데이터 소스·최소 필드·mutation·acceptance) 정리 — **미충족**
   - [ ] 회사 tenant/기간 데이터 모델 확정 (JC-005 선행)
 - Document Sync Check: Screen Flow / UI Design / Prototype Review / Preview가 상호 링크됨 (2026-07-01 기준 일치)
 
@@ -48,11 +50,13 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [Screen Flow 4b](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.2](../02_UI_Screens/01_UI_DESIGN.md)
 - Related HTML Preview: [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html)
+- Related Technical Docs: [Component & Library Plan 7.2](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
 - Prototype Review / 승인: [Source Collection Review](../02_UI_Screens/03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
-  - [ ] Component & Library Plan 작성 (업로드/파싱/정규화 컴포넌트·라이브러리) — **미충족**
+  - [x] Component & Library Plan 작성 (업로드/파싱/정규화 컴포넌트·라이브러리) — [7.2 자료수집 매핑](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
+  - [ ] Pre-Code Technical Brief(업로드 mutation·정규화 파이프라인·acceptance) 정리 — **미충족**
   - [ ] 외부 업로드 포털 제외 방침 반영한 업로드 라우트 재검토 (JC-004 연계)
 - Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 두 항목 모두 UI-First Gate는 통과했으나 **Component & Library Plan(Layer 3)이 없어 구현 착수 전제조건 미충족**이다. 다음 단계는 코드가 아니라 Layer 3 컴포넌트/라이브러리 계획 수립이다.
+> 현재 두 항목 모두 **UI-First Gate 통과 + Component & Library Plan 완료**(Layer 3). 남은 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance)와 tenant/기간 데이터 모델(JC-005) 및 업로드 라우트 재검토(JC-004)다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
