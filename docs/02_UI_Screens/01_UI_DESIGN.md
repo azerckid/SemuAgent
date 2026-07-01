@@ -1,6 +1,6 @@
 # JARYO Company UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-01 20:55
+> Last Updated: 2026-07-01 21:50
 
 ## 1. 디자인 방향
 
@@ -103,12 +103,29 @@
 - **자동 홈택스 제출은 범위 밖**(패키지 생성 + 입력 가이드까지). 세액은 검토 완료 전 "예정"으로 표기한다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
-### 4.5 화면 간 내비게이션
+### 4.5 급여 (04_payroll.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Payroll Summary Hero | 지급총액·공제총액·실지급액·마감상태 요약 | 3셀 계산 레이아웃 + 마감 상태칩(확인 필요/미마감) |
+| Missing/Error Alert | 확인 필요(오류·누락) 직원 경고 + CTA | warn 배경 알림, 마감 전 처리 유도 |
+| Payroll Register Table | 직원별 기본급·수당·지급계·원천세·4대보험·공제계·실지급 | 가로 스크롤 표, 오류 직원 행 강조 + "확인 필요" 플래그, tfoot 합계 |
+| Deduction Breakdown | 소득세·지방소득세·국민연금·건강보험·장기요양·고용보험 집계 | `card` 내 항목 리스트 + 총계 |
+| Documents / Close | 급여명세서·지급명세서 미리보기 + 급여 마감·확정 | 문서 리스트 + **마감 버튼 잠금**(확인 필요 처리 전) |
+| State Card | 로딩/빈/오류 표준 (공용) | 스켈레톤·빈안내(급여 자료 불러오기)·오류+재시도 |
+
+- **금액 정합성 규칙**: 지급계=기본급+수당, 공제계=원천세+4대보험, 실지급=지급계−공제계. 합계 행은 각 열의 합과 일치해야 한다(구현 시 파생 계산으로 강제, 하드코딩 금지).
+- **마감 잠금**: 확인 필요(오류/누락) 직원이 있으면 마감 버튼을 `is-disabled`+`disabled`+`aria-disabled="true"` muted로 잠그고 사유를 병기한다. React 구현 시 disabled 버튼을 래퍼(tooltip)로 감싼다(부가세 패키지 생성 버튼과 동일 규칙).
+- **개인정보**: 급여·주민정보 등 민감정보 표시. 접근 권한·마스킹·감사로그는 구현 단계에서 확정.
+- 원천징수 지급명세서 등은 신고지원 화면으로 전달한다.
+- 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
+
+### 4.6 화면 간 내비게이션
 
 - 사이드바 항목·브랜드·breadcrumb를 모두 `<a>`로 처리(`a { color: inherit; text-decoration: none }`).
-- 회사 홈 → 자료수집/기장검토/부가세: 사이드바 + 해당 Action Row "…열기".
-- 자료수집/기장검토/부가세 → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
-- 운영 흐름 화면 간(자료수집 ↔ 기장검토 ↔ 부가세)도 사이드바로 직접 이동.
+- 회사 홈 → 자료수집/기장검토/부가세: 사이드바 + 해당 Action Row "…열기". 급여는 사이드바로 진입.
+- 운영 흐름 화면(자료수집·기장검토·부가세·급여) → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
+- 운영 흐름 화면 간에도 사이드바로 직접 이동.
 - 구현된 화면은 사이드바 "다음" 배지를 제거한다.
 
 ## 5. 핵심 CTA 우선순위
@@ -133,12 +150,18 @@
 2. "패키지 생성" — 단, 검토 완료 전에는 잠금(비활성)
 3. "전체 매입 보기" 등 상세 이동
 
+**급여**
+1. 확인 필요 직원 "해당 직원 열기" (마감 전 처리)
+2. "급여 마감·확정" — 단, 확인 필요 처리 전에는 잠금(비활성)
+3. 급여명세서/지급명세서 "미리보기", "엑셀 내보내기"
+
 ## 6. HTML UI Preview
 
 - Preview (회사 홈): [00_company_home.html](./previews/00_company_home.html)
 - Preview (자료수집): [01_source_collection.html](./previews/01_source_collection.html)
 - Preview (기장검토): [02_bookkeeping_review.html](./previews/02_bookkeeping_review.html)
 - Preview (부가세): [03_vat.html](./previews/03_vat.html)
+- Preview (급여): [04_payroll.html](./previews/04_payroll.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -148,4 +171,5 @@
 - **UI_Screens**: [Source Collection Prototype Review](./03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) - 자료수집 확인 결과
 - **UI_Screens**: [Bookkeeping Review Prototype Review](./04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) - 기장검토 확인 결과
 - **UI_Screens**: [VAT Prototype Review](./05_VAT_PROTOTYPE_REVIEW.md) - 부가세 확인 결과
+- **UI_Screens**: [Payroll Prototype Review](./06_PAYROLL_PROTOTYPE_REVIEW.md) - 급여 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입

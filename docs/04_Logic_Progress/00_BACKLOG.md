@@ -22,6 +22,7 @@
 | JC-009 | todo | Build source collection workspace | `app/upload`, `lib/ai/extract`, `components/ui` | Company-internal upload → parse → normalize flow matches approved 자료수집 UI; external client portal excluded |
 | JC-010 | todo | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
 | JC-011 | todo | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
+| JC-012 | todo | Build payroll workspace | `lib/payroll`, `components/ui` | Payroll register with derived totals, withholding/4-insurance deduction, payslip/statement preview, and close (locked until missing-employee issues resolved) match approved 급여 UI; PII masking applied |
 
 ## Implementation Rule
 
@@ -125,4 +126,29 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4d / UI Design 4.4 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 네 항목 모두 **UI-First Gate 통과**. JC-006/JC-009는 Component & Library Plan 완료, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), tenant/기간·전표 데이터 모델(JC-005), 업로드 라우트 재검토(JC-004, JC-009 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
+### JC-012 · Build payroll workspace (급여) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related UI Docs: [Screen Flow 4e](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.5](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: [04_payroll.html](../02_UI_Screens/previews/04_payroll.html)
+- Related Technical Docs: [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 급여 계산 정합성·공제·마감 잠금·PII 마스킹 테스트 시나리오 추가 필요(전제조건에 반영).
+- Prototype Review / 승인: [Payroll Review](../02_UI_Screens/06_PAYROLL_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
+- Implementation Preconditions:
+  - [x] UI-First Gate 통과 (사용자 확인 완료)
+  - [ ] Component & Library Plan에 급여 전용 컴포넌트(Payroll Register·Deduction Breakdown·마감 잠금 래퍼) 반영 — **미충족**
+  - [ ] Pre-Code Technical Brief(급여 입력·공제 계산·마감 mutation·PII 처리) 정리 — **미충족**
+  - [ ] 회사 tenant·직원·급여 데이터 모델 확정 (JC-005 연계) — **미충족**
+  - [ ] 개인정보(급여·주민정보) 접근 권한·마스킹·감사로그 방침 확정 — **미충족**
+  - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
+- Acceptance Criteria:
+  - [ ] 급여대장이 직원별 기본급·수당·지급계·원천세·4대보험·공제계·실지급으로 표시된다.
+  - [ ] 금액은 파생 계산으로 정합한다: 지급계=기본급+수당, 공제계=원천세+4대보험, 실지급=지급계−공제계, 합계=각 열의 합.
+  - [ ] 원천세·4대보험 공제 상세가 항목별로 집계·표시된다.
+  - [ ] 확인 필요(오류/누락) 직원이 표시되고, 처리 전에는 급여 마감 버튼이 잠금(disabled + aria-disabled)이다. React 구현 시 래퍼 툴팁 처리.
+  - [ ] 급여명세서·지급명세서를 미리보기/생성하고, 원천징수 지급명세서는 신고지원으로 전달한다.
+  - [ ] 개인정보는 권한에 따라 마스킹된다.
+  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
+- Document Sync Check: Screen Flow 4e / UI Design 4.5 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
+
+> 현재 다섯 항목 모두 **UI-First Gate 통과**. JC-006/JC-009는 Component & Library Plan 완료, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), tenant/기간·전표·직원 데이터 모델(JC-005), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
