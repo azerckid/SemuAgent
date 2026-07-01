@@ -405,7 +405,8 @@ export async function loadSourceCollectionSummary({
   // request_item_validation.itemGroup과 연결한다. 승인 Preview의 "수집 상태 표"가
   // 파일마다 자료유형을 보여주므로, 항상 unknown으로 두지 않고 실제 연결을 조회한다.
   // 한 파일이 여러 validation에 기여할 수 있어(예: 세금계산서+기타증빙), DB 반환
-  // 순서에 의존하지 않도록 contribution 우선순위 + createdAt으로 결정적으로 고른다.
+  // 순서에 의존하지 않도록 contribution 우선순위 → createdAt → validationId로
+  // 결정적으로 고른다.
   const fileIds = fileRows.map((file) => file.id)
   const fileItemGroupRows = fileIds.length > 0
     ? await db
