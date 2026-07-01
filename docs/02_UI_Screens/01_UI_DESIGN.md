@@ -1,6 +1,6 @@
 # JARYO Company UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-01 19:55
+> Last Updated: 2026-07-01 20:35
 
 ## 1. 디자인 방향
 
@@ -69,11 +69,30 @@
 - 상태칩 색상 규약은 두 화면 공통(ok/warn/danger/muted/blue). 표·카드·상태 예시(State Card)는 화면 간 재사용한다.
 - 자료수집은 mutation(업로드·정규화)이 발생하므로, 업로드/재시도 CTA에 진행(mini-progress)·오류(danger) 상태를 명시적으로 노출한다.
 
-### 4.3 화면 간 내비게이션
+### 4.3 기장검토 (02_bookkeeping_review.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Classification Header | 거래 분류 현황(확정/대기)·진행률 강조 | 진행률 바 + 우측 대기 카운트(danger) |
+| Queue Tabs | 검토 대기 / 신뢰도 낮음 / 확정 / 전체 필터 | 세그먼트 탭(active 강조) + 건수 배지 |
+| Bulk Action Bar | 다중 선택 일괄 승인·계정 변경 | primary "선택 N건 승인" + ghost "일괄 변경" |
+| Classification Queue Table | 거래별 AI 추천 계정과목·신뢰도·처리 | 체크박스 + AI 배지 + Confidence Bar + 행 액션(승인/수정/계정 지정) |
+| Confidence Bar | AI 추천 신뢰도 시각화 | high(ok) / mid(warn) / low(danger), 낮으면 "계정 지정" 강제 |
+| Journal Entry Preview | 확정 전 분개(차변/대변) 미리보기 | `card` 내 전표 표(부가세대급금 포함), 차·대변 합계 일치 표시 |
+| Period Attribution / Approval | 귀속 기간·증빙·부가세 공제·승인 | 속성 리스트 + 상태칩 + "이 거래 승인" |
+| State Card | 로딩/빈/오류 표준 (공용) | 스켈레톤·빈안내(확정 전표 보기)·오류+재시도 |
+
+- 사이드바 "기장검토"에는 검토 대기 건수 카운트 배지(danger)를 노출한다.
+- AI 추천은 초안이며 확정 책임은 사용자에게 있다. 신뢰도 낮은 항목은 승인 전 "계정 지정"으로 강제 확인시킨다.
+- 상태칩·State Card·Table 골격은 회사 홈/자료수집과 공통(DRY).
+
+### 4.4 화면 간 내비게이션
 
 - 사이드바 항목·브랜드·breadcrumb를 모두 `<a>`로 처리(`a { color: inherit; text-decoration: none }`).
 - 회사 홈 → 자료수집: 사이드바 "자료수집" + Action Row "자료수집 열기".
-- 자료수집 → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
+- 회사 홈 → 기장검토: 사이드바 "기장검토" + Action Row "기장검토 열기".
+- 자료수집/기장검토 → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
+- 화면 간(자료수집 ↔ 기장검토)도 사이드바로 직접 이동.
 - 구현된 화면은 사이드바 "다음" 배지를 제거한다.
 
 ## 5. 핵심 CTA 우선순위
@@ -88,10 +107,16 @@
 2. 파싱 오류·미수집 항목의 "다시 업로드 / 정규화 확인"
 3. 수집 상태 표의 행별 "보기 / 다시 시도"
 
+**기장검토**
+1. "선택 N건 승인" / "이 거래 승인" (primary, brand 색 채움)
+2. 신뢰도 낮은 거래의 "계정 지정" (승인 전 강제 확인)
+3. 행별 "승인 / 수정", 탭 전환(검토 대기/신뢰도 낮음/확정/전체)
+
 ## 6. HTML UI Preview
 
 - Preview (회사 홈): [00_company_home.html](./previews/00_company_home.html)
 - Preview (자료수집): [01_source_collection.html](./previews/01_source_collection.html)
+- Preview (기장검토): [02_bookkeeping_review.html](./previews/02_bookkeeping_review.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -99,4 +124,5 @@
 - **UI_Screens**: [MVP UX Baseline](./01_MVP_UX_BASELINE.md) - 6개 워크스페이스 기준선
 - **UI_Screens**: [Company Home Prototype Review](./02_COMPANY_HOME_PROTOTYPE_REVIEW.md) - 회사 홈 확인 결과
 - **UI_Screens**: [Source Collection Prototype Review](./03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) - 자료수집 확인 결과
+- **UI_Screens**: [Bookkeeping Review Prototype Review](./04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) - 기장검토 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입

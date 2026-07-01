@@ -1,14 +1,15 @@
 # JARYO Company Screen Flow
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-01 19:40
+> Last Updated: 2026-07-01 20:40
 
 ## 1. 범위
 
 이 문서는 v1 화면의 사용자 흐름을 정의한다. 현재 정의된 화면:
 1. **회사 홈(Company Home)** — 승인 완료(2026-07-01)
-2. **자료수집(Source Collection)** — 프리뷰 제작, 사용자 확인 대기
+2. **자료수집(Source Collection)** — 승인 완료(2026-07-01)
+3. **기장검토(Bookkeeping Review)** — 승인 완료(2026-07-01)
 
-나머지 4개 워크스페이스(기장검토·부가세·급여·신고지원)는 순차적으로 추가한다.
+나머지 3개 워크스페이스(부가세·급여·신고지원)는 순차적으로 추가한다.
 
 외부 연동(고객 업로드 포털 `/upload/[token]`, 외부 세무사 검토 흐름)은 v1 범위에서 제외한다.
 회사 내부 운영 화면만 다룬다.
@@ -70,21 +71,47 @@
 자료수집은 **업로드·정규화 mutation이 발생**하는 화면이다(회사 홈과 달리 읽기 전용 아님).
 외부 고객 업로드 포털은 제외하고, 회사 내부 직접 업로드만 다룬다.
 
+## 4c. 기장검토 화면 흐름 및 데이터
+
+진입: 회사 홈 "다음 할 일"의 "기장검토 열기"(미검토 거래 분류) 또는 사이드바 "기장검토" → 기장검토 화면.
+복귀: 사이드바 "회사 홈" 등으로 이동.
+
+```
+회사 홈 ──"기장검토 열기" / 사이드바──▶ 기장검토
+   │                                        │ 거래 승인/수정
+   │                                        ▼
+   └──────────── 사이드바 ────────── 확정 전표(확정 탭)
+```
+
+| 항목 | 입력 | 표시 | 저장/전송 |
+|:---|:---|:---|:---|
+| 분류 현황 | tenant·기간, 거래 집계 | 확정/대기 건수, 진행률 | 없음(읽기) |
+| 분류 큐 | 정규화된 거래, AI 추천 계정과목·신뢰도 | 거래일·내용·상대처·금액·추천계정·신뢰도 | 계정과목 확정/변경 |
+| 선택 거래 상세 | 선택 거래 | 분개 미리보기(차/대변), 기간 귀속, 증빙, 부가세 공제 | 없음(읽기, 승인 전 미리보기) |
+| 승인 | 사용자 승인 액션 | 상태칩(검토 대기→확정) | 전표 확정(mutation), 확정 탭으로 이동 |
+| 일괄 처리 | 다중 선택 | 선택 건수 | 일괄 승인/계정 변경(mutation) |
+
+기장검토는 **분류 확정·승인 mutation이 발생**한다. AI 추천은 초안이며 확정 책임은 사용자에게 있다.
+신뢰도 낮은 항목(예: 접대비/복리후생비 경계)은 "계정 지정"으로 강제 확인시킨다.
+
 ## 5. 상태 커버리지
 
-| 상태 | 회사 홈에서의 표현 |
-|:---|:---|
-| Default | 집계 데이터가 채워진 대시보드 (HTML Preview 기본 화면) |
-| Loading | 카드·표 스켈레톤 (Preview 하단 "화면 상태 예시" 참조) |
-| Empty | 자료 0건 시 "첫 자료 업로드" 안내 |
-| Error | "현황을 불러오지 못했습니다" + 다시 시도 |
-| 권한 없음 | tenant 미소속/미인증 시 접근 차단 (구현 단계에서 확정) |
+세 화면 공통 상태 규약. 각 화면 Preview 하단 "화면 상태 예시"에 로딩/빈/오류를 명시한다.
+
+| 상태 | 회사 홈 | 자료수집 | 기장검토 |
+|:---|:---|:---|:---|
+| Default | 집계 데이터가 채워진 대시보드 | 완결성·업로드·수집 상태 채워진 화면 | 분류 큐·선택 거래 상세 채워진 화면 |
+| Loading | 카드·표 스켈레톤 | 카드·표 스켈레톤 | 카드·표 스켈레톤 |
+| Empty | 자료 0건 시 "첫 자료 업로드" 안내 | 업로드 0건 시 "첫 자료 업로드" 안내 | 검토 대기 0건 시 "확정 전표 보기" 안내 |
+| Error | "현황을 불러오지 못했습니다" + 다시 시도 | "파일을 처리하지 못했습니다" + 다시 시도 | "분류 큐를 불러오지 못했습니다" + 다시 시도 |
+| 권한 없음 | tenant 미소속/미인증 시 접근 차단 (구현 단계에서 확정) | 동일 | 동일 |
 
 ## 6. HTML UI Preview
 
 - Preview (회사 홈): [00_company_home.html](./previews/00_company_home.html)
 - Preview (자료수집): [01_source_collection.html](./previews/01_source_collection.html)
-- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 두 화면은 사이드바/CTA로 상호 이동 가능.
+- Preview (기장검토): [02_bookkeeping_review.html](./previews/02_bookkeeping_review.html)
+- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 세 화면은 사이드바/CTA로 상호 이동 가능.
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자 정의
@@ -92,4 +119,5 @@
 - **UI_Screens**: [MVP UX Baseline](./01_MVP_UX_BASELINE.md) - 6개 워크스페이스 기준선
 - **UI_Screens**: [Company Home Prototype Review](./02_COMPANY_HOME_PROTOTYPE_REVIEW.md) - 회사 홈 확인 결과
 - **UI_Screens**: [Source Collection Prototype Review](./03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) - 자료수집 확인 결과
+- **UI_Screens**: [Bookkeeping Review Prototype Review](./04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) - 기장검토 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입

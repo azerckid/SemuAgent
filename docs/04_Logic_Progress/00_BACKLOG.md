@@ -20,6 +20,7 @@
 | JC-007 | todo | Define filing package model | bookkeeping/payroll modules | Filing material package can store generated docs, Hometax guide, receipt, and audit state |
 | JC-008 | todo | Review residual npm audit findings | `package.json`, parser/import libraries | Decide replacements or mitigations for `xlsx`, `viem/ws`, `drizzle-kit/esbuild`, and Next/PostCSS audit advisories |
 | JC-009 | todo | Build source collection workspace | `app/upload`, `lib/ai/extract`, `components/ui` | Company-internal upload → parse → normalize flow matches approved 자료수집 UI; external client portal excluded |
+| JC-010 | todo | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
 
 ## Implementation Rule
 
@@ -37,12 +38,20 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.1](../02_UI_Screens/01_UI_DESIGN.md) · [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md)
 - Related HTML Preview: [00_company_home.html](../02_UI_Screens/previews/00_company_home.html)
 - Related Technical Docs: [Component & Library Plan 7.1](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 `docs/05_QA_Validation/01_TEST_SCENARIOS.md`에 대시보드 테스트 시나리오 추가 필요(전제조건에 반영).
 - Prototype Review / 승인: [Company Home Review](../02_UI_Screens/02_COMPANY_HOME_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
   - [x] Component & Library Plan 작성 (Layer 3, Component & Library Planning Gate) — [7.1 회사 홈 매핑](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
   - [ ] Pre-Code Technical Brief(데이터 소스·최소 필드·mutation·acceptance) 정리 — **미충족**
-  - [ ] 회사 tenant/기간 데이터 모델 확정 (JC-005 선행)
+  - [ ] 회사 tenant/기간 데이터 모델 확정 (JC-005 선행) — **미충족**
+  - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
+- Acceptance Criteria:
+  - [ ] 로그인 직후 회사 홈(대시보드)으로 진입한다(마케팅 페이지 아님).
+  - [ ] 현재 회계기간 상태·마감 D-day·준비 현황 카드·최근 제출/영수증이 승인된 화면 구조대로 표시된다.
+  - [ ] "다음 할 일" CTA가 기장검토·자료수집·부가세로 라우팅된다.
+  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
+  - [ ] 대시보드는 읽기 전용이며 데이터 mutation을 수행하지 않는다.
 - Document Sync Check: Screen Flow / UI Design / Prototype Review / Preview가 상호 링크됨 (2026-07-01 기준 일치)
 
 ### JC-009 · Build source collection workspace (자료수집) — 신규
@@ -51,12 +60,44 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related UI Docs: [Screen Flow 4b](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.2](../02_UI_Screens/01_UI_DESIGN.md)
 - Related HTML Preview: [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html)
 - Related Technical Docs: [Component & Library Plan 7.2](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 업로드→파싱→정규화 테스트 시나리오 추가 필요(전제조건에 반영).
 - Prototype Review / 승인: [Source Collection Review](../02_UI_Screens/03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
   - [x] Component & Library Plan 작성 (업로드/파싱/정규화 컴포넌트·라이브러리) — [7.2 자료수집 매핑](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
   - [ ] Pre-Code Technical Brief(업로드 mutation·정규화 파이프라인·acceptance) 정리 — **미충족**
-  - [ ] 외부 업로드 포털 제외 방침 반영한 업로드 라우트 재검토 (JC-004 연계)
+  - [ ] 외부 업로드 포털 제외 방침 반영한 업로드 라우트 재검토 (JC-004 연계) — **미충족**
+  - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
+- Acceptance Criteria:
+  - [ ] 회사 내부 사용자가 XLSX/CSV/PDF/이미지/ZIP을 업로드하면 파싱→정규화 큐에 등록된다.
+  - [ ] 자료유형(세금계산서/통장/카드/영수증)별 집계와 정규화 상태가 표시된다.
+  - [ ] 파싱 오류 건은 danger 상태로 표시되고 재시도할 수 있다.
+  - [ ] 수집 완결성(미수집 건수)과 미수집·확인 필요 목록이 표시된다.
+  - [ ] 외부 고객 업로드 포털은 노출되지 않는다(내부 업로드만).
+  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 두 항목 모두 **UI-First Gate 통과 + Component & Library Plan 완료**(Layer 3). 남은 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance)와 tenant/기간 데이터 모델(JC-005) 및 업로드 라우트 재검토(JC-004)다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
+### JC-010 · Build bookkeeping review workspace (기장검토) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related UI Docs: [Screen Flow 4c](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.3](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html)
+- Related Technical Docs: [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 분류·승인·분개 전표 테스트 시나리오 추가 필요(전제조건에 반영).
+- Prototype Review / 승인: [Bookkeeping Review](../02_UI_Screens/04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
+- Implementation Preconditions:
+  - [x] UI-First Gate 통과 (사용자 확인 완료)
+  - [ ] Component & Library Plan에 기장검토 전용 컴포넌트(Confidence Bar·Journal Entry Preview) 반영 — **미충족**
+  - [ ] Pre-Code Technical Brief(분류 큐 데이터 소스·AI 추천 신뢰도·승인 mutation·전표 확정) 정리 — **미충족**
+  - [ ] 회사 tenant/기간·전표 데이터 모델 확정 (JC-005 연계) — **미충족**
+  - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
+- Acceptance Criteria:
+  - [ ] 정규화된 거래가 분류 큐에 AI 추천 계정과목·신뢰도와 함께 표시된다.
+  - [ ] 신뢰도 낮은 거래는 승인 전 "계정 지정"으로 강제 확인된다.
+  - [ ] 개별·다중(일괄) 승인이 가능하고 승인 시 확정 전표로 이동한다.
+  - [ ] 선택 거래의 분개 미리보기(차/대변, 부가세대급금 포함)와 기간 귀속·부가세 공제가 표시된다.
+  - [ ] AI 추천은 초안이며 최종 확정 책임은 사용자에게 있다.
+  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
+- Document Sync Check: Screen Flow 4c / UI Design 4.3 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
+
+> 현재 세 항목 모두 **UI-First Gate 통과**. JC-006/JC-009는 Component & Library Plan 완료, JC-010은 기장검토 전용 컴포넌트(Confidence Bar·Journal Entry Preview) 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), tenant/기간·전표 데이터 모델(JC-005), 업로드 라우트 재검토(JC-004, JC-009 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
