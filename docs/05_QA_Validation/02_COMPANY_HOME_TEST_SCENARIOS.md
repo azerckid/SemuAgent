@@ -1,6 +1,6 @@
 # Test Scenarios: Company Home
 > Created: 2026-07-01 23:05
-> Last Updated: 2026-07-01 23:30
+> Last Updated: 2026-07-01 23:35
 
 회사 홈(JC-006) Layer 5 QA 시나리오와 구현 검증 기록. [Company Home Pre-Code Brief](../03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation Rules·Acceptance Criteria를 검증 가능한 케이스로 옮긴다. 회사 홈은 **읽기 전용**이므로
@@ -49,7 +49,7 @@ DB mutation은 없고, 데이터 파생·범위 격리·상태·제외 테이블
 | S-30 | `request_item_validation`에 missing/non_compliant/uncertain 존재, reviewStatus!=excluded | 자료수집 카드 계산 | 미수집 건수가 해당 조건 행 수와 일치 | PASS·단위 |
 | S-31 | `bookkeeping_transaction_classification.status in (needs_decision, unclassified)` | 기장검토 카드 | 미분류 건수 일치 | PASS·단위 |
 | S-32 | 전용 `vat_*` 테이블 없음 | 부가세 카드 | 수치 대신 "기장 확정 후 산출/검토 대기" 상태만 표시 | PASS·구현 |
-| S-33 | 최신 `payroll_extraction_batch`의 aiVerdict='fail' row 존재 | 급여 카드 | 확인 필요 직원 수 일치 | PASS·단위 |
+| S-33 | 신고 기간 내 `payroll_extraction_row.aiVerdict='fail'` 행 존재 | 급여 카드 | 확인 필요 직원 수가 기간 범위 fail row 수로 표시된다(latest-batch 스코프는 JC-012 후속) | PASS·구현 |
 | S-34 | 전용 `filing_*` 테이블 없음 | 신고지원 카드 | 패키지 잠금/대기 상태 표시 | PASS·구현 |
 
 ### 2.5 민감정보·범위 격리 (보안)
@@ -86,9 +86,9 @@ DB mutation은 없고, 데이터 파생·범위 격리·상태·제외 테이블
 | S-82 | 회사 홈 | 사용 | 업로드·승인·패키지 생성·접수증 업로드 mutation을 수행하지 않는다 | PASS·구현 |
 
 ## 3. 자동화 현황 및 후속
-- **자동 단위 완료** (`lib/company-home/summary.test.ts`, 10건 통과): 기간 파생(S-10·S-11), actionItems 우선순위·범위(S-20·S-21·S-22), 소스 카운트(S-30·S-31·S-33), 기간 필터(S-42), 제외 테이블 미참조(S-50), read-only loader(S-80).
-- **구현·빌드/수동 검증** (전용 자동 테스트 후속): 구조 순서(S-01·S-02), 진행률 파생(S-12), VAT/신고 상태 카드(S-32·S-34), 민감정보 미노출(S-40), 상태(S-60~63), 권한(S-70·S-71), URL-only/무 mutation(S-81·S-82).
-- **후속 테스트 권장**: 멀티테넌트 격리 전용 테스트(S-41), 컴포넌트/E2E(S-01·상태·권한).
+- **자동 단위 완료** (`lib/company-home/summary.test.ts`, 10건 통과): 기간 파생(S-10·S-11), actionItems 우선순위·범위(S-20·S-21·S-22), 소스 카운트(S-30·S-31), 기간 필터(S-42), 제외 테이블 미참조(S-50), read-only loader(S-80).
+- **구현·빌드/수동 검증** (전용 자동 테스트 후속): 구조 순서(S-01·S-02), 진행률 파생(S-12), VAT/급여/신고 상태 카드(S-32~S-34), 민감정보 미노출(S-40), 상태(S-60~63), 권한(S-70·S-71), URL-only/무 mutation(S-81·S-82).
+- **후속 테스트 권장**: 멀티테넌트 격리 전용 테스트(S-41), payroll latest-batch 스코프 테스트(S-33 세부), 컴포넌트/E2E(S-01·상태·권한).
 
 ## 4. Implementation Verification
 

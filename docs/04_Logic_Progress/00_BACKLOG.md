@@ -80,7 +80,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Acceptance Criteria:
   - [x] 로그인 직후 회사 홈(대시보드)으로 진입한다(마케팅 페이지 아님).
   - [x] 현재 회계기간 상태·마감 D-day·준비 현황 카드·최근 제출/영수증이 승인된 화면 구조대로 표시된다.
-  - [x] "다음 할 일" CTA가 기장검토·자료수집·부가세로 라우팅된다. 단, 부가세/신고지원 전용 React 라우트는 후속 JC-011/JC-013 범위라 현재는 회사 홈 섹션 앵커로 연결한다.
+  - [x] "다음 할 일" CTA가 미수집·미분류·급여 확인 필요 상태에 따라 자료수집·기장검토·급여로 라우팅된다. 부가세/신고지원은 전용 React 라우트가 후속 JC-011/JC-013 범위라 현재 준비 현황 카드에서 회사 홈 섹션 앵커로 연결한다.
   - [x] 로딩·빈·오류 상태가 화면에 구현된다.
   - [x] 대시보드는 읽기 전용이며 데이터 mutation을 수행하지 않는다.
   - [x] 회사 홈 데이터 로더는 v1 제외 테이블(`client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox`)을 참조하지 않는다.
