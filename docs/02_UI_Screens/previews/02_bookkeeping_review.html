@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JARYO Company · 기장검토 (UI Preview)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .brand .name { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+  .brand .sub { font-size: 11px; color: var(--fg-subtle); }
+  .nav-label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 14px 8px 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; cursor: pointer; font-size: 13.5px; }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .8; }
+  .nav-item:hover { background: #f4f4f5; color: var(--fg); }
+  .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 600; }
+  .nav-item .soon { margin-left: auto; font-size: 10px; color: var(--fg-subtle); border: 1px solid var(--border); border-radius: 999px; padding: 1px 6px; }
+  .nav-item .cnt { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; border-radius: 999px; padding: 1px 7px; }
+  .sidebar .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .user .who { font-size: 12.5px; font-weight: 600; }
+  .user .role { font-size: 11px; color: var(--fg-subtle); }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .crumb { font-size: 12.5px; color: var(--fg-subtle); font-weight: 500; }
+  .crumb a:hover { color: var(--fg-muted); text-decoration: underline; }
+  .topbar h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .topbar .co { color: var(--fg-muted); font-weight: 500; font-size: 13px; }
+  .period-select { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .pill { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .pill .caret { color: var(--fg-subtle); font-size: 11px; }
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1240px; }
+
+  /* Header */
+  .head-row { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; }
+  .head-row .eyebrow { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+  .head-row .title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; margin: 4px 0 12px; }
+  .progress { height: 8px; background: #ececee; border-radius: 999px; overflow: hidden; max-width: 460px; }
+  .progress > i { display: block; height: 100%; width: 94.7%; background: var(--accent); border-radius: 999px; }
+  .head-row .meta { font-size: 12.5px; color: var(--fg-muted); margin-top: 8px; }
+  .head-row .count { text-align: right; }
+  .head-row .count .n { font-size: 28px; font-weight: 700; letter-spacing: -.02em; color: var(--danger); }
+  .head-row .count .n small { font-size: 15px; color: var(--fg-subtle); font-weight: 600; }
+  .head-row .count .lbl { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+
+  /* Tabs + bulk action */
+  .toolbar { display: flex; align-items: center; gap: 8px; }
+  .tabs { display: inline-flex; background: #f1f1f2; border-radius: 9px; padding: 3px; gap: 2px; }
+  .tab { font-size: 12.5px; font-weight: 600; color: var(--fg-muted); padding: 6px 12px; border-radius: 7px; cursor: pointer; }
+  .tab.active { background: var(--surface); color: var(--fg); box-shadow: var(--shadow); }
+  .tab .badge-n { font-size: 11px; color: var(--fg-subtle); margin-left: 5px; }
+  .toolbar .spacer { flex: 1; }
+  .btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 8px 13px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn.ghost { border-color: transparent; }
+
+  /* Queue table */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--fg-subtle); padding: 11px 16px; border-bottom: 1px solid var(--border); background: #fafafa; text-transform: uppercase; letter-spacing: .03em; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafafa; }
+  tbody tr.sel { background: var(--accent-soft); }
+  tbody tr.sel:hover { background: #e7f0ff; }
+  td.mono { font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+  td.amt { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .desc { font-weight: 600; color: var(--fg); }
+  .vendor { font-size: 11.5px; color: var(--fg-subtle); }
+  .cbox { width: 15px; height: 15px; border: 1.5px solid var(--border-strong); border-radius: 4px; display: inline-block; vertical-align: middle; }
+  .cbox.on { background: var(--accent); border-color: var(--accent); position: relative; }
+  .cbox.on::after { content: "✓"; color: #fff; font-size: 10px; position: absolute; top: -2px; left: 2px; }
+
+  .acct { display: inline-flex; align-items: center; gap: 7px; }
+  .acct .a-name { font-weight: 600; }
+  .acct .a-ai { font-size: 10px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border: 1px solid #bfdbfe; padding: 1px 5px; border-radius: 5px; }
+
+  .chip { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
+  .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+
+  .conf { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .conf .bar { width: 44px; height: 6px; border-radius: 999px; background: #ececee; overflow: hidden; }
+  .conf .bar > i { display: block; height: 100%; }
+  .conf.high .bar > i { width: 92%; background: var(--ok); }
+  .conf.mid .bar > i { width: 68%; background: var(--warn); }
+  .conf.low .bar > i { width: 38%; background: var(--danger); }
+
+  .row-actions { display: inline-flex; gap: 6px; }
+  .mini-btn { font-size: 11.5px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 7px; padding: 4px 9px; cursor: pointer; }
+  .mini-btn.ok { color: var(--ok); border-color: #bbf7d0; background: var(--ok-soft); }
+
+  /* Detail: journal entry preview + period attribution */
+  .detail { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+  .card h3 { font-size: 13px; font-weight: 650; margin-bottom: 4px; }
+  .card .sub { font-size: 12px; color: var(--fg-subtle); margin-bottom: 14px; }
+  .je { width: 100%; border-collapse: collapse; }
+  .je th { text-align: left; font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 6px 10px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: .03em; }
+  .je td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .je td.r { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .je tr.total td { border-bottom: 0; font-weight: 700; }
+  .je .side { font-size: 11px; font-weight: 700; color: var(--fg-subtle); }
+  .attr-list { display: flex; flex-direction: column; gap: 12px; }
+  .attr { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .attr .k { font-size: 12.5px; color: var(--fg-muted); }
+  .attr .v { font-size: 13px; font-weight: 600; }
+  .approve-bar { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .approve-bar .note { font-size: 12px; color: var(--fg-subtle); flex: 1; }
+
+  .section-head { display: flex; align-items: baseline; gap: 10px; }
+  .section-head h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+  .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
+
+  /* States strip */
+  .states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .state-card { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 18px; min-height: 132px; display: flex; flex-direction: column; }
+  .state-card .s-label { font-size: 11px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+  .skel { height: 12px; border-radius: 6px; background: linear-gradient(90deg,#eee, #f5f5f5, #eee); margin-bottom: 10px; }
+  .skel.w60 { width: 60%; } .skel.w40 { width: 40%; } .skel.w80 { width: 80%; }
+  .empty-mid { flex: 1; display: grid; place-items: center; text-align: center; color: var(--fg-subtle); }
+  .empty-mid .em-ico { font-size: 22px; opacity: .5; }
+  .empty-mid .em-t { font-size: 12.5px; margin-top: 6px; }
+  .empty-mid .em-cta { margin-top: 10px; font-size: 12px; color: var(--accent); font-weight: 600; }
+  .err-box { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .err-box .e-t { color: var(--danger); font-weight: 600; font-size: 13px; }
+  .err-box .e-d { color: var(--fg-muted); font-size: 12px; margin: 4px 0 10px; }
+  .err-box .e-cta { align-self: flex-start; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+
+  .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .note b { color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="00_company_home.html" class="brand">
+      <div class="logo">자</div>
+      <div>
+        <div class="name">JARYO Company</div>
+        <div class="sub">회사 세무·회계 운영</div>
+      </div>
+    </a>
+
+    <a href="00_company_home.html" class="nav-item"><span class="ico">◧</span> 회사 홈</a>
+    <div class="nav-label">운영 흐름</div>
+    <a href="01_source_collection.html" class="nav-item"><span class="ico">↥</span> 자료수집</a>
+    <a href="02_bookkeeping_review.html" class="nav-item active"><span class="ico">▤</span> 기장검토 <span class="cnt">18</span></a>
+    <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
+    <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여</a>
+    <a href="05_filing_support.html" class="nav-item"><span class="ico">↧</span> 신고지원</a>
+    <div class="nav-label">관리</div>
+    <div class="nav-item"><span class="ico">⚙</span> 설정</div>
+
+    <div class="spacer"></div>
+    <div class="user">
+      <div class="av">김</div>
+      <div>
+        <div class="who">김대표</div>
+        <div class="role">샘플컴퍼니(주) · 대표</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumb"><a href="00_company_home.html">회사 홈</a> › 기장검토</div>
+        <h1>기장검토</h1>
+      </div>
+      <span class="co">샘플컴퍼니(주)</span>
+      <div class="period-select">
+        <span class="pill">2026년 부가세 1기 (1~6월) <span class="caret">▾</span></span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Classification progress -->
+      <div class="head-row">
+        <div>
+          <div class="eyebrow">거래 분류 현황 · 2026년 1기</div>
+          <div class="title">324 / 342건 계정과목 확정</div>
+          <div class="progress"><i></i></div>
+          <div class="meta">AI 자동 분류 후 검토 대기 18건 · 신뢰도 낮음 5건은 수정 권장</div>
+        </div>
+        <div class="count">
+          <div class="n">18<small> 건</small></div>
+          <div class="lbl">검토 대기</div>
+        </div>
+      </div>
+
+      <!-- Toolbar: tabs + bulk approve -->
+      <div class="toolbar">
+        <div class="tabs">
+          <span class="tab active">검토 대기 <span class="badge-n">18</span></span>
+          <span class="tab">신뢰도 낮음 <span class="badge-n">5</span></span>
+          <span class="tab">확정 <span class="badge-n">324</span></span>
+          <span class="tab">전체 <span class="badge-n">342</span></span>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn ghost">선택 항목 계정과목 일괄 변경</button>
+        <button class="btn primary">선택 3건 승인</button>
+      </div>
+
+      <!-- Classification queue -->
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:34px"></th>
+              <th>거래일</th>
+              <th>거래내용 / 상대처</th>
+              <th style="text-align:right">금액</th>
+              <th>추천 계정과목</th>
+              <th>신뢰도</th>
+              <th>처리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="sel">
+              <td><span class="cbox on"></span></td>
+              <td class="mono">06-27</td>
+              <td><div class="desc">문구·사무용품 구입</div><div class="vendor">오피스디포 · 카드</div></td>
+              <td class="amt">55,000</td>
+              <td><span class="acct"><span class="a-name">소모품비</span><span class="a-ai">AI</span></span></td>
+              <td><span class="conf high"><span class="bar"><i></i></span>92%</span></td>
+              <td><span class="row-actions"><span class="mini-btn ok">승인</span><span class="mini-btn">수정</span></span></td>
+            </tr>
+            <tr>
+              <td><span class="cbox on"></span></td>
+              <td class="mono">06-25</td>
+              <td><div class="desc">택시비 (거래처 미팅)</div><div class="vendor">카카오T · 법인카드</div></td>
+              <td class="amt">18,600</td>
+              <td><span class="acct"><span class="a-name">여비교통비</span><span class="a-ai">AI</span></span></td>
+              <td><span class="conf high"><span class="bar"><i></i></span>90%</span></td>
+              <td><span class="row-actions"><span class="mini-btn ok">승인</span><span class="mini-btn">수정</span></span></td>
+            </tr>
+            <tr>
+              <td><span class="cbox on"></span></td>
+              <td class="mono">06-22</td>
+              <td><div class="desc">클라우드 서버 이용료</div><div class="vendor">AWS · 자동이체</div></td>
+              <td class="amt">312,400</td>
+              <td><span class="acct"><span class="a-name">지급수수료</span><span class="a-ai">AI</span></span></td>
+              <td><span class="conf mid"><span class="bar"><i></i></span>68%</span></td>
+              <td><span class="row-actions"><span class="mini-btn ok">승인</span><span class="mini-btn">수정</span></span></td>
+            </tr>
+            <tr>
+              <td><span class="cbox"></span></td>
+              <td class="mono">06-20</td>
+              <td><div class="desc">거래처 대표 경조사비</div><div class="vendor">현금 지출</div></td>
+              <td class="amt">200,000</td>
+              <td><span class="acct"><span class="a-name">접대비 ?</span><span class="a-ai">AI</span></span></td>
+              <td><span class="conf low"><span class="bar"><i></i></span>38%</span></td>
+              <td><span class="row-actions"><span class="mini-btn">계정 지정</span></span></td>
+            </tr>
+            <tr>
+              <td><span class="cbox"></span></td>
+              <td class="mono">06-18</td>
+              <td><div class="desc">직원 야근 식대</div><div class="vendor">배달의민족 · 법인카드</div></td>
+              <td class="amt">64,000</td>
+              <td><span class="acct"><span class="a-name">복리후생비 ?</span><span class="a-ai">AI</span></span></td>
+              <td><span class="conf low"><span class="bar"><i></i></span>44%</span></td>
+              <td><span class="row-actions"><span class="mini-btn">계정 지정</span></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Selected transaction detail: journal entry + period attribution + approval -->
+      <div class="section-head">
+        <h2>선택 거래 상세</h2>
+        <span class="hint">06-27 · 문구·사무용품 구입 · 55,000원</span>
+      </div>
+      <div class="detail">
+        <div class="card">
+          <h3>분개 미리보기</h3>
+          <div class="sub">확정 시 아래 전표가 장부에 반영됩니다.</div>
+          <table class="je">
+            <thead><tr><th>구분</th><th>계정과목</th><th style="text-align:right">금액</th></tr></thead>
+            <tbody>
+              <tr><td><span class="side">차변</span></td><td>소모품비</td><td class="r">50,000</td></tr>
+              <tr><td><span class="side">차변</span></td><td>부가세대급금</td><td class="r">5,000</td></tr>
+              <tr><td><span class="side">대변</span></td><td>미지급금 (법인카드)</td><td class="r">55,000</td></tr>
+              <tr class="total"><td></td><td>차변 합계 = 대변 합계</td><td class="r">55,000</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>기간 귀속 · 승인</h3>
+          <div class="sub">귀속 기간과 증빙을 확인하세요.</div>
+          <div class="attr-list">
+            <div class="attr"><span class="k">귀속 기간</span><span class="v">2026년 1기 (2026-06)</span></div>
+            <div class="attr"><span class="k">증빙 유형</span><span class="v">신용카드 매출전표</span></div>
+            <div class="attr"><span class="k">부가세 공제</span><span class="v"><span class="chip ok">공제 대상</span></span></div>
+            <div class="attr"><span class="k">현재 상태</span><span class="v"><span class="chip warn">검토 대기</span></span></div>
+          </div>
+          <div class="approve-bar">
+            <span class="note">승인하면 확정 전표로 이동합니다.</span>
+            <button class="btn">수정</button>
+            <button class="btn primary">이 거래 승인</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- State coverage -->
+      <div class="section-head">
+        <h2>화면 상태 예시</h2>
+        <span class="hint">로딩 / 빈 상태 / 오류</span>
+      </div>
+      <div class="states">
+        <div class="state-card">
+          <div class="s-label">Loading</div>
+          <div class="skel w40"></div>
+          <div class="skel w80"></div>
+          <div class="skel w60"></div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Empty</div>
+          <div class="empty-mid">
+            <div>
+              <div class="em-ico">✓</div>
+              <div class="em-t">검토 대기 거래가 없습니다</div>
+              <div class="em-cta">확정 전표 보기</div>
+            </div>
+          </div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Error</div>
+          <div class="err-box">
+            <div class="e-t">분류 큐를 불러오지 못했습니다</div>
+            <div class="e-d">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</div>
+            <button class="e-cta">다시 시도</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Preview 안내</b> — 이 화면은 <b>기장검토</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
+        구성: 거래 분류 현황 · 분류 큐(계정과목 AI 추천 + 신뢰도 + 승인/수정) · 선택 거래 상세(분개 미리보기 · 기간 귀속 · 승인) · 상태(로딩/빈/오류) 예시.
+        회사 홈 "다음 할 일"의 "미검토 거래 분류"에서 이 화면으로 진입합니다. 좌측 사이드바로 다른 화면과 이동할 수 있습니다.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

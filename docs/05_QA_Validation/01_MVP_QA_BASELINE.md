@@ -1,4 +1,6 @@
 # JARYO Company MVP QA Baseline
+> Created: 2026-07-01 17:57
+> Last Updated: 2026-07-01 17:57
 
 ## Setup QA
 
@@ -36,3 +38,9 @@ npm run build
 
 Network-dependent package installation may require an approved network
 environment before these checks can run locally.
+
+## Related Documents
+- **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 검증 대상 제품 범위
+- **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 화면·상태 검증 기준
+- **Technical_Specs**: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) - 린트·타입·빌드 기준
+- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - 각 JC 항목 Acceptance Criteria(테스트 시나리오 대상)

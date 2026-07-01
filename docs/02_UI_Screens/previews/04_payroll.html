@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JARYO Company · 급여 (UI Preview)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .brand .name { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+  .brand .sub { font-size: 11px; color: var(--fg-subtle); }
+  .nav-label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 14px 8px 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; cursor: pointer; font-size: 13.5px; }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .8; }
+  .nav-item:hover { background: #f4f4f5; color: var(--fg); }
+  .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 600; }
+  .nav-item .soon { margin-left: auto; font-size: 10px; color: var(--fg-subtle); border: 1px solid var(--border); border-radius: 999px; padding: 1px 6px; }
+  .nav-item .cnt { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; border-radius: 999px; padding: 1px 7px; }
+  .sidebar .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .user .who { font-size: 12.5px; font-weight: 600; }
+  .user .role { font-size: 11px; color: var(--fg-subtle); }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .crumb { font-size: 12.5px; color: var(--fg-subtle); font-weight: 500; }
+  .crumb a:hover { color: var(--fg-muted); text-decoration: underline; }
+  .topbar h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .topbar .co { color: var(--fg-muted); font-weight: 500; font-size: 13px; }
+  .period-select { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .pill { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .pill .caret { color: var(--fg-subtle); font-size: 11px; }
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1280px; }
+
+  /* Summary hero */
+  .hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; }
+  .hero .eyebrow { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+  .hero-grid { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 0; align-items: center; margin-top: 12px; }
+  .sum-cell { padding: 4px 24px; border-right: 1px solid var(--border); }
+  .sum-cell:first-child { padding-left: 0; }
+  .sum-cell .k { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+  .sum-cell .v { font-size: 23px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .sum-cell .v small { font-size: 13px; color: var(--fg-subtle); font-weight: 600; }
+  .sum-cell.net { border-right: 0; }
+  .sum-cell.net .v { color: var(--accent); }
+  .status-box { padding-left: 24px; text-align: right; }
+  .status-box .st { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+  .chip { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
+  .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+  .chip.big { font-size: 12.5px; padding: 5px 12px; margin-top: 6px; }
+
+  .section-head { display: flex; align-items: baseline; gap: 10px; }
+  .section-head h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+  .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
+  .section-head .link { margin-left: auto; font-size: 12.5px; color: var(--accent); font-weight: 600; cursor: pointer; }
+
+  /* Error/missing alert */
+  .alert { background: var(--warn-soft); border: 1px solid #fde68a; border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .alert .a-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--warn); flex: none; }
+  .alert .a-main { flex: 1; }
+  .alert .a-t { font-weight: 650; font-size: 13.5px; color: #92400e; }
+  .alert .a-d { font-size: 12.5px; color: #a16207; margin-top: 1px; }
+  .alert .a-cta { border: 1px solid #d97706; background: var(--surface); color: var(--warn); border-radius: 8px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+
+  /* Payroll register table */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .tbl-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 860px; }
+  thead th { text-align: right; font-size: 11px; font-weight: 600; color: var(--fg-subtle); padding: 10px 14px; border-bottom: 1px solid var(--border); background: #fafafa; text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; }
+  thead th.l { text-align: left; }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody td.l { text-align: left; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafafa; }
+  tbody tr.err td { background: #fffdf5; }
+  tbody tr.err:hover td { background: #fff9e8; }
+  .emp { font-weight: 600; color: var(--fg); }
+  .emp-meta { font-size: 11px; color: var(--fg-subtle); }
+  td.net { font-weight: 700; color: var(--fg); }
+  td.ded { color: var(--danger); }
+  tfoot td { padding: 11px 14px; border-top: 2px solid var(--border-strong); font-size: 12.5px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; background: #fafafa; }
+  tfoot td.l { text-align: left; }
+  .flag { font-size: 10.5px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; border-radius: 5px; padding: 1px 5px; margin-left: 6px; }
+
+  /* Deduction breakdown + actions */
+  .two-col { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+  .card h3 { font-size: 13px; font-weight: 650; margin-bottom: 4px; }
+  .card .sub { font-size: 12px; color: var(--fg-subtle); margin-bottom: 14px; }
+  .ded-list { display: flex; flex-direction: column; }
+  .ded-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .ded-row:last-child { border-bottom: 0; }
+  .ded-row .dk { font-size: 12.5px; color: var(--fg-muted); }
+  .ded-row .dv { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ded-row.total { border-top: 2px solid var(--border-strong); border-bottom: 0; margin-top: 4px; padding-top: 11px; }
+  .ded-row.total .dk { color: var(--fg); font-weight: 600; }
+  .ded-row.total .dv { font-size: 15px; font-weight: 700; color: var(--danger); }
+
+  .doc-list { display: flex; flex-direction: column; gap: 10px; }
+  .doc-row { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; }
+  .doc-row .d-ico { width: 28px; height: 28px; border-radius: 7px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .doc-row .d-main { flex: 1; }
+  .doc-row .d-t { font-size: 12.5px; font-weight: 600; }
+  .doc-row .d-d { font-size: 11px; color: var(--fg-subtle); }
+  .doc-row .d-cta { font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; }
+  .btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 9px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn.block { width: 100%; margin-top: 12px; text-align: center; }
+  .btn.is-disabled { background: #f1f1f2; color: var(--fg-subtle); border-color: var(--border); cursor: not-allowed; }
+  .approve-bar { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .approve-bar .note { font-size: 12px; color: var(--fg-subtle); flex: 1; }
+
+  /* States strip */
+  .states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .state-card { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 18px; min-height: 132px; display: flex; flex-direction: column; }
+  .state-card .s-label { font-size: 11px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+  .skel { height: 12px; border-radius: 6px; background: linear-gradient(90deg,#eee, #f5f5f5, #eee); margin-bottom: 10px; }
+  .skel.w60 { width: 60%; } .skel.w40 { width: 40%; } .skel.w80 { width: 80%; }
+  .empty-mid { flex: 1; display: grid; place-items: center; text-align: center; color: var(--fg-subtle); }
+  .empty-mid .em-ico { font-size: 22px; opacity: .5; }
+  .empty-mid .em-t { font-size: 12.5px; margin-top: 6px; }
+  .empty-mid .em-cta { margin-top: 10px; font-size: 12px; color: var(--accent); font-weight: 600; }
+  .err-box { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .err-box .e-t { color: var(--danger); font-weight: 600; font-size: 13px; }
+  .err-box .e-d { color: var(--fg-muted); font-size: 12px; margin: 4px 0 10px; }
+  .err-box .e-cta { align-self: flex-start; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+
+  .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .note b { color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="00_company_home.html" class="brand">
+      <div class="logo">자</div>
+      <div>
+        <div class="name">JARYO Company</div>
+        <div class="sub">회사 세무·회계 운영</div>
+      </div>
+    </a>
+
+    <a href="00_company_home.html" class="nav-item"><span class="ico">◧</span> 회사 홈</a>
+    <div class="nav-label">운영 흐름</div>
+    <a href="01_source_collection.html" class="nav-item"><span class="ico">↥</span> 자료수집</a>
+    <a href="02_bookkeeping_review.html" class="nav-item"><span class="ico">▤</span> 기장검토</a>
+    <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
+    <a href="04_payroll.html" class="nav-item active"><span class="ico">₩</span> 급여 <span class="cnt">12</span></a>
+    <a href="05_filing_support.html" class="nav-item"><span class="ico">↧</span> 신고지원</a>
+    <div class="nav-label">관리</div>
+    <div class="nav-item"><span class="ico">⚙</span> 설정</div>
+
+    <div class="spacer"></div>
+    <div class="user">
+      <div class="av">김</div>
+      <div>
+        <div class="who">김대표</div>
+        <div class="role">샘플컴퍼니(주) · 대표</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumb"><a href="00_company_home.html">회사 홈</a> › 급여</div>
+        <h1>급여</h1>
+      </div>
+      <span class="co">샘플컴퍼니(주)</span>
+      <div class="period-select">
+        <span class="pill">2026년 6월 급여 <span class="caret">▾</span></span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Summary hero -->
+      <div class="hero">
+        <div class="eyebrow">2026년 6월 급여 · 대상 직원 12명</div>
+        <div class="hero-grid">
+          <div class="sum-cell">
+            <div class="k">지급총액</div>
+            <div class="v">42,600,000<small> 원</small></div>
+          </div>
+          <div class="sum-cell">
+            <div class="k">공제총액 (원천세·4대보험)</div>
+            <div class="v">5,840,000<small> 원</small></div>
+          </div>
+          <div class="sum-cell net">
+            <div class="k">실지급액</div>
+            <div class="v">36,760,000<small> 원</small></div>
+          </div>
+          <div class="status-box">
+            <div class="st">마감 상태</div>
+            <div class="chip warn big">확인 필요 1건 · 미마감</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error/missing alert -->
+      <div class="alert">
+        <span class="a-dot"></span>
+        <div class="a-main">
+          <div class="a-t">확인 필요 직원 1명 — 마감 전 처리하세요</div>
+          <div class="a-d">신규 입사자 '박지원'의 4대보험 취득 기준일이 없어 공제액이 임시 계산되었습니다.</div>
+        </div>
+        <button class="a-cta">해당 직원 열기</button>
+      </div>
+
+      <!-- Payroll register -->
+      <div class="section-head">
+        <h2>급여대장</h2>
+        <span class="hint">직원별 지급·공제·실지급 내역</span>
+        <span class="link">엑셀 내보내기 →</span>
+      </div>
+      <div class="panel tbl-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="l">직원</th>
+              <th>기본급</th>
+              <th>수당</th>
+              <th>지급계</th>
+              <th>원천세</th>
+              <th>4대보험</th>
+              <th>공제계</th>
+              <th>실지급액</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="l"><div class="emp">김대표</div><div class="emp-meta">대표 · PAY-001</div></td>
+              <td>6,000,000</td><td>300,000</td><td>6,300,000</td>
+              <td class="ded">420,000</td><td class="ded">540,000</td><td class="ded">960,000</td>
+              <td class="net">5,340,000</td>
+            </tr>
+            <tr>
+              <td class="l"><div class="emp">이수민</div><div class="emp-meta">개발팀 · PAY-002</div></td>
+              <td>4,200,000</td><td>250,000</td><td>4,450,000</td>
+              <td class="ded">210,000</td><td class="ded">395,000</td><td class="ded">605,000</td>
+              <td class="net">3,845,000</td>
+            </tr>
+            <tr>
+              <td class="l"><div class="emp">정하늘</div><div class="emp-meta">운영팀 · PAY-003</div></td>
+              <td>3,600,000</td><td>180,000</td><td>3,780,000</td>
+              <td class="ded">160,000</td><td class="ded">336,000</td><td class="ded">496,000</td>
+              <td class="net">3,284,000</td>
+            </tr>
+            <tr class="err">
+              <td class="l"><div class="emp">박지원 <span class="flag">확인 필요</span></div><div class="emp-meta">개발팀 · PAY-012 · 신규입사</div></td>
+              <td>3,400,000</td><td>0</td><td>3,400,000</td>
+              <td class="ded">150,000</td><td class="ded">302,000</td><td class="ded">452,000</td>
+              <td class="net">2,948,000</td>
+            </tr>
+            <tr>
+              <td class="l"><div class="emp">최민준 외 8명</div><div class="emp-meta">전 부서 · 요약 행</div></td>
+              <td>24,100,000</td><td>570,000</td><td>24,670,000</td>
+              <td class="ded">1,160,000</td><td class="ded">2,167,000</td><td class="ded">3,327,000</td>
+              <td class="net">21,343,000</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="l">합계 · 12명</td>
+              <td>41,300,000</td><td>1,300,000</td><td>42,600,000</td>
+              <td>2,100,000</td><td>3,740,000</td><td>5,840,000</td>
+              <td>36,760,000</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Deduction breakdown + documents/approval -->
+      <div class="two-col">
+        <div class="card">
+          <h3>공제 상세 (원천세·4대보험)</h3>
+          <div class="sub">신고·납부 기준 공제 집계</div>
+          <div class="ded-list">
+            <div class="ded-row"><span class="dk">소득세(원천징수)</span><span class="dv">1,910,000</span></div>
+            <div class="ded-row"><span class="dk">지방소득세</span><span class="dv">190,000</span></div>
+            <div class="ded-row"><span class="dk">국민연금</span><span class="dv">1,917,000</span></div>
+            <div class="ded-row"><span class="dk">건강보험</span><span class="dv">1,510,000</span></div>
+            <div class="ded-row"><span class="dk">장기요양보험</span><span class="dv">195,000</span></div>
+            <div class="ded-row"><span class="dk">고용보험</span><span class="dv">118,000</span></div>
+            <div class="ded-row total"><span class="dk">공제 합계</span><span class="dv">5,840,000</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>명세서 · 마감</h3>
+          <div class="sub">급여명세서 발급 및 급여 확정</div>
+          <div class="doc-list">
+            <div class="doc-row">
+              <div class="d-ico">PDF</div>
+              <div class="d-main"><div class="d-t">급여명세서 (직원 12명)</div><div class="d-d">직원별 개별 명세서 일괄 생성</div></div>
+              <span class="d-cta">미리보기</span>
+            </div>
+            <div class="doc-row">
+              <div class="d-ico">XLS</div>
+              <div class="d-main"><div class="d-t">원천징수 지급명세서(신고용)</div><div class="d-d">신고지원 자료로 전달</div></div>
+              <span class="d-cta">미리보기</span>
+            </div>
+          </div>
+          <div class="approve-bar">
+            <span class="note">확인 필요 1건을 처리해야 마감할 수 있습니다.</span>
+            <button class="btn">임시 저장</button>
+            <button class="btn is-disabled" aria-disabled="true" disabled title="확인 필요 직원 1건을 먼저 처리하세요">급여 마감·확정 · 잠김 (확인 1건 처리 후 활성화)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- State coverage -->
+      <div class="section-head">
+        <h2>화면 상태 예시</h2>
+        <span class="hint">로딩 / 빈 상태 / 오류</span>
+      </div>
+      <div class="states">
+        <div class="state-card">
+          <div class="s-label">Loading</div>
+          <div class="skel w40"></div>
+          <div class="skel w80"></div>
+          <div class="skel w60"></div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Empty</div>
+          <div class="empty-mid">
+            <div>
+              <div class="em-ico">₩</div>
+              <div class="em-t">이 달 급여 입력이 없습니다</div>
+              <div class="em-cta">급여 자료 불러오기</div>
+            </div>
+          </div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Error</div>
+          <div class="err-box">
+            <div class="e-t">급여 계산을 불러오지 못했습니다</div>
+            <div class="e-d">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</div>
+            <button class="e-cta">다시 시도</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Preview 안내</b> — 이 화면은 <b>급여</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 급여·개인정보가 아닙니다.
+        구성: 급여 요약(지급·공제·실지급·마감상태) · 확인 필요 직원 알림 · 급여대장(직원별 지급/공제/실지급) · 공제 상세(원천세·4대보험) · 급여명세서/지급명세서 · 마감·확정 · 상태(로딩/빈/오류) 예시.
+        원천징수 지급명세서는 <b>신고지원</b> 화면으로 전달됩니다. 좌측 사이드바로 다른 화면과 이동할 수 있습니다.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

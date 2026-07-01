@@ -1,4 +1,6 @@
 # JARYO Company MVP UX Baseline
+> Created: 2026-07-01 17:56
+> Last Updated: 2026-07-01 17:56
 
 ## First Screen Principle
 
@@ -68,3 +70,11 @@ Must change:
   external tax accountant reviewer is explicitly configured.
 - public upload portal flows should be re-evaluated before reuse, because
   company self-use may not need external client upload links in the same form.
+
+## Related Documents
+- **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
+- **UI_Screens**: [Screen Flow](./00_SCREEN_FLOW.md) - 6개 화면 흐름 및 데이터 입출력
+- **UI_Screens**: [UI Design](./01_UI_DESIGN.md) - 디자인 시스템 및 화면별 컴포넌트
+- **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입(6화면)
+- **Technical_Specs**: [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) - 화면별 컴포넌트·라이브러리 계획
+- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - 화면별 구현 항목(JC-006·009~013)

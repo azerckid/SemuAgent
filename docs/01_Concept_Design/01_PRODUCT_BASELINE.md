@@ -1,4 +1,6 @@
 # JARYO Company Product Baseline
+> Created: 2026-07-01 17:55
+> Last Updated: 2026-07-01 17:55
 
 ## Purpose
 
@@ -46,3 +48,11 @@ Every reused flow must be checked for operator mismatch:
 - In JARYO Company, the company is the tenant/operator.
 - Email request and accountant approval flows usually become internal company
   review/approval flows.
+
+## Related Documents
+- **UI_Screens**: [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md) - 6개 워크스페이스 UX 기준선
+- **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 화면 흐름 및 데이터 입출력
+- **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 디자인 시스템 및 컴포넌트
+- **Technical_Specs**: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) - 런타임·스택·재사용 기반
+- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - MVP 실행 항목 및 Context Lock
+- **QA_Validation**: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md) - 품질 기준선

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JARYO Company · 신고지원 (UI Preview)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .brand .name { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+  .brand .sub { font-size: 11px; color: var(--fg-subtle); }
+  .nav-label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 14px 8px 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; cursor: pointer; font-size: 13.5px; }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .8; }
+  .nav-item:hover { background: #f4f4f5; color: var(--fg); }
+  .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 600; }
+  .nav-item .soon { margin-left: auto; font-size: 10px; color: var(--fg-subtle); border: 1px solid var(--border); border-radius: 999px; padding: 1px 6px; }
+  .nav-item .cnt { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; border-radius: 999px; padding: 1px 7px; }
+  .sidebar .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .user .who { font-size: 12.5px; font-weight: 600; }
+  .user .role { font-size: 11px; color: var(--fg-subtle); }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .crumb { font-size: 12.5px; color: var(--fg-subtle); font-weight: 500; }
+  .crumb a:hover { color: var(--fg-muted); text-decoration: underline; }
+  .topbar h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .topbar .co { color: var(--fg-muted); font-weight: 500; font-size: 13px; }
+  .period-select { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .pill { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .pill .caret { color: var(--fg-subtle); font-size: 11px; }
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1240px; }
+
+  /* Manual submission banner */
+  .banner { display: flex; align-items: center; gap: 12px; background: var(--accent-soft); border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 13px 16px; }
+  .banner .b-ico { width: 30px; height: 30px; border-radius: 8px; background: #dbeafe; color: var(--accent); display: grid; place-items: center; font-size: 15px; flex: none; }
+  .banner .b-t { font-size: 12.5px; color: #1e40af; }
+  .banner .b-t b { font-weight: 700; }
+
+  /* Filing status list */
+  .section-head { display: flex; align-items: baseline; gap: 10px; }
+  .section-head h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+  .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
+  .section-head .link { margin-left: auto; font-size: 12.5px; color: var(--accent); font-weight: 600; cursor: pointer; }
+
+  .filings { display: flex; flex-direction: column; gap: 12px; }
+  .filing { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+  .filing .f-ico { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; font-size: 15px; font-weight: 700; }
+  .f-ico.vat { background: var(--accent-soft); color: var(--accent); }
+  .f-ico.wt { background: #f5f3ff; color: #7c3aed; }
+  .f-ico.ins { background: var(--ok-soft); color: var(--ok); }
+  .filing .f-main .f-t { font-size: 14px; font-weight: 650; }
+  .filing .f-main .f-d { font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
+  .filing .f-main .f-meta { font-size: 11.5px; color: var(--fg-subtle); margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .filing .f-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .chip { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
+  .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+  .filing .f-actions { display: flex; gap: 6px; }
+  .btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn.is-disabled { background: #f1f1f2; color: var(--fg-subtle); border-color: var(--border); cursor: not-allowed; }
+
+  /* Two column: input guide + receipts */
+  .two-col { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+  .card h3 { font-size: 13px; font-weight: 650; margin-bottom: 4px; }
+  .card .sub { font-size: 12px; color: var(--fg-subtle); margin-bottom: 14px; }
+
+  /* Hometax input guide steps */
+  .steps { display: flex; flex-direction: column; }
+  .step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .step:last-child { border-bottom: 0; }
+  .step .n { width: 22px; height: 22px; border-radius: 999px; background: #f1f1f2; color: var(--fg-muted); display: grid; place-items: center; font-size: 11.5px; font-weight: 700; flex: none; }
+  .step.done .n { background: var(--ok); color: #fff; }
+  .step .st-main .st-t { font-size: 12.5px; font-weight: 600; }
+  .step .st-main .st-d { font-size: 11.5px; color: var(--fg-subtle); margin-top: 1px; }
+  .step .st-main .val { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; }
+  .card .foot-cta { margin-top: 14px; display: flex; gap: 8px; }
+  .card .foot-cta .btn { flex: 1; text-align: center; }
+
+  /* Receipts storage */
+  .receipts { display: flex; flex-direction: column; gap: 10px; }
+  .receipt { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; }
+  .receipt .r-ico { width: 28px; height: 28px; border-radius: 7px; background: var(--ok-soft); color: var(--ok); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .receipt .r-main { flex: 1; }
+  .receipt .r-t { font-size: 12.5px; font-weight: 600; }
+  .receipt .r-d { font-size: 11px; color: var(--fg-subtle); }
+  .receipt .r-cta { font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; }
+  .receipt.empty { border-style: dashed; color: var(--fg-subtle); justify-content: center; font-size: 12.5px; padding: 16px; }
+
+  /* Post-filing checklist */
+  .check-list { display: flex; flex-direction: column; }
+  .check { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .check:last-child { border-bottom: 0; }
+  .cbox { width: 17px; height: 17px; border: 1.5px solid var(--border-strong); border-radius: 5px; flex: none; margin-top: 1px; }
+  .cbox.on { background: var(--ok); border-color: var(--ok); position: relative; }
+  .cbox.on::after { content: "✓"; color: #fff; font-size: 11px; position: absolute; top: -1px; left: 3px; }
+  .check .ck-t { font-size: 12.5px; font-weight: 600; }
+  .check.on .ck-t { color: var(--fg-muted); text-decoration: line-through; }
+  .check .ck-d { font-size: 11.5px; color: var(--fg-subtle); margin-top: 1px; }
+
+  /* States strip */
+  .states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .state-card { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 18px; min-height: 132px; display: flex; flex-direction: column; }
+  .state-card .s-label { font-size: 11px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+  .skel { height: 12px; border-radius: 6px; background: linear-gradient(90deg,#eee, #f5f5f5, #eee); margin-bottom: 10px; }
+  .skel.w60 { width: 60%; } .skel.w40 { width: 40%; } .skel.w80 { width: 80%; }
+  .empty-mid { flex: 1; display: grid; place-items: center; text-align: center; color: var(--fg-subtle); }
+  .empty-mid .em-ico { font-size: 22px; opacity: .5; }
+  .empty-mid .em-t { font-size: 12.5px; margin-top: 6px; }
+  .empty-mid .em-cta { margin-top: 10px; font-size: 12px; color: var(--accent); font-weight: 600; }
+  .err-box { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .err-box .e-t { color: var(--danger); font-weight: 600; font-size: 13px; }
+  .err-box .e-d { color: var(--fg-muted); font-size: 12px; margin: 4px 0 10px; }
+  .err-box .e-cta { align-self: flex-start; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+
+  .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .note b { color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="00_company_home.html" class="brand">
+      <div class="logo">자</div>
+      <div>
+        <div class="name">JARYO Company</div>
+        <div class="sub">회사 세무·회계 운영</div>
+      </div>
+    </a>
+
+    <a href="00_company_home.html" class="nav-item"><span class="ico">◧</span> 회사 홈</a>
+    <div class="nav-label">운영 흐름</div>
+    <a href="01_source_collection.html" class="nav-item"><span class="ico">↥</span> 자료수집</a>
+    <a href="02_bookkeeping_review.html" class="nav-item"><span class="ico">▤</span> 기장검토</a>
+    <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
+    <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여</a>
+    <a href="05_filing_support.html" class="nav-item active"><span class="ico">↧</span> 신고지원 <span class="cnt">2</span></a>
+    <div class="nav-label">관리</div>
+    <div class="nav-item"><span class="ico">⚙</span> 설정</div>
+
+    <div class="spacer"></div>
+    <div class="user">
+      <div class="av">김</div>
+      <div>
+        <div class="who">김대표</div>
+        <div class="role">샘플컴퍼니(주) · 대표</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumb"><a href="00_company_home.html">회사 홈</a> › 신고지원</div>
+        <h1>신고지원</h1>
+      </div>
+      <span class="co">샘플컴퍼니(주)</span>
+      <div class="period-select">
+        <span class="pill">2026년 1기 / 6월 귀속 <span class="caret">▾</span></span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Responsibility boundary banner -->
+      <div class="banner">
+        <div class="b-ico">↧</div>
+        <div class="b-t"><b>JARYO Company는 신고서 제출을 대행하지 않습니다.</b> 첨부 패키지 생성과 홈택스 단계별 입력 가이드까지 지원하며, 실제 제출과 납부는 회사가 홈택스에서 직접 진행하고 접수증만 보관합니다.</div>
+      </div>
+
+      <!-- Filing package status -->
+      <div class="section-head">
+        <h2>신고 항목 · 첨부 패키지</h2>
+        <span class="hint">앞 단계에서 생성된 신고 자료</span>
+      </div>
+      <div class="filings">
+        <div class="filing">
+          <div class="f-ico vat">부</div>
+          <div class="f-main">
+            <div class="f-t">2026년 1기 부가가치세 (확정)</div>
+            <div class="f-d">납부(예정) 14,000,000원 · 마감 2026-07-25</div>
+            <div class="f-meta"><span>부가세 화면 연동</span><span>불공제 검토 3건 완료 후 패키지 확정</span></div>
+          </div>
+          <div class="f-right">
+            <span class="chip warn">패키지 대기</span>
+            <div class="f-actions">
+              <button class="btn is-disabled" aria-disabled="true" disabled title="부가세 공제 검토 3건을 먼저 완료하세요">패키지 · 잠김</button>
+              <a href="03_vat.html" class="btn">부가세 열기</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="filing">
+          <div class="f-ico wt">원</div>
+          <div class="f-main">
+            <div class="f-t">6월 귀속 원천징수이행상황신고</div>
+            <div class="f-d">소득세 1,910,000 · 지방소득세 190,000원</div>
+            <div class="f-meta"><span>급여 화면 연동</span><span>지급명세서 첨부 준비됨</span></div>
+          </div>
+          <div class="f-right">
+            <span class="chip ok">패키지 준비됨</span>
+            <div class="f-actions">
+              <button class="btn primary">패키지 열기</button>
+              <button class="btn">입력 가이드</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="filing">
+          <div class="f-ico ins">4</div>
+          <div class="f-main">
+            <div class="f-t">6월 4대보험 보수총액 신고</div>
+            <div class="f-d">국민연금·건강·고용·산재 신고 자료</div>
+            <div class="f-meta"><span>급여 화면 연동</span><span>공단 EDI 제출용</span></div>
+          </div>
+          <div class="f-right">
+            <span class="chip warn">확인 필요</span>
+            <div class="f-actions">
+              <button class="btn">자료 확인</button>
+              <a href="04_payroll.html" class="btn">급여 열기</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input guide + receipts -->
+      <div class="two-col">
+        <div class="card">
+          <h3>홈택스 입력 가이드 · 원천세</h3>
+          <div class="sub">아래 값을 홈택스 해당 항목에 그대로 입력하세요. (자동 제출 아님)</div>
+          <div class="steps">
+            <div class="step done">
+              <div class="n">1</div>
+              <div class="st-main"><div class="st-t">홈택스 로그인 → 원천세 신고 메뉴 이동</div><div class="st-d">국세청 홈택스에서 회사 공동인증서로 로그인</div></div>
+            </div>
+            <div class="step">
+              <div class="n">2</div>
+              <div class="st-main"><div class="st-t">인원·총지급액 입력</div><div class="st-d">간이세액 대상 <span class="val">12명</span> · 총지급액 <span class="val">42,600,000원</span></div></div>
+            </div>
+            <div class="step">
+              <div class="n">3</div>
+              <div class="st-main"><div class="st-t">소득세액 입력</div><div class="st-d">징수세액 <span class="val">1,910,000원</span> (지방소득세는 위택스 별도)</div></div>
+            </div>
+            <div class="step">
+              <div class="n">4</div>
+              <div class="st-main"><div class="st-t">신고서 제출 → 접수증 저장</div><div class="st-d">제출 후 접수증을 아래 "제출 접수증"에 업로드</div></div>
+            </div>
+          </div>
+          <div class="foot-cta">
+            <button class="btn primary">가이드 값 복사</button>
+            <button class="btn">지급명세서 다운로드</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>제출 접수증 보관</h3>
+          <div class="sub">홈택스에서 받은 접수증을 업로드해 보관합니다</div>
+          <div class="receipts">
+            <div class="receipt">
+              <div class="r-ico">PDF</div>
+              <div class="r-main"><div class="r-t">6월 원천징수 접수증</div><div class="r-d">2026-07-10 제출 · 보관 완료</div></div>
+              <span class="r-cta">보기</span>
+            </div>
+            <div class="receipt">
+              <div class="r-ico">PDF</div>
+              <div class="r-main"><div class="r-t">6월 보수총액 신고 접수증</div><div class="r-d">2026-06-28 제출 · 보관 완료</div></div>
+              <span class="r-cta">보기</span>
+            </div>
+            <div class="receipt empty">부가세 1기 접수증 — 제출 후 업로드 대기</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post-filing checklist -->
+      <div class="section-head">
+        <h2>사후 체크리스트</h2>
+        <span class="hint">제출 후 확인 항목</span>
+      </div>
+      <div class="card">
+        <div class="check-list">
+          <div class="check on"><span class="cbox on"></span><div><div class="ck-t">원천세 납부서 확인 및 이체</div><div class="ck-d">6월 귀속 · 납부기한 2026-07-10</div></div></div>
+          <div class="check on"><span class="cbox on"></span><div><div class="ck-t">4대보험 고지금액 확인</div><div class="ck-d">공단 고지서 대사 완료</div></div></div>
+          <div class="check"><span class="cbox"></span><div><div class="ck-t">부가세 납부서 발급 및 납부</div><div class="ck-d">신고 확정 후 · 납부기한 2026-07-25</div></div></div>
+          <div class="check"><span class="cbox"></span><div><div class="ck-t">신고 접수증 3종 보관 완료</div><div class="ck-d">부가세 접수증 업로드 대기</div></div></div>
+        </div>
+      </div>
+
+      <!-- State coverage -->
+      <div class="section-head">
+        <h2>화면 상태 예시</h2>
+        <span class="hint">로딩 / 빈 상태 / 오류</span>
+      </div>
+      <div class="states">
+        <div class="state-card">
+          <div class="s-label">Loading</div>
+          <div class="skel w40"></div>
+          <div class="skel w80"></div>
+          <div class="skel w60"></div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Empty</div>
+          <div class="empty-mid">
+            <div>
+              <div class="em-ico">↧</div>
+              <div class="em-t">아직 신고할 항목이 없습니다</div>
+              <div class="em-cta">부가세·급여 먼저 확정하기</div>
+            </div>
+          </div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Error</div>
+          <div class="err-box">
+            <div class="e-t">신고 항목을 불러오지 못했습니다</div>
+            <div class="e-d">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</div>
+            <button class="e-cta">다시 시도</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Preview 안내</b> — 이 화면은 <b>신고지원</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
+        <b>책임 경계</b>: 신고서 자동 제출·세금 자동 납부는 제공하지 않습니다. 첨부 패키지 생성 · 홈택스 단계별 입력 가이드 · 제출 접수증 보관 · 사후 체크리스트까지 지원하며, 제출/납부는 회사가 홈택스에서 직접 수행합니다.
+        구성: 신고 항목·첨부 패키지(부가세/원천세/4대보험) · 홈택스 입력 가이드 · 제출 접수증 보관 · 사후 체크리스트 · 상태(로딩/빈/오류) 예시. 각 항목은 부가세·급여 화면과 연동됩니다.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

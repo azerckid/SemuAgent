@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JARYO Company · 회사 홈 (UI Preview)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .brand .name { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+  .brand .sub { font-size: 11px; color: var(--fg-subtle); }
+  .nav-label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 14px 8px 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; cursor: pointer; font-size: 13.5px; }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .8; }
+  .nav-item:hover { background: #f4f4f5; color: var(--fg); }
+  .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 600; }
+  .nav-item .soon { margin-left: auto; font-size: 10px; color: var(--fg-subtle); border: 1px solid var(--border); border-radius: 999px; padding: 1px 6px; }
+  .sidebar .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .user .who { font-size: 12.5px; font-weight: 600; }
+  .user .role { font-size: 11px; color: var(--fg-subtle); }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .topbar h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .topbar .co { color: var(--fg-muted); font-weight: 500; font-size: 13px; }
+  .period-select { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .pill { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .pill .caret { color: var(--fg-subtle); font-size: 11px; }
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1200px; }
+
+  /* Hero period card */
+  .hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+  .hero .eyebrow { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+  .hero .title { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 4px 0 12px; }
+  .hero .title .tag { font-size: 12px; font-weight: 600; color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 8px; }
+  .progress { height: 8px; background: #ececee; border-radius: 999px; overflow: hidden; max-width: 460px; }
+  .progress > i { display: block; height: 100%; width: 62%; background: var(--accent); border-radius: 999px; }
+  .hero .meta { font-size: 12.5px; color: var(--fg-muted); margin-top: 8px; }
+  .hero .deadline { text-align: right; }
+  .hero .deadline .d-label { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+  .hero .deadline .d-date { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+  .hero .deadline .d-left { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; padding: 3px 10px; border-radius: 999px; }
+
+  /* Section */
+  .section-head { display: flex; align-items: baseline; gap: 10px; }
+  .section-head h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+  .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
+  .section-head .link { margin-left: auto; font-size: 12.5px; color: var(--accent); font-weight: 600; cursor: pointer; }
+
+  /* Next actions / blockers */
+  .actions { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .action-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .action-row:last-child { border-bottom: 0; }
+  .action-row .dot { width: 8px; height: 8px; border-radius: 999px; flex: none; }
+  .dot.danger { background: var(--danger); }
+  .dot.warn { background: var(--warn); }
+  .dot.ok { background: var(--ok); }
+  .action-row .a-main { flex: 1; }
+  .action-row .a-title { font-weight: 600; font-size: 13.5px; }
+  .action-row .a-desc { font-size: 12.5px; color: var(--fg-muted); margin-top: 1px; }
+  .action-row .a-cta { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .action-row .a-cta.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+  /* Status card grid */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: border-color .12s; }
+  .card:hover { border-color: var(--border-strong); }
+  .card .c-head { display: flex; align-items: center; gap: 10px; }
+  .card .c-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 15px; }
+  .c-ico.blue { background: var(--accent-soft); }
+  .c-ico.amber { background: var(--warn-soft); }
+  .c-ico.green { background: var(--ok-soft); }
+  .card .c-title { font-size: 13px; font-weight: 600; color: var(--fg-muted); }
+  .card .c-value { font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+  .card .c-value small { font-size: 14px; font-weight: 600; color: var(--fg-subtle); margin-left: 2px; }
+  .card .c-foot { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+  .chip { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
+  .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+  .card .c-sub { font-size: 12px; color: var(--fg-subtle); }
+
+  /* Recent table */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--fg-subtle); padding: 11px 18px; border-bottom: 1px solid var(--border); background: #fafafa; text-transform: uppercase; letter-spacing: .03em; }
+  tbody td { padding: 13px 18px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafafa; }
+  td.mono { font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+  .doc-link { font-weight: 600; color: var(--fg); }
+
+  /* States strip */
+  .states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .state-card { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 18px; min-height: 132px; display: flex; flex-direction: column; }
+  .state-card .s-label { font-size: 11px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+  .skel { height: 12px; border-radius: 6px; background: linear-gradient(90deg,#eee, #f5f5f5, #eee); margin-bottom: 10px; }
+  .skel.w60 { width: 60%; } .skel.w40 { width: 40%; } .skel.w80 { width: 80%; }
+  .empty-mid { flex: 1; display: grid; place-items: center; text-align: center; color: var(--fg-subtle); }
+  .empty-mid .em-ico { font-size: 22px; opacity: .5; }
+  .empty-mid .em-t { font-size: 12.5px; margin-top: 6px; }
+  .empty-mid .em-cta { margin-top: 10px; font-size: 12px; color: var(--accent); font-weight: 600; }
+  .err-box { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .err-box .e-t { color: var(--danger); font-weight: 600; font-size: 13px; }
+  .err-box .e-d { color: var(--fg-muted); font-size: 12px; margin: 4px 0 10px; }
+  .err-box .e-cta { align-self: flex-start; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+
+  .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .note b { color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">자</div>
+      <div>
+        <div class="name">JARYO Company</div>
+        <div class="sub">회사 세무·회계 운영</div>
+      </div>
+    </div>
+
+    <a href="00_company_home.html" class="nav-item active"><span class="ico">◧</span> 회사 홈</a>
+    <div class="nav-label">운영 흐름</div>
+    <a href="01_source_collection.html" class="nav-item"><span class="ico">↥</span> 자료수집</a>
+    <a href="02_bookkeeping_review.html" class="nav-item"><span class="ico">▤</span> 기장검토</a>
+    <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
+    <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여</a>
+    <a href="05_filing_support.html" class="nav-item"><span class="ico">↧</span> 신고지원</a>
+    <div class="nav-label">관리</div>
+    <div class="nav-item"><span class="ico">⚙</span> 설정</div>
+
+    <div class="spacer"></div>
+    <div class="user">
+      <div class="av">김</div>
+      <div>
+        <div class="who">김대표</div>
+        <div class="role">샘플컴퍼니(주) · 대표</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <h1>회사 홈</h1>
+      <span class="co">샘플컴퍼니(주)</span>
+      <div class="period-select">
+        <span class="pill">2026년 부가세 1기 (1~6월) <span class="caret">▾</span></span>
+        <span class="pill">확정 신고 <span class="caret">▾</span></span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Hero: current period status -->
+      <div class="hero">
+        <div>
+          <div class="eyebrow">현재 회계기간</div>
+          <div class="title">2026년 부가세 1기 확정 신고<span class="tag">진행 중</span></div>
+          <div class="progress"><i></i></div>
+          <div class="meta">전체 준비 62% · 자료수집 완료 · 기장검토 진행 중 · 부가세 집계 대기</div>
+        </div>
+        <div class="deadline">
+          <div class="d-label">신고 마감</div>
+          <div class="d-date">2026-07-25</div>
+          <div class="d-left">D-24</div>
+        </div>
+      </div>
+
+      <!-- Next actions / blockers before filing -->
+      <div class="section-head">
+        <h2>다음 할 일</h2>
+        <span class="hint">신고 전 해결해야 할 항목</span>
+      </div>
+      <div class="actions">
+        <div class="action-row">
+          <span class="dot danger"></span>
+          <div class="a-main">
+            <div class="a-title">미검토 거래 18건 분류 필요</div>
+            <div class="a-desc">기장검토에서 계정과목이 확정되지 않은 거래가 있습니다.</div>
+          </div>
+          <a href="02_bookkeeping_review.html" class="a-cta primary">기장검토 열기</a>
+        </div>
+        <div class="action-row">
+          <span class="dot warn"></span>
+          <div class="a-main">
+            <div class="a-title">5월 카드매입 자료 1건 미수집</div>
+            <div class="a-desc">신한카드 법인 매입내역이 아직 업로드되지 않았습니다.</div>
+          </div>
+          <a href="01_source_collection.html" class="a-cta">자료수집 열기</a>
+        </div>
+        <div class="action-row">
+          <span class="dot warn"></span>
+          <div class="a-main">
+            <div class="a-title">부가세 매입세액 공제 검토 대기</div>
+            <div class="a-desc">불공제 대상 후보 3건을 확인해야 부가세 집계를 확정할 수 있습니다.</div>
+          </div>
+          <a href="03_vat.html" class="a-cta">부가세 열기</a>
+        </div>
+      </div>
+
+      <!-- Status cards -->
+      <div class="section-head">
+        <h2>준비 현황</h2>
+        <span class="hint">워크스페이스별 상태</span>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="c-head">
+            <div class="c-ico amber">↥</div>
+            <div class="c-title">미수집 / 미검토 자료</div>
+          </div>
+          <div class="c-value">1<small> / 24건</small></div>
+          <div class="c-foot"><span class="chip warn">1건 미수집</span><span class="c-sub">23건 수집 완료</span></div>
+        </div>
+        <div class="card">
+          <div class="c-head">
+            <div class="c-ico blue">▤</div>
+            <div class="c-title">분류 대기 큐</div>
+          </div>
+          <div class="c-value">18<small> / 342건</small></div>
+          <div class="c-foot"><span class="chip danger">18건 미분류</span><span class="c-sub">94.7% 분류됨</span></div>
+        </div>
+        <div class="card">
+          <div class="c-head">
+            <div class="c-ico blue">％</div>
+            <div class="c-title">부가세 준비</div>
+          </div>
+          <div class="c-value">집계 대기</div>
+          <div class="c-foot"><span class="chip warn">공제 검토 3건</span><span class="c-sub">매출·매입 자료 확보</span></div>
+        </div>
+        <div class="card">
+          <div class="c-head">
+            <div class="c-ico green">₩</div>
+            <div class="c-title">급여 준비</div>
+          </div>
+          <div class="c-value">완료</div>
+          <div class="c-foot"><span class="chip ok">6월 급여 확정</span><span class="c-sub">직원 12명</span></div>
+        </div>
+        <div class="card">
+          <div class="c-head">
+            <div class="c-ico blue">↧</div>
+            <div class="c-title">신고자료 패키지</div>
+          </div>
+          <div class="c-value">미생성</div>
+          <div class="c-foot"><span class="chip muted">선행 항목 대기</span><span class="c-sub">기장·부가세 확정 후 생성</span></div>
+        </div>
+        <div class="card">
+          <div class="c-head">
+            <div class="c-ico green">◫</div>
+            <div class="c-title">최근 제출 · 영수증</div>
+          </div>
+          <div class="c-value">3<small> 건</small></div>
+          <div class="c-foot"><span class="chip ok">보관 완료</span><span class="c-sub">최근 30일</span></div>
+        </div>
+      </div>
+
+      <!-- Recent submissions & receipts -->
+      <div class="section-head">
+        <h2>최근 제출 · 영수증</h2>
+        <span class="link">전체 보기 →</span>
+      </div>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr><th>구분</th><th>항목</th><th>기간</th><th>상태</th><th>일시</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="chip muted">원천세</span></td>
+              <td class="doc-link">6월 귀속 원천징수이행상황신고</td>
+              <td class="mono">2026-06</td>
+              <td><span class="chip ok">제출 완료</span></td>
+              <td class="mono">2026-07-10</td>
+            </tr>
+            <tr>
+              <td><span class="chip muted">4대보험</span></td>
+              <td class="doc-link">6월 보수총액 신고 접수증</td>
+              <td class="mono">2026-06</td>
+              <td><span class="chip ok">보관 완료</span></td>
+              <td class="mono">2026-06-28</td>
+            </tr>
+            <tr>
+              <td><span class="chip muted">부가세</span></td>
+              <td class="doc-link">2025년 2기 확정 신고 접수증</td>
+              <td class="mono">2025-2기</td>
+              <td><span class="chip ok">보관 완료</span></td>
+              <td class="mono">2026-01-24</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- State coverage (UI-First Gate item 20) -->
+      <div class="section-head">
+        <h2>화면 상태 예시</h2>
+        <span class="hint">로딩 / 빈 상태 / 오류 — 카드 컴포넌트 상태 커버리지</span>
+      </div>
+      <div class="states">
+        <div class="state-card">
+          <div class="s-label">Loading</div>
+          <div class="skel w40"></div>
+          <div class="skel w80"></div>
+          <div class="skel w60"></div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Empty</div>
+          <div class="empty-mid">
+            <div>
+              <div class="em-ico">＋</div>
+              <div class="em-t">아직 수집된 자료가 없습니다</div>
+              <div class="em-cta">첫 자료 업로드하기</div>
+            </div>
+          </div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Error</div>
+          <div class="err-box">
+            <div class="e-t">현황을 불러오지 못했습니다</div>
+            <div class="e-d">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</div>
+            <button class="e-cta">다시 시도</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Preview 안내</b> — 이 화면은 <b>회사 홈(대시보드)</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
+        외부 고객 업로드 포털·외부 세무사 검토 흐름은 v1 범위에서 제외되어 표시하지 않았습니다.
+        구성 화면: 현재 회계기간 상태 · 다음 할 일(신고 전 blockers) · 워크스페이스별 준비 현황 · 최근 제출/영수증 · 상태(로딩/빈/오류) 예시.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
