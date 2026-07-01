@@ -117,7 +117,9 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 ## 10. 미결/후속
 
-- 회사 홈 Pre-Code Technical Brief는 작성 완료. 자료수집 및 후속 화면은 구현 전 화면별 Pre-Code Technical Brief와 QA 시나리오가 필요하다.
+- 회사 홈 Pre-Code Brief: [04_COMPANY_HOME_PRE_CODE_BRIEF.md](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) (JC-006 구현·머지 완료).
+- 자료수집 Pre-Code Brief: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) (JC-009 게이트 완료, 구현 착수 가능).
+- 기장검토·부가세·급여·신고지원은 구현 전 화면별 Pre-Code Brief와 QA 시나리오가 필요하다.
 
 ## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -126,4 +128,5 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - **UI_Screens**: [HTML Preview 폴더](../02_UI_Screens/previews/) - 화면 프로토타입
 - **Technical_Specs**: [Development Setup](./01_DEVELOPMENT_SETUP.md) - 런타임·패키지·스택
 - **Technical_Specs**: [Company Home Pre-Code Brief](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) - 회사 홈 데이터 소스·상태·acceptance 계약
+- **Technical_Specs**: [Source Collection Pre-Code Brief](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) - 자료수집 mutation·라우트·acceptance 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009 Context Lock

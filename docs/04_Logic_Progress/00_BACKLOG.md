@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-01 23:35
+> Last Updated: 2026-07-01 23:55
 
 ## Status Legend
 
@@ -96,15 +96,15 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [Screen Flow 4b](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.2](../02_UI_Screens/01_UI_DESIGN.md)
 - Related HTML Preview: [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html)
-- Related Technical Docs: [Component & Library Plan 7.2](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
-- Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 업로드→파싱→정규화 테스트 시나리오 추가 필요(전제조건에 반영).
+- Related Technical Docs: [Component & Library Plan 7.2](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Source Collection Pre-Code Brief](../03_Technical_Specs/05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related QA Docs: [Source Collection Test Scenarios](../05_QA_Validation/03_SOURCE_COLLECTION_TEST_SCENARIOS.md) - 업로드·파싱 mutation·JC-004 슬라이스·범위 격리 검증
 - Prototype Review / 승인: [Source Collection Review](../02_UI_Screens/03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
   - [x] Component & Library Plan 작성 (업로드/파싱/정규화 컴포넌트·라이브러리) — [7.2 자료수집 매핑](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
-  - [ ] Pre-Code Technical Brief(업로드 mutation·정규화 파이프라인·acceptance) 정리 — **미충족**
-  - [ ] 외부 업로드 포털 제외 방침 반영한 업로드 라우트 재검토 (JC-004 연계) — **미충족**
-  - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
+  - [x] Pre-Code Technical Brief(업로드 mutation·정규화 파이프라인·acceptance) 정리 — [Source Collection Pre-Code Brief](../03_Technical_Specs/05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md)
+  - [x] 외부 업로드 포털 제외 방침 반영한 업로드 라우트 재검토 (JC-004 연계, JC-009 범위 슬라이스) — Brief §3
+  - [x] QA 테스트 시나리오 작성 (Layer 5) — [Source Collection Test Scenarios](../05_QA_Validation/03_SOURCE_COLLECTION_TEST_SCENARIOS.md)
 - Acceptance Criteria:
   - [ ] 회사 내부 사용자가 XLSX/CSV/PDF/이미지/ZIP을 업로드하면 파싱→정규화 큐에 등록된다.
   - [ ] 자료유형(세금계산서/통장/카드/영수증)별 집계와 정규화 상태가 표시된다.
@@ -112,7 +112,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 수집 완결성(미수집 건수)과 미수집·확인 필요 목록이 표시된다.
   - [ ] 외부 고객 업로드 포털은 노출되지 않는다(내부 업로드만).
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
+- Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview / Component Plan 7.2 / Pre-Code Brief / QA Scenarios 상호 링크됨 (2026-07-01 게이트 기준). 구현 파일은 착수 후 갱신.
 
 ### JC-010 · Build bookkeeping review workspace (기장검토) — 신규
 
@@ -210,7 +210,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했으나 물리 마이그레이션·부가세/신고 신규 테이블 컬럼·기간 모델 확정은 남아 있다. JC-006은 회사 홈 read model·React 화면·로딩/오류 상태·단위 테스트까지 구현 완료됐다. JC-009는 Component & Library Plan 완료이나 Pre-Code Brief 미작성, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)·JC-013(Filing Item Card·Input Guide·Receipts·Checklist)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 화면별 **Pre-Code Technical Brief**(JC-006 완료, 나머지 미작성), JC-005 후속 확정(물리 마이그레이션·신규 테이블 컬럼·기간 모델), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**(JC-006 완료, 나머지 미작성)이다. 이들이 채워지기 전에는 해당 화면의 코드 구현을 시작하지 않는다.
+> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했으나 물리 마이그레이션·부가세/신고 신규 테이블 컬럼·기간 모델 확정은 남아 있다. JC-006은 회사 홈 구현·머지 완료. JC-009는 Pre-Code Brief·JC-004 업로드 슬라이스·Layer 5 QA 시나리오까지 게이트 충족 — **구현 착수 가능**. JC-010~013은 Pre-Code Brief·QA 미작성. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료). 남은 공통 구현 착수 전제조건은 JC-010~013 **Pre-Code Brief**, JC-005 후속(기장·부가세·신고 구현 전), JC-012 개인정보 마스킹 방침, **Layer 5 QA**(JC-006·JC-009 완료, 나머지 미작성)이다.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
