@@ -1,21 +1,15 @@
 import Link from 'next/link'
 import {
-  AlertCircle,
-  AlertTriangle,
   Building2,
-  CheckCircle2,
   CreditCard,
   FileText,
   Landmark,
-  Loader2,
   ReceiptText,
   RefreshCw,
   UploadCloud,
 } from 'lucide-react'
 import type { ComponentType, ReactNode } from 'react'
-import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { CompanyHomePeriod } from '@/lib/company-home/summary'
 import {
@@ -28,12 +22,24 @@ import {
   type SourceCollectionTone,
 } from '@/lib/source-collection/summary'
 import { cn } from '@/lib/utils'
+import { SourceCollectionUploadDropzone } from './source-collection-upload'
 
-const toneBadgeVariant: Record<SourceCollectionTone, 'success' | 'warning' | 'secondary' | 'info'> = {
-  ok: 'success',
-  warn: 'warning',
-  muted: 'secondary',
-  info: 'info',
+const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
+
+const toneChipClass: Record<SourceCollectionTone, string> = {
+  ok: 'border-[#bbf7d0] bg-[#f0fdf4] text-[#16a34a]',
+  warn: 'border-[#fde68a] bg-[#fffbeb] text-[#d97706]',
+  muted: 'border-company-border bg-company-nav-hover text-company-fg-muted',
+  info: 'border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]',
+}
+
+const fileStatusChipClass: Record<string, string> = {
+  matched: toneChipClass.ok,
+  needs_review: toneChipClass.warn,
+  analyzing: toneChipClass.info,
+  uploaded: toneChipClass.muted,
+  failed: 'border-[#fecaca] bg-[#fef2f2] text-[#dc2626]',
+  rejected: 'border-[#fecaca] bg-[#fef2f2] text-[#dc2626]',
 }
 
 const sourceTypeIcon: Record<SourceCollectionSourceTypeTile['id'], ComponentType<{ className?: string }>> = {
@@ -43,18 +49,16 @@ const sourceTypeIcon: Record<SourceCollectionSourceTypeTile['id'], ComponentType
   receipt_other: ReceiptText,
 }
 
-const fileStatusBadgeVariant: Record<string, 'success' | 'warning' | 'destructive' | 'secondary' | 'info'> = {
-  matched: 'success',
-  needs_review: 'warning',
-  analyzing: 'info',
-  uploaded: 'secondary',
-  failed: 'destructive',
-  rejected: 'destructive',
-}
-
 function formatPeriodEyebrow(period: CompanyHomePeriod) {
   if (period.key.endsWith('H1')) return `${period.key.slice(0, 4)}년 1기`
   if (period.key.endsWith('H2')) return `${period.key.slice(0, 4)}년 2기`
+  return period.label
+}
+
+function formatPeriodPillLabel(period: CompanyHomePeriod) {
+  const year = period.key.slice(0, 4)
+  if (period.key.endsWith('H2')) return `${year}년 부가세 2기 (7~12월)`
+  if (period.key.endsWith('H1')) return `${year}년 부가세 1기 (1~6월)`
   return period.label
 }
 
@@ -62,6 +66,14 @@ function formatUploadDate(isoDate: string) {
   const [, month, day] = isoDate.split('-')
   if (!month || !day) return isoDate
   return `${month}-${day}`
+}
+
+function PreviewChip({ className, children }: { readonly className?: string; readonly children: ReactNode }) {
+  return (
+    <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11.5px] font-semibold', className)}>
+      {children}
+    </span>
+  )
 }
 
 interface SectionHeaderProps {
@@ -73,54 +85,92 @@ interface SectionHeaderProps {
 
 function SectionHeader({ id, title, description, action }: SectionHeaderProps) {
   return (
-    <div className="flex flex-wrap items-baseline gap-2">
-      <h2 id={id} className="text-base font-semibold text-foreground">{title}</h2>
-      <p className="text-xs text-muted-foreground">{description}</p>
+    <div className="flex flex-wrap items-baseline gap-2.5">
+      <h2 id={id} className="text-[15px] font-semibold tracking-tight text-foreground">{title}</h2>
+      <p className="text-xs text-company-fg-subtle">{description}</p>
       {action && <div className="ml-auto">{action}</div>}
     </div>
   )
 }
 
-interface SourceCollectionHeaderProps {
-  readonly summary: Pick<SourceCollectionSummary, 'tenant' | 'businessEntity' | 'period'>
+type UploadSessionProps = {
+  readonly id: string
+  readonly rawToken: string | null
+  readonly status: string
 }
 
-export function SourceCollectionHeader({ summary }: SourceCollectionHeaderProps) {
-  const currentYear = Number(summary.period.key.slice(0, 4))
-  const currentHalf = summary.period.key.endsWith('H2') ? 'H2' : 'H1'
-  const periodLinks = [
-    { key: `${currentYear}-H1`, label: `${currentYear}년 1기` },
-    { key: `${currentYear}-H2`, label: `${currentYear}년 2기` },
-  ]
+type UploadedFileProps = {
+  readonly id: string
+  readonly originalFilename: string
+  readonly fileSize: number
+  readonly status: string
+  readonly passwordStatus?: string | null
+}
+
+export interface SourceCollectionViewProps {
+  readonly summary: SourceCollectionSummary
+  readonly uploadSession: UploadSessionProps | null
+  readonly uploadedFiles: UploadedFileProps[]
+  readonly focusFileId?: string | null
+  readonly retryAction?: boolean
+}
+
+export function SourceCollectionView({
+  summary,
+  uploadSession,
+  uploadedFiles,
+  focusFileId,
+  retryAction,
+}: SourceCollectionViewProps) {
+  const accountingPeriod = `${summary.period.startMonth}~${summary.period.endMonth}`
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="flex min-h-full flex-col">
+      <SourceCollectionTopbar summary={summary} />
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-7 pt-6 pb-12">
+        <CompletenessHeader completeness={summary.completeness} period={summary.period} />
+        <SourceCollectionUploadDropzone
+          businessEntityId={summary.businessEntity!.id}
+          periodKey={summary.period.key}
+          periodLabel={summary.period.label}
+          accountingPeriod={accountingPeriod}
+          session={uploadSession}
+          uploadedFiles={uploadedFiles}
+          focusFileId={focusFileId}
+          retryAction={retryAction}
+        />
+        <SourceTypeTilesSection tiles={summary.sourceTypeTiles} />
+        <ImportStatusTableSection rows={summary.importRows} focusFileId={focusFileId} />
+        <MissingChecklistSection items={summary.missingItems} />
+        <StateCoverageSection />
+        <PreviewNote />
+      </div>
+    </div>
+  )
+}
+
+function SourceCollectionTopbar({ summary }: { readonly summary: SourceCollectionSummary }) {
+  const companyName = summary.businessEntity?.name ?? summary.tenant.name
+
+  return (
+    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
       <div>
-        <p className="text-xs text-muted-foreground">
-          <Link href="/dashboard" className="hover:text-foreground hover:underline">회사 홈</Link>
+        <p className="text-[12.5px] font-medium text-company-fg-subtle">
+          <Link href="/dashboard" className="hover:text-company-fg-muted hover:underline">회사 홈</Link>
           <span aria-hidden="true"> › </span>
           <span>자료수집</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold text-foreground">자료수집</h1>
-        {summary.businessEntity && (
-          <p className="mt-1 text-sm text-muted-foreground">{summary.businessEntity.name}</p>
-        )}
+        <h1 className="text-base font-semibold tracking-tight text-foreground">자료수집</h1>
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {periodLinks.map((period) => (
-          <Link
-            key={period.key}
-            href={`/dashboard/direct-upload?period=${period.key}`}
-            className={cn(
-              'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
-              summary.period.key === period.key || (summary.period.key.endsWith(currentHalf) && period.key.endsWith(currentHalf))
-                ? 'border-foreground bg-foreground text-background'
-                : 'border-border bg-background text-muted-foreground hover:bg-muted',
-            )}
-          >
-            {period.label}
-          </Link>
-        ))}
+      <span className="text-[13px] font-medium text-company-fg-muted">{companyName}</span>
+      <div className="ml-auto">
+        <Link
+          href={`/dashboard/direct-upload?period=${summary.period.key}`}
+          className="inline-flex items-center gap-2 rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium text-foreground"
+        >
+          {formatPeriodPillLabel(summary.period)}
+          <span className="text-[11px] text-company-fg-subtle">▾</span>
+        </Link>
       </div>
     </div>
   )
@@ -146,35 +196,30 @@ export function CompletenessHeader({ completeness, period }: CompletenessHeaderP
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardContent className="grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground">
-            수집 완결성 · {formatPeriodEyebrow(period)}
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-            자료 {completeness.collectedCount} / {completeness.requiredCount}건 수집됨
-          </h2>
-          <div className="mt-4 h-2 max-w-xl overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-blue-600"
-              style={{ width: `${completeness.progressPercent}%` }}
-            />
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">{metaParts.join(' · ')}</p>
+    <div className={cn(panelClass, 'grid items-center gap-5 px-6 py-5 md:grid-cols-[minmax(0,1fr)_auto]')}>
+      <div>
+        <p className="text-xs font-semibold text-company-fg-muted">
+          수집 완결성 · {formatPeriodEyebrow(period)}
+        </p>
+        <h2 className="mt-1 text-[20px] font-bold tracking-[-0.02em] text-foreground">
+          자료 {completeness.collectedCount} / {completeness.requiredCount}건 수집됨
+        </h2>
+        <div className="mt-3 h-2 max-w-[460px] overflow-hidden rounded-full bg-[#ececee]">
+          <div
+            className="h-full rounded-full bg-[#2563eb]"
+            style={{ width: `${completeness.progressPercent}%` }}
+          />
         </div>
-        <div className="rounded-lg border bg-muted/30 px-5 py-4 text-left md:text-right">
-          <p className="text-xs font-semibold text-muted-foreground">미수집</p>
-          <p className="mt-1 text-xl font-semibold text-foreground">
-            {completeness.missingCount}
-            <span className="text-sm font-normal text-muted-foreground"> 건</span>
-          </p>
-          <Badge variant={completeness.missingCount > 0 ? 'warning' : 'success'} className="mt-2">
-            {completeness.missingCount > 0 ? '확인 필요' : '충족'}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
+        <p className="mt-2 text-[12.5px] text-company-fg-muted">{metaParts.join(' · ')}</p>
+      </div>
+      <div className="text-left md:text-right">
+        <p className="text-[28px] font-bold tracking-[-0.02em] text-foreground">
+          {completeness.missingCount}
+          <span className="text-[15px] font-semibold text-company-fg-subtle"> 건</span>
+        </p>
+        <p className="text-xs font-semibold text-company-fg-muted">미수집</p>
+      </div>
+    </div>
   )
 }
 
@@ -188,24 +233,25 @@ export function SourceTypeTilesSection({ tiles }: { readonly tiles: SourceCollec
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {tiles.map((tile) => {
           const Icon = sourceTypeIcon[tile.id]
+          const showRequired = tile.requiredCount > 0
           return (
-            <Card key={tile.id}>
-              <CardContent className="grid gap-2 p-4">
-                <div className="flex items-center gap-2">
-                  <div className="grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground">
-                    <Icon className="size-4" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">{tile.title}</p>
+            <div key={tile.id} className={cn(panelClass, 'flex flex-col gap-2 p-3.5')}>
+              <div className="flex items-center gap-2">
+                <div className="grid size-[26px] place-items-center rounded-[7px] bg-company-nav-hover text-[13px] text-company-fg-muted">
+                  <Icon className="size-3.5" />
                 </div>
-                <p className="text-lg font-semibold text-foreground">
-                  {tile.collectedCount}
-                  <span className="text-sm font-normal text-muted-foreground"> / {tile.requiredCount}건</span>
-                </p>
-                <Badge variant={toneBadgeVariant[tile.tone]} className="w-fit">
-                  {tile.statusLabel}
-                </Badge>
-              </CardContent>
-            </Card>
+                <p className="text-[12.5px] font-semibold text-foreground">{tile.title}</p>
+              </div>
+              <p className="text-[20px] font-bold tracking-[-0.01em] text-foreground">
+                {tile.collectedCount}
+                {showRequired ? (
+                  <span className="text-xs font-semibold text-company-fg-subtle"> / {tile.requiredCount}건</span>
+                ) : (
+                  <span className="text-xs font-semibold text-company-fg-subtle"> 건</span>
+                )}
+              </p>
+              <PreviewChip className={toneChipClass[tile.tone]}>{tile.statusLabel}</PreviewChip>
+            </div>
           )
         })}
       </div>
@@ -213,89 +259,100 @@ export function SourceTypeTilesSection({ tiles }: { readonly tiles: SourceCollec
   )
 }
 
-export function ImportStatusTableSection({ rows }: { readonly rows: SourceCollectionImportRow[] }) {
+export function ImportStatusTableSection({
+  rows,
+  focusFileId,
+}: {
+  readonly rows: SourceCollectionImportRow[]
+  readonly focusFileId?: string | null
+}) {
   return (
     <section id="import-status" className="grid gap-3">
       <SectionHeader
         title="수집(가져오기) 상태"
         description="업로드 → 파싱 → 정규화 진행 상황"
         action={(
-          <Link href="#import-status" className="text-xs font-semibold text-blue-700 hover:underline">
+          <Link href="#import-status" className="text-[12.5px] font-semibold text-[#2563eb] hover:underline">
             전체 보기 →
           </Link>
         )}
       />
-      <Card>
-        <CardContent className="p-0">
-          {rows.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>파일</TableHead>
-                  <TableHead>자료유형</TableHead>
-                  <TableHead>진행</TableHead>
-                  <TableHead>상태</TableHead>
-                  <TableHead>업로드</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>
-                      <p className="font-medium text-foreground">{row.safeTitle}</p>
-                      {row.rowCountLabel && (
-                        <p className="text-xs text-muted-foreground">{row.rowCountLabel}</p>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {sourceCollectionSourceTypeLabel(row.sourceType)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-1.5 w-[90px] overflow-hidden rounded-full bg-muted">
-                        <div
-                          className={cn('h-full rounded-full', row.status === 'failed' ? 'bg-red-500' : 'bg-blue-600')}
-                          style={{ width: `${row.progressPercent}%` }}
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={fileStatusBadgeVariant[row.status] ?? 'secondary'}>
-                        {row.statusLabel}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {formatUploadDate(row.uploadedAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
+      <div className={panelClass}>
+        {rows.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="bg-[#fafafa] text-[11.5px] font-semibold uppercase tracking-wide text-company-fg-subtle">파일</TableHead>
+                <TableHead className="bg-[#fafafa] text-[11.5px] font-semibold uppercase tracking-wide text-company-fg-subtle">자료유형</TableHead>
+                <TableHead className="bg-[#fafafa] text-[11.5px] font-semibold uppercase tracking-wide text-company-fg-subtle">진행</TableHead>
+                <TableHead className="bg-[#fafafa] text-[11.5px] font-semibold uppercase tracking-wide text-company-fg-subtle">상태</TableHead>
+                <TableHead className="bg-[#fafafa] text-[11.5px] font-semibold uppercase tracking-wide text-company-fg-subtle">업로드</TableHead>
+                <TableHead className="bg-[#fafafa]" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-file-id={row.id}
+                  className={cn(
+                    'hover:bg-[#fafafa]',
+                    focusFileId === row.id && 'bg-[#eff6ff]/60',
+                  )}
+                >
+                  <TableCell>
+                    <p className="font-semibold text-foreground">{row.safeTitle}</p>
+                    {row.rowCountLabel && (
+                      <p className="text-[11.5px] text-company-fg-subtle">{row.rowCountLabel}</p>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <PreviewChip className={toneChipClass.muted}>
+                      {sourceCollectionSourceTypeLabel(row.sourceType)}
+                    </PreviewChip>
+                  </TableCell>
+                  <TableCell>
+                    <div className="inline-block h-1.5 w-[90px] overflow-hidden rounded-full bg-[#ececee] align-middle">
+                      <div
+                        className={cn('h-full rounded-full', row.status === 'failed' ? 'bg-[#dc2626]' : 'bg-[#2563eb]')}
+                        style={{ width: `${row.progressPercent}%` }}
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <PreviewChip className={fileStatusChipClass[row.status] ?? toneChipClass.muted}>
+                      {row.statusLabel}
+                    </PreviewChip>
+                  </TableCell>
+                  <TableCell className="font-mono text-[13px] text-company-fg-muted">
+                    {formatUploadDate(row.uploadedAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Link href={row.href} className="text-xs font-semibold text-[#2563eb] hover:underline">
                       {row.canRetry ? (
-                        <Link href={row.href} className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:underline">
+                        <span className="inline-flex items-center gap-1">
                           <RefreshCw className="size-3" />
                           다시 시도
-                        </Link>
-                      ) : (
-                        <Link href={row.href} className="text-xs font-semibold text-blue-700 hover:underline">
-                          보기
-                        </Link>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="grid place-items-center p-8 text-center">
-              <div>
-                <UploadCloud className="mx-auto size-8 text-muted-foreground/60" />
-                <p className="mt-3 font-medium text-foreground">아직 업로드된 자료가 없습니다</p>
-                <p className="mt-1 text-sm text-muted-foreground">위에서 첫 자료를 업로드해 주세요.</p>
-              </div>
+                        </span>
+                      ) : '보기'}
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="grid place-items-center p-8 text-center">
+            <div>
+              <UploadCloud className="mx-auto size-8 text-company-fg-subtle/60" />
+              <p className="mt-3 text-[12.5px] font-medium text-foreground">아직 업로드된 자료가 없습니다</p>
+              <Link href="#upload-dropzone" className="mt-2 inline-block text-xs font-semibold text-[#2563eb]">
+                첫 자료 업로드하기
+              </Link>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
     </section>
   )
 }
@@ -304,44 +361,42 @@ export function MissingChecklistSection({ items }: { readonly items: SourceColle
   if (items.length === 0) {
     return (
       <section className="grid gap-3">
-        <SectionHeader title="미수집·확인 필요" description="신고 전 확보해야 할 자료" />
-        <Card>
-          <CardContent className="grid place-items-center p-8 text-center">
-            <div>
-              <CheckCircle2 className="mx-auto size-8 text-muted-foreground/60" />
-              <p className="mt-3 font-medium text-foreground">확인이 필요한 항목이 없습니다</p>
-            </div>
-          </CardContent>
-        </Card>
+        <SectionHeader title="미수집 · 확인 필요" description="신고 전 확보해야 할 자료" />
+        <div className={cn(panelClass, 'grid place-items-center p-8 text-center')}>
+          <p className="text-sm font-medium text-foreground">확인이 필요한 항목이 없습니다</p>
+        </div>
       </section>
     )
   }
 
   return (
     <section className="grid gap-3">
-      <SectionHeader title="미수집·확인 필요" description="신고 전 확보해야 할 자료" />
-      <Card>
-        <CardContent className="grid gap-0 p-0">
-          {items.map((item, index) => (
-            <div
-              key={item.id}
+      <SectionHeader title="미수집 · 확인 필요" description="신고 전 확보해야 할 자료" />
+      <div className={panelClass}>
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className={cn(
+              'flex items-center gap-3.5 px-[18px] py-3',
+              index !== items.length - 1 && 'border-b border-company-border',
+            )}
+          >
+            <span
               className={cn(
-                'flex items-center gap-3 px-4 py-3',
-                index !== items.length - 1 && 'border-b border-border',
+                'size-2 shrink-0 rounded-full',
+                item.tone === 'danger' ? 'bg-[#dc2626]' : 'bg-[#d97706]',
               )}
-            >
-              <AlertTriangle className={cn('size-4 shrink-0', item.tone === 'danger' ? 'text-red-600' : 'text-amber-600')} />
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-foreground">{item.title}</p>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
-              </div>
-              <Link href={item.href} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                {item.ctaLabel}
-              </Link>
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-[13.5px] font-semibold text-foreground">{item.title}</p>
+              <p className="mt-0.5 text-[12.5px] text-company-fg-muted">{item.description}</p>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+            <Link href={item.href} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'shrink-0')}>
+              {item.ctaLabel}
+            </Link>
+          </div>
+        ))}
+      </div>
     </section>
   )
 }
@@ -354,53 +409,48 @@ export function StateCoverageSection() {
         title="화면 상태 예시"
         description="로딩 / 빈 상태 / 오류"
       />
-      <div className="grid gap-3 md:grid-cols-3">
-        <StateCard
-          label="Loading"
-          icon={Loader2}
-          title="자료를 불러오는 중"
-          description="완결성·표는 스켈레톤으로 먼저 표시됩니다."
-        />
-        <StateCard
-          label="Empty"
-          icon={UploadCloud}
-          title="아직 업로드된 자료가 없습니다"
-          description="첫 자료 업로드하기"
-        />
-        <StateCard
-          label="Error"
-          icon={AlertCircle}
-          title="파일을 처리하지 못했습니다"
-          description="지원 형식/용량을 확인한 뒤 다시 업로드해 주세요."
-        />
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
+          <p className="mb-3 text-[11px] font-bold tracking-wide text-company-fg-subtle uppercase">Loading</p>
+          <div className="h-3 w-[40%] rounded-md bg-gradient-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
+          <div className="mt-2.5 h-3 w-[80%] rounded-md bg-gradient-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
+          <div className="mt-2.5 h-3 w-[60%] rounded-md bg-gradient-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
+        </div>
+        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
+          <p className="mb-3 text-[11px] font-bold tracking-wide text-company-fg-subtle uppercase">Empty</p>
+          <div className="grid flex-1 place-items-center text-center text-company-fg-subtle">
+            <div>
+              <p className="text-[22px] opacity-50">＋</p>
+              <p className="mt-1.5 text-[12.5px]">아직 업로드된 자료가 없습니다</p>
+              <Link href="#upload-dropzone" className="mt-2.5 inline-block text-xs font-semibold text-[#2563eb]">
+                첫 자료 업로드하기
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
+          <p className="mb-3 text-[11px] font-bold tracking-wide text-company-fg-subtle uppercase">Error</p>
+          <div className="flex flex-1 flex-col justify-center">
+            <p className="text-[13px] font-semibold text-[#dc2626]">파일을 처리하지 못했습니다</p>
+            <p className="mt-1 text-xs text-company-fg-muted">지원 형식/용량을 확인한 뒤 다시 업로드해 주세요.</p>
+            <Link href="#upload-dropzone" className="mt-2.5 w-fit rounded-lg border border-company-border-strong px-2.5 py-1 text-xs font-semibold">
+              다시 시도
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   )
 }
 
-interface StateCardProps {
-  readonly label: string
-  readonly icon: ComponentType<{ className?: string }>
-  readonly title: string
-  readonly description: string
-}
-
-function StateCard({ label, icon: Icon, title, description }: StateCardProps) {
+function PreviewNote() {
   return (
-    <Card className="border-dashed">
-      <CardHeader>
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-        <div className="flex items-start gap-3">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <Icon className="size-4" />
-          </div>
-          <div>
-            <CardTitle className="text-sm">{title}</CardTitle>
-            <CardDescription className="mt-1 text-xs">{description}</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-    </Card>
+    <p className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
+      <span className="font-semibold text-company-fg-muted">안내</span>
+      {' — '}
+      자료수집 화면은 회사 내부에서 직접 파일을 올리는 흐름입니다.
+      외부 고객 업로드 포털은 v1 범위에서 제외되어 있습니다.
+    </p>
   )
 }
 
@@ -411,19 +461,21 @@ interface BusinessEntityEmptyStateProps {
 export function SourceCollectionBusinessEntityEmptyState({ tenantName }: BusinessEntityEmptyStateProps) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
-      <Card>
-        <CardContent className="grid gap-3 p-6">
-          <Badge variant="warning" className="w-fit">사업장 필요</Badge>
-          <h2 className="text-lg font-semibold text-foreground">아직 등록된 사업장이 없습니다</h2>
-          <p className="text-sm text-muted-foreground">
-            {tenantName}에서 자료수집을 시작하려면 사업장 정보를 먼저 등록해야 합니다.
-          </p>
-          <Link href="/dashboard/clients" className={cn(buttonVariants(), 'w-fit')}>
-            <Building2 className="size-4" />
-            사업장 등록으로 이동
-          </Link>
-        </CardContent>
-      </Card>
+      <div className={cn(panelClass, 'grid gap-3 p-6')}>
+        <h2 className="text-lg font-semibold text-foreground">아직 등록된 사업장이 없습니다</h2>
+        <p className="text-sm text-company-fg-muted">
+          {tenantName}에서 자료수집을 시작하려면 사업장 정보를 먼저 등록해야 합니다.
+        </p>
+        <Link href="/dashboard/clients" className={cn(buttonVariants(), 'w-fit')}>
+          <Building2 className="size-4" />
+          사업장 등록으로 이동
+        </Link>
+      </div>
     </div>
   )
+}
+
+// Legacy exports kept for loading/tests
+export function SourceCollectionHeader({ summary }: { readonly summary: Pick<SourceCollectionSummary, 'tenant' | 'businessEntity' | 'period'> }) {
+  return <SourceCollectionTopbar summary={summary as SourceCollectionSummary} />
 }

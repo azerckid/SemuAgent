@@ -47,6 +47,7 @@ export type SourceCollectionSourceTypeTile = {
 
 export type SourceCollectionImportRow = {
   id: string
+  uploadSessionId: string
   safeTitle: string
   sourceType: SourceCollectionSourceType | 'unknown'
   progressPercent: number
@@ -259,15 +260,19 @@ const FILE_TYPE_LABEL: Record<string, string> = {
 }
 
 export function buildSourceCollectionImportRow(
-  file: UploadFileRow,
+  file: UploadFileRow & { uploadSessionId: string },
   sourceType: SourceCollectionSourceType | 'unknown' = 'unknown',
+  periodKey?: string,
 ): SourceCollectionImportRow {
   const display = resolveUploadedFileDisplay(file)
   const fileTypeLabel = FILE_TYPE_LABEL[file.fileType] ?? '기타'
   const sourceTypeTitle = sourceCollectionSourceTypeLabel(sourceType)
+  const canRetry = file.status === 'failed'
+  const periodQuery = periodKey ? `period=${periodKey}&` : ''
 
   return {
     id: file.id,
+    uploadSessionId: file.uploadSessionId,
     safeTitle: `${sourceTypeTitle} · ${fileTypeLabel} 자료`,
     sourceType,
     progressPercent: FILE_STATUS_PROGRESS[file.status] ?? 0,
@@ -275,8 +280,10 @@ export function buildSourceCollectionImportRow(
     statusLabel: display.label,
     uploadedAt: fromISO(file.uploadedAt).toISODate() ?? file.uploadedAt.slice(0, 10),
     rowCountLabel: formatFileSize(file.fileSize),
-    href: `${ROUTES.sourceCollection}?fileId=${file.id}`,
-    canRetry: file.status === 'failed',
+    href: canRetry
+      ? `${ROUTES.sourceCollection}?${periodQuery}fileId=${file.id}&action=retry`
+      : `/dashboard/reviews?sessionId=${file.uploadSessionId}`,
+    canRetry,
   }
 }
 
@@ -418,6 +425,7 @@ export async function loadSourceCollectionSummary({
     db
       .select({
         id: uploadFile.id,
+        uploadSessionId: uploadFile.uploadSessionId,
         fileType: uploadFile.fileType,
         fileSize: uploadFile.fileSize,
         status: uploadFile.status,
@@ -472,6 +480,7 @@ export async function loadSourceCollectionSummary({
     importRows: fileRows.map((file) => buildSourceCollectionImportRow(
       file,
       mapItemGroupToSourceType(fileItemGroupMap.get(file.id)),
+      period.key,
     )),
     missingItems: buildSourceCollectionMissingItems(validationRows),
   }

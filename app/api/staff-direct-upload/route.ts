@@ -141,6 +141,7 @@ export async function POST(req: Request) {
 
       return {
         sessionId: result.sessionId,
+        uploadUrl: result.uploadUrl,
         eventId,
         resultPath: requestKind === 'payroll'
           ? `/dashboard/payroll?eventId=${eventId}`

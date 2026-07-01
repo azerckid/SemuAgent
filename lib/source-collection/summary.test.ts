@@ -163,6 +163,7 @@ describe('buildSourceCollectionImportRow', () => {
     const row = buildSourceCollectionImportRow(
       {
         id: 'file-1',
+        uploadSessionId: 'session-1',
         fileType: 'excel',
         fileSize: 1_258_291,
         status: 'matched',
@@ -170,27 +171,31 @@ describe('buildSourceCollectionImportRow', () => {
         uploadedAt: '2026-06-30T10:00:00.000Z',
       },
       'tax_invoice',
+      '2026-H1',
     )
 
     expect(row.safeTitle).not.toContain('storageKey')
     expect(row.safeTitle).toBe('세금계산서 · Excel 자료')
     expect(row.progressPercent).toBe(100)
     expect(row.canRetry).toBe(false)
+    expect(row.href).toBe('/dashboard/reviews?sessionId=session-1')
     expect(row.rowCountLabel).toBe('1.2MB')
   })
 
   it('marks failed files as retryable with a danger-eligible status (S-42)', () => {
     const row = buildSourceCollectionImportRow({
       id: 'file-2',
+      uploadSessionId: 'session-2',
       fileType: 'pdf',
       fileSize: 400_000,
       status: 'failed',
       passwordStatus: 'none',
       uploadedAt: '2026-07-01T09:00:00.000Z',
-    })
+    }, 'unknown', '2026-H1')
 
     expect(row.status).toBe('failed')
     expect(row.canRetry).toBe(true)
+    expect(row.href).toContain('action=retry')
   })
 })
 
