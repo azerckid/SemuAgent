@@ -1,0 +1,3 @@
+This is not an XLSX workbook.
+It exists only to confirm upload/file parsing fails closed.
+No real employee data is included.

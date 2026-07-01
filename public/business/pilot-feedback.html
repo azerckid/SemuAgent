@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JARYO 파일럿 피드백</title>
+  <style>
+    :root {
+      --ink: #152028;
+      --muted: #64727f;
+      --line: #d8e0e7;
+      --soft: #f6f8fa;
+      --panel: #ffffff;
+      --brand: #0d766d;
+      --brand-deep: #064e49;
+      --accent: #a85b17;
+      --accent-soft: #fff3e7;
+      --blue: #245c9f;
+      --blue-soft: #eef6ff;
+      --danger: #a43f3f;
+      --danger-soft: #fff1f1;
+      --ok: #2d6f4d;
+      --ok-soft: #edf8f1;
+      --shadow: 0 14px 34px rgba(21, 32, 40, 0.08);
+      --radius: 8px;
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #edf2f4;
+      color: var(--ink);
+      line-height: 1.62;
+      letter-spacing: 0;
+    }
+
+    a { color: var(--brand-deep); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .shell {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+    }
+
+    .hero {
+      border-radius: var(--radius);
+      background:
+        linear-gradient(112deg, rgba(13, 118, 109, 0.96), rgba(10, 74, 87, 0.9)),
+        radial-gradient(circle at 84% 20%, rgba(255, 255, 255, 0.18), transparent 28%);
+      color: #fff;
+      padding: 34px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 820px;
+      margin: 18px 0 0;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 18px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .button,
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--brand-deep);
+      padding: 9px 14px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .button.primary,
+    button.primary {
+      border-color: var(--brand);
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .button.ghost {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.36);
+      color: #fff;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.92fr);
+      gap: 22px;
+      margin-top: 24px;
+      align-items: start;
+    }
+
+    section,
+    aside {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    aside {
+      position: sticky;
+      top: 18px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      line-height: 1.22;
+    }
+
+    h3 {
+      margin: 22px 0 9px;
+      font-size: 17px;
+      line-height: 1.28;
+    }
+
+    p { margin: 0 0 12px; }
+
+    .lead {
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .field {
+      margin-top: 18px;
+    }
+
+    label,
+    .label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #23313a;
+    }
+
+    select,
+    input[type="text"],
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .option {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--soft);
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .scale {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .scale .option {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 54px;
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      accent-color: var(--brand);
+      margin-top: 2px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--brand);
+      background: #eefaf7;
+      color: #143c38;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 16px;
+      font-weight: 650;
+    }
+
+    .note {
+      border-left-color: var(--accent);
+      background: var(--accent-soft);
+      color: #663714;
+    }
+
+    .summary {
+      width: 100%;
+      min-height: 460px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f8fafb;
+      padding: 14px;
+      white-space: pre-wrap;
+      font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #1f2c34;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 10px;
+      color: var(--ok);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--soft);
+      padding: 12px;
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .mini-card span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; }
+      .mini-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .shell { padding: 12px 10px 36px; }
+      .hero, section, aside { padding: 20px; }
+      .options, .scale { grid-template-columns: 1fr; }
+      h1 { font-size: 31px; }
+      h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="hero">
+      <p class="eyebrow">JARYO Pilot Feedback</p>
+      <h1>빈 종이 대신, 3분 피드백</h1>
+      <p>
+        데모나 파일럿 직후 바로 체크할 수 있는 구조화 피드백 폼입니다.
+        선택값을 요약해 복사하거나 메일로 보낼 수 있습니다.
+      </p>
+      <div class="hero-actions">
+        <a class="button" href="https://jaaryo.online/business/pilot-feedback.html">공개 URI</a>
+        <a class="button ghost" href="https://jaaryo.online/business/paid-pilot.html">파일럿 제안서</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main>
+        <section>
+          <h2>피드백 입력</h2>
+          <p class="lead">
+            모든 칸을 채우지 않아도 됩니다. 다만 선택형 문항을 먼저 고르면
+            마지막에 공유 가능한 요약문이 자동으로 만들어집니다.
+          </p>
+
+          <div class="callout note">
+            실고객명, 주민번호, 사업자번호, 급여액, 계좌번호, 실제 파일명 같은 민감정보는 적지 마세요.
+          </div>
+
+          <div class="mini-grid">
+            <div class="mini-card">
+              <strong>좋은 피드백</strong>
+              <span>어느 화면에서 무엇이 막혔는지 구체적입니다.</span>
+            </div>
+            <div class="mini-card">
+              <strong>더 좋은 피드백</strong>
+              <span>구매/도입을 막는 이유를 하나 골라줍니다.</span>
+            </div>
+            <div class="mini-card">
+              <strong>가장 좋은 피드백</strong>
+              <span>계속 쓰려면 반드시 좋아져야 할 한 가지를 말합니다.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="feedbackTiming">언제 남기는 피드백인가요?</label>
+            <select id="feedbackTiming">
+              <option>데모 직후</option>
+              <option>업무흐름 테스트 직후</option>
+              <option>파일럿 중간 점검</option>
+              <option>파일럿 최종 리뷰</option>
+              <option>기타</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="role">응답자 역할</label>
+            <select id="role">
+              <option>실무 담당자</option>
+              <option>사무장/팀장</option>
+              <option>대표/의사결정자</option>
+              <option>외부 자문/기타</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label">오늘 본 업무 흐름</label>
+            <div class="options">
+              <label class="option"><input type="checkbox" name="workflow" value="정기 자료요청" /> 정기 자료요청</label>
+              <label class="option"><input type="checkbox" name="workflow" value="비정기 자료요청" /> 비정기 자료요청</label>
+              <label class="option"><input type="checkbox" name="workflow" value="고객 업로드 포털" /> 고객 업로드 포털</label>
+              <label class="option"><input type="checkbox" name="workflow" value="자료 검토와 보충요청" /> 자료 검토와 보충요청</label>
+              <label class="option"><input type="checkbox" name="workflow" value="급여정산" /> 급여정산</label>
+              <label class="option"><input type="checkbox" name="workflow" value="세무 일정/대시보드" /> 세무 일정/대시보드</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">이 흐름이 실제 업무에 맞는 정도</label>
+            <div class="scale">
+              <label class="option"><input type="radio" name="fit" value="1 - 거의 맞지 않음" /> 1<br />거의 아님</label>
+              <label class="option"><input type="radio" name="fit" value="2 - 일부만 맞음" /> 2<br />일부</label>
+              <label class="option"><input type="radio" name="fit" value="3 - 보통" checked /> 3<br />보통</label>
+              <label class="option"><input type="radio" name="fit" value="4 - 꽤 맞음" /> 4<br />꽤 맞음</label>
+              <label class="option"><input type="radio" name="fit" value="5 - 바로 써볼 만함" /> 5<br />바로 가능</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">가장 먼저 개선해야 할 곳</label>
+            <div class="options">
+              <label class="option"><input type="checkbox" name="improve" value="메일 작성/발송" /> 메일 작성/발송</label>
+              <label class="option"><input type="checkbox" name="improve" value="고객 업로드 화면" /> 고객 업로드 화면</label>
+              <label class="option"><input type="checkbox" name="improve" value="자료 검토 화면" /> 자료 검토 화면</label>
+              <label class="option"><input type="checkbox" name="improve" value="AI 판정 정확도" /> AI 판정 정확도</label>
+              <label class="option"><input type="checkbox" name="improve" value="급여 엑셀/표" /> 급여 엑셀/표</label>
+              <label class="option"><input type="checkbox" name="improve" value="대시보드/일정" /> 대시보드/일정</label>
+              <label class="option"><input type="checkbox" name="improve" value="고객사 설정/CC" /> 고객사 설정/CC</label>
+              <label class="option"><input type="checkbox" name="improve" value="권한/관리자 기능" /> 권한/관리자 기능</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">도입을 막을 수 있는 이유</label>
+            <div class="options">
+              <label class="option"><input type="checkbox" name="blocker" value="보안/개인정보 우려" /> 보안/개인정보 우려</label>
+              <label class="option"><input type="checkbox" name="blocker" value="가격 부담" /> 가격 부담</label>
+              <label class="option"><input type="checkbox" name="blocker" value="기존 도구와 중복" /> 기존 도구와 중복</label>
+              <label class="option"><input type="checkbox" name="blocker" value="홈택스/더존 연동 필요" /> 홈택스/더존 연동 필요</label>
+              <label class="option"><input type="checkbox" name="blocker" value="AI 결과 신뢰 부족" /> AI 결과 신뢰 부족</label>
+              <label class="option"><input type="checkbox" name="blocker" value="고객사가 사용하기 어려울 것 같음" /> 고객사가 사용하기 어려울 것 같음</label>
+              <label class="option"><input type="checkbox" name="blocker" value="직원 교육/정착 부담" /> 직원 교육/정착 부담</label>
+              <label class="option"><input type="checkbox" name="blocker" value="아직 막는 이유 없음" /> 아직 막는 이유 없음</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">유료 파일럿 의향</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="payIntent" value="바로 논의 가능" /> 바로 논의 가능</label>
+              <label class="option"><input type="radio" name="payIntent" value="조건부 가능" checked /> 조건부 가능</label>
+              <label class="option"><input type="radio" name="payIntent" value="무료 테스트 먼저 필요" /> 무료 테스트 먼저 필요</label>
+              <label class="option"><input type="radio" name="payIntent" value="현재는 어려움" /> 현재는 어려움</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="clientCount">파일럿에 적당한 고객사 수</label>
+            <select id="clientCount">
+              <option>최대 10개 고객사</option>
+              <option>11-30개 고객사</option>
+              <option>31-60개 고객사</option>
+              <option>60개 초과 또는 별도 협의</option>
+              <option>아직 모르겠음</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="mostPainful">오늘 가장 불편하거나 헷갈렸던 장면</label>
+            <textarea id="mostPainful" placeholder="예: 보충 요청 초안이 어디서 발송되는지 헷갈렸습니다."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="mustImprove">계속 쓰려면 반드시 좋아져야 할 한 가지</label>
+            <textarea id="mustImprove" placeholder="예: 고객사가 업로드할 때 어떤 파일이 필요한지 더 쉽게 보여야 합니다."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="quote">한 문장 총평</label>
+            <input id="quote" type="text" placeholder="예: 반복 자료요청에는 쓸 만하지만, 급여정산 표는 더 봐야겠습니다." />
+          </div>
+        </section>
+      </main>
+
+      <aside>
+        <h2>자동 요약</h2>
+        <p class="hint">
+          입력값이 바뀌면 자동으로 갱신됩니다. 복사해서 카톡/메일로 보내거나,
+          메일 작성 버튼을 눌러 전달할 수 있습니다.
+        </p>
+        <pre id="summary" class="summary" aria-live="polite"></pre>
+        <div class="actions">
+          <button id="copyButton" class="primary" type="button">요약 복사</button>
+          <a id="mailButton" class="button" href="mailto:contact@jaaryo.online">메일로 보내기</a>
+        </div>
+        <div id="copyStatus" class="status"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector)
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector))
+
+    function checkedValues(name) {
+      return $$(`input[name="${name}"]:checked`).map((input) => input.value)
+    }
+
+    function valueOf(selector) {
+      return ($(selector)?.value || '').trim()
+    }
+
+    function radioValue(name) {
+      return $(`input[name="${name}"]:checked`)?.value || '미선택'
+    }
+
+    function line(label, value) {
+      const clean = Array.isArray(value)
+        ? (value.length ? value.join(', ') : '미선택')
+        : (value || '미입력')
+      return `- ${label}: ${clean}`
+    }
+
+    function buildSummary() {
+      const summary = [
+        '[JARYO 파일럿 피드백]',
+        line('피드백 시점', valueOf('#feedbackTiming')),
+        line('응답자 역할', valueOf('#role')),
+        line('본 업무 흐름', checkedValues('workflow')),
+        line('실제 업무 적합도', radioValue('fit')),
+        line('우선 개선 영역', checkedValues('improve')),
+        line('도입 blocker', checkedValues('blocker')),
+        line('유료 파일럿 의향', radioValue('payIntent')),
+        line('적정 고객사 수', valueOf('#clientCount')),
+        line('가장 불편했던 장면', valueOf('#mostPainful')),
+        line('반드시 좋아져야 할 한 가지', valueOf('#mustImprove')),
+        line('한 문장 총평', valueOf('#quote')),
+        '',
+        '민감정보는 포함하지 않았는지 한 번 더 확인했습니다.'
+      ].join('\n')
+
+      $('#summary').textContent = summary
+      const subject = encodeURIComponent('JARYO 파일럿 피드백')
+      const body = encodeURIComponent(summary)
+      $('#mailButton').href = `mailto:contact@jaaryo.online?subject=${subject}&body=${body}`
+    }
+
+    function bind() {
+      $$('input, select, textarea').forEach((element) => {
+        element.addEventListener('input', buildSummary)
+        element.addEventListener('change', buildSummary)
+      })
+
+      $('#copyButton').addEventListener('click', async () => {
+        const text = $('#summary').textContent
+        try {
+          await navigator.clipboard.writeText(text)
+          $('#copyStatus').textContent = '요약을 복사했습니다.'
+        } catch {
+          $('#copyStatus').textContent = '복사가 막혔습니다. 요약 영역을 직접 선택해 복사해 주세요.'
+        }
+      })
+
+      buildSummary()
+    }
+
+    bind()
+  </script>
+</body>
+</html>

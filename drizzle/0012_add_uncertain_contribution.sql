@@ -1,0 +1,4 @@
+-- request_item_validation_file.contribution enum에 'uncertain' 값 추가
+-- SQLite는 CHECK constraint가 없어 별도 DDL 변경 불필요.
+-- 이 파일은 변경 이력 기록 목적으로 유지한다.
+-- 애플리케이션 레이어(Drizzle schema, CONTRIBUTION_MAP)에서 'uncertain' 값을 허용하도록 업데이트됨.
