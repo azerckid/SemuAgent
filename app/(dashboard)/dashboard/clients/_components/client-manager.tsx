@@ -482,8 +482,8 @@ export function ClientManager({
         {initialClients.length === 0 ? (
           <div className="px-5 py-12 text-center text-sm text-gray-400">
             {query || statusFilter !== 'all'
-              ? '조건에 맞는 사업장가 없습니다.'
-              : '아직 사업장가 없습니다. 위 버튼으로 추가해 주세요.'}
+              ? '조건에 맞는 사업장이 없습니다.'
+              : '아직 사업장이 없습니다. 위 버튼으로 추가해 주세요.'}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -689,8 +689,8 @@ export function ClientManager({
 
       <DeleteConfirmDialog
         open={deleteTarget !== null}
-        title={`${deleteTarget?.name ?? '사업장'} 사업장를 삭제할까요?`}
-        description={`관련 세션, 업로드 파일, 메일 기록도 함께 삭제됩니다.\n삭제 후 사업장 목록에서 이 사업장를 볼 수 없습니다.`}
+        title={`${deleteTarget?.name ?? '사업장'} 사업장을 삭제할까요?`}
+        description={`관련 세션, 업로드 파일, 메일 기록도 함께 삭제됩니다.\n삭제 후 사업장 목록에서 이 사업장을 볼 수 없습니다.`}
         loading={deleteTarget !== null && deletingClientId === deleteTarget.id}
         onCancel={() => {
           if (deletingClientId === null) setDeleteTarget(null)

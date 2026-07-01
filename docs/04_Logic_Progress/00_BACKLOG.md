@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-02 08:25
+> Last Updated: 2026-07-02 08:40
 
 ## Status Legend
 
@@ -26,6 +26,7 @@
 | JC-011 | todo | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
 | JC-012 | todo | Build payroll workspace | `lib/payroll`, `components/ui` | Payroll register with derived totals, withholding/4-insurance deduction, payslip/statement preview, and close (locked until missing-employee issues resolved) match approved 급여 UI; PII masking applied |
 | JC-013 | todo | Build filing support workspace | `lib/bookkeeping`, `lib/payroll`, `components/ui` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
+| JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 프로비저닝 후 파일 업로드→저장→AI 파싱→정규화 E2E 검증 (현재 전부 플레이스홀더라 세션 생성까지만 검증됨) |
 
 ## Implementation Rule
 
@@ -106,13 +107,13 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 외부 업로드 포털 제외 방침 반영한 업로드 라우트 재검토 (JC-004 연계, JC-009 범위 슬라이스) — Brief §3
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Source Collection Test Scenarios](../05_QA_Validation/03_SOURCE_COLLECTION_TEST_SCENARIOS.md)
 - Acceptance Criteria:
-  - [ ] 회사 내부 사용자가 XLSX/CSV/PDF/이미지/ZIP을 업로드하면 파싱→정규화 큐에 등록된다.
-  - [ ] 자료유형(세금계산서/통장/카드/영수증)별 집계와 정규화 상태가 표시된다.
-  - [ ] 파싱 오류 건은 danger 상태로 표시되고 재시도할 수 있다.
-  - [ ] 수집 완결성(미수집 건수)과 미수집·확인 필요 목록이 표시된다.
-  - [ ] 외부 고객 업로드 포털은 노출되지 않는다(내부 업로드만).
-  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview / Component Plan 7.2 / Pre-Code Brief / QA Scenarios 상호 링크됨 (2026-07-01 게이트 기준). 구현 파일은 착수 후 갱신.
+  - [ ] 회사 내부 사용자가 XLSX/CSV/PDF/이미지/ZIP을 업로드하면 파싱→정규화 큐에 등록된다. — **부분**: 세션 생성 mutation은 로컬 확인, 실제 파일 저장(Vercel Blob)·AI 파싱 E2E는 환경변수 미프로비저닝으로 미검증(JC-014 대기).
+  - [x] 자료유형(세금계산서/통장/카드/영수증)별 집계와 정규화 상태가 표시된다. (read model + UI 구현, summary.test.ts 단위 검증; 실데이터 표시는 미검증)
+  - [x] 파싱 오류 건은 danger 상태로 표시되고 재시도할 수 있다. (`canRetry` 단위 검증 + UI)
+  - [x] 수집 완결성(미수집 건수)과 미수집·확인 필요 목록이 표시된다. (단위 검증 + UI)
+  - [x] 외부 고객 업로드 포털은 노출되지 않는다(내부 업로드만). (source-collection.test.ts S-70 정적 검증)
+  - [x] 로딩·빈·오류 상태가 화면에 구현된다. (`loading.tsx`/`error.tsx` + 빈 상태)
+- Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview / Component Plan 7.2 / Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일(머지 완료): `lib/source-collection/summary.ts`, `app/(dashboard)/dashboard/direct-upload/page.tsx`, `_components/source-collection.tsx`, `_components/source-collection-upload.tsx`, `loading.tsx`, `error.tsx` (PR #4·#5). 남은 검증: 실제 Blob·AI E2E(JC-014).
 
 ### JC-010 · Build bookkeeping review workspace (기장검토) — 신규
 
