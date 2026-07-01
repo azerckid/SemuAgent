@@ -38,15 +38,24 @@ export type CompanyHomeActionItem = {
   tone: Exclude<CompanyHomeTone, 'muted'>
   count: number
   href: string
+  ctaLabel: string
 }
 
 export type CompanyHomeWorkspaceCard = {
   id: 'source_collection' | 'bookkeeping' | 'vat' | 'payroll' | 'filing_support' | 'receipts'
   title: string
-  value: string
-  statusLabel: string
-  tone: CompanyHomeTone
+  valueMain: string
+  valueSuffix?: string
+  footChip: { label: string; tone: CompanyHomeTone }
+  footSub: string
+  iconTone: 'amber' | 'blue' | 'green'
+  iconGlyph: string
   href: string
+}
+
+export type CompanyHomeHeroMeta = {
+  readinessPercent: number
+  metaLine: string
 }
 
 export type CompanyHomeRecentRow = {
@@ -55,6 +64,7 @@ export type CompanyHomeRecentRow = {
   title: string
   periodLabel: string
   statusLabel: string
+  statusTone: CompanyHomeTone
   occurredAt: string
   href: string
 }
@@ -70,6 +80,7 @@ export type CompanyHomeSummary = {
     name: string
   } | null
   period: CompanyHomePeriod
+  heroMeta: CompanyHomeHeroMeta
   actionItems: CompanyHomeActionItem[]
   workspaceCards: CompanyHomeWorkspaceCard[]
   recentRows: CompanyHomeRecentRow[]
@@ -104,6 +115,13 @@ const ROUTES = {
 const DEFAULT_TZ = 'Asia/Seoul'
 const MATERIAL_ISSUE_STATUSES = ['missing', 'non_compliant', 'uncertain'] as const
 const BOOKKEEPING_ISSUE_STATUSES = ['needs_decision', 'unclassified'] as const
+const ACTION_ITEM_ORDER: Record<string, number> = {
+  'bookkeeping-unclassified': 0,
+  'source-missing': 1,
+  'vat-review': 2,
+  'payroll-issue': 3,
+  'no-blocker': 4,
+}
 
 function padMonth(month: number) {
   return String(month).padStart(2, '0')
@@ -195,18 +213,57 @@ export function buildCompanyHomePeriod(params: {
 }
 
 export function sortCompanyHomeActionItems(items: CompanyHomeActionItem[]) {
-  const rank: Record<CompanyHomeActionItem['tone'], number> = {
+  const toneRank: Record<CompanyHomeActionItem['tone'], number> = {
     danger: 0,
     warn: 1,
     ok: 2,
   }
 
-  return [...items].sort((a, b) => rank[a.tone] - rank[b.tone] || b.count - a.count || a.title.localeCompare(b.title))
+  return [...items].sort((a, b) => {
+    const orderA = ACTION_ITEM_ORDER[a.id] ?? 99
+    const orderB = ACTION_ITEM_ORDER[b.id] ?? 99
+    if (orderA !== orderB) return orderA - orderB
+    return toneRank[a.tone] - toneRank[b.tone] || b.count - a.count || a.title.localeCompare(b.title)
+  })
+}
+
+export function buildCompanyHomeHeroMeta(counts: CompanyHomeCounts): CompanyHomeHeroMeta {
+  const sourceSegment = counts.totalMaterialCount === 0 && counts.collectedUploadCount === 0
+    ? '자료수집 대기'
+    : counts.missingMaterialCount > 0
+      ? '자료수집 진행 중'
+      : '자료수집 완료'
+
+  const bookkeepingSegment = counts.totalTransactionCount === 0
+    ? '기장검토 대기'
+    : counts.unclassifiedTransactionCount > 0
+      ? '기장검토 진행 중'
+      : '기장검토 완료'
+
+  const vatSegment = counts.totalTransactionCount === 0 || counts.unclassifiedTransactionCount > 0
+    ? '부가세 집계 대기'
+    : '부가세 검토 준비'
+
+  const sourceProgress = counts.totalMaterialCount > 0
+    ? ((counts.totalMaterialCount - counts.missingMaterialCount) / counts.totalMaterialCount) * 100
+    : counts.collectedUploadCount > 0
+      ? 100
+      : 0
+  const bookkeepingProgress = counts.totalTransactionCount > 0
+    ? ((counts.totalTransactionCount - counts.unclassifiedTransactionCount) / counts.totalTransactionCount) * 100
+    : 0
+  const vatProgress = counts.unclassifiedTransactionCount === 0 && counts.totalTransactionCount > 0 ? 50 : 0
+  const readinessPercent = clampPercent((sourceProgress + bookkeepingProgress + vatProgress) / 3)
+
+  return {
+    readinessPercent,
+    metaLine: `전체 준비 ${readinessPercent}% · ${sourceSegment} · ${bookkeepingSegment} · ${vatSegment}`,
+  }
 }
 
 export function buildCompanyHomeActionItems(counts: Pick<
   CompanyHomeCounts,
-  'missingMaterialCount' | 'unclassifiedTransactionCount' | 'payrollIssueCount'
+  'missingMaterialCount' | 'unclassifiedTransactionCount' | 'payrollIssueCount' | 'totalTransactionCount'
 >): CompanyHomeActionItem[] {
   const items: CompanyHomeActionItem[] = []
 
@@ -218,17 +275,35 @@ export function buildCompanyHomeActionItems(counts: Pick<
       tone: 'danger',
       count: counts.unclassifiedTransactionCount,
       href: ROUTES.bookkeeping,
+      ctaLabel: '기장검토 열기',
     })
   }
 
   if (counts.missingMaterialCount > 0) {
     items.push({
       id: 'source-missing',
-      title: `미수집 또는 확인 필요 자료 ${counts.missingMaterialCount}건`,
-      description: '신고 기간에 필요한 자료 중 아직 충족되지 않은 항목이 있습니다.',
+      title: `미수집 자료 ${counts.missingMaterialCount}건`,
+      description: '신고 기간에 필요한 자료 중 아직 업로드되지 않은 항목이 있습니다.',
       tone: 'warn',
       count: counts.missingMaterialCount,
       href: ROUTES.sourceCollection,
+      ctaLabel: '자료수집 열기',
+    })
+  }
+
+  if (
+    counts.totalTransactionCount > 0
+    && counts.unclassifiedTransactionCount === 0
+    && counts.missingMaterialCount === 0
+  ) {
+    items.push({
+      id: 'vat-review',
+      title: '부가세 매입세액 공제 검토 대기',
+      description: '불공제 대상 후보를 확인해야 부가세 집계를 확정할 수 있습니다.',
+      tone: 'warn',
+      count: 0,
+      href: ROUTES.vat,
+      ctaLabel: '부가세 열기',
     })
   }
 
@@ -240,6 +315,7 @@ export function buildCompanyHomeActionItems(counts: Pick<
       tone: 'warn',
       count: counts.payrollIssueCount,
       href: ROUTES.payroll,
+      ctaLabel: '급여 열기',
     })
   }
 
@@ -251,6 +327,7 @@ export function buildCompanyHomeActionItems(counts: Pick<
       tone: 'ok',
       count: 0,
       href: ROUTES.receipts,
+      ctaLabel: '최근 이력 보기',
     })
   }
 
@@ -260,70 +337,107 @@ export function buildCompanyHomeActionItems(counts: Pick<
 export function buildCompanyHomeWorkspaceCards(counts: CompanyHomeCounts): CompanyHomeWorkspaceCard[] {
   const collectedMaterialCount = Math.max(0, counts.totalMaterialCount - counts.missingMaterialCount)
   const classifiedTransactionCount = Math.max(0, counts.totalTransactionCount - counts.unclassifiedTransactionCount)
+  const classifiedPercent = counts.totalTransactionCount > 0
+    ? ((classifiedTransactionCount / counts.totalTransactionCount) * 100).toFixed(1)
+    : '0'
 
   return [
     {
       id: 'source_collection',
-      title: '자료수집',
-      value: counts.totalMaterialCount > 0
-        ? `${collectedMaterialCount} / ${counts.totalMaterialCount}건`
-        : `${counts.collectedUploadCount}건`,
-      statusLabel: counts.missingMaterialCount > 0 ? `${counts.missingMaterialCount}건 확인 필요` : '수집 기준 충족',
-      tone: counts.missingMaterialCount > 0 ? 'warn' : counts.collectedUploadCount > 0 ? 'ok' : 'muted',
+      title: '미수집 / 미검토 자료',
+      valueMain: counts.totalMaterialCount > 0 ? String(counts.missingMaterialCount) : '0',
+      valueSuffix: counts.totalMaterialCount > 0 ? ` / ${counts.totalMaterialCount}건` : undefined,
+      footChip: {
+        label: counts.missingMaterialCount > 0 ? `${counts.missingMaterialCount}건 미수집` : counts.collectedUploadCount > 0 ? '수집 완료' : '자료 대기',
+        tone: counts.missingMaterialCount > 0 ? 'warn' : counts.collectedUploadCount > 0 ? 'ok' : 'muted',
+      },
+      footSub: counts.totalMaterialCount > 0
+        ? `${collectedMaterialCount}건 수집 완료`
+        : counts.collectedUploadCount > 0
+          ? `${counts.collectedUploadCount}건 업로드`
+          : '업로드 후 집계',
+      iconTone: 'amber',
+      iconGlyph: '↥',
       href: ROUTES.sourceCollection,
     },
     {
       id: 'bookkeeping',
-      title: '기장검토',
-      value: counts.totalTransactionCount > 0
-        ? `${counts.unclassifiedTransactionCount} / ${counts.totalTransactionCount}건`
-        : '대기',
-      statusLabel: counts.unclassifiedTransactionCount > 0
-        ? `${counts.unclassifiedTransactionCount}건 미분류`
-        : counts.totalTransactionCount > 0
-          ? `${classifiedTransactionCount}건 분류됨`
-          : '거래 추출 후 시작',
-      tone: counts.unclassifiedTransactionCount > 0 ? 'danger' : counts.totalTransactionCount > 0 ? 'ok' : 'muted',
+      title: '분류 대기 큐',
+      valueMain: counts.totalTransactionCount > 0 ? String(counts.unclassifiedTransactionCount) : '0',
+      valueSuffix: counts.totalTransactionCount > 0 ? ` / ${counts.totalTransactionCount}건` : undefined,
+      footChip: {
+        label: counts.unclassifiedTransactionCount > 0
+          ? `${counts.unclassifiedTransactionCount}건 미분류`
+          : counts.totalTransactionCount > 0
+            ? '분류 완료'
+            : '거래 대기',
+        tone: counts.unclassifiedTransactionCount > 0 ? 'danger' : counts.totalTransactionCount > 0 ? 'ok' : 'muted',
+      },
+      footSub: counts.totalTransactionCount > 0 ? `${classifiedPercent}% 분류됨` : '거래 추출 후 시작',
+      iconTone: 'blue',
+      iconGlyph: '▤',
       href: ROUTES.bookkeeping,
     },
     {
       id: 'vat',
-      title: '부가세',
-      value: '집계 대기',
-      statusLabel: counts.unclassifiedTransactionCount > 0 ? '기장 확정 후 산출' : '검토 준비 대기',
-      tone: counts.unclassifiedTransactionCount > 0 ? 'warn' : 'muted',
+      title: '부가세 준비',
+      valueMain: '집계 대기',
+      footChip: {
+        label: counts.unclassifiedTransactionCount > 0 ? '기장 확정 후 산출' : '공제 검토 대기',
+        tone: 'warn',
+      },
+      footSub: '매출·매입 자료 확보',
+      iconTone: 'blue',
+      iconGlyph: '％',
       href: ROUTES.vat,
     },
     {
       id: 'payroll',
-      title: '급여',
-      value: counts.payrollIssueCount > 0
+      title: '급여 준비',
+      valueMain: counts.payrollIssueCount > 0
         ? `${counts.payrollIssueCount}명`
         : counts.payrollDraftCount > 0
-          ? '초안 준비'
+          ? '완료'
           : '대기',
-      statusLabel: counts.payrollIssueCount > 0
-        ? '확인 필요'
+      footChip: {
+        label: counts.payrollIssueCount > 0
+          ? '확인 필요'
+          : counts.payrollDraftCount > 0
+            ? '급여 초안 생성'
+            : '급여 대기',
+        tone: counts.payrollIssueCount > 0 ? 'warn' : counts.payrollDraftCount > 0 ? 'ok' : 'muted',
+      },
+      footSub: counts.payrollIssueCount > 0
+        ? `${counts.payrollIssueCount}명 확인 필요`
         : counts.payrollDraftCount > 0
-          ? '급여 초안 생성됨'
+          ? `초안 ${counts.payrollDraftCount}건`
           : '급여 자료 수집 후 시작',
-      tone: counts.payrollIssueCount > 0 ? 'warn' : counts.payrollDraftCount > 0 ? 'ok' : 'muted',
+      iconTone: 'green',
+      iconGlyph: '₩',
       href: ROUTES.payroll,
     },
     {
       id: 'filing_support',
-      title: '신고지원',
-      value: '미생성',
-      statusLabel: '부가세·급여 확정 후 생성',
-      tone: 'muted',
+      title: '신고자료 패키지',
+      valueMain: '미생성',
+      footChip: { label: '선행 항목 대기', tone: 'muted' },
+      footSub: '기장·부가세 확정 후 생성',
+      iconTone: 'blue',
+      iconGlyph: '↧',
       href: ROUTES.filingSupport,
     },
     {
       id: 'receipts',
-      title: '최근 제출·영수증',
-      value: `${counts.recentReceiptCount}건`,
-      statusLabel: counts.recentReceiptCount > 0 ? '최근 이력 있음' : '최근 이력 없음',
-      tone: counts.recentReceiptCount > 0 ? 'ok' : 'muted',
+      title: '최근 제출 · 영수증',
+      valueMain: String(counts.recentReceiptCount),
+      valueSuffix: ' 건',
+      footChip: {
+        label: counts.recentReceiptCount > 0 ? '보관 완료' : '이력 없음',
+        tone: counts.recentReceiptCount > 0 ? 'ok' : 'muted',
+      },
+      footSub: '최근 30일',
+      iconTone: 'green',
+      iconGlyph: '◫',
       href: ROUTES.receipts,
     },
   ]
@@ -361,8 +475,19 @@ function uploadStatusLabel(status: string) {
   }[status] ?? status
 }
 
+function uploadStatusTone(status: string): CompanyHomeTone {
+  if (status === 'matched' || status === 'uploaded') return 'ok'
+  if (status === 'needs_review' || status === 'analyzing') return 'warn'
+  if (status === 'failed' || status === 'rejected') return 'danger'
+  return 'muted'
+}
+
 function payrollDraftStatusLabel(status: string) {
   return status === 'generated' ? '초안 생성' : '생성 실패'
+}
+
+function payrollDraftStatusTone(status: string): CompanyHomeTone {
+  return status === 'generated' ? 'ok' : 'danger'
 }
 
 export async function loadCompanyHomeSummary({
@@ -418,6 +543,7 @@ export async function loadCompanyHomeSummary({
     }
     return {
       ...baseSummary,
+      heroMeta: buildCompanyHomeHeroMeta(counts),
       actionItems: buildCompanyHomeActionItems(counts),
       workspaceCards: buildCompanyHomeWorkspaceCards(counts),
       recentRows: [],
@@ -539,6 +665,7 @@ export async function loadCompanyHomeSummary({
       title: `${row.fileType.toUpperCase()} 자료 업로드`,
       periodLabel: periodLabel(row.accountingPeriod),
       statusLabel: uploadStatusLabel(row.status),
+      statusTone: uploadStatusTone(row.status),
       occurredAt: formatDate(row.uploadedAt),
       href: ROUTES.bookkeeping,
     })),
@@ -548,6 +675,7 @@ export async function loadCompanyHomeSummary({
       title: '급여 엑셀 초안',
       periodLabel: periodLabel(row.accountingPeriod),
       statusLabel: payrollDraftStatusLabel(row.status),
+      statusTone: payrollDraftStatusTone(row.status),
       occurredAt: formatDate(row.generatedAt),
       href: ROUTES.payroll,
     })),
@@ -568,6 +696,7 @@ export async function loadCompanyHomeSummary({
 
   return {
     ...baseSummary,
+    heroMeta: buildCompanyHomeHeroMeta(counts),
     actionItems: buildCompanyHomeActionItems(counts),
     workspaceCards: buildCompanyHomeWorkspaceCards(counts),
     recentRows,

@@ -39,6 +39,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-company-bg: var(--company-bg);
+  --color-company-surface: var(--company-surface);
+  --color-company-border: var(--company-border);
+  --color-company-border-strong: var(--company-border-strong);
+  --color-company-fg-muted: var(--company-fg-muted);
+  --color-company-fg-subtle: var(--company-fg-subtle);
+  --color-company-nav-hover: var(--company-nav-hover);
+  --shadow-company-card: var(--company-card-shadow);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -84,6 +92,14 @@
   --sidebar-accent-foreground: oklch(0.488 0.243 264.376);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --company-bg: #f6f6f7;
+  --company-surface: #ffffff;
+  --company-border: #e4e4e7;
+  --company-border-strong: #d4d4d8;
+  --company-fg-muted: #71717a;
+  --company-fg-subtle: #a1a1aa;
+  --company-nav-hover: #f4f4f5;
+  --company-card-shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 1px 3px rgba(24, 24, 27, 0.06);
 }
 
 .dark {

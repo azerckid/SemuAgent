@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { DateTime } from '@/lib/time'
 import {
   buildCompanyHomeActionItems,
+  buildCompanyHomeHeroMeta,
   buildCompanyHomePeriod,
   buildCompanyHomeWorkspaceCards,
   monthInPeriod,
@@ -51,9 +52,9 @@ describe('buildCompanyHomePeriod', () => {
 describe('buildCompanyHomeActionItems', () => {
   it('sorts action items by danger, warn, ok', () => {
     const items: CompanyHomeActionItem[] = [
-      { id: 'ok', title: '정상', description: '', tone: 'ok', count: 0, href: '/ok' },
-      { id: 'warn', title: '주의', description: '', tone: 'warn', count: 1, href: '/warn' },
-      { id: 'danger', title: '위험', description: '', tone: 'danger', count: 1, href: '/danger' },
+      { id: 'ok', title: '정상', description: '', tone: 'ok', count: 0, href: '/ok', ctaLabel: '열기' },
+      { id: 'warn', title: '주의', description: '', tone: 'warn', count: 1, href: '/warn', ctaLabel: '열기' },
+      { id: 'danger', title: '위험', description: '', tone: 'danger', count: 1, href: '/danger', ctaLabel: '열기' },
     ]
 
     expect(sortCompanyHomeActionItems(items).map((item) => item.id)).toEqual(['danger', 'warn', 'ok'])
@@ -64,14 +65,28 @@ describe('buildCompanyHomeActionItems', () => {
       missingMaterialCount: 1,
       unclassifiedTransactionCount: 18,
       payrollIssueCount: 2,
+      totalTransactionCount: 342,
     })
 
     expect(items.map((item) => item.id)).toEqual([
       'bookkeeping-unclassified',
-      'payroll-issue',
       'source-missing',
+      'payroll-issue',
     ])
-    expect(items[0]).toMatchObject({ tone: 'danger', count: 18 })
+    expect(items[0]).toMatchObject({ tone: 'danger', count: 18, ctaLabel: '기장검토 열기' })
+    expect(items[1]).toMatchObject({ ctaLabel: '자료수집 열기' })
+  })
+
+  it('adds a vat review blocker when bookkeeping is complete', () => {
+    const items = buildCompanyHomeActionItems({
+      missingMaterialCount: 0,
+      unclassifiedTransactionCount: 0,
+      payrollIssueCount: 0,
+      totalTransactionCount: 120,
+    })
+
+    expect(items.map((item) => item.id)).toEqual(['vat-review'])
+    expect(items[0]).toMatchObject({ ctaLabel: '부가세 열기' })
   })
 
   it('returns a single ok item when there are no blockers', () => {
@@ -79,6 +94,7 @@ describe('buildCompanyHomeActionItems', () => {
       missingMaterialCount: 0,
       unclassifiedTransactionCount: 0,
       payrollIssueCount: 0,
+      totalTransactionCount: 0,
     })
 
     expect(items).toHaveLength(1)
@@ -100,17 +116,38 @@ describe('buildCompanyHomeWorkspaceCards', () => {
     })
 
     expect(cards.find((card) => card.id === 'source_collection')).toMatchObject({
-      value: '23 / 24건',
-      tone: 'warn',
+      valueMain: '1',
+      valueSuffix: ' / 24건',
+      footChip: { tone: 'warn' },
     })
     expect(cards.find((card) => card.id === 'bookkeeping')).toMatchObject({
-      value: '18 / 342건',
-      tone: 'danger',
+      valueMain: '18',
+      valueSuffix: ' / 342건',
+      footChip: { tone: 'danger' },
     })
     expect(cards.find((card) => card.id === 'payroll')).toMatchObject({
-      value: '초안 준비',
-      tone: 'ok',
+      valueMain: '완료',
+      footChip: { tone: 'ok' },
     })
+  })
+})
+
+describe('buildCompanyHomeHeroMeta', () => {
+  it('builds readiness meta from workspace progress', () => {
+    const meta = buildCompanyHomeHeroMeta({
+      missingMaterialCount: 1,
+      totalMaterialCount: 24,
+      collectedUploadCount: 23,
+      unclassifiedTransactionCount: 18,
+      totalTransactionCount: 342,
+      payrollIssueCount: 0,
+      payrollDraftCount: 1,
+      recentReceiptCount: 3,
+    })
+
+    expect(meta.readinessPercent).toBeGreaterThan(50)
+    expect(meta.metaLine).toContain('전체 준비')
+    expect(meta.metaLine).toContain('기장검토 진행 중')
   })
 })
 

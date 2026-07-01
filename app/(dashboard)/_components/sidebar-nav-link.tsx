@@ -15,14 +15,15 @@ export function SidebarNavLink({ href, children, disabled = false }: SidebarNavL
   const pathname = usePathname()
   const hrefPathname = href.split('#')[0] ?? href
   const isAnchorLink = href.includes('#')
-  const active = !isAnchorLink && (hrefPathname === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(hrefPathname))
+  const active = !isAnchorLink && (hrefPathname === '/dashboard'
+    ? pathname === '/dashboard'
+    : pathname.startsWith(hrefPathname))
 
-  // 추가 결제(유료 옵션) 메뉴는 비활성으로 노출만 하고 이동을 막는다.
   if (disabled) {
     return (
       <div
         aria-disabled="true"
-        className="flex h-8 cursor-not-allowed items-center gap-2 rounded-lg px-2 text-sm text-muted-foreground/50"
+        className="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium text-company-fg-subtle/60"
       >
         {children}
       </div>
@@ -33,10 +34,10 @@ export function SidebarNavLink({ href, children, disabled = false }: SidebarNavL
     <Link
       href={href}
       className={cn(
-        'flex h-8 items-center gap-2 rounded-lg px-2 text-sm transition-colors',
+        'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] transition-colors',
         active
-          ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-          : 'text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground',
+          ? 'bg-company-nav-hover font-semibold text-foreground'
+          : 'font-medium text-company-fg-muted hover:bg-company-nav-hover hover:text-foreground',
       )}
     >
       {children}

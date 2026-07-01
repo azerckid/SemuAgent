@@ -1,7 +1,5 @@
 'use client'
 
-import { LogOut } from 'lucide-react'
-import { buttonVariants } from '@/components/ui/button-variants'
 import { signOut } from '@/lib/auth-client'
 
 export function SidebarSignOutButton() {
@@ -14,13 +12,8 @@ export function SidebarSignOutButton() {
     <button
       type="button"
       onClick={handleSignOut}
-      className={buttonVariants({
-        variant: 'ghost',
-        size: 'sm',
-        className: 'h-7 w-full justify-start px-2 text-xs text-muted-foreground',
-      })}
+      className="text-[11px] font-medium text-company-fg-subtle transition-colors hover:text-company-fg-muted"
     >
-      <LogOut className="size-3.5" />
       로그아웃
     </button>
   )

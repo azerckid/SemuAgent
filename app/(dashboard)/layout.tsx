@@ -26,9 +26,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   tenantName = tenantRows[0]?.name ?? '회사'
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div className="flex h-screen overflow-hidden bg-company-bg text-foreground">
       <Sidebar userName={session.user.name} tenantName={tenantName} />
-      <main className="flex-1 overflow-auto bg-muted/40">{children}</main>
+      <main className="flex min-w-0 flex-1 flex-col overflow-auto bg-company-bg">{children}</main>
     </div>
   )
 }
