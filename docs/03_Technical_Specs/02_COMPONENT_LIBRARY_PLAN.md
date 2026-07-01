@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-01 20:05
+> Last Updated: 2026-07-01 22:55
 
 ## 1. 목적 및 범위
 
@@ -117,7 +117,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 ## 10. 미결/후속
 
-- (없음) 두 화면의 컴포넌트·라이브러리 계획은 확정. 다음은 Pre-Code Technical Brief(데이터 소스·최소 필드·mutation·acceptance)와 DB/API 명세 정합성 확인.
+- 회사 홈 Pre-Code Technical Brief는 작성 완료. 자료수집 및 후속 화면은 구현 전 화면별 Pre-Code Technical Brief와 QA 시나리오가 필요하다.
 
 ## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -125,4 +125,5 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 화면 흐름·데이터 입출력
 - **UI_Screens**: [HTML Preview 폴더](../02_UI_Screens/previews/) - 화면 프로토타입
 - **Technical_Specs**: [Development Setup](./01_DEVELOPMENT_SETUP.md) - 런타임·패키지·스택
+- **Technical_Specs**: [Company Home Pre-Code Brief](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) - 회사 홈 데이터 소스·상태·acceptance 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009 Context Lock

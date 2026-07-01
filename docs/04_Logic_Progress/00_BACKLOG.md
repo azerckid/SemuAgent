@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-01 22:45
+> Last Updated: 2026-07-01 22:55
 
 ## Status Legend
 
@@ -68,14 +68,14 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.1](../02_UI_Screens/01_UI_DESIGN.md) · [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md)
 - Related HTML Preview: [00_company_home.html](../02_UI_Screens/previews/00_company_home.html)
-- Related Technical Docs: [Component & Library Plan 7.1](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related Technical Docs: [Component & Library Plan 7.1](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Company Home Pre-Code Brief](../03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
 - Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 `docs/05_QA_Validation/01_TEST_SCENARIOS.md`에 대시보드 테스트 시나리오 추가 필요(전제조건에 반영).
 - Prototype Review / 승인: [Company Home Review](../02_UI_Screens/02_COMPANY_HOME_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
   - [x] Component & Library Plan 작성 (Layer 3, Component & Library Planning Gate) — [7.1 회사 홈 매핑](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
-  - [ ] Pre-Code Technical Brief(데이터 소스·최소 필드·mutation·acceptance) 정리 — **미충족**
-  - [ ] 회사 tenant/기간 데이터 모델 확정 (JC-005 선행) — **미충족**
+  - [x] Pre-Code Technical Brief(데이터 소스·최소 필드·mutation·acceptance) 정리 — [Company Home Pre-Code Brief](../03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md)
+  - [x] 회사 tenant/기간 데이터 모델 설계 확인 — [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) 기준 `client`를 `business_entity`로 개념 전환, 기간은 URL context/read model로 처리
   - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
 - Acceptance Criteria:
   - [ ] 로그인 직후 회사 홈(대시보드)으로 진입한다(마케팅 페이지 아님).
@@ -83,7 +83,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] "다음 할 일" CTA가 기장검토·자료수집·부가세로 라우팅된다.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
   - [ ] 대시보드는 읽기 전용이며 데이터 mutation을 수행하지 않는다.
-- Document Sync Check: Screen Flow / UI Design / Prototype Review / Preview가 상호 링크됨 (2026-07-01 기준 일치)
+  - [ ] 회사 홈 데이터 로더는 v1 제외 테이블(`client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox`)을 참조하지 않는다.
+- Document Sync Check: Screen Flow / UI Design / Prototype Review / Preview / Component Plan / DB Schema / Pre-Code Brief가 상호 링크됨 (2026-07-01 기준 일치)
 
 ### JC-009 · Build source collection workspace (자료수집) — 신규
 
@@ -204,7 +205,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했으나 물리 마이그레이션·부가세/신고 신규 테이블 컬럼·기간 모델 확정은 남아 있다. JC-006/JC-009는 Component & Library Plan 완료, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)·JC-013(Filing Item Card·Input Guide·Receipts·Checklist)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), JC-005 후속 확정(물리 마이그레이션·신규 테이블 컬럼·기간 모델), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
+> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했으나 물리 마이그레이션·부가세/신고 신규 테이블 컬럼·기간 모델 확정은 남아 있다. JC-006은 Pre-Code Technical Brief까지 완료했으며, 코드 착수 전 남은 전제조건은 Layer 5 회사 홈 QA 테스트 시나리오 작성이다. JC-009는 Component & Library Plan 완료이나 Pre-Code Brief 미작성, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)·JC-013(Filing Item Card·Input Guide·Receipts·Checklist)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 화면별 **Pre-Code Technical Brief**(JC-006 완료, 나머지 미작성), JC-005 후속 확정(물리 마이그레이션·신규 테이블 컬럼·기간 모델), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위

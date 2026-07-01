@@ -1,6 +1,6 @@
 # JARYO Company Docs
 > Created: 2026-07-01 17:50
-> Last Updated: 2026-07-01 17:50
+> Last Updated: 2026-07-01 22:55
 
 This documentation set defines JARYO Company, the company-facing version of
 JARYO.
@@ -19,6 +19,6 @@ how reused code must be adapted for company self-use.
 ## Related Documents
 - **Concept_Design**: [Product Baseline](./01_Concept_Design/01_PRODUCT_BASELINE.md)
 - **UI_Screens**: [Screen Flow](./02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](./02_UI_Screens/01_UI_DESIGN.md) · [MVP UX Baseline](./02_UI_Screens/01_MVP_UX_BASELINE.md)
-- **Technical_Specs**: [Development Setup](./03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [Component & Library Plan](./03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
+- **Technical_Specs**: [Development Setup](./03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [Component & Library Plan](./03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [DB Schema](./03_Technical_Specs/03_DB_SCHEMA.md) · [Company Home Pre-Code Brief](./03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md)
 - **Logic_Progress**: [Backlog](./04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [MVP QA Baseline](./05_QA_Validation/01_MVP_QA_BASELINE.md)
