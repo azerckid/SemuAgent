@@ -21,6 +21,7 @@
 | JC-008 | todo | Review residual npm audit findings | `package.json`, parser/import libraries | Decide replacements or mitigations for `xlsx`, `viem/ws`, `drizzle-kit/esbuild`, and Next/PostCSS audit advisories |
 | JC-009 | todo | Build source collection workspace | `app/upload`, `lib/ai/extract`, `components/ui` | Company-internal upload → parse → normalize flow matches approved 자료수집 UI; external client portal excluded |
 | JC-010 | todo | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
+| JC-011 | todo | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
 
 ## Implementation Rule
 
@@ -100,4 +101,28 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4c / UI Design 4.3 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 세 항목 모두 **UI-First Gate 통과**. JC-006/JC-009는 Component & Library Plan 완료, JC-010은 기장검토 전용 컴포넌트(Confidence Bar·Journal Entry Preview) 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), tenant/기간·전표 데이터 모델(JC-005), 업로드 라우트 재검토(JC-004, JC-009 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.
+### JC-011 · Build VAT workspace (부가세) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related UI Docs: [Screen Flow 4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.4](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: [03_vat.html](../02_UI_Screens/previews/03_vat.html)
+- Related Technical Docs: [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related QA Docs: N/A - Layer 5 QA 문서 미작성. 구현 착수 전 세액 집계·공제 판정·안분·패키지 생성 잠금 테스트 시나리오 추가 필요(전제조건에 반영).
+- Prototype Review / 승인: [VAT Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
+- Implementation Preconditions:
+  - [x] UI-First Gate 통과 (사용자 확인 완료)
+  - [ ] Component & Library Plan에 부가세 전용 컴포넌트(Tax Summary·Deduction Review·잠금 버튼 래퍼) 반영 — **미충족**
+  - [ ] Pre-Code Technical Brief(확정 전표 집계·공제 판정·공통매입 안분·패키지 생성 mutation) 정리 — **미충족**
+  - [ ] 회사 tenant/기간·전표 데이터 모델 확정 (JC-005 연계, 기장검토 확정 전표 선행) — **미충족**
+  - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
+- Acceptance Criteria:
+  - [ ] 확정 전표 기준 매출세액·매입세액·납부(예정)세액이 집계·표시된다.
+  - [ ] 매출이 과세/영세율/면세로 구분되어 그룹별 공급가액·세액이 표시된다.
+  - [ ] 불공제 후보·공통매입 안분 대상이 표시되고 사용자가 공제/불공제/안분을 확정한다.
+  - [ ] 부속 명세 준비 상태가 표시된다.
+  - [ ] 신고 패키지 생성 버튼은 공제 검토 완료 전까지 잠금(disabled + aria-disabled)이며, 사유가 함께 노출된다. React 구현 시 disabled 버튼을 래퍼로 감싸 툴팁을 접근성 있게 처리한다.
+  - [ ] 자동 홈택스 제출은 제공하지 않는다(패키지 + 입력 가이드까지). 세액은 검토 완료 전 "예정" 표기.
+  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
+- Document Sync Check: Screen Flow 4d / UI Design 4.4 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
+
+> 현재 네 항목 모두 **UI-First Gate 통과**. JC-006/JC-009는 Component & Library Plan 완료, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 **Pre-Code Technical Brief**(데이터 소스·최소 필드·mutation·acceptance), tenant/기간·전표 데이터 모델(JC-005), 업로드 라우트 재검토(JC-004, JC-009 한정), **Layer 5 QA 테스트 시나리오 작성**이다. 이들이 채워지기 전에는 코드 구현을 시작하지 않는다.

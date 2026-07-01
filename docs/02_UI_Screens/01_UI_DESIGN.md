@@ -1,6 +1,6 @@
 # JARYO Company UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-01 20:35
+> Last Updated: 2026-07-01 20:55
 
 ## 1. 디자인 방향
 
@@ -86,13 +86,29 @@
 - AI 추천은 초안이며 확정 책임은 사용자에게 있다. 신뢰도 낮은 항목은 승인 전 "계정 지정"으로 강제 확인시킨다.
 - 상태칩·State Card·Table 골격은 회사 홈/자료수집과 공통(DRY).
 
-### 4.4 화면 간 내비게이션
+### 4.4 부가세 (03_vat.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Tax Summary Hero | 매출세액 − 매입세액 = 납부(예정)세액 강조, 마감 D-day | 3셀 계산 레이아웃 + 예정치 안내 + D-day 칩 |
+| Sales Grouping Cards | 과세 / 영세율 / 면세 그룹별 공급가액·매출세액 | 3카드, 그룹 태그(tax/zero/exempt) |
+| Deduction Review Table | 매입세액 공제 검토 | 공제 확정(ok) / 불공제 후보(danger) / 안분 필요(warn), 판정·사유·처리 |
+| Schedules List | 부속 명세(합계표·수취명세서·불공제명세서) 준비 상태 | 서식별 준비됨/검토 대기 상태칩 |
+| Filing Package Preview | 신고 패키지(PDF) + 홈택스 입력 가이드 | 미리보기 파일 + **생성 버튼 잠금**(검토 완료 전) |
+| State Card | 로딩/빈/오류 표준 (공용) | 스켈레톤·빈안내(기장검토 먼저 확정)·오류+재시도 |
+
+- 사이드바 "부가세"에 공제 검토 대기 건수 카운트 배지(warn)를 노출한다.
+- **패키지 생성 잠금**: 불공제 후보 검토가 끝나기 전에는 `is-disabled` + `disabled` + `aria-disabled="true"` muted 버튼으로 잠금을 명시하고, 위에 사유(locknote)를 함께 노출한다.
+  - 구현 노트: disabled 버튼의 `title` 툴팁은 브라우저별 표시가 일관되지 않으므로, React 구현 시 비활성 버튼을 래퍼(tooltip 컴포넌트)로 감싸 잠금 사유를 접근성 있게 노출한다.
+- **자동 홈택스 제출은 범위 밖**(패키지 생성 + 입력 가이드까지). 세액은 검토 완료 전 "예정"으로 표기한다.
+- 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
+
+### 4.5 화면 간 내비게이션
 
 - 사이드바 항목·브랜드·breadcrumb를 모두 `<a>`로 처리(`a { color: inherit; text-decoration: none }`).
-- 회사 홈 → 자료수집: 사이드바 "자료수집" + Action Row "자료수집 열기".
-- 회사 홈 → 기장검토: 사이드바 "기장검토" + Action Row "기장검토 열기".
-- 자료수집/기장검토 → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
-- 화면 간(자료수집 ↔ 기장검토)도 사이드바로 직접 이동.
+- 회사 홈 → 자료수집/기장검토/부가세: 사이드바 + 해당 Action Row "…열기".
+- 자료수집/기장검토/부가세 → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
+- 운영 흐름 화면 간(자료수집 ↔ 기장검토 ↔ 부가세)도 사이드바로 직접 이동.
 - 구현된 화면은 사이드바 "다음" 배지를 제거한다.
 
 ## 5. 핵심 CTA 우선순위
@@ -112,11 +128,17 @@
 2. 신뢰도 낮은 거래의 "계정 지정" (승인 전 강제 확인)
 3. 행별 "승인 / 수정", 탭 전환(검토 대기/신뢰도 낮음/확정/전체)
 
+**부가세**
+1. 불공제 후보 "불공제 확정 / 공제", 공통매입 "안분 계산" (공제 검토)
+2. "패키지 생성" — 단, 검토 완료 전에는 잠금(비활성)
+3. "전체 매입 보기" 등 상세 이동
+
 ## 6. HTML UI Preview
 
 - Preview (회사 홈): [00_company_home.html](./previews/00_company_home.html)
 - Preview (자료수집): [01_source_collection.html](./previews/01_source_collection.html)
 - Preview (기장검토): [02_bookkeeping_review.html](./previews/02_bookkeeping_review.html)
+- Preview (부가세): [03_vat.html](./previews/03_vat.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -125,4 +147,5 @@
 - **UI_Screens**: [Company Home Prototype Review](./02_COMPANY_HOME_PROTOTYPE_REVIEW.md) - 회사 홈 확인 결과
 - **UI_Screens**: [Source Collection Prototype Review](./03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) - 자료수집 확인 결과
 - **UI_Screens**: [Bookkeeping Review Prototype Review](./04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) - 기장검토 확인 결과
+- **UI_Screens**: [VAT Prototype Review](./05_VAT_PROTOTYPE_REVIEW.md) - 부가세 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
