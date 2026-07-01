@@ -23,7 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .from(tenant)
     .where(eq(tenant.id, tenantId))
     .limit(1)
-  tenantName = tenantRows[0]?.name ?? '회계법인'
+  tenantName = tenantRows[0]?.name ?? '회사'
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">

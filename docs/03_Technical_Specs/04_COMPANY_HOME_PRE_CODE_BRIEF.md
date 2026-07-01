@@ -1,6 +1,6 @@
 # Company Home Pre-Code Technical Brief
 > Created: 2026-07-01 22:55
-> Last Updated: 2026-07-01 23:05
+> Last Updated: 2026-07-01 23:15
 
 ## 1. Scope
 
@@ -147,7 +147,16 @@ type CompanyHomeSummary = {
 - JC-005 후속에서 `business_entity` 물리 rename을 선택하면 이 문서의 `clientId` 참조를 함께 갱신한다.
 - `vat_*`, `filing_*` 테이블이 확정되기 전까지 회사 홈은 부가세/신고지원 상세 수치를 잠금/대기 상태로 표시한다.
 
-## 10. Related Documents
+## 10. Implementation Notes
+
+- 구현 브랜치: `feat-jc-006-company-home`
+- Read model: `lib/company-home/summary.ts`
+- 화면: `app/(dashboard)/dashboard/page.tsx`, `app/(dashboard)/dashboard/_components/company-home.tsx`
+- 상태 경계: `app/(dashboard)/dashboard/loading.tsx`, `app/(dashboard)/dashboard/error.tsx`
+- 테스트: `lib/company-home/summary.test.ts` — 기간 파생, actionItems 우선순위, status card 파생, 기간 필터, 제외 테이블 미참조, read-only 정적 검증.
+- 부가세/신고지원은 전용 React 라우트가 아직 없으므로 회사 홈 섹션 앵커로 연결한다. 전용 작업공간은 JC-011/JC-013에서 구현한다.
+
+## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 셀프사용 책임 경계
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 회사 홈 입출력과 동선
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 회사 홈 컴포넌트 구조

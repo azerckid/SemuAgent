@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-01 22:55
+> Last Updated: 2026-07-01 23:35
 
 ## Status Legend
 
@@ -18,7 +18,7 @@
 | JC-003 | done | Switch package manager baseline to npm | package setup | README and PR template use npm commands; pnpm files removed |
 | JC-004 | todo | Audit copied routes and rename accounting-firm assumptions | `app`, `lib`, `components` | Company self-use terminology and responsibility boundary are reflected in visible routes |
 | JC-005 | doing | Define company tenant data model delta | `lib/db/schema.ts` | Company/operator model documented before DB migration — 설계: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) (client→business_entity 재정의, 이메일 서브시스템 v1 제외). 물리 마이그레이션·부가세/신고 신규 테이블 컬럼은 후속 |
-| JC-006 | todo | Shape first working dashboard | `app/(dashboard)`, `components/ui` | Dashboard shows collection, bookkeeping, VAT, payroll, filing support status |
+| JC-006 | done | Shape first working dashboard | `app/(dashboard)`, `components/ui` | Dashboard shows collection, bookkeeping, VAT, payroll, filing support status |
 | JC-007 | todo | Define filing package model | bookkeeping/payroll modules | Filing material package can store generated docs, Hometax guide, receipt, and audit state |
 | JC-008 | todo | Review residual npm audit findings | `package.json`, parser/import libraries | Decide replacements or mitigations for `xlsx`, `viem/ws`, `drizzle-kit/esbuild`, and Next/PostCSS audit advisories |
 | JC-009 | todo | Build source collection workspace | `app/upload`, `lib/ai/extract`, `components/ui` | Company-internal upload → parse → normalize flow matches approved 자료수집 UI; external client portal excluded |
@@ -78,13 +78,18 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 회사 tenant/기간 데이터 모델 설계 확인 — [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) 기준 `client`를 `business_entity`로 개념 전환, 기간은 URL context/read model로 처리
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Company Home Test Scenarios](../05_QA_Validation/02_COMPANY_HOME_TEST_SCENARIOS.md)
 - Acceptance Criteria:
-  - [ ] 로그인 직후 회사 홈(대시보드)으로 진입한다(마케팅 페이지 아님).
-  - [ ] 현재 회계기간 상태·마감 D-day·준비 현황 카드·최근 제출/영수증이 승인된 화면 구조대로 표시된다.
-  - [ ] "다음 할 일" CTA가 기장검토·자료수집·부가세로 라우팅된다.
-  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-  - [ ] 대시보드는 읽기 전용이며 데이터 mutation을 수행하지 않는다.
-  - [ ] 회사 홈 데이터 로더는 v1 제외 테이블(`client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox`)을 참조하지 않는다.
-- Document Sync Check: Screen Flow / UI Design / Prototype Review / Preview / Component Plan / DB Schema / Pre-Code Brief / QA Scenarios가 상호 링크됨 (2026-07-01 기준 일치)
+  - [x] 로그인 직후 회사 홈(대시보드)으로 진입한다(마케팅 페이지 아님).
+  - [x] 현재 회계기간 상태·마감 D-day·준비 현황 카드·최근 제출/영수증이 승인된 화면 구조대로 표시된다.
+  - [x] "다음 할 일" CTA가 미수집·미분류·급여 확인 필요 상태에 따라 자료수집·기장검토·급여로 라우팅된다. 부가세/신고지원은 전용 React 라우트가 후속 JC-011/JC-013 범위라 현재 준비 현황 카드에서 회사 홈 섹션 앵커로 연결한다.
+  - [x] 로딩·빈·오류 상태가 화면에 구현된다.
+  - [x] 대시보드는 읽기 전용이며 데이터 mutation을 수행하지 않는다.
+  - [x] 회사 홈 데이터 로더는 v1 제외 테이블(`client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox`)을 참조하지 않는다.
+- Document Sync Check: Screen Flow / UI Design / Prototype Review / Preview / Component Plan / DB Schema / Pre-Code Brief / QA Scenarios가 상호 링크됨. 구현 파일: `lib/company-home/summary.ts`, `app/(dashboard)/dashboard/page.tsx`, `app/(dashboard)/dashboard/_components/company-home.tsx`, `app/(dashboard)/dashboard/loading.tsx`, `app/(dashboard)/dashboard/error.tsx` (2026-07-01 기준 일치)
+- Follow-up (JC-006 범위 밖 · 후속 이관): PR #2 리뷰에서 도출, JC-006 머지를 막지 않음.
+  - [ ] Hero 진행률 의미 확장: 현재 "기간 경과(deadlineProgress)" → VAT/기장/급여 read model 성숙 후 "업무 준비율" 합성 지표 설계 (후속 JC).
+  - [ ] payroll issue count의 latest-batch 스코프 정합: S-33 Given 문구와 구현 정렬 → 급여 워크스페이스(JC-012)에서 batch 스코프와 함께 수정. MVP 과대 카운트 리스크 낮음.
+  - [ ] `?period=` Zod 스키마 + loader 통합 테스트: 현재 regex fallback으로 안전. 단독 chore PR 권장.
+  - [ ] layout/page의 session·redirect 중복 정리: tenant 없음 레이아웃 동작 재검증 필요하여 JC-006과 분리(별도 chore).
 
 ### JC-009 · Build source collection workspace (자료수집) — 신규
 
@@ -205,7 +210,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했으나 물리 마이그레이션·부가세/신고 신규 테이블 컬럼·기간 모델 확정은 남아 있다. JC-006은 Pre-Code Technical Brief와 Layer 5 QA 테스트 시나리오까지 완료해 코드 착수 전제조건이 충족됐다. JC-009는 Component & Library Plan 완료이나 Pre-Code Brief 미작성, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)·JC-013(Filing Item Card·Input Guide·Receipts·Checklist)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 화면별 **Pre-Code Technical Brief**(JC-006 완료, 나머지 미작성), JC-005 후속 확정(물리 마이그레이션·신규 테이블 컬럼·기간 모델), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**(JC-006 완료, 나머지 미작성)이다. 이들이 채워지기 전에는 해당 화면의 코드 구현을 시작하지 않는다.
+> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했으나 물리 마이그레이션·부가세/신고 신규 테이블 컬럼·기간 모델 확정은 남아 있다. JC-006은 회사 홈 read model·React 화면·로딩/오류 상태·단위 테스트까지 구현 완료됐다. JC-009는 Component & Library Plan 완료이나 Pre-Code Brief 미작성, JC-010(Confidence Bar·Journal Entry Preview)·JC-011(Tax Summary·Deduction Review·잠금 버튼 래퍼)·JC-012(Payroll Register·Deduction Breakdown·마감 잠금 래퍼)·JC-013(Filing Item Card·Input Guide·Receipts·Checklist)은 전용 컴포넌트 계획 반영 필요. 남은 공통 구현 착수 전제조건은 화면별 **Pre-Code Technical Brief**(JC-006 완료, 나머지 미작성), JC-005 후속 확정(물리 마이그레이션·신규 테이블 컬럼·기간 모델), 업로드 라우트 재검토(JC-004, JC-009 한정), 개인정보 마스킹 방침(JC-012 한정), **Layer 5 QA 테스트 시나리오 작성**(JC-006 완료, 나머지 미작성)이다. 이들이 채워지기 전에는 해당 화면의 코드 구현을 시작하지 않는다.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위

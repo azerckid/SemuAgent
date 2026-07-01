@@ -13,7 +13,9 @@ interface SidebarNavLinkProps {
 
 export function SidebarNavLink({ href, children, disabled = false }: SidebarNavLinkProps) {
   const pathname = usePathname()
-  const active = href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href)
+  const hrefPathname = href.split('#')[0] ?? href
+  const isAnchorLink = href.includes('#')
+  const active = !isAnchorLink && (hrefPathname === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(hrefPathname))
 
   // 추가 결제(유료 옵션) 메뉴는 비활성으로 노출만 하고 이동을 막는다.
   if (disabled) {
