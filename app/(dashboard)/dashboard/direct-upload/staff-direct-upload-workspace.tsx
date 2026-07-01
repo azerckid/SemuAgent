@@ -409,7 +409,7 @@ export function StaffDirectUploadWorkspace({
   )
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-6">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="mb-2 flex items-center gap-2">

@@ -3,10 +3,18 @@ import { and, desc, eq, isNull } from 'drizzle-orm'
 import { requireTenantSession } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 import { client, payrollExtractionBatch, staff, uploadFile, uploadSession } from '@/lib/db/schema'
+import { loadSourceCollectionSummary } from '@/lib/source-collection/summary'
+import {
+  CompletenessHeader,
+  ImportStatusTableSection,
+  MissingChecklistSection,
+  SourceCollectionBusinessEntityEmptyState,
+  SourceTypeTilesSection,
+} from './_components/source-collection'
 import { StaffDirectUploadWorkspace } from './staff-direct-upload-workspace'
 
 type PageProps = {
-  searchParams: Promise<{ kind?: string; sessionId?: string }>
+  searchParams: Promise<{ kind?: string; sessionId?: string; period?: string }>
 }
 
 function extractRawToken(uploadUrl: string | null) {
@@ -20,7 +28,7 @@ function extractRawToken(uploadUrl: string | null) {
 }
 
 export default async function StaffDirectUploadPage({ searchParams }: PageProps) {
-  const { kind, sessionId } = await searchParams
+  const { kind, sessionId, period } = await searchParams
   let tenantId: string
   try {
     const session = await requireTenantSession()
@@ -28,6 +36,8 @@ export default async function StaffDirectUploadPage({ searchParams }: PageProps)
   } catch {
     redirect('/sign-in')
   }
+
+  const summary = await loadSourceCollectionSummary({ tenantId, periodKey: period })
 
   const clientRows = await db
     .select({
@@ -101,22 +111,32 @@ export default async function StaffDirectUploadPage({ searchParams }: PageProps)
     ? `/dashboard/payroll${selectedSession.requestEventId ? `?eventId=${selectedSession.requestEventId}` : ''}`
     : `/dashboard/reviews?sessionId=${selectedSession?.id ?? ''}`
 
+  if (!summary.businessEntity) {
+    return <SourceCollectionBusinessEntityEmptyState tenantName={summary.tenant.name} />
+  }
+
   return (
-    <StaffDirectUploadWorkspace
-      clients={clientRows}
-      initialWorkType={kind === 'payroll' ? 'payroll' : kind === 'vat' ? 'vat' : 'bookkeeping'}
-      session={selectedSession
-        ? {
-          ...selectedSession,
-          clientName: selectedClientLabel ?? selectedSession.clientName,
-          rawToken: extractRawToken(selectedSession.uploadUrl),
-          resultPath,
-          payrollExtractionStatus: latestPayrollBatch[0]?.status ?? null,
-          payrollExtractionCreatedAt: latestPayrollBatch[0]?.createdAt ?? null,
-          payrollExtractionErrorMessage: latestPayrollBatch[0]?.errorMessage ?? null,
-        }
-        : null}
-      uploadedFiles={files}
-    />
+    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-6">
+      <CompletenessHeader completeness={summary.completeness} />
+      <StaffDirectUploadWorkspace
+        clients={clientRows}
+        initialWorkType={kind === 'payroll' ? 'payroll' : kind === 'vat' ? 'vat' : 'bookkeeping'}
+        session={selectedSession
+          ? {
+            ...selectedSession,
+            clientName: selectedClientLabel ?? selectedSession.clientName,
+            rawToken: extractRawToken(selectedSession.uploadUrl),
+            resultPath,
+            payrollExtractionStatus: latestPayrollBatch[0]?.status ?? null,
+            payrollExtractionCreatedAt: latestPayrollBatch[0]?.createdAt ?? null,
+            payrollExtractionErrorMessage: latestPayrollBatch[0]?.errorMessage ?? null,
+          }
+          : null}
+        uploadedFiles={files}
+      />
+      <SourceTypeTilesSection tiles={summary.sourceTypeTiles} />
+      <ImportStatusTableSection rows={summary.importRows} />
+      <MissingChecklistSection items={summary.missingItems} />
+    </div>
   )
 }
