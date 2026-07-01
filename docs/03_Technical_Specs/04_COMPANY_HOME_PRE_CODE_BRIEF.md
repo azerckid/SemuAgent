@@ -1,6 +1,6 @@
 # Company Home Pre-Code Technical Brief
 > Created: 2026-07-01 22:55
-> Last Updated: 2026-07-01 22:55
+> Last Updated: 2026-07-01 23:05
 
 ## 1. Scope
 
@@ -143,7 +143,7 @@ type CompanyHomeSummary = {
 
 ## 9. Open Items
 
-- Layer 5 회사 홈 QA 시나리오가 아직 없다. 코드 구현 전 `01_TEST_SCENARIOS.md` 작성 필요.
+- Layer 5 회사 홈 QA 시나리오 작성 완료: [02_COMPANY_HOME_TEST_SCENARIOS.md](../05_QA_Validation/02_COMPANY_HOME_TEST_SCENARIOS.md) (S-01~S-82).
 - JC-005 후속에서 `business_entity` 물리 rename을 선택하면 이 문서의 `clientId` 참조를 함께 갱신한다.
 - `vat_*`, `filing_*` 테이블이 확정되기 전까지 회사 홈은 부가세/신고지원 상세 수치를 잠금/대기 상태로 표시한다.
 
