@@ -196,8 +196,8 @@ type VatSummary = {
 ## 8. Implementation Sequence
 
 1. Drizzle schema + migration: `vat_period_summary`, `vat_deduction_review` 추가. **완료: `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`**
-2. `lib/vat/summary.ts` read model + 순수 파생 함수(세액 계산, pending count, package lock).
-3. `lib/vat/summary.test.ts` - 산식·기간·공제 판정·잠금·tenant 범위.
+2. `lib/vat/summary.ts` read model + 순수 파생 함수(세액 계산, pending count, package lock). **완료**
+3. `lib/vat/summary.test.ts` - 산식·기간·공제 판정·잠금·tenant 범위. **완료**
 4. `/dashboard/vat/page.tsx` SSR + 사업장/전표 없음 빈 상태.
 5. `_components/vat-workspace.tsx` - Preview 4.4 구조(세액 요약 -> 매출 구분 -> 공제 검토 -> 부속 명세 -> 패키지).
 6. 공제 판정 mutation API + UI 배선.

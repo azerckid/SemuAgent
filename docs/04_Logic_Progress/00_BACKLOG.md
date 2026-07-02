@@ -165,7 +165,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 신고 패키지 생성 버튼은 공제 검토 완료 전까지 잠금(disabled + aria-disabled)이며, 사유가 함께 노출된다. React 구현 시 disabled 버튼을 래퍼로 감싸 툴팁을 접근성 있게 처리한다.
   - [ ] 자동 홈택스 제출은 제공하지 않는다(패키지 + 입력 가이드까지). 세액은 검토 완료 전 "예정" 표기.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: Screen Flow 4d / UI Design 4.4 / Prototype Review / Preview / Component Plan 7.4 / VAT Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일(스키마 1단계): `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`.
+- Document Sync Check: Screen Flow 4d / UI Design 4.4 / Prototype Review / Preview / Component Plan 7.4 / VAT Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일(스키마/read model 1~3단계): `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`, `lib/vat/summary.ts`, `lib/vat/summary.test.ts`.
 
 ### JC-012 · Build payroll workspace (급여) — 신규
 

@@ -1,6 +1,6 @@
 # Test Scenarios: VAT
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-02 11:03
+> Last Updated: 2026-07-02 11:33
 
 부가세(JC-011) Layer 5 QA 시나리오. [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -37,15 +37,15 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 |:---|:---|:---|:---|:---:|
 | S-10 | `?period=2026-H1` | 진입 | 2026-01~06 부가세 1기 확정 신고 기준으로 집계 | Pending |
 | S-11 | 사업장 없음 | 진입 | 사업장 등록 안내 빈 상태(회계법인/고객사 문구 없음) | Pending |
-| S-12 | tenant A/B 데이터 | tenant A 로더 | B 데이터 미노출 | Pending |
-| S-13 | businessEntity A/B | A 컨텍스트 | B `clientId` VAT summary/review 미집계 | Pending |
+| S-12 | tenant A/B 데이터 | tenant A 로더 | B 데이터 미노출 | PASS·단위 |
+| S-13 | businessEntity A/B | A 컨텍스트 | B `clientId` VAT summary/review 미집계 | PASS·단위 |
 
 ### 2.3 세액 요약 산식
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-20 | outputTax=32,000,000, inputDeductible=18,000,000 | summary 파생 | payableTax=14,000,000 | Pending |
-| S-21 | inputTax 원천 18,320,000 중 pending 320,000 | summary 파생 | 공제 확정분만 inputTaxDeductible에 반영, pending은 잠금 사유 | Pending |
+| S-20 | outputTax=32,000,000, inputDeductible=18,000,000 | summary 파생 | payableTax=14,000,000 | PASS·단위 |
+| S-21 | inputTax 원천 18,320,000 중 pending 320,000 | summary 파생 | 공제 확정분만 inputTaxDeductible에 반영, pending은 잠금 사유 | PASS·단위 |
 | S-22 | `isFinal=false` | Hero 렌더 | "예정 세액" 및 검토 확정 전 안내 표시 | Pending |
 | S-23 | 마감 2026-07-25, 오늘 2026-07-01 | Hero 렌더 | D-24 표시 | Pending |
 
@@ -53,18 +53,18 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-30 | 과세 공급가액 320,000,000 | Sales card 렌더 | 매출세액 32,000,000 표시 | Pending |
-| S-31 | 영세율 공급가액 40,000,000 | Sales card 렌더 | 매출세액 0 표시 | Pending |
-| S-32 | 면세 공급가액 15,000,000 | Sales card 렌더 | 세액 "해당 없음" 표시 | Pending |
+| S-30 | 과세 공급가액 320,000,000 | Sales card 렌더 | 매출세액 32,000,000 표시 | PASS·단위 |
+| S-31 | 영세율 공급가액 40,000,000 | Sales card 렌더 | 매출세액 0 표시 | PASS·단위 |
+| S-32 | 면세 공급가액 15,000,000 | Sales card 렌더 | 세액 "해당 없음" 표시 | PASS·단위 |
 | S-33 | summary snapshot 없음 | 렌더 | 전표만으로 영세율/면세를 추정하지 않고 빈/대기 상태 | Pending |
 
 ### 2.5 매입세액 공제 검토
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-40 | kind=`non_deductible_candidate` | 표 렌더 | danger 칩 "불공제 후보", 불공제 확정/공제 액션 | Pending |
-| S-41 | kind=`proration_required` | 표 렌더 | warn 칩 "안분 필요", 안분 계산 액션 | Pending |
-| S-42 | decision=`deductible` | 표 렌더 | ok 칩 "공제 확정", 확정됨 상태 | Pending |
+| S-40 | kind=`non_deductible_candidate` | 표 렌더 | danger 칩 "불공제 후보", 불공제 확정/공제 액션 | PASS·단위 |
+| S-41 | kind=`proration_required` | 표 렌더 | warn 칩 "안분 필요", 안분 계산 액션 | PASS·단위 |
+| S-42 | decision=`deductible` | 표 렌더 | ok 칩 "공제 확정", 확정됨 상태 | PASS·단위 |
 | S-43 | 접대비 계정/설명 | 후보 생성 | 불공제 후보로 분류 | Pending |
 | S-44 | 공통매입 표시 | 후보 생성 | 안분 필요로 분류 | Pending |
 
@@ -81,9 +81,9 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-60 | 매출/매입 합계표 준비 | 렌더 | "준비됨" 상태칩 | Pending |
-| S-61 | 불공제 후보 3건 pending | 렌더 | 공제받지 못할 매입세액 명세서 "검토 대기" | Pending |
-| S-62 | pendingDeductionCount=3 | 패키지 카드 렌더 | 버튼 disabled + `aria-disabled=true` + locknote | Pending |
+| S-60 | 매출/매입 합계표 준비 | 렌더 | "준비됨" 상태칩 | PASS·단위 |
+| S-61 | 불공제 후보 3건 pending | 렌더 | 공제받지 못할 매입세액 명세서 "검토 대기" | PASS·단위 |
+| S-62 | pendingDeductionCount=3 | 패키지 카드 렌더 | 버튼 disabled + `aria-disabled=true` + locknote | PASS·단위 |
 | S-63 | pendingDeductionCount=3 | 패키지 생성 API 호출 | 409, 패키지 미생성 | Pending |
 | S-64 | pendingDeductionCount=0 | 패키지 생성 클릭 | 생성 허용, packageStatus 갱신 | Pending |
 
