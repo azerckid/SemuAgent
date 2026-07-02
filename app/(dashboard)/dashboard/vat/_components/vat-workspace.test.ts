@@ -48,6 +48,8 @@ describe('VAT workspace static contract', () => {
     expect(actionsSource).toContain("decision: 'non_deductible'")
     expect(actionsSource).toContain("decision: 'prorated'")
     expect(actionsSource).toContain('prorationRateBps')
+    expect(actionsSource).toContain('isProrationOpen')
+    expect(actionsSource).not.toContain('window.prompt')
   })
 
   it('guards deduction review mutations by tenant and recalculates the period summary (S-53)', () => {
