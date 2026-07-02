@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-02 20:23
+> Last Updated: 2026-07-02 20:56
 
 ## 1. 목적 및 범위
 
@@ -156,7 +156,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 | State(로딩/빈/오류) | 공용 재사용 | `skeleton` + `button` |
 
 - 신규 shadcn 없음. 기존 `card`/`badge`/`button`/`input`/`skeleton` 재사용.
-- 신고지원 화면은 회사용 `/dashboard/filing-support`로 새로 구성하며, 회사 홈 앵커 `#filing-support-status`는 구현 후 전용 route로 재지정한다.
+- 신고지원 화면은 회사용 `/dashboard/filing-support`로 구성하며, 회사 홈 신고지원 카드는 전용 route로 연결한다.
 - 부가세(JC-011)의 `vat_period_summary` package 상태와 급여(JC-012)의 `payroll_period_summary` 문서 상태를 내부 의존성으로 읽는다.
 - 자동 홈택스 제출·자동 납부·홈택스/EDI 자격증명 저장 UI는 만들지 않는다. 책임 경계 배너와 하단 안내에서 사용자가 직접 제출/납부함을 명시한다.
 - 접수증은 private storage에 저장하고 화면에는 안전한 파일명·제출일·보관 상태만 표시한다. `storageKey`/Blob URL은 렌더하지 않는다.
@@ -200,7 +200,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 기장검토 Pre-Code Brief: [06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) (JC-010 구현·머지 완료).
 - 부가세 Pre-Code Brief: [07_VAT_PRE_CODE_BRIEF.md](./07_VAT_PRE_CODE_BRIEF.md) (JC-011 구현·머지 완료).
 - 급여 Pre-Code Brief: [08_PAYROLL_PRE_CODE_BRIEF.md](./08_PAYROLL_PRE_CODE_BRIEF.md) (JC-012 구현·머지 완료).
-- 신고지원 Pre-Code Brief: [09_FILING_SUPPORT_PRE_CODE_BRIEF.md](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) (JC-013 게이트 완료, 구현 PR에서 물리 migration 예정).
+- 신고지원 Pre-Code Brief: [09_FILING_SUPPORT_PRE_CODE_BRIEF.md](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) (JC-013 게이트 완료, 구현 PR에서 물리 migration·workspace 적용).
 
 ## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자

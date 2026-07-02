@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-02 20:23
+> Last Updated: 2026-07-02 20:56
 
 ## Status Legend
 
@@ -25,7 +25,7 @@
 | JC-010 | done | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
 | JC-011 | done | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
 | JC-012 | done | Build payroll workspace | `lib/payroll-workspace`, `app/(dashboard)/dashboard/payroll`, `app/api/payroll` | Payroll register with derived totals, withholding/4-insurance deduction, insurance notice manual input/match, payslip/statement preview, and close guard match approved 급여 UI; PII raw fields/storage keys not exposed |
-| JC-013 | todo | Build filing support workspace | `lib/bookkeeping`, `lib/payroll`, `components/ui` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
+| JC-013 | done | Build filing support workspace | `lib/filing-support`, `app/(dashboard)/dashboard/filing-support`, `app/api/filing` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 | JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 프로비저닝 후 파일 업로드→저장→AI 파싱→정규화 E2E 검증 (현재 전부 플레이스홀더라 세션 생성까지만 검증됨) |
 
 ## Implementation Rule
@@ -209,16 +209,16 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 부가세(JC-011)·급여(JC-012) 산출물 데이터 모델 선행 — `vat_period_summary`, `payroll_period_summary`
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md)
 - Acceptance Criteria:
-  - [ ] 신고 항목(부가세/원천세/4대보험)이 선행 화면 산출물과 연동되어 상태와 함께 표시된다.
-  - [ ] 부가세 패키지는 공제 검토 완료 전 잠금이다.
-  - [ ] 홈택스 단계별 입력 가이드가 확정 값과 함께 제공되고 값 복사가 가능하다.
-  - [ ] 제출 접수증을 업로드·보관하고 미제출 항목은 대기로 표시된다.
-  - [ ] 사후 체크리스트로 납부·보관을 확인한다.
-  - [ ] **자동 홈택스 제출·자동 납부·자격증명 서버 저장은 제공하지 않는다**(책임 경계를 화면에 반복 노출).
-  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview / Component Plan 7.6 / DB Schema 4.3 / Filing Support Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일은 JC-013 implementation PR에서 갱신한다.
+  - [x] 신고 항목(부가세/원천세/4대보험)이 선행 화면 산출물과 연동되어 상태와 함께 표시된다. (`loadFilingSupportSummary`, `FilingItemsSection`)
+  - [x] 부가세 패키지는 공제 검토 완료 전 잠금이다. (`pendingDeductionCount` 기반 locknote + disabled CTA)
+  - [x] 홈택스 단계별 입력 가이드가 확정 값과 함께 제공되고 값 복사가 가능하다. (`buildFilingInputGuide`, `FilingGuideCopyButton`)
+  - [x] 제출 접수증을 업로드·보관하고 미제출 항목은 대기로 표시된다. (`filing_receipt`, `/api/filing/receipts`)
+  - [x] 사후 체크리스트로 납부·보관을 확인한다. (`filing_checklist_item`, `/api/filing/checklist-items/[itemId]`)
+  - [x] **자동 홈택스 제출·자동 납부·자격증명 서버 저장은 제공하지 않는다**(책임 경계를 화면에 반복 노출).
+  - [x] 로딩·빈·오류 상태가 화면에 구현된다. (`loading.tsx`, `error.tsx`, 빈 상태)
+- Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview / Component Plan 7.6 / DB Schema 4.3 / Filing Support Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0055_add_filing_support_tables.sql`, `lib/filing-support/summary.ts`, `lib/filing-support/summary.test.ts`, `lib/validations/filing-support.ts`, `app/(dashboard)/dashboard/filing-support/page.tsx`, `_components/filing-support-workspace.tsx`, `_components/filing-actions.tsx`, `_components/filing-support-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/filing/receipts/route.ts`, `app/api/filing/receipts/[receiptId]/route.ts`, `app/api/filing/checklist-items/[itemId]/route.ts`.
 
-> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 Pre-Code Brief·DB 논리 컬럼·Layer 5 QA를 완료해 구현 착수 가능 상태다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
+> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
