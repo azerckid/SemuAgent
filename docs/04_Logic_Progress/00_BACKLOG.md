@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-02 21:18
+> Last Updated: 2026-07-03 03:02
 
 ## Status Legend
 
@@ -17,7 +17,7 @@
 | JC-002 | done | Link local Solmate skills | solmate-skills | `.agent/skills` contains symlinks to local skill folders with `SKILL.md` |
 | JC-003 | done | Switch package manager baseline to npm | package setup | README and PR template use npm commands; pnpm files removed |
 | JC-004 | done | Audit copied routes and rename accounting-firm assumptions | `app`, `lib`, `components` | Company self-use terminology and responsibility boundary are reflected in visible routes. 노출 표면 정리(설정 GIWA 'CC 참조메일' 탭 제거) + dead GIWA 컴포넌트 삭제. 레거시 GIWA 워크플로 라우트 6종(sessions·reviews·emails·calendar·checklists·law-search) 및 사업장 하위 GIWA 요청 라우트(events·schedules·request-templates·payroll-requests) redirect 차단. `clients`(=사업장 등록·관리, v1 필수)·`billing`(=요금제)은 기능 유지. clients 화면 용어 사업장화(고객사→사업장). 설정 업무메일 탭 정리(work-email '사무소'→'회사', GIWA 고객 리마인더-days 섹션 제거). 사업장 상세(clients/[id]) GIWA 탭 제거(사업장 문서·사내급여기준·법적기준만 유지). jaryo-admin은 GIWA 잔재가 아니라 JARYO 플랫폼 운영자 콘솔로, `requireJaryoAdminSession`(operator allowlist, 비허용 이메일 404) 가드 + 테넌트 제품 미링크로 이미 격리됨 — 코드 조치 불필요(감사 완료). PR #21~#25 |
-| JC-005 | doing | Define company tenant data model delta | `lib/db/schema.ts` | Company/operator model documented before DB migration — 설계: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) (client→business_entity 재정의, 이메일 서브시스템 v1 제외). 부가세·급여 물리 마이그레이션 적용 완료, 신고지원 신규 테이블 컬럼은 JC-013 게이트에서 확정 |
+| JC-005 | done | Define company tenant data model delta | `lib/db/schema.ts` | 데이터 모델 델타 확정 — [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md): client→business_entity 재정의(물리명 `client` 유지·rename 지연, §2.1), 이메일 서브시스템 v1 제외(§2.2), 기간 표현 도메인별 canonical(§2.4). 신규 도메인 물리 migration 0053~0057 순차 적용 완료 |
 | JC-006 | done | Shape first working dashboard | `app/(dashboard)`, `components/ui` | Dashboard shows collection, bookkeeping, VAT, payroll, filing support status |
 | JC-007 | done | Define filing package model | `lib/filing-support`, `lib/db/schema.ts` | JC-013 신고지원 도메인으로 실현: `filing_item`(packageStatus·packageStorageKey·generatedAt·submittedAt)로 생성 문서/감사 상태, `filing_receipt`로 접수증, `filing_checklist_item`로 사후 상태 저장. Hometax guide는 확정값에서 파생 계산(저장 아님), 실제 PDF 생성은 deferred(storage key 준비). 별도 package 모델은 JC-013 중복이라 미신설 |
 | JC-008 | done | Review residual npm audit findings | `package.json`, parser/import libraries | `npm audit` 0건 달성. `xlsx`→SheetJS 공식 CDN 0.20.3 핀(prototype pollution·ReDoS 수정, API 동일). `ws`^8.21.0·`postcss`^8.5.10 overrides 유지. 오래된 `@esbuild-kit/core-utils`의 `esbuild ~0.18.20`만 `^0.25.0`으로 좁게 override하고, Vite/tsx peer는 root `esbuild`^0.28.0으로 충족해 `npm ls` 정합성 확보. viem은 http 전송만 사용해 ws DoS 미도달, drizzle-kit 정상 검증 |
@@ -55,21 +55,21 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] `client` → `business_entity` 개념 전환 방침 문서화
   - [x] 이메일 요청·수신함 서브시스템 v1 제외 방침 문서화
   - [x] 부가세 신규 테이블 논리 컬럼 확정 — [DB Schema 4.1](../03_Technical_Specs/03_DB_SCHEMA.md), [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)
-  - [ ] `business_entity` 물리 rename 여부와 마이그레이션 순서 확정 — **미충족**
+  - [x] `business_entity` 물리 rename 여부와 마이그레이션 순서 확정 — 물리명 `client` 유지(개념만 business_entity), rename 지연 결정 [DB Schema 2.1](../03_Technical_Specs/03_DB_SCHEMA.md). 신규 도메인 물리 migration은 0053~0057 순차 적용 완료
   - [x] 부가세 물리 Drizzle migration·인덱스·FK 적용 — `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`
   - [x] 급여 물리 Drizzle migration·인덱스·FK 적용 — `lib/db/schema.ts`, `drizzle/0054_add_payroll_workspace_tables.sql`
   - [x] 신고지원 신규 테이블 컬럼·인덱스·FK 확정 — [DB Schema 4.3](../03_Technical_Specs/03_DB_SCHEMA.md), [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)
-  - [ ] 과세기간·귀속월·전표 기간 표현 모델 확정 — **미충족**
+  - [x] 과세기간·귀속월·전표 기간 표현 모델 확정 — 도메인별 canonical(부가세·신고 반기 `YYYY-H`, 급여 월 `YYYY-MM`, 전표 회계연도+월, filing dual-key 브리지) [DB Schema 2.4](../03_Technical_Specs/03_DB_SCHEMA.md)
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md)
 - Acceptance Criteria:
   - [x] 6개 승인 화면의 데이터 요구사항이 기존 테이블 재사용/신규 테이블 필요성으로 매핑된다.
   - [x] 회사 셀프사용 컨텍스트에서 `clientId`의 개념 전환(`businessEntityId`)이 명시된다.
   - [x] v1 제외 테이블과 제외 사유가 제품 범위와 일치한다.
-  - [ ] 실제 Drizzle 스키마 변경안과 마이그레이션 순서가 확정된다.
+  - [x] 실제 Drizzle 스키마 변경안과 마이그레이션 순서가 확정된다 — 신규 도메인 물리 migration 0053(부가세)·0054(급여)·0055(신고지원)·0056(직원명부)·0057(리마인드) 순차 적용, `client` 물리 rename은 지연.
   - [x] 부가세 테이블의 최소 논리 컬럼이 구현 가능한 수준으로 확정된다.
   - [x] 부가세 물리 FK/인덱스가 구현 가능한 수준으로 확정되어 migration에 반영된다.
   - [x] 신고지원 테이블의 최소 컬럼, FK, 인덱스가 구현 가능한 수준으로 확정된다.
-- Document Sync Check: DB Schema / Backlog / 6개 승인 Preview의 데이터 요구사항을 상호 링크함 (2026-07-02 기준, 부가세 물리 Drizzle migration 추가, 신고지원 논리 스키마·QA 시나리오 확정)
+- Document Sync Check: DB Schema / Backlog / 6개 승인 Preview의 데이터 요구사항을 상호 링크함 (2026-07-03 기준, `client` 물리명 유지·rename 지연 결정, 도메인별 기간 canonical, 신규 도메인 migration 0053~0057 반영)
 
 ### JC-006 · Shape first working dashboard (회사 홈)
 

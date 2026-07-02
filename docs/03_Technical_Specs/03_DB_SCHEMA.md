@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-02 21:18
+> Last Updated: 2026-07-03 03:02
 
 ## 1. 목적 및 범위
 
@@ -33,6 +33,7 @@ tenant (로그인 주체 = 회사/대표)
 - `clientId` → `businessEntityId` 개념 전환. 전체 도메인 테이블이 이 키를 유지하므로 구조·GIWA 코드 최대 재사용.
 - 초기에는 tenant당 사업장 1개로 시작하되, 스키마는 1..N을 허용한다(대표가 여러 사업체를 운영하는 경우 대응).
 - `staffId`(담당 배정)는 회사 내부 담당자 배정으로 의미 전환(세무사무소 담당자 → 회사 내부 담당자). 외부 세무사 검토자는 v1 제외.
+- **물리 rename 결정(2026-07-03, JC-005)**: 물리 테이블명은 `client`로 **유지**한다(개념만 business_entity). `client`는 앱·API·FK에 걸쳐 약 274개 파일이 참조하므로 물리 rename(`client`→`business_entity`)은 대규모·고위험 마이그레이션 대비 v1 실익이 낮다. 제품/UI 레이어는 이미 "사업장"으로 표기(JC-004 완료)하고, `businessEntityId`는 개념 명칭으로만 사용한다. 물리 rename은 다중 사업장 운영이 실제 필요해질 때 별도 마이그레이션으로 재검토한다.
 
 ### 2.2 이메일 요청·수신함 서브시스템 v1 제외
 
@@ -47,6 +48,20 @@ tenant (로그인 주체 = 회사/대표)
 ### 2.3 결정 배경 링크
 - [[manage-decisions]] 기준의 아키텍처 결정. 대안(self 단일 레코드 / client 제거 후 tenant 재키잉)은
   각각 사업장 복수 불가, 대규모 재작성 리스크로 기각.
+
+### 2.4 기간 표현 모델 (도메인별 canonical, JC-005 확정)
+
+기간은 **단일 통합 키로 강제하지 않고** 도메인 성격에 맞게 표현한다(부가세는 반기, 급여는 월). 이는 의도된 설계다 — 부가세 과세기간은 반기, 급여 귀속월은 월 단위라 통합 시 오히려 왜곡된다.
+
+| 도메인 | 키 | 형식 | 검증 |
+|:---|:---|:---|:---|
+| 부가세·신고지원 과세기간 | `period_key` / `filing_period_key` | `YYYY-H1` / `YYYY-H2` (반기) | `^20\d{2}-H[12]$` |
+| 급여 귀속월 | `payroll_period` | `YYYY-MM` (월) | `^20\d{2}-(0[1-9]\|1[0-2])$` |
+| 회사 홈 기본 컨텍스트 | `periodKey` | `YYYY-H[12]`(또는 `Q1-4`) | company-home normalize |
+| 전표·장부 기간 | `fiscal_year` + `ledger_month` / `accounting_period` | 회계연도 + 월 | bookkeeping ledger |
+
+- 신고지원은 부가세 반기와 급여 귀속월을 함께 다루므로 `filing_item`이 `filing_period_key`(반기) + `payroll_period_key`(월) **dual key**로 브리지한다.
+- 각 도메인 검증은 자기 validation 스키마(`lib/validations/*`)에서 수행하며 단일 통합 스키마는 두지 않는다.
 
 ## 3. 도메인별 테이블 매핑 (화면 → 기존 테이블)
 
@@ -315,23 +330,24 @@ index(`tenant_id`, `client_id`, `status`), index(`tenant_id`, `client_id`, `doma
 
 자동 홈택스 제출·자동 납부·외부 고객 요청 메일은 비범위다.
 
-## 5. 명명·마이그레이션 방침 (JC-005에서 실행)
+## 5. 명명·마이그레이션 방침 (JC-005 확정)
 
 - 물리 테이블명 즉시 rename(`client` → `business_entity`)은 마이그레이션·코드 영향이 크다.
-  **개념/타입 레이어부터 전환**하고, 물리 rename 여부·시점은 JC-005 마이그레이션 설계에서 결정한다.
-- `tenant_id` + `business_entity_id` 복합 스코프를 모든 도메인 쿼리의 기준으로 유지(테넌트 격리).
-- 개인정보(급여·주민정보): 저장 시 최소 수집·마스킹·감사로그 방침을 급여(JC-012) 전제조건과 함께 확정.
+  JC-005에서는 물리명 `client`/`client_id`를 유지하고, 제품·문서·타입 의미만 `business_entity`/`businessEntityId`로 전환한다.
+  물리 rename은 다중 사업장 운영이 실제로 필요해질 때 별도 migration으로 재검토한다.
+- 물리 쿼리 스코프는 `tenant_id` + `client_id`를 기준으로 유지한다. 단, 문서·read model·UI에서는 `client_id`를 개념상 `businessEntityId`로 해석한다(테넌트 격리).
+- 개인정보(급여·주민정보): 저장 시 최소 수집·마스킹·감사로그 방침은 급여(JC-012) 구현에서 반영했다.
 - 홈택스/은행/카드/인증서 자격증명은 서버 저장하지 않는다(Product Baseline).
 
-## 6. 구현 상태 및 미결(JC-005 구현 단계 확정 대상)
+## 6. 구현 상태 및 후속 범위
 - 완료: 부가세 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-011 구현 PR에서 `0053_add_vat_tables.sql`로 적용.
 - 완료: 급여 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-012 구현 PR에서 `0054_add_payroll_workspace_tables.sql`로 적용.
 - 구현 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정했고, `0055_add_filing_support_tables.sql`로 물리 migration을 적용했다.
 - 구현 완료: 직원 명부 논리 컬럼은 [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)에서 확정했고, `0056_add_employee_profile.sql`로 물리 migration을 적용했다.
 - 구현 완료: 내부 리마인드 메일 논리 컬럼은 [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)에서 확정했고, `0057_add_internal_reminder_tables.sql`로 물리 migration을 적용했다.
-- 미결: `business_entity` 물리 rename 여부 및 마이그레이션 순서.
-- 미결: 과세기간(부가세 1기/2기·예정/확정) 표현 모델과 급여 귀속월·전표 기간의 정합.
-- 미결: v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭).
+- 확정: `business_entity` 물리 rename은 지연한다. v1은 물리명 `client`/`client_id`를 유지하고 개념명만 business entity로 사용한다.
+- 확정: 기간 표현은 도메인별 canonical을 유지한다(부가세·신고 반기 `YYYY-H1/H2`, 급여 월 `YYYY-MM`, 전표 회계연도+월, 신고지원 dual-key 브리지).
+- 후속 범위: v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭)는 현재 제품 노출 범위 밖이며, 즉시 migration 대상이 아니다.
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 사용자 정의(company=tenant), MVP 비범위
