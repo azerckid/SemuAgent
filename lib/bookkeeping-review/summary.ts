@@ -1,5 +1,6 @@
-import { and, eq, gte, inArray, isNull, lte, ne } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, ne } from 'drizzle-orm'
 import type { DateTime } from 'luxon'
+import { inferBookkeepingPeriodRange } from '@/lib/bookkeeping/period-range'
 import { buildCompanyHomePeriod, type CompanyHomePeriod } from '@/lib/company-home/summary'
 import {
   bookkeepingClassificationRun,
@@ -79,6 +80,19 @@ type ClassificationRowInput = {
 
 type VoucherLineInput = { side: string; accountName: string | null; accountCode: string | null; amountKrw: number }
 
+type ClassificationRunInput = {
+  id: string
+  uploadSessionId: string
+  status: string
+  createdAt: string
+}
+
+type SessionPeriodInput = {
+  accountingPeriod: string
+  bookkeepingPeriodStart: string | null
+  bookkeepingPeriodEnd: string | null
+}
+
 type LoadBookkeepingReviewSummaryParams = {
   tenantId: string
   periodKey?: string | null
@@ -88,8 +102,6 @@ type LoadBookkeepingReviewSummaryParams = {
 }
 
 const DEFAULT_TZ = 'Asia/Seoul'
-// 최신 run만 집계: superseded/실패한 run의 행은 제외한다.
-const ACTIVE_RUN_STATUSES = ['draft', 'running', 'completed'] as const
 const CONFIDENCE_TONE: Record<string, BookkeepingReviewTone> = {
   high: 'ok',
   medium: 'warn',
@@ -175,6 +187,51 @@ export function buildJournalEntry(lines: VoucherLineInput[]): BookkeepingReviewJ
   return { lines: mapped, debitTotal, creditTotal, balanced: debitTotal === creditTotal }
 }
 
+function normalizeMonthValue(value: string | null | undefined) {
+  if (!value) return null
+  if (/^20\d{2}-\d{2}$/.test(value)) return value
+  if (/^20\d{2}-\d{2}-\d{2}$/.test(value)) return value.slice(0, 7)
+  return null
+}
+
+export function sessionPeriodOverlapsCompanyPeriod(
+  session: SessionPeriodInput,
+  period: Pick<CompanyHomePeriod, 'startMonth' | 'endMonth'>,
+) {
+  const snapshotStart = normalizeMonthValue(session.bookkeepingPeriodStart)
+  const snapshotEnd = normalizeMonthValue(session.bookkeepingPeriodEnd)
+  const snapshotRange = snapshotStart && snapshotEnd && snapshotStart <= snapshotEnd
+    ? { start: snapshotStart, end: snapshotEnd }
+    : null
+  const range = snapshotRange ?? inferBookkeepingPeriodRange(session.accountingPeriod)
+
+  return Boolean(range && range.start <= period.endMonth && range.end >= period.startMonth)
+}
+
+export function pickLatestCompletedRunIdsBySession(runs: ClassificationRunInput[]) {
+  const latestBySession = new Map<string, ClassificationRunInput>()
+  for (const run of runs) {
+    if (run.status !== 'completed') continue
+    const current = latestBySession.get(run.uploadSessionId)
+    if (
+      !current ||
+      run.createdAt > current.createdAt ||
+      (run.createdAt === current.createdAt && run.id > current.id)
+    ) {
+      latestBySession.set(run.uploadSessionId, run)
+    }
+  }
+  return [...latestBySession.values()].map((run) => run.id)
+}
+
+export function selectBookkeepingReviewRowForDetail(
+  rows: BookkeepingReviewQueueRow[],
+  selectedRowId?: string | null,
+) {
+  if (rows.length === 0) return null
+  return selectedRowId ? rows.find((row) => row.id === selectedRowId) ?? rows[0] : rows[0]
+}
+
 export async function loadBookkeepingReviewSummary({
   tenantId,
   periodKey,
@@ -211,14 +268,59 @@ export async function loadBookkeepingReviewSummary({
     }
   }
 
-  const scopedSession = and(
-    eq(uploadSession.tenantId, tenantId),
-    eq(uploadSession.clientId, businessEntity.id),
-    eq(uploadSession.source, 'staff_direct'),
-    isNull(uploadSession.deletedAt),
-    gte(uploadSession.accountingPeriod, period.startMonth),
-    lte(uploadSession.accountingPeriod, period.endMonth),
-  )
+  const sessionRows = await db
+    .select({
+      id: uploadSession.id,
+      accountingPeriod: uploadSession.accountingPeriod,
+      bookkeepingPeriodStart: uploadSession.bookkeepingPeriodStart,
+      bookkeepingPeriodEnd: uploadSession.bookkeepingPeriodEnd,
+    })
+    .from(uploadSession)
+    .where(and(
+      eq(uploadSession.tenantId, tenantId),
+      eq(uploadSession.clientId, businessEntity.id),
+      eq(uploadSession.source, 'staff_direct'),
+      isNull(uploadSession.deletedAt),
+    ))
+
+  const sessionIds = sessionRows
+    .filter((session) => sessionPeriodOverlapsCompanyPeriod(session, period))
+    .map((session) => session.id)
+
+  if (sessionIds.length === 0) {
+    return {
+      ...base,
+      counts: { pending: 0, lowConfidence: 0, confirmed: 0, total: 0 },
+      rows: [],
+      selected: null,
+    }
+  }
+
+  const runRows = await db
+    .select({
+      id: bookkeepingClassificationRun.id,
+      uploadSessionId: bookkeepingClassificationRun.uploadSessionId,
+      status: bookkeepingClassificationRun.status,
+      createdAt: bookkeepingClassificationRun.createdAt,
+    })
+    .from(bookkeepingClassificationRun)
+    .where(and(
+      eq(bookkeepingClassificationRun.tenantId, tenantId),
+      eq(bookkeepingClassificationRun.status, 'completed'),
+      inArray(bookkeepingClassificationRun.uploadSessionId, sessionIds),
+    ))
+    .orderBy(desc(bookkeepingClassificationRun.createdAt), desc(bookkeepingClassificationRun.id))
+
+  const latestRunIds = pickLatestCompletedRunIdsBySession(runRows)
+
+  if (latestRunIds.length === 0) {
+    return {
+      ...base,
+      counts: { pending: 0, lowConfidence: 0, confirmed: 0, total: 0 },
+      rows: [],
+      selected: null,
+    }
+  }
 
   const classificationRows = await db
     .select({
@@ -234,27 +336,18 @@ export async function loadBookkeepingReviewSummary({
       status: bookkeepingTransactionClassification.status,
     })
     .from(bookkeepingTransactionClassification)
-    .innerJoin(uploadSession, and(eq(bookkeepingTransactionClassification.uploadSessionId, uploadSession.id), scopedSession))
-    .innerJoin(
-      bookkeepingClassificationRun,
-      and(
-        eq(bookkeepingTransactionClassification.classificationRunId, bookkeepingClassificationRun.id),
-        eq(bookkeepingClassificationRun.tenantId, tenantId),
-        inArray(bookkeepingClassificationRun.status, ACTIVE_RUN_STATUSES),
-      ),
-    )
     .where(and(
       eq(bookkeepingTransactionClassification.tenantId, tenantId),
+      inArray(bookkeepingTransactionClassification.classificationRunId, latestRunIds),
       ne(bookkeepingTransactionClassification.status, 'excluded'),
     ))
+    .orderBy(bookkeepingTransactionClassification.transactionDate, bookkeepingTransactionClassification.createdAt)
 
   const rows = classificationRows.map(mapClassificationRow)
   const counts = buildBookkeepingReviewCounts(rows)
   const tabRows = filterRowsByTab(rows, resolvedTab)
 
-  const selectedRow = selectedRowId
-    ? rows.find((row) => row.id === selectedRowId) ?? tabRows[0] ?? null
-    : tabRows[0] ?? null
+  const selectedRow = selectBookkeepingReviewRowForDetail(tabRows, selectedRowId)
 
   let selected: BookkeepingReviewSummary['selected'] = null
   if (selectedRow) {

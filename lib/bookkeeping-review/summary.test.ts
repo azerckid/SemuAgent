@@ -7,8 +7,11 @@ import {
   filterRowsByTab,
   mapClassificationRow,
   normalizeConfidence,
+  pickLatestCompletedRunIdsBySession,
   requiresManualAccount,
   resolveBookkeepingReviewTab,
+  selectBookkeepingReviewRowForDetail,
+  sessionPeriodOverlapsCompanyPeriod,
   type BookkeepingReviewQueueRow,
 } from './summary'
 
@@ -155,6 +158,82 @@ describe('buildJournalEntry (S-40~42)', () => {
   })
 })
 
+describe('sessionPeriodOverlapsCompanyPeriod (S-10)', () => {
+  const h1 = { startMonth: '2026-01', endMonth: '2026-06' }
+
+  it('uses bookkeepingPeriodStart/End snapshot for quarterly/yearly sessions', () => {
+    expect(sessionPeriodOverlapsCompanyPeriod({
+      accountingPeriod: '2026-Q1',
+      bookkeepingPeriodStart: '2026-01',
+      bookkeepingPeriodEnd: '2026-03',
+    }, h1)).toBe(true)
+    expect(sessionPeriodOverlapsCompanyPeriod({
+      accountingPeriod: '2025',
+      bookkeepingPeriodStart: '2025-01',
+      bookkeepingPeriodEnd: '2025-12',
+    }, h1)).toBe(false)
+  })
+
+  it('falls back to parsing accountingPeriod when snapshot is missing', () => {
+    expect(sessionPeriodOverlapsCompanyPeriod({
+      accountingPeriod: '2026-Q2',
+      bookkeepingPeriodStart: null,
+      bookkeepingPeriodEnd: null,
+    }, h1)).toBe(true)
+    expect(sessionPeriodOverlapsCompanyPeriod({
+      accountingPeriod: '2026-Q3',
+      bookkeepingPeriodStart: null,
+      bookkeepingPeriodEnd: null,
+    }, h1)).toBe(false)
+  })
+
+  it('normalizes legacy YYYY-MM-DD snapshot values', () => {
+    expect(sessionPeriodOverlapsCompanyPeriod({
+      accountingPeriod: '2026-06',
+      bookkeepingPeriodStart: '2026-06-01',
+      bookkeepingPeriodEnd: '2026-06-30',
+    }, h1)).toBe(true)
+  })
+
+  it('falls back to accountingPeriod when snapshot range is invalid', () => {
+    expect(sessionPeriodOverlapsCompanyPeriod({
+      accountingPeriod: '2026-Q1',
+      bookkeepingPeriodStart: '2026-03',
+      bookkeepingPeriodEnd: '2026-01',
+    }, h1)).toBe(true)
+  })
+})
+
+describe('pickLatestCompletedRunIdsBySession (S-23)', () => {
+  it('selects only the latest completed run per session and ignores draft/running/failed/superseded', () => {
+    expect(pickLatestCompletedRunIdsBySession([
+      { id: 's1-old', uploadSessionId: 'session-1', status: 'completed', createdAt: '2026-06-01T00:00:00.000+09:00' },
+      { id: 's1-running', uploadSessionId: 'session-1', status: 'running', createdAt: '2026-06-03T00:00:00.000+09:00' },
+      { id: 's1-new', uploadSessionId: 'session-1', status: 'completed', createdAt: '2026-06-02T00:00:00.000+09:00' },
+      { id: 's2-failed', uploadSessionId: 'session-2', status: 'failed', createdAt: '2026-06-04T00:00:00.000+09:00' },
+      { id: 's2-ok', uploadSessionId: 'session-2', status: 'completed', createdAt: '2026-06-01T00:00:00.000+09:00' },
+      { id: 's3-superseded', uploadSessionId: 'session-3', status: 'superseded', createdAt: '2026-06-01T00:00:00.000+09:00' },
+    ])).toEqual(['s1-new', 's2-ok'])
+  })
+
+  it('uses id as a deterministic tie-break when createdAt is identical', () => {
+    expect(pickLatestCompletedRunIdsBySession([
+      { id: 'run-a', uploadSessionId: 'session-1', status: 'completed', createdAt: '2026-06-01T00:00:00.000+09:00' },
+      { id: 'run-b', uploadSessionId: 'session-1', status: 'completed', createdAt: '2026-06-01T00:00:00.000+09:00' },
+    ])).toEqual(['run-b'])
+  })
+})
+
+describe('selectBookkeepingReviewRowForDetail', () => {
+  it('keeps the selected detail inside the current tab rows (P2)', () => {
+    const pending = row({ id: 'pending', status: 'suggested' })
+    const confirmed = row({ id: 'confirmed', status: 'confirmed' })
+    const tabRows = filterRowsByTab([pending, confirmed], 'pending')
+
+    expect(selectBookkeepingReviewRowForDetail(tabRows, 'confirmed')?.id).toBe('pending')
+  })
+})
+
 describe('bookkeeping review loader boundaries', () => {
   const source = readFileSync(new URL('./summary.ts', import.meta.url), 'utf8')
 
@@ -168,12 +247,15 @@ describe('bookkeeping review loader boundaries', () => {
     expect(source).toContain('uploadSessionId: bookkeepingTransactionClassification.uploadSessionId')
   })
 
-  it('filters by accounting period and staff_direct source (S-10)', () => {
-    expect(source).toContain('gte(uploadSession.accountingPeriod, period.startMonth)')
+  it('filters by staff_direct source and bookkeeping period snapshot overlap (S-10)', () => {
+    expect(source).toContain('sessionPeriodOverlapsCompanyPeriod(session, period)')
+    expect(source).toContain('bookkeepingPeriodStart: uploadSession.bookkeepingPeriodStart')
+    expect(source).toContain('bookkeepingPeriodEnd: uploadSession.bookkeepingPeriodEnd')
     expect(source).toContain("eq(uploadSession.source, 'staff_direct')")
   })
 
-  it('excludes superseded classification runs', () => {
-    expect(source).toContain('ACTIVE_RUN_STATUSES')
+  it('uses only latest completed classification runs', () => {
+    expect(source).toContain("eq(bookkeepingClassificationRun.status, 'completed')")
+    expect(source).toContain('pickLatestCompletedRunIdsBySession(runRows)')
   })
 })
