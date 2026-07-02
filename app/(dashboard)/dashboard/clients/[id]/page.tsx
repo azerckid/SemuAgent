@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { z } from 'zod'
@@ -7,19 +7,14 @@ import { getOrCreateFiscalYearLedgerSummary } from '@/lib/bookkeeping/fiscal-yea
 import { db } from '@/lib/db'
 import {
   client,
-  clientCcGroup,
   clientDocument,
-  clientRequestEvent,
   staff,
-  uploadSession,
 } from '@/lib/db/schema'
-import { loadPayrollDerivedStatusBySessionId } from '@/lib/payroll/load-payroll-derived-status'
 import {
   PAYROLL_RULE_CLIENT_SUBMIT_MEMO,
   isPayrollRuleDocumentType,
   resolvePayrollRuleSourceTypeFromContentType,
 } from '@/lib/payroll/payroll-rule-document-types'
-import { loadReviewDerivedStatusBySessionId } from '@/lib/reviews/load-review-derived-status'
 import { now } from '@/lib/time'
 import {
   countApprovalBlockingConflicts,
@@ -112,57 +107,7 @@ export default async function ClientDetailPage({
   const currentClient = clientRows[0]
   if (!currentClient) notFound()
 
-  const [sessions, events, ccGroups, documentRows, fiscalLedgerSummary] = await Promise.all([
-    db
-      .select({
-        id: uploadSession.id,
-        accountingPeriod: uploadSession.accountingPeriod,
-        status: uploadSession.status,
-        expiresAt: uploadSession.expiresAt,
-        lastAccessedAt: uploadSession.lastAccessedAt,
-        createdAt: uploadSession.createdAt,
-        requestEventId: uploadSession.requestEventId,
-        requestKind: uploadSession.requestKind,
-      })
-      .from(uploadSession)
-      .where(and(
-        eq(uploadSession.clientId, id),
-        eq(uploadSession.tenantId, tenantId),
-        isNull(uploadSession.deletedAt),
-      ))
-      .orderBy(desc(uploadSession.createdAt))
-      .limit(100),
-    db
-      .select({
-        id: clientRequestEvent.id,
-        accountingPeriod: clientRequestEvent.accountingPeriod,
-        frequency: clientRequestEvent.frequency,
-        requestKind: clientRequestEvent.requestKind,
-        title: clientRequestEvent.title,
-        dueAt: clientRequestEvent.dueAt,
-        status: clientRequestEvent.status,
-        uploadSessionId: clientRequestEvent.uploadSessionId,
-        createdAt: clientRequestEvent.createdAt,
-      })
-      .from(clientRequestEvent)
-      .where(and(
-        eq(clientRequestEvent.clientId, id),
-        eq(clientRequestEvent.tenantId, tenantId),
-        isNull(clientRequestEvent.deletedAt),
-      ))
-      .orderBy(desc(clientRequestEvent.createdAt))
-      .limit(100),
-    db
-      .select({
-        id: clientCcGroup.id,
-        name: clientCcGroup.name,
-        purpose: clientCcGroup.purpose,
-        emails: clientCcGroup.emails,
-        isDefault: clientCcGroup.isDefault,
-      })
-      .from(clientCcGroup)
-      .where(and(eq(clientCcGroup.clientId, id), eq(clientCcGroup.tenantId, tenantId)))
-      .orderBy(desc(clientCcGroup.isDefault), desc(clientCcGroup.createdAt)),
+  const [documentRows, fiscalLedgerSummary] = await Promise.all([
     db
       .select({
         id: clientDocument.id,
@@ -182,31 +127,6 @@ export default async function ClientDetailPage({
   ])
 
   const documents: ClientDetailDocument[] = documentRows
-
-  // 자료검토(기장/일반) 세션만 — 급여정산 세션은 별도 진행도 기준을 쓰므로 제외.
-  const reviewSessionIds = sessions
-    .filter((session) => session.requestKind !== 'payroll')
-    .map((session) => session.id)
-  const payrollSessionIds = sessions
-    .filter((session) => session.requestKind === 'payroll')
-    .map((session) => session.id)
-
-  const [reviewStatusBySessionId, payrollStatusBySessionId] = await Promise.all([
-    loadReviewDerivedStatusBySessionId({
-      tenantId,
-      sessionIds: reviewSessionIds,
-      clientId: currentClient.id,
-      clientName: currentClient.name,
-      // deriveSessionStatus는 clientEmail을 읽지 않음 — 여기서는 다시 조회하지 않는다.
-      clientEmail: '',
-      staffName: currentClient.staffName,
-    }),
-    loadPayrollDerivedStatusBySessionId({
-      tenantId,
-      clientId: currentClient.id,
-      sessionIds: payrollSessionIds,
-    }),
-  ])
 
   // 사내급여기준 프로필(Slice 2: 읽기/상태 전용) — 현재 월 기준 active 프로필 해석
   const currentMonth = now().setZone('Asia/Seoul').toFormat('yyyy-MM')
@@ -337,11 +257,6 @@ export default async function ClientDetailPage({
 
       <ClientDetailTabs
         clientId={currentClient.id}
-        events={events}
-        sessions={sessions}
-        reviewStatusBySessionId={Object.fromEntries(reviewStatusBySessionId)}
-        payrollStatusBySessionId={Object.fromEntries(payrollStatusBySessionId)}
-        ccGroups={ccGroups}
         documents={documents}
         payrollRuleProfile={payrollRuleProfileView}
         initialTab={
