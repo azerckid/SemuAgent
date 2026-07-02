@@ -1054,6 +1054,78 @@ export const bookkeepingJournalEntryVoucherLine = sqliteTable('bookkeeping_journ
 }))
 
 // ---------------------------------------------------------------------------
+// vat_period_summary
+// 사업장·부가세 기간별 세액/패키지 상태 스냅샷.
+// 과세/영세율/면세 매출 구분은 현재 전표 라인만으로 안정적으로 복원할 수 없어
+// VAT 전용 summary에 저장한다.
+// ---------------------------------------------------------------------------
+export const vatPeriodSummary = sqliteTable('vat_period_summary', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  periodKey: text('period_key').notNull(),
+  periodStartMonth: text('period_start_month').notNull(),
+  periodEndMonth: text('period_end_month').notNull(),
+  filingType: text('filing_type', { enum: ['preliminary', 'final'] }).notNull().default('final'),
+  taxableSupplyKrw: integer('taxable_supply_krw').notNull().default(0),
+  taxableOutputTaxKrw: integer('taxable_output_tax_krw').notNull().default(0),
+  zeroRatedSupplyKrw: integer('zero_rated_supply_krw').notNull().default(0),
+  exemptSupplyKrw: integer('exempt_supply_krw').notNull().default(0),
+  outputTaxKrw: integer('output_tax_krw').notNull().default(0),
+  inputTaxKrw: integer('input_tax_krw').notNull().default(0),
+  inputTaxDeductibleKrw: integer('input_tax_deductible_krw').notNull().default(0),
+  payableTaxKrw: integer('payable_tax_krw').notNull().default(0),
+  pendingDeductionCount: integer('pending_deduction_count').notNull().default(0),
+  isFinal: integer('is_final', { mode: 'boolean' }).notNull().default(false),
+  packageStatus: text('package_status', { enum: ['locked', 'ready', 'generated'] }).notNull().default('locked'),
+  packageStorageKey: text('package_storage_key'),
+  generatedAt: text('generated_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  scopeUidx: uniqueIndex('vat_period_summary_scope_uidx')
+    .on(t.tenantId, t.clientId, t.periodKey, t.filingType),
+  periodIdx: index('vat_period_summary_period_idx').on(t.tenantId, t.clientId, t.periodKey),
+  packageIdx: index('vat_period_summary_package_idx').on(t.tenantId, t.clientId, t.packageStatus),
+}))
+
+// ---------------------------------------------------------------------------
+// vat_deduction_review
+// 매입 전표/거래별 부가세 공제 판정 상태. 신고 패키지 생성 잠금은 pending
+// review가 남아 있는지로 결정한다.
+// ---------------------------------------------------------------------------
+export const vatDeductionReview = sqliteTable('vat_deduction_review', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  periodKey: text('period_key').notNull(),
+  sourceVoucherId: text('source_voucher_id').references(() => bookkeepingJournalEntryVoucher.id),
+  sourceVoucherLineId: text('source_voucher_line_id').references(() => bookkeepingJournalEntryVoucherLine.id),
+  classificationRowId: text('classification_row_id').references(() => bookkeepingTransactionClassification.id),
+  description: text('description').notNull(),
+  counterparty: text('counterparty'),
+  supplyAmountKrw: integer('supply_amount_krw').notNull().default(0),
+  inputTaxKrw: integer('input_tax_krw').notNull().default(0),
+  kind: text('kind', {
+    enum: ['deductible', 'non_deductible_candidate', 'proration_required'],
+  }).notNull().default('deductible'),
+  decision: text('decision', {
+    enum: ['pending', 'deductible', 'non_deductible', 'prorated'],
+  }).notNull().default('pending'),
+  reason: text('reason').notNull().default(''),
+  prorationRateBps: integer('proration_rate_bps'),
+  confirmedByStaffId: text('confirmed_by_staff_id').references(() => staff.id),
+  confirmedAt: text('confirmed_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  periodIdx: index('vat_deduction_review_period_idx').on(t.tenantId, t.clientId, t.periodKey),
+  decisionIdx: index('vat_deduction_review_decision_idx').on(t.tenantId, t.clientId, t.periodKey, t.decision),
+  voucherIdx: index('vat_deduction_review_voucher_idx').on(t.tenantId, t.sourceVoucherId),
+  voucherLineIdx: index('vat_deduction_review_voucher_line_idx').on(t.tenantId, t.sourceVoucherLineId),
+}))
+
+// ---------------------------------------------------------------------------
 // client_request_event  (캘린더 요청 인스턴스)
 // upload_session_id: event → session 단방향 FK. 역방향은 upload_session.request_event_id (text only).
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 # VAT Pre-Code Technical Brief
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-02 11:03
+> Last Updated: 2026-07-02 11:26
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -27,9 +27,10 @@ JC-011 부가세 구현 직전 계약. 기장검토에서 확정된 전표와 VA
 5. 신고 패키지 미리보기와 생성 잠금
 6. 로딩, 빈 상태, 오류 상태
 
-현재 `lib/db/schema.ts`에는 `vat_*` 전용 테이블이 없다. 따라서 JC-011 구현은
-Drizzle migration에서 `vat_period_summary`, `vat_deduction_review`를 추가한 뒤
-read model과 화면을 구현한다. DB Schema 문서의 4.1은 이 Brief 기준으로 구체화한다.
+JC-011 구현은 Drizzle migration에서 `vat_period_summary`, `vat_deduction_review`를
+먼저 추가한 뒤 read model과 화면을 구현한다. DB Schema 문서의 4.1은 이 Brief 기준으로
+구체화했고, 구현 1단계에서 `lib/db/schema.ts`와 `drizzle/0053_add_vat_tables.sql`에
+물리 스키마를 추가한다.
 
 ## 2. Route and Component Boundary
 
@@ -194,7 +195,7 @@ type VatSummary = {
 
 ## 8. Implementation Sequence
 
-1. Drizzle schema + migration: `vat_period_summary`, `vat_deduction_review` 추가.
+1. Drizzle schema + migration: `vat_period_summary`, `vat_deduction_review` 추가. **완료: `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`**
 2. `lib/vat/summary.ts` read model + 순수 파생 함수(세액 계산, pending count, package lock).
 3. `lib/vat/summary.test.ts` - 산식·기간·공제 판정·잠금·tenant 범위.
 4. `/dashboard/vat/page.tsx` SSR + 사업장/전표 없음 빈 상태.
