@@ -54,6 +54,7 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.185.0",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.0",
     "eslint": "^9",
     "eslint-config-next": "^16.2.9",
     "tailwindcss": "^4",
@@ -63,6 +64,8 @@
   "overrides": {
     "ws": "^8.21.0",
     "postcss": "^8.5.10",
-    "esbuild": "^0.25.0"
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.0"
+    }
   }
 }
