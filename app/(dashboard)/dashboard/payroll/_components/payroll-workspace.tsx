@@ -16,6 +16,12 @@ import type {
   PayrollWorkspaceSummary,
 } from '@/lib/payroll-workspace/summary'
 import { cn } from '@/lib/utils'
+import {
+  PayrollCloseButton,
+  PayrollDocumentsButton,
+  PayrollInsuranceNoticeForm,
+  PayrollResolveIssueButton,
+} from './payroll-actions'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 
@@ -46,7 +52,7 @@ export function PayrollWorkspace({ summary }: PayrollWorkspaceProps) {
         <IssueAlert summary={summary} />
         <PayrollRegisterSection summary={summary} />
         <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-          <DeductionBreakdownCard items={summary.deductionBreakdown} />
+          <DeductionBreakdownCard periodKey={summary.period.key} items={summary.deductionBreakdown} />
           <PayrollDocumentsCard summary={summary} />
         </div>
         <StateCoverageSection />
@@ -160,12 +166,16 @@ function IssueAlert({ summary }: PayrollWorkspaceProps) {
         <h2 className="text-[13.5px] font-semibold text-[#92400e]">{summary.issueAlert.title}</h2>
         <p className="mt-0.5 text-[12.5px] text-[#a16207]">{summary.issueAlert.description}</p>
       </div>
-      <Link
-        href={summary.issueAlert.targetEmployeeLineId ? `#payroll-line-${summary.issueAlert.targetEmployeeLineId}` : '#payroll-register'}
-        className="rounded-lg border border-[#d97706] bg-company-surface px-3 py-1.5 text-[12.5px] font-semibold text-[#d97706]"
-      >
-        확인하기
-      </Link>
+      {summary.issueAlert.targetEmployeeLineId ? (
+        <PayrollResolveIssueButton lineId={summary.issueAlert.targetEmployeeLineId} />
+      ) : (
+        <Link
+          href="#payroll-register"
+          className="rounded-lg border border-[#d97706] bg-company-surface px-3 py-1.5 text-[12.5px] font-semibold text-[#d97706]"
+        >
+          확인하기
+        </Link>
+      )}
     </section>
   )
 }
@@ -274,7 +284,13 @@ function PayrollRegisterTableRow({ row }: { readonly row: PayrollRegisterRow }) 
   )
 }
 
-function DeductionBreakdownCard({ items }: { readonly items: PayrollDeductionBreakdownItem[] }) {
+function DeductionBreakdownCard({
+  periodKey,
+  items,
+}: {
+  readonly periodKey: string
+  readonly items: PayrollDeductionBreakdownItem[]
+}) {
   const total = items.reduce((sum, item) => sum + item.amountKrw, 0)
 
   return (
@@ -297,6 +313,7 @@ function DeductionBreakdownCard({ items }: { readonly items: PayrollDeductionBre
           <p className="text-[15px] font-bold tabular-nums text-[#dc2626]">{formatCurrency(total)}</p>
         </div>
       </div>
+      <PayrollInsuranceNoticeForm periodKey={periodKey} />
     </section>
   )
 }
@@ -323,21 +340,10 @@ function PayrollDocumentsCard({ summary }: PayrollWorkspaceProps) {
         })}
       </div>
       <div className="mt-3 border-t border-company-border pt-3.5">
-        <button
-          type="button"
-          disabled={summary.closeAction.locked}
-          aria-disabled={summary.closeAction.locked}
-          className={cn(
-            'w-full rounded-lg border px-3.5 py-2.5 text-center text-[12.5px] font-semibold',
-            summary.closeAction.canClose
-              ? 'border-[#18181b] bg-[#18181b] text-white'
-              : 'cursor-not-allowed border-company-border bg-[#f1f1f2] text-company-fg-subtle',
-          )}
-        >
-          {summary.closeAction.canClose
-            ? '급여 마감·확정'
-            : `급여 마감·확정 · 잠김 (${summary.closeAction.lockReason ?? '확인 후 활성화'})`}
-        </button>
+        <PayrollDocumentsButton periodKey={summary.period.key} locked={summary.closeAction.locked} />
+        <div className="mt-2">
+          <PayrollCloseButton periodKey={summary.period.key} closeAction={summary.closeAction} />
+        </div>
         <p className="mt-2 text-xs text-company-fg-subtle">
           건강보험 EDI/사회보험 고지액이 매칭된 뒤 최종 급여정산에 우선 반영됩니다.
         </p>

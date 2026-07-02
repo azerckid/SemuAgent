@@ -5,7 +5,12 @@ import { describe, expect, it } from 'vitest'
 const componentsDir = new URL('.', import.meta.url)
 const workspaceRoot = join(componentsDir.pathname, '../../../../..')
 const workspaceSource = readFileSync(new URL('./payroll-workspace.tsx', import.meta.url), 'utf8')
+const actionsSource = readFileSync(new URL('./payroll-actions.tsx', import.meta.url), 'utf8')
 const pageSource = readFileSync(new URL('../page.tsx', import.meta.url), 'utf8')
+const resolveRouteSource = readFileSync(join(workspaceRoot, 'app/api/payroll/employee-lines/[lineId]/resolve/route.ts'), 'utf8')
+const closeRouteSource = readFileSync(join(workspaceRoot, 'app/api/payroll/periods/[period]/close/route.ts'), 'utf8')
+const documentsRouteSource = readFileSync(join(workspaceRoot, 'app/api/payroll/periods/[period]/documents/route.ts'), 'utf8')
+const noticeImportRouteSource = readFileSync(join(workspaceRoot, 'app/api/payroll/periods/[period]/insurance-notices/route.ts'), 'utf8')
 const sidebarSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/_components/sidebar.tsx'), 'utf8')
 const companyHomeSummarySource = readFileSync(join(workspaceRoot, 'lib/company-home/summary.ts'), 'utf8')
 
@@ -48,9 +53,37 @@ describe('payroll workspace static contract (JC-012)', () => {
   })
 
   it('keeps the payroll close button visibly locked when closeAction is locked (S-50)', () => {
+    expect(workspaceSource).toContain('PayrollCloseButton')
     expect(workspaceSource).toContain('summary.closeAction.locked')
-    expect(workspaceSource).toContain('aria-disabled={summary.closeAction.locked}')
-    expect(workspaceSource).toContain('급여 마감·확정 · 잠김')
+    expect(actionsSource).toContain('aria-disabled={disabled}')
+    expect(actionsSource).toContain('급여 마감·확정 · 잠김')
+  })
+
+  it('wires payroll mutations to tenant-scoped API routes (S-50~54)', () => {
+    expect(workspaceSource).toContain('PayrollResolveIssueButton')
+    expect(workspaceSource).toContain('PayrollDocumentsButton')
+    expect(workspaceSource).toContain('PayrollInsuranceNoticeForm')
+    expect(actionsSource).toContain('/api/payroll/employee-lines/${lineId}/resolve')
+    expect(actionsSource).toContain('/api/payroll/periods/${periodKey}/documents')
+    expect(actionsSource).toContain('/api/payroll/periods/${periodKey}/close')
+    expect(actionsSource).toContain('/api/payroll/periods/${periodKey}/insurance-notices')
+
+    for (const routeSource of [resolveRouteSource, closeRouteSource, documentsRouteSource, noticeImportRouteSource]) {
+      expect(routeSource).toContain('requireTenantSession')
+      expect(routeSource).toContain('getActiveStaffForUser')
+      expect(routeSource).toContain('eq(')
+      expect(routeSource).toContain('tenantId')
+      expect(routeSource).toContain("revalidatePath('/dashboard/payroll')")
+    }
+  })
+
+  it('keeps insurance notice import as upload/manual input without credential storage (S-35~37)', () => {
+    expect(noticeImportRouteSource).toContain('payrollInsuranceNoticeImportSchema.safeParse')
+    expect(noticeImportRouteSource).toContain("storageKey: null")
+    expect(noticeImportRouteSource).toContain('matchKeyHash')
+    expect(noticeImportRouteSource).not.toContain('password')
+    expect(noticeImportRouteSource).not.toContain('certificate')
+    expect(noticeImportRouteSource).not.toContain('scrape')
   })
 
   it('routes company navigation to the preview-aligned payroll screen (S-02)', () => {
