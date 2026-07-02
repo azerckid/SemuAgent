@@ -129,10 +129,10 @@ type EmployeeDirectorySummary = {
 
 - [x] UI Preview 작성 및 사용자 확인 — [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html) (2026-07-02)
 - [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/employees`
-- [ ] 신규 `employee_profile` 물리 테이블 여부 확정
-- [ ] 급여 line과 직원 마스터 연결 방식 확정
-- [ ] 개인정보 저장 금지/마스킹 방침 확정
-- [ ] JC-016 내부 리마인드 수신자 참조 방식 확정
+- [x] 신규 `employee_profile` 물리 테이블 확정 — `drizzle/0056_add_employee_profile.sql`
+- [x] 급여 line과 직원 마스터 연결 방식 확정 — `employee_code` 읽기 전용 매칭(최근 급여 귀속월 표시), 수동 연결 mutation 없음
+- [x] 개인정보 저장 금지/마스킹 방침 확정 — 주민번호·계좌·전화 필드 미보유, `maskEmployeeName`+`canViewEmployeeNames`
+- [ ] JC-016 내부 리마인드 수신자 참조 방식 확정 — JC-016 UI Preview 단계에서 확정
 - [x] QA 시나리오 작성 및 Backlog Context Lock 연결
 
 ## 9. Acceptance Criteria
@@ -147,8 +147,8 @@ type EmployeeDirectorySummary = {
 ## 10. Open Items
 
 - 직원 명부 진입 위치는 독립 메뉴 `/dashboard/employees`로 확정(2026-07-02, UI Preview 승인 시).
-- 직원 이메일이 없는 경우 리마인드 수신자를 staff 계정으로 대체할지 결정이 필요하다.
-- 기존 payroll line의 `employeeCode`를 employee_profile과 자동 매칭할지, 사용자 확인 후 연결할지 결정이 필요하다.
+- 직원 이메일이 없는 경우 리마인드 수신자를 staff 계정으로 대체할지 결정이 필요하다(JC-016).
+- 급여 line 연결은 `employee_code` 읽기 전용 매칭으로 확정(2026-07-02 구현). 사용자 확인 기반 수동 연결은 필요 시 후속.
 
 ## 11. Related Documents
 

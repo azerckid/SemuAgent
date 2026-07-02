@@ -1695,6 +1695,39 @@ export const filingChecklistItem = sqliteTable('filing_checklist_item', {
 }))
 
 // ---------------------------------------------------------------------------
+// employee_profile  (JC-015 직원 명부)
+// 급여 실행 결과(payroll_employee_line)와 분리된 상시 직원 마스터. 주민등록번호·
+// 계좌번호·전화번호 원문은 저장하지 않고 이름·사번·부서·업무 이메일만 관리한다.
+// 급여·4대보험 고지액 매칭·내부 리마인드(JC-016) 수신자의 기준 데이터다.
+// ---------------------------------------------------------------------------
+export const employeeProfile = sqliteTable('employee_profile', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  employeeCode: text('employee_code'),
+  displayName: text('display_name').notNull(),
+  department: text('department'),
+  jobTitle: text('job_title'),
+  employeeStatus: text('employee_status', { enum: ['active', 'leave', 'terminated'] }).notNull().default('active'),
+  payrollEligibility: text('payroll_eligibility', { enum: ['eligible', 'excluded'] }).notNull().default('eligible'),
+  insuranceEnrollmentStatus: text('insurance_enrollment_status', {
+    enum: ['not_checked', 'enrolled', 'needs_review', 'not_applicable'],
+  }).notNull().default('not_checked'),
+  hireDate: text('hire_date'),
+  terminationDate: text('termination_date'),
+  workEmail: text('work_email'),
+  notificationEnabled: integer('notification_enabled', { mode: 'boolean' }).notNull().default(true),
+  createdByStaffId: text('created_by_staff_id').references(() => staff.id),
+  updatedByStaffId: text('updated_by_staff_id').references(() => staff.id),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  codeUidx: uniqueIndex('employee_profile_code_uidx').on(t.tenantId, t.clientId, t.employeeCode),
+  statusIdx: index('employee_profile_status_idx').on(t.tenantId, t.clientId, t.employeeStatus),
+  payrollIdx: index('employee_profile_payroll_idx').on(t.tenantId, t.clientId, t.payrollEligibility),
+}))
+
+// ---------------------------------------------------------------------------
 // consultation_source_cache
 //   AI 전문 상담 Slice 1 — 공식 출처(law.go.kr) 응답 캐시.
 //   law.go.kr 법령 데이터는 공개·비고객 기준자료라 모든 테넌트가 동일하게
