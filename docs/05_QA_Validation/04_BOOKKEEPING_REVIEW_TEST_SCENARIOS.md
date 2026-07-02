@@ -86,7 +86,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 |:---|:---|:---|:---|:---:|
 | S-80 | 페치 지연 | 진입 | 스켈레톤(loading) | Pending |
 | S-81 | 로드 실패 | 진입 | "분류 큐를 불러오지 못했습니다" + 다시 시도 | Pending |
-| S-82 | 검토 대기 0건 | 진입 | "확정 전표 보기" 안내 | Pending |
+| S-82 | 검토 대기 0건 | 진입 | "검토할 거래가 없습니다 / 분류 확정 완료" 안내(전표 문구 금지) | Pending |
 
 ### 2.10 권한·인증
 | # | Given | When | Then | Result |

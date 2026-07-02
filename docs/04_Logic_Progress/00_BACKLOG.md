@@ -126,7 +126,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
   - [x] Component & Library Plan에 기장검토 전용 컴포넌트(Confidence Bar·Journal Entry Preview) 반영 — [7.3 기장검토 매핑](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
-  - [x] Pre-Code Technical Brief(분류 큐 데이터 소스·AI 추천 신뢰도·승인 mutation·전표 확정) 정리 — [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
+  - [x] Pre-Code Technical Brief(분류 큐 데이터 소스·AI 추천 신뢰도·승인 mutation·분류 확정) 정리 — [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
   - [x] 회사 tenant/기간·전표 데이터 모델 확인 — [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) 기준 기존 bookkeeping 테이블 재사용, `clientId`→`businessEntityId` 개념 전환, 물리 rename은 JC-005 후속
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md)
 - Acceptance Criteria:
