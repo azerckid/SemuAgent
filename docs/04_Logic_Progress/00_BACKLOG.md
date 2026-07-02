@@ -223,21 +223,21 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-015 · Build employee directory (직원 명부) — 신규
 
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 회사 셀프사용 운영 데이터
-- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) — **직원 명부 화면은 아직 미작성**
-- Related HTML Preview: N/A — 직원 명부 Preview 미작성. 구현 전 UI Preview와 사용자 확인 필요.
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) 7번 항목 · [UI Design 4.8](../02_UI_Screens/01_UI_DESIGN.md) · [Prototype Review](../02_UI_Screens/08_EMPLOYEE_DIRECTORY_PROTOTYPE_REVIEW.md)
+- Related HTML Preview: [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html) — UI Preview 작성·사용자 확인 완료(2026-07-02).
 - Related Technical Docs: [DB Schema 4.4](../03_Technical_Specs/03_DB_SCHEMA.md) · [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md)
 - Related QA Docs: [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md)
-- Prototype Review / 승인: 미완료 — 기능 방향만 승인(2026-07-02), 화면 승인 아님.
+- Prototype Review / 승인: 화면 승인 완료(2026-07-02) — [Prototype Review](../02_UI_Screens/08_EMPLOYEE_DIRECTORY_PROTOTYPE_REVIEW.md).
 - Implementation Preconditions:
   - [x] 기능 방향 승인 — 직원 명부가 급여·4대보험 고지액 매칭·리마인드의 기준 데이터가 되어야 함
   - [x] Pre-Code Technical Brief 작성 — [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)
   - [x] DB Schema 논리 초안 작성 — [DB Schema 4.4](../03_Technical_Specs/03_DB_SCHEMA.md)
   - [x] QA 테스트 시나리오 작성 — [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md)
-  - [ ] UI Preview 작성 및 사용자 확인 — **미충족**
-  - [ ] 화면 진입 위치(`/dashboard/employees` vs 설정 하위) 확정 — **미충족**
-  - [ ] `employee_profile` 물리 Drizzle migration 확정 — **미충족**
-  - [ ] 개인정보 저장 금지/마스킹/권한 정책 확정 — **미충족**
-  - [ ] 급여 line과 직원 마스터 연결 방식 확정 — **미충족**
+  - [x] UI Preview 작성 및 사용자 확인 — 완료(2026-07-02), [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html)
+  - [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/employees`(설정 하위 아님)
+  - [ ] `employee_profile` 물리 Drizzle migration 확정 — **미충족(구현 PR)**
+  - [ ] 개인정보 저장 금지/마스킹/권한 정책 확정 — **미충족(구현 PR)**
+  - [ ] 급여 line과 직원 마스터 연결 방식 확정 — **미충족(구현 PR)**
 - Acceptance Criteria:
   - [ ] 직원 명부는 급여 실행 결과와 분리된 마스터 데이터로 관리된다.
   - [ ] 재직 상태, 급여 대상 여부, 4대보험 확인 상태가 직원별로 표시된다.
@@ -245,7 +245,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 리마인드 메일은 직원 명부의 workEmail/notificationEnabled를 수신자 후보로 사용한다.
   - [ ] 주민등록번호·계좌번호·전화번호 원문은 신규 명부 화면과 QA seed에 저장/노출하지 않는다.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: DB Schema 4.4 / Employee Directory Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview 미작성으로 구현 착수 금지**.
+- Document Sync Check: Screen Flow 7 / UI Design 4.8 / Prototype Review / HTML Preview / DB Schema 4.4 / Employee Directory Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview·화면 승인 완료. 남은 구현 전제조건(물리 테이블·개인정보 정책·급여 line 연결)은 구현 PR에서 확정**.
 
 ### JC-016 · Build internal reminder mail (내부 리마인드 메일) — 신규
 
@@ -276,7 +276,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류·provider missing 상태가 구현된다.
 - Document Sync Check: DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview 미작성과 수신자 source 미결정으로 구현 착수 금지**.
 
-> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015/JC-016은 문서 게이트 초안만 작성됐고, UI Preview와 사용자 확인 전까지 구현 금지. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
+> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview 작성·화면 승인 완료(2026-07-02)했고, 남은 구현 전제조건(물리 테이블·개인정보 정책·급여 line 연결)은 구현 PR에서 확정한다. JC-016은 문서 게이트 초안만 작성됐고, UI Preview와 사용자 확인 전까지 구현 금지. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위

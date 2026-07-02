@@ -1,6 +1,6 @@
 # Employee Directory Pre-Code Technical Brief
 > Created: 2026-07-02 21:18
-> Last Updated: 2026-07-02 21:18
+> Last Updated: 2026-07-02
 
 ## 0. Governing Principle
 
@@ -127,8 +127,8 @@ type EmployeeDirectorySummary = {
 
 ## 8. Implementation Preconditions
 
-- [ ] UI Preview 작성 및 사용자 확인
-- [ ] 화면 진입 위치(`/dashboard/employees` vs 설정 하위) 확정
+- [x] UI Preview 작성 및 사용자 확인 — [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html) (2026-07-02)
+- [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/employees`
 - [ ] 신규 `employee_profile` 물리 테이블 여부 확정
 - [ ] 급여 line과 직원 마스터 연결 방식 확정
 - [ ] 개인정보 저장 금지/마스킹 방침 확정
@@ -146,7 +146,7 @@ type EmployeeDirectorySummary = {
 
 ## 10. Open Items
 
-- 직원 명부를 독립 메뉴로 둘지, 설정 하위 메뉴로 둘지 결정이 필요하다.
+- 직원 명부 진입 위치는 독립 메뉴 `/dashboard/employees`로 확정(2026-07-02, UI Preview 승인 시).
 - 직원 이메일이 없는 경우 리마인드 수신자를 staff 계정으로 대체할지 결정이 필요하다.
 - 기존 payroll line의 `employeeCode`를 employee_profile과 자동 매칭할지, 사용자 확인 후 연결할지 결정이 필요하다.
 
