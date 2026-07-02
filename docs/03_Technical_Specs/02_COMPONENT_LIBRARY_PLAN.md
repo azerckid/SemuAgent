@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-01 22:55
+> Last Updated: 2026-07-02 09:15
 
 ## 1. 목적 및 범위
 
@@ -85,6 +85,23 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 공용 원자 컴포넌트(`StatusChip`, 상태 `Dot`, `MiniProgress`, `LoadingState`,
 `EmptyState`, `ErrorState`)는 두 화면이 공유한다(DRY).
 
+### 7.3 기장검토 (UI Design 4.3)
+
+| 화면 컴포넌트 | 구현 방식 | 기반 |
+|:---|:---|:---|
+| Classification Header | 커스텀 `BookkeepingClassificationHeader` | `card` + `progress` |
+| Queue Tabs | 커스텀 `BookkeepingReviewTabs` | 세그먼트 탭(`button`) + 건수 배지 |
+| Bulk Action Bar | 커스텀 `BookkeepingBulkActions` | `button`(선택 N건 승인/일괄 변경) |
+| Classification Queue Table | 커스텀 `BookkeepingClassificationQueue` | `table` + `badge`(AI 배지) + `Confidence Bar` + 행 액션(승인/수정/계정 지정) |
+| Confidence Bar | 커스텀 `ConfidenceBar` | plain div (high/mid/low = ok/warn/danger) |
+| Journal Entry Preview | 커스텀 `JournalEntryPreview` | `card` + 전표 표(차/대변, 균형) |
+| Period Attribution / Approval | 커스텀 `BookkeepingRowDetail` | 속성 리스트 + 상태칩 + `button`(이 거래 승인) |
+| State(로딩/빈/오류) | 공용 재사용 | `skeleton` + `button` |
+
+- 신규 shadcn 없음(progress·skeleton은 자료수집 단계에서 확보). 신규 라이브러리 없음.
+- 승인/수정 mutation은 **기존 세션 API 호출**(신규 컴포넌트에서 fetch). GIWA `/dashboard/reviews` 워크스페이스 컴포넌트는 재사용/import하지 않는다(Preview 계약, Brief §0).
+- 공용 원자 컴포넌트(StatusChip·Dot·State*)는 앞 화면들과 공유(DRY).
+
 ## 8. Library Plan
 
 ### 8.1 이미 설치됨 — 재사용 (신규 설치 없음)
@@ -118,8 +135,9 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 ## 10. 미결/후속
 
 - 회사 홈 Pre-Code Brief: [04_COMPANY_HOME_PRE_CODE_BRIEF.md](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) (JC-006 구현·머지 완료).
-- 자료수집 Pre-Code Brief: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) (JC-009 게이트 완료, 구현 착수 가능).
-- 기장검토·부가세·급여·신고지원은 구현 전 화면별 Pre-Code Brief와 QA 시나리오가 필요하다.
+- 자료수집 Pre-Code Brief: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) (JC-009 구현·머지 완료).
+- 기장검토 Pre-Code Brief: [06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) (JC-010 게이트 완료, 구현 착수 가능).
+- 부가세·급여·신고지원은 구현 전 화면별 Pre-Code Brief와 QA 시나리오가 필요하다.
 
 ## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -129,4 +147,5 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - **Technical_Specs**: [Development Setup](./01_DEVELOPMENT_SETUP.md) - 런타임·패키지·스택
 - **Technical_Specs**: [Company Home Pre-Code Brief](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) - 회사 홈 데이터 소스·상태·acceptance 계약
 - **Technical_Specs**: [Source Collection Pre-Code Brief](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) - 자료수집 mutation·라우트·acceptance 계약
-- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009 Context Lock
+- **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) - 기장검토 분류 큐·승인 mutation·Preview 계약
+- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009/JC-010 Context Lock
