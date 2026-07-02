@@ -1,6 +1,6 @@
 # Test Scenarios: VAT
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-02 11:43
+> Last Updated: 2026-07-02 12:05
 
 부가세(JC-011) Layer 5 QA 시나리오. [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -14,11 +14,11 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 | Criterion | Status | Evidence |
 |:---|:---:|:---|
-| Functionality | Pending | 부가세 read model·mutation·화면 구현 전 |
-| Potential Impact | Pending | 회사 자가 신고 준비의 핵심 세액 확정 화면 |
-| Novelty | Pending | 자동 제출이 아닌 회사 책임형 신고 보조 경계 |
-| UX | Pending | 승인 Preview 4.4와 캡처 비교 필요 |
-| Open-source | Pending | `lib/vat/summary.ts` 순수 함수와 기존 전표 재사용 예정 |
+| Functionality | PASS·구현 | read model, 화면, 공제 판정 API, 패키지 guard API 구현 |
+| Potential Impact | PASS·구현 | 회사 자가 신고 준비의 핵심 세액 확정 화면 |
+| Novelty | PASS·구현 | 자동 제출이 아닌 회사 책임형 신고 보조 경계 유지 |
+| UX | Pending | 승인 Preview 4.4와 브라우저 캡처 비교는 로컬 DB/env 준비 후 수행 |
+| Open-source | PASS·구현 | `lib/vat/summary.ts` 순수 함수와 기존 전표/tenant 기반 재사용 |
 | Business Plan | Pending | 신고 패키지 생성으로 유료 가치 연결 |
 
 ## 2. Test Scenarios & Results
@@ -72,10 +72,10 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-50 | 불공제 후보 행 | "불공제 확정" 클릭 | `PATCH /api/vat/deduction-reviews/[id]` decision=`non_deductible` | Pending |
-| S-51 | 후보 행 | "공제" 클릭 | decision=`deductible`, summary 재계산 | Pending |
-| S-52 | 안분 필요 행 | 안분율 입력 | decision=`prorated`, prorationRateBps 저장, 공제액 재계산 | Pending |
-| S-53 | 다른 tenant reviewId | mutation | 404/403, 데이터 변경 없음 | Pending |
+| S-50 | 불공제 후보 행 | "불공제 확정" 클릭 | `PATCH /api/vat/deduction-reviews/[id]` decision=`non_deductible` | PASS·단위 |
+| S-51 | 후보 행 | "공제" 클릭 | decision=`deductible`, summary 재계산 | PASS·단위 |
+| S-52 | 안분 필요 행 | 안분율 입력 | decision=`prorated`, prorationRateBps 저장, 공제액 재계산 | PASS·단위 |
+| S-53 | 다른 tenant reviewId | mutation | 404/403, 데이터 변경 없음 | PASS·단위 |
 
 ### 2.7 부속 명세와 패키지 잠금
 
@@ -84,8 +84,8 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-60 | 매출/매입 합계표 준비 | 렌더 | "준비됨" 상태칩 | PASS·단위 |
 | S-61 | 불공제 후보 3건 pending | 렌더 | 공제받지 못할 매입세액 명세서 "검토 대기" | PASS·단위 |
 | S-62 | pendingDeductionCount=3 | 패키지 카드 렌더 | 버튼 disabled + `aria-disabled=true` + locknote | PASS·구현 |
-| S-63 | pendingDeductionCount=3 | 패키지 생성 API 호출 | 409, 패키지 미생성 | Pending |
-| S-64 | pendingDeductionCount=0 | 패키지 생성 클릭 | 생성 허용, packageStatus 갱신 | Pending |
+| S-63 | pendingDeductionCount=3 | 패키지 생성 API 호출 | 409, 패키지 미생성 | PASS·단위 |
+| S-64 | pendingDeductionCount=0 | 패키지 생성 클릭 | 생성 허용, packageStatus 갱신 | PASS·단위 |
 
 ### 2.8 Preview 계약·책임 경계
 
@@ -108,8 +108,8 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 ## 3. 자동화 계획
 
-- **단위 테스트 완료** (`lib/vat/summary.test.ts`): S-12~13, S-20~21, S-30~32, S-40~42, S-60~62.
-- **정적 검증 완료** (`vat-workspace.test.ts`): Preview 구조(S-01), 라우트(S-02), reviews 미import(S-70), 책임 경계 문구(S-71~72).
+- **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/validations/vat.test.ts`): S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~64.
+- **정적 검증 완료** (`vat-workspace.test.ts`): Preview 구조(S-01), 라우트(S-02), reviews 미import(S-70), 책임 경계 문구(S-71~72), mutation tenant guard(S-53), package guard(S-63~64).
 - **브라우저 수동 검증 예정**: 승인 Preview와 실제 `/dashboard/vat?period=2026-H1` 캡처 비교. 숫자/색상/간격/잠금 버튼 확인.
 - **후속 E2E**: 실제 전표 생성부터 VAT summary 생성까지는 JC-014 env/seed 준비 후 검증.
 

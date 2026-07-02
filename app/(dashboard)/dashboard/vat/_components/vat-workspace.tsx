@@ -19,6 +19,7 @@ import type {
   VatTone,
 } from '@/lib/vat/summary'
 import { cn } from '@/lib/utils'
+import { VatDeductionActionButtons, VatPackageActionButton } from './vat-actions'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 
@@ -57,7 +58,7 @@ export function VatWorkspace({ summary }: VatWorkspaceProps) {
         <DeductionReviewSection reviews={summary.deductionReviews} />
         <div className="grid gap-4 lg:grid-cols-2">
           <SchedulesSection schedules={summary.schedules} />
-          <PackagePreviewCard packagePreview={summary.packagePreview} />
+          <PackagePreviewCard periodKey={summary.period.key} packagePreview={summary.packagePreview} />
         </div>
         <StateCoverageSection />
         <PreviewNote />
@@ -247,22 +248,7 @@ function DeductionReviewSection({ reviews }: { readonly reviews: VatDeductionRev
                     {review.reason || '일반 매입세액'}
                   </TableCell>
                   <TableCell>
-                    <div className="inline-flex flex-wrap gap-1.5">
-                      {review.actionLabels.map((label) => (
-                        <button
-                          key={label}
-                          type="button"
-                          disabled
-                          className={cn(
-                            'rounded-[7px] border border-company-border-strong bg-company-surface px-2.5 py-1 text-[11.5px] font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-75',
-                            label.includes('불공제') && 'border-[#fecaca] bg-[#fef2f2] text-[#dc2626]',
-                            label === '확정됨' && 'border-[#bbf7d0] bg-[#f0fdf4] text-[#16a34a]',
-                          )}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
+                    <VatDeductionActionButtons review={review} />
                   </TableCell>
                 </tr>
               )) : (
@@ -306,7 +292,13 @@ function SchedulesSection({ schedules }: { readonly schedules: VatSchedule[] }) 
   )
 }
 
-function PackagePreviewCard({ packagePreview }: { readonly packagePreview: VatPackagePreview }) {
+function PackagePreviewCard({
+  periodKey,
+  packagePreview,
+}: {
+  readonly periodKey: string
+  readonly packagePreview: VatPackagePreview
+}) {
   return (
     <section className={cn(panelClass, 'p-[18px]')}>
       <h2 className="text-[13px] font-semibold text-foreground">신고 패키지 미리보기</h2>
@@ -325,26 +317,7 @@ function PackagePreviewCard({ packagePreview }: { readonly packagePreview: VatPa
           {packagePreview.lockReason}
         </p>
       ) : null}
-      <span className="mt-3 block" title={packagePreview.lockReason ?? undefined}>
-        <button
-          type="button"
-          disabled={!packagePreview.canGenerate}
-          aria-disabled={!packagePreview.canGenerate}
-          aria-describedby={packagePreview.lockReason ? 'vat-package-locknote' : undefined}
-          className={cn(
-            'w-full rounded-lg border px-3.5 py-2.5 text-center text-[12.5px] font-semibold',
-            packagePreview.canGenerate
-              ? 'border-[#18181b] bg-[#18181b] text-white'
-              : 'cursor-not-allowed border-company-border bg-[#f1f1f2] text-company-fg-subtle',
-          )}
-        >
-          {packagePreview.canGenerate
-            ? '패키지 생성'
-            : packagePreview.locked
-              ? `패키지 생성 · 잠김${packagePreview.lockReason ? ' (검토 완료 후 활성화)' : ''}`
-              : '패키지 생성 완료'}
-        </button>
-      </span>
+      <VatPackageActionButton periodKey={periodKey} packagePreview={packagePreview} />
     </section>
   )
 }

@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 const workspaceSource = readFileSync(new URL('./vat-workspace.tsx', import.meta.url), 'utf8')
+const actionsSource = readFileSync(new URL('./vat-actions.tsx', import.meta.url), 'utf8')
+const deductionRouteSource = readFileSync(new URL('../../../../api/vat/deduction-reviews/[reviewId]/route.ts', import.meta.url), 'utf8')
+const packageRouteSource = readFileSync(new URL('../../../../api/vat/periods/[periodKey]/package/route.ts', import.meta.url), 'utf8')
 const sidebarSource = readFileSync(new URL('../../../_components/sidebar.tsx', import.meta.url), 'utf8')
 const companyHomeSummarySource = readFileSync(new URL('../../../../../lib/company-home/summary.ts', import.meta.url), 'utf8')
 
@@ -37,5 +40,33 @@ describe('VAT workspace static contract', () => {
     const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
     expect(positions.every((position) => position >= 0)).toBe(true)
     expect([...positions].sort((a, b) => a - b)).toEqual(positions)
+  })
+
+  it('wires deduction review actions to the VAT mutation endpoint (S-50~52)', () => {
+    expect(workspaceSource).toContain('VatDeductionActionButtons')
+    expect(actionsSource).toContain('/api/vat/deduction-reviews/${reviewId}')
+    expect(actionsSource).toContain("decision: 'non_deductible'")
+    expect(actionsSource).toContain("decision: 'prorated'")
+    expect(actionsSource).toContain('prorationRateBps')
+  })
+
+  it('guards deduction review mutations by tenant and recalculates the period summary (S-53)', () => {
+    expect(deductionRouteSource).toContain('requireTenantSession')
+    expect(deductionRouteSource).toContain('getActiveStaffForUser')
+    expect(deductionRouteSource).toContain('vatDeductionReviewPatchSchema.safeParse(await req.json())')
+    expect(deductionRouteSource).toContain('eq(vatDeductionReview.tenantId, tenantId)')
+    expect(deductionRouteSource).toContain('buildVatPeriodRecalculation')
+    expect(deductionRouteSource).toContain("revalidatePath('/dashboard/vat')")
+  })
+
+  it('keeps package generation locked at the API boundary until pending reviews are complete (S-63~64)', () => {
+    expect(workspaceSource).toContain('VatPackageActionButton')
+    expect(actionsSource).toContain('/api/vat/periods/${periodKey}/package')
+    expect(packageRouteSource).toContain('vatPeriodKeySchema.safeParse(rawPeriodKey)')
+    expect(packageRouteSource).toContain('eq(vatPeriodSummary.tenantId, tenantId)')
+    expect(packageRouteSource).toContain('status: 409')
+    expect(packageRouteSource).toContain('reviewRows.length > 0')
+    expect(packageRouteSource).toContain('inputTaxDeductibleKrw: periodSummary.inputTaxDeductibleKrw')
+    expect(packageRouteSource).toContain("packageStatus: 'generated'")
   })
 })

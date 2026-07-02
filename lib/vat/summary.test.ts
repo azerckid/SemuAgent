@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildVatDeductionReviewRow,
   buildVatPackagePreview,
+  buildVatPeriodRecalculation,
   buildVatSalesGroups,
   buildVatSchedules,
   buildVatTaxSummary,
@@ -72,6 +73,31 @@ describe('VAT tax derivation', () => {
       payableTaxKrw: 14_000_000,
       pendingDeductionCount: 0,
       isFinal: true,
+    })
+  })
+
+  it('recalculates period summary after deduction mutations (S-51, S-52, S-64)', () => {
+    expect(buildVatPeriodRecalculation({
+      outputTaxKrw: 32_000_000,
+      packageStatus: 'locked',
+    }, [
+      { decision: 'deductible', inputTaxKrw: 10_000_000, prorationRateBps: null },
+      { decision: 'prorated', inputTaxKrw: 16_000_000, prorationRateBps: 5_000 },
+      { decision: 'non_deductible', inputTaxKrw: 2_000_000, prorationRateBps: null },
+    ])).toEqual({
+      inputTaxDeductibleKrw: 18_000_000,
+      payableTaxKrw: 14_000_000,
+      pendingDeductionCount: 0,
+      packageStatus: 'ready',
+    })
+
+    expect(buildVatPeriodRecalculation({
+      outputTaxKrw: 32_000_000,
+      packageStatus: 'generated',
+    }, [
+      { decision: 'deductible', inputTaxKrw: 18_000_000, prorationRateBps: null },
+    ])).toMatchObject({
+      packageStatus: 'generated',
     })
   })
 })

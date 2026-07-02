@@ -39,6 +39,7 @@ export type VatDeductionReviewRow = {
   kind: VatDeductionKind
   decision: VatDeductionDecision
   reason: string
+  prorationRateBps: number | null
   actionLabels: string[]
 }
 
@@ -152,6 +153,28 @@ export function calculateDeductibleInputTax(reviews: Array<Pick<VatDeductionRevi
   }, 0)
 }
 
+export function buildVatPeriodRecalculation(
+  summary: Pick<VatPeriodSummaryInput, 'outputTaxKrw' | 'packageStatus'>,
+  reviews: Array<Pick<VatDeductionReviewInput, 'decision' | 'inputTaxKrw' | 'prorationRateBps'>>,
+) {
+  const pendingDeductionCount = reviews.filter((review) => (
+    normalizeVatDeductionDecision(review.decision) === 'pending'
+  )).length
+  const inputTaxDeductibleKrw = calculateDeductibleInputTax(reviews)
+  const packageStatus: VatPeriodSummaryInput['packageStatus'] = pendingDeductionCount > 0
+    ? 'locked'
+    : summary.packageStatus === 'generated'
+      ? 'generated'
+      : 'ready'
+
+  return {
+    inputTaxDeductibleKrw,
+    payableTaxKrw: summary.outputTaxKrw - inputTaxDeductibleKrw,
+    pendingDeductionCount,
+    packageStatus,
+  }
+}
+
 export function buildVatTaxSummary(
   summary: Pick<VatPeriodSummaryInput, 'outputTaxKrw' | 'inputTaxKrw' | 'inputTaxDeductibleKrw' | 'pendingDeductionCount' | 'isFinal'>,
   period: Pick<CompanyHomePeriod, 'filingDeadline' | 'dDay'>,
@@ -219,6 +242,7 @@ export function buildVatDeductionReviewRow(row: VatDeductionReviewInput): VatDed
     kind,
     decision,
     reason: row.reason,
+    prorationRateBps: row.prorationRateBps,
     actionLabels: vatDeductionActionLabels(kind, decision),
   }
 }
