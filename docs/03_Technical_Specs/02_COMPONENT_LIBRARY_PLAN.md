@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-02 11:03
+> Last Updated: 2026-07-02 14:21
 
 ## 1. 목적 및 범위
 
@@ -12,7 +12,8 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 자료수집 — [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html)
 - 기장검토 — [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html)
 - 부가세 — [03_vat.html](../02_UI_Screens/previews/03_vat.html)
-- 급여·신고지원은 각 화면 게이트(Pre-Code Brief) 진행 시 §7에 추가한다.
+- 급여 — [04_payroll.html](../02_UI_Screens/previews/04_payroll.html)
+- 신고지원은 화면 게이트(Pre-Code Brief) 진행 시 §7에 추가한다.
 
 원칙: **JARYO-GIWA 자산 최대 재사용 + 최소 신규 도입(YAGNI/KISS/DRY)**. 이미 설치된
 것을 우선 쓰고, 없을 때만 shadcn 표준 컴포넌트를 추가한다. 새 npm 패키지는 대상 화면
@@ -123,6 +124,25 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 부가세 화면은 회사용 `/dashboard/vat`로 새로 구성하며, GIWA `/dashboard/reviews` 워크스페이스 컴포넌트를 import/render하지 않는다.
 - 자동 홈택스 제출·자동 납부 UI는 만들지 않는다. 홈택스 입력 가이드는 JC-013 신고지원에서 최종 연결한다.
 
+### 7.5 급여 (UI Design 4.5)
+
+| 화면 컴포넌트 | 구현 방식 | 기반 |
+|:---|:---|:---|
+| Payroll Summary Hero | 커스텀 `PayrollSummaryHero` | `card` + 3셀 계산 레이아웃 + 상태칩 |
+| Missing Employee Alert | 커스텀 `PayrollIssueAlert` | `card` + warn dot + `button` |
+| Payroll Register Table | 커스텀 `PayrollRegisterTable` | `table` + `badge` + 가로 스크롤 |
+| Deduction Breakdown | 커스텀 `PayrollDeductionBreakdown` | `card` + 항목 리스트 |
+| Insurance Notice Import/Match | 커스텀 `PayrollInsuranceNoticePanel` | 파일 입력 + `button` + `badge` |
+| Documents / Close | 커스텀 `PayrollDocumentsAndClose` | `card` + disabled `button` wrapper |
+| Locked Action Wrapper | 공용 `LockedActionButton` 재사용 | visible locknote + `aria-describedby` |
+| State(로딩/빈/오류) | 공용 재사용 | `skeleton` + `button` |
+
+- 신규 shadcn 없음. 기존 `card`/`badge`/`button`/`table`/`input`/`skeleton` 재사용.
+- 급여 화면은 회사용 `/dashboard/payroll`로 새로 구성하며, GIWA 사업장 상세의 급여 규칙 관리 패널을 import/render하지 않는다. 급여 규칙/추출/Excel draft 서비스는 순수 로직으로만 재사용한다.
+- 4대보험은 건강보험 EDI/사회보험 고지내역 업로드 또는 수동 입력 후 직원별 매칭을 제공한다. 자동 로그인·공동인증서 저장·자동 제출은 만들지 않는다.
+- 급여 마감 버튼은 확인 필요 직원이 있으면 `disabled` + `aria-disabled="true"` + visible locknote를 사용한다. 브라우저별 `title` 툴팁에 의존하지 않는다.
+- 개인정보(주민등록번호·계좌·전화번호·storage key)는 화면에 노출하지 않고, 권한이 부족하면 직원명/급여액을 마스킹한다.
+
 ## 8. Library Plan
 
 ### 8.1 이미 설치됨 — 재사용 (신규 설치 없음)
@@ -151,6 +171,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 - 회사 홈: **읽기 전용** — Server Component에서 데이터 페치, 클라이언트 상태 최소.
 - 자료수집: 업로드/정규화 **mutation 발생** — 업로드 진행·오류는 로컬 컴포넌트 상태 + `sonner` 토스트. 목록 갱신은 서버 재검증.
+- 급여: 직원 line 수정·고지액 import/match·명세서 생성·마감 **mutation 발생** — 로컬 입력 상태 + `sonner` 토스트, 성공 후 서버 재검증.
 - 기간 컨텍스트는 URL 파라미터로 관리(전역 스토어 미도입).
 
 ## 10. 미결/후속
@@ -158,12 +179,13 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 회사 홈 Pre-Code Brief: [04_COMPANY_HOME_PRE_CODE_BRIEF.md](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) (JC-006 구현·머지 완료).
 - 자료수집 Pre-Code Brief: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) (JC-009 구현·머지 완료).
 - 기장검토 Pre-Code Brief: [06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) (JC-010 구현·머지 완료).
-- 부가세 Pre-Code Brief: [07_VAT_PRE_CODE_BRIEF.md](./07_VAT_PRE_CODE_BRIEF.md) (JC-011 게이트 진행, 구현 전 DB migration 필요).
-- 급여·신고지원은 구현 전 화면별 Pre-Code Brief와 QA 시나리오가 필요하다.
+- 부가세 Pre-Code Brief: [07_VAT_PRE_CODE_BRIEF.md](./07_VAT_PRE_CODE_BRIEF.md) (JC-011 구현·머지 완료).
+- 급여 Pre-Code Brief: [08_PAYROLL_PRE_CODE_BRIEF.md](./08_PAYROLL_PRE_CODE_BRIEF.md) (JC-012 게이트 완료, 구현 전 DB migration 필요).
+- 신고지원은 구현 전 화면별 Pre-Code Brief와 QA 시나리오가 필요하다.
 
 ## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
-- **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 컴포넌트 4.1~4.4 근거
+- **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 컴포넌트 4.1~4.5 근거
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 화면 흐름·데이터 입출력
 - **UI_Screens**: [HTML Preview 폴더](../02_UI_Screens/previews/) - 화면 프로토타입
 - **Technical_Specs**: [Development Setup](./01_DEVELOPMENT_SETUP.md) - 런타임·패키지·스택
@@ -171,4 +193,5 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - **Technical_Specs**: [Source Collection Pre-Code Brief](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) - 자료수집 mutation·라우트·acceptance 계약
 - **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) - 기장검토 분류 큐·승인 mutation·Preview 계약
 - **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 세액 집계·공제 검토·패키지 잠금 계약
-- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009/JC-010/JC-011 Context Lock
+- **Technical_Specs**: [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md) - 급여대장·고지액 매칭·마감 잠금 계약
+- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009/JC-010/JC-011/JC-012 Context Lock

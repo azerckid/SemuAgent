@@ -1,6 +1,6 @@
 # JARYO Company UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-01 22:20
+> Last Updated: 2026-07-02 14:21
 
 ## 1. 디자인 방향
 
@@ -110,11 +110,13 @@
 | Payroll Summary Hero | 지급총액·공제총액·실지급액·마감상태 요약 | 3셀 계산 레이아웃 + 마감 상태칩(확인 필요/미마감) |
 | Missing/Error Alert | 확인 필요(오류·누락) 직원 경고 + CTA | warn 배경 알림, 마감 전 처리 유도 |
 | Payroll Register Table | 직원별 기본급·수당·지급계·원천세·4대보험·공제계·실지급 | 가로 스크롤 표, 오류 직원 행 강조 + "확인 필요" 플래그, tfoot 합계 |
-| Deduction Breakdown | 소득세·지방소득세·국민연금·건강보험·장기요양·고용보험 집계 | `card` 내 항목 리스트 + 총계 |
+| Deduction Breakdown | 소득세·지방소득세·국민연금·건강보험·장기요양·고용보험 집계 | `card` 내 항목 리스트 + 총계, 고지액 반영 여부 |
+| Insurance Notice Match | 건강보험 EDI/사회보험 고지내역 업로드·수동 입력·직원 매칭 | 파일/수동 입력 CTA + 매칭 상태칩 |
 | Documents / Close | 급여명세서·지급명세서 미리보기 + 급여 마감·확정 | 문서 리스트 + **마감 버튼 잠금**(확인 필요 처리 전) |
 | State Card | 로딩/빈/오류 표준 (공용) | 스켈레톤·빈안내(급여 자료 불러오기)·오류+재시도 |
 
 - **금액 정합성 규칙**: 지급계=기본급+수당, 공제계=원천세+4대보험, 실지급=지급계−공제계. 합계 행은 각 열의 합과 일치해야 한다(구현 시 파생 계산으로 강제, 하드코딩 금지).
+- **4대보험 고지액 규칙**: 건강보험 EDI/사회보험 고지내역을 업로드 또는 수동 입력으로 반영한다. 고지액이 있으면 계산 추정값보다 우선하고, 미매칭/차이는 확인 필요로 표시한다. 자동 로그인·공동인증서 저장·자동 제출은 만들지 않는다.
 - **마감 잠금**: 확인 필요(오류/누락) 직원이 있으면 마감 버튼을 `is-disabled`+`disabled`+`aria-disabled="true"` muted로 잠그고 사유를 병기한다. React 구현 시 disabled 버튼을 래퍼(tooltip)로 감싼다(부가세 패키지 생성 버튼과 동일 규칙).
 - **개인정보**: 급여·주민정보 등 민감정보 표시. 접근 권한·마스킹·감사로그는 구현 단계에서 확정.
 - 원천징수 지급명세서 등은 신고지원 화면으로 전달한다.
@@ -196,3 +198,5 @@
 - **UI_Screens**: [Payroll Prototype Review](./06_PAYROLL_PROTOTYPE_REVIEW.md) - 급여 확인 결과
 - **UI_Screens**: [Filing Support Prototype Review](./07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) - 신고지원 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
+- **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
+- **QA_Validation**: [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) - 급여 구현 검증 시나리오
