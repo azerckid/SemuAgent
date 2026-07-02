@@ -6,6 +6,7 @@ import { loadBookkeepingReviewPendingCount } from '@/lib/bookkeeping-review/summ
 import { db } from '@/lib/db'
 import { tenant } from '@/lib/db/schema'
 import { loadFilingSupportAttentionCount } from '@/lib/filing-support/summary'
+import { loadInternalReminderAttentionCount } from '@/lib/internal-reminders/summary'
 import { loadPayrollSidebarEmployeeCount } from '@/lib/payroll-workspace/summary'
 import { Sidebar } from './_components/sidebar'
 
@@ -27,10 +28,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .where(eq(tenant.id, tenantId))
     .limit(1)
   tenantName = tenantRows[0]?.name ?? '회사'
-  const [bookkeepingPendingCount, payrollEmployeeCount, filingAttentionCount] = await Promise.all([
+  const [bookkeepingPendingCount, payrollEmployeeCount, filingAttentionCount, reminderAttentionCount] = await Promise.all([
     loadBookkeepingReviewPendingCount(tenantId),
     loadPayrollSidebarEmployeeCount(tenantId),
     loadFilingSupportAttentionCount(tenantId),
+    loadInternalReminderAttentionCount(tenantId, session.user.id),
   ])
 
   return (
@@ -41,6 +43,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         bookkeepingPendingCount={bookkeepingPendingCount}
         payrollEmployeeCount={payrollEmployeeCount}
         filingAttentionCount={filingAttentionCount}
+        reminderAttentionCount={reminderAttentionCount}
       />
       <main className="flex min-w-0 flex-col bg-company-bg">{children}</main>
     </div>

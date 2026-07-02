@@ -1728,6 +1728,99 @@ export const employeeProfile = sqliteTable('employee_profile', {
 }))
 
 // ---------------------------------------------------------------------------
+// internal_reminder_rule  (JC-016 내부 리마인드)
+// 회사 내부 staff에게 세무 일정과 확인 필요 상태를 알리는 규칙이다.
+// GIWA 고객 요청 메일 테이블과 분리해 외부 고객 요청/자동 제출 흐름으로 번지지 않게 한다.
+// ---------------------------------------------------------------------------
+export const internalReminderRule = sqliteTable('internal_reminder_rule', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  domain: text('domain', {
+    enum: ['source_collection', 'bookkeeping_review', 'vat', 'payroll', 'filing_support'],
+  }).notNull(),
+  triggerType: text('trigger_type', {
+    enum: ['deadline_offset', 'daily_digest', 'manual'],
+  }).notNull(),
+  offsetDays: integer('offset_days'),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  recipientSource: text('recipient_source', {
+    enum: ['staff', 'employee_directory', 'mixed'],
+  }).notNull().default('staff'),
+  subjectTemplate: text('subject_template').notNull(),
+  bodyTemplate: text('body_template').notNull(),
+  createdByStaffId: text('created_by_staff_id').references(() => staff.id),
+  updatedByStaffId: text('updated_by_staff_id').references(() => staff.id),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  scopeUidx: uniqueIndex('internal_reminder_rule_scope_uidx')
+    .on(t.tenantId, t.clientId, t.domain, t.triggerType, t.offsetDays),
+  domainIdx: index('internal_reminder_rule_domain_idx').on(t.tenantId, t.clientId, t.domain),
+  enabledIdx: index('internal_reminder_rule_enabled_idx').on(t.tenantId, t.clientId, t.enabled),
+}))
+
+// ---------------------------------------------------------------------------
+// internal_reminder_recipient_override
+// v1 UI는 staff/본인 기본 수신만 사용한다. 이 테이블은 규칙별 예외 수신자를 위한
+// 물리 모델로 두되, 직원 명부 기반 수신과 직접 이메일 override는 후속 정책 확정 전까지
+// API에서 열지 않는다.
+// ---------------------------------------------------------------------------
+export const internalReminderRecipientOverride = sqliteTable('internal_reminder_recipient_override', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  ruleId: text('rule_id').notNull().references(() => internalReminderRule.id),
+  recipientType: text('recipient_type', {
+    enum: ['staff', 'employee', 'email'],
+  }).notNull(),
+  staffId: text('staff_id').references(() => staff.id),
+  employeeId: text('employee_id').references(() => employeeProfile.id),
+  emailHash: text('email_hash'),
+  emailLabel: text('email_label'),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  ruleIdx: index('internal_reminder_recipient_override_rule_idx').on(t.tenantId, t.clientId, t.ruleId),
+  staffIdx: index('internal_reminder_recipient_override_staff_idx').on(t.tenantId, t.staffId),
+  employeeIdx: index('internal_reminder_recipient_override_employee_idx').on(t.tenantId, t.employeeId),
+}))
+
+// ---------------------------------------------------------------------------
+// internal_reminder_send_log
+// 발송 성공/실패와 중복 방지 결과를 저장한다. 본문 원문과 private storage key는
+// 저장하지 않고, 수신자 표시 라벨과 provider 메시지 id 정도만 보관한다.
+// ---------------------------------------------------------------------------
+export const internalReminderSendLog = sqliteTable('internal_reminder_send_log', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  ruleId: text('rule_id').references(() => internalReminderRule.id),
+  domain: text('domain', {
+    enum: ['source_collection', 'bookkeeping_review', 'vat', 'payroll', 'filing_support'],
+  }).notNull(),
+  contextKey: text('context_key').notNull(),
+  recipientType: text('recipient_type', { enum: ['staff', 'employee', 'email'] }).notNull().default('staff'),
+  recipientRefId: text('recipient_ref_id'),
+  recipientLabel: text('recipient_label').notNull(),
+  idempotencyKey: text('idempotency_key').notNull(),
+  status: text('status', { enum: ['queued', 'sent', 'failed', 'skipped'] }).notNull(),
+  providerMessageId: text('provider_message_id'),
+  errorMessage: text('error_message'),
+  queuedAt: text('queued_at').notNull(),
+  sentAt: text('sent_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  idempotencyUidx: uniqueIndex('internal_reminder_send_log_idempotency_uidx')
+    .on(t.tenantId, t.clientId, t.idempotencyKey),
+  statusIdx: index('internal_reminder_send_log_status_idx').on(t.tenantId, t.clientId, t.status),
+  domainIdx: index('internal_reminder_send_log_domain_idx').on(t.tenantId, t.clientId, t.domain),
+  ruleIdx: index('internal_reminder_send_log_rule_idx').on(t.tenantId, t.clientId, t.ruleId),
+}))
+
+// ---------------------------------------------------------------------------
 // consultation_source_cache
 //   AI 전문 상담 Slice 1 — 공식 출처(law.go.kr) 응답 캐시.
 //   law.go.kr 법령 데이터는 공개·비고객 기준자료라 모든 테넌트가 동일하게
