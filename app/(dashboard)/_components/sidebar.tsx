@@ -18,6 +18,7 @@ const FLOW_NAV = [
 const MANAGE_NAV = [
   { href: '/dashboard/settings', label: '설정', glyph: '⚙' },
   { href: '/dashboard/employees', label: '직원 명부', glyph: '◍' },
+  { href: '/dashboard/reminders', label: '리마인드', glyph: '✉' },
 ] as const
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ interface SidebarProps {
   bookkeepingPendingCount?: number
   payrollEmployeeCount?: number
   filingAttentionCount?: number
+  reminderAttentionCount?: number
 }
 
 function userInitial(userName: string) {
@@ -39,6 +41,7 @@ export function Sidebar({
   bookkeepingPendingCount = 0,
   payrollEmployeeCount = 0,
   filingAttentionCount = 0,
+  reminderAttentionCount = 0,
 }: SidebarProps) {
   return (
     <aside className="sticky top-0 flex h-screen w-[248px] shrink-0 flex-col gap-1 border-r border-company-border bg-company-surface px-3.5 py-5 text-foreground">
@@ -84,7 +87,11 @@ export function Sidebar({
         </p>
 
         {MANAGE_NAV.map((item) => (
-          <SidebarNavLink key={item.href} href={item.href}>
+          <SidebarNavLink
+            key={item.href}
+            href={item.href}
+            badge={item.href === '/dashboard/reminders' ? reminderAttentionCount : 0}
+          >
             <NavGlyph>{item.glyph}</NavGlyph>
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
           </SidebarNavLink>

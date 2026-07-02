@@ -260,9 +260,9 @@ index(`tenant_id`, `client_id`, `payroll_eligibility`).
 개인정보 경계: 주민등록번호·계좌번호·전화번호 원문 저장은 v1 기본 범위에서 제외한다.
 필요 시 별도 개인정보/암호화 설계와 QA를 선행한다.
 
-### 4.5 내부 리마인드 메일 (Internal Reminder Mail) — JC-016 논리 설계 초안
+### 4.5 내부 리마인드 메일 (Internal Reminder Mail) — JC-016 물리 구현
 
-내부 리마인드는 회사 내부 staff 또는 직원 명부의 직원에게 업무 마감과 확인 필요 상태를 알리는 기능이다.
+내부 리마인드는 회사 내부 staff에게 업무 마감과 확인 필요 상태를 알리는 기능이다. v1 수신자는 담당자 본인·내부 staff이며, 직원 명부 기반 직원 수신은 후속이다.
 GIWA의 고객사 자료 요청 메일 테이블(`request_template`, `client_request_schedule`,
 `client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox`)은 v1 리마인드 도메인 모델로 재사용하지 않는다.
 
@@ -282,7 +282,7 @@ GIWA의 고객사 자료 요청 메일 테이블(`request_template`, `client_req
 
 #### `internal_reminder_recipient_override`
 
-규칙별 예외 수신자만 저장한다. 기본 수신자는 staff와 `employee_profile`에서 파생한다.
+규칙별 예외 수신자만 저장한다. v1 UI/API는 기본 staff 수신만 열고, 직원 명부 기반 직원 수신과 직접 이메일 override는 후속 정책 확정 전까지 닫아 둔다.
 
 | 컬럼 | 목적 |
 |:---|:---|
@@ -327,8 +327,8 @@ index(`tenant_id`, `client_id`, `status`), index(`tenant_id`, `client_id`, `doma
 - 완료: 부가세 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-011 구현 PR에서 `0053_add_vat_tables.sql`로 적용.
 - 완료: 급여 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-012 구현 PR에서 `0054_add_payroll_workspace_tables.sql`로 적용.
 - 구현 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정했고, `0055_add_filing_support_tables.sql`로 물리 migration을 적용했다.
-- 설계 초안: 직원 명부 논리 컬럼은 [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)에서 정리했다. 물리 migration은 JC-015 구현 전 확정한다.
-- 설계 초안: 내부 리마인드 메일 논리 컬럼은 [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)에서 정리했다. 물리 migration은 JC-016 구현 전 확정한다.
+- 구현 완료: 직원 명부 논리 컬럼은 [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)에서 확정했고, `0056_add_employee_profile.sql`로 물리 migration을 적용했다.
+- 구현 완료: 내부 리마인드 메일 논리 컬럼은 [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)에서 확정했고, `0057_add_internal_reminder_tables.sql`로 물리 migration을 적용했다.
 - 미결: `business_entity` 물리 rename 여부 및 마이그레이션 순서.
 - 미결: 과세기간(부가세 1기/2기·예정/확정) 표현 모델과 급여 귀속월·전표 기간의 정합.
 - 미결: v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭).

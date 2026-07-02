@@ -17,15 +17,15 @@ JC-016 내부 리마인드 메일은 회사 내부 사용자에게 업무 마감
 JC-016은 다음 기능의 구현 전 계약이다.
 
 1. 내부 리마인드 규칙 조회
-2. 리마인드 규칙 생성/수정/비활성화
+2. 기본 리마인드 규칙 저장/활성·비활성화
 3. 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태를 리마인드 대상으로 연결
 4. staff 계정 기반 수신자 선택
 5. 수동 발송과 테스트 발송
-6. 마감 D-7/D-3/D-1 또는 일일 요약 같은 예약 발송
+6. 마감 D-7/D-3/D-1 또는 일일 요약 같은 예약 규칙 표시와 수동 실행
 7. 발송 로그, 중복 방지, 실패 재시도 상태 기록
 8. 로딩, 빈 상태, 오류 상태
 
-이번 문서는 구현 착수용 최종 문서가 아니라, `JC-016`을 Backlog와 데이터 모델에 등록하는 1차 게이트다. UI Preview와 사용자 확인, 수신자 source 결정이 완료되어야 코드 구현으로 넘어간다.
+이번 문서는 `JC-016` 구현 계약이다. UI Preview와 사용자 확인, 수신자 source 결정은 완료됐고, 구현 PR에서는 v1 범위를 내부 staff/본인 수신, 기본 규칙 토글, 테스트 발송, 즉시 발송, 발송 로그, provider missing 상태로 한정한다.
 
 ## 2. Route and Component Boundary
 
@@ -34,8 +34,8 @@ JC-016은 다음 기능의 구현 전 계약이다.
 | Route | `/dashboard/reminders` |
 | 화면 성격 | 내부 운영 알림 설정·발송 로그 화면 |
 | Read model | `lib/internal-reminders/summary.ts` 후보 |
-| Persistence | 신규 `internal_reminder_rule`, `internal_reminder_send_log` 후보 |
-| Mutation API | 규칙 저장, 테스트 발송, 즉시 발송, 규칙 비활성화 |
+| Persistence | 신규 `internal_reminder_rule`, `internal_reminder_recipient_override`, `internal_reminder_send_log` |
+| Mutation API | 기본 규칙 저장/비활성화, 테스트 발송, 즉시 발송 |
 | Client UI | 규칙 목록, 수신자 미리보기, 발송 로그, 테스트 발송 버튼 |
 | 책임 경계 | 외부 고객 요청 메일이 아니라 회사 내부 업무 알림 |
 
@@ -150,10 +150,10 @@ type InternalReminderSummary = {
 
 | 액션 | 허용 | API/모듈 |
 |:---|:---:|:---|
-| 규칙 추가/수정/비활성화 | O | `POST/PATCH /api/internal-reminders/rules` 후보 |
-| 테스트 발송 | O | `POST /api/internal-reminders/rules/[ruleId]/test-send` 후보 |
-| 즉시 발송 | O | `POST /api/internal-reminders/send-now` 후보 |
-| 예약 실행 | O | cron 또는 수동 job endpoint 후보 |
+| 기본 규칙 활성/비활성화 | O | `PATCH /api/internal-reminders/rules/[ruleId]` |
+| 테스트 발송 | O | `POST /api/internal-reminders/rules/[ruleId]/test-send` |
+| 즉시 발송 | O | `POST /api/internal-reminders/send-now` |
+| 예약 실행 | 후속 | v1은 수동 실행 + idempotency key까지 구현, Vercel Cron은 후속 |
 | 외부 고객 요청 메일 발송 | X | GIWA request mail 흐름 v1 제외 |
 | 자동 홈택스 제출/납부 | X | 신고지원 책임 경계 유지 |
 
@@ -173,17 +173,17 @@ type InternalReminderSummary = {
 - [x] UI Preview 작성 및 사용자 확인 — [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html) (2026-07-02)
 - [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/reminders`
 - [x] 수신자 source 결정 — v1은 담당자 본인·내부 staff 발송(자가 리마인드). 직원 명부 기반 직원 수신은 후속
-- [ ] 신규 `internal_reminder_*` 물리 테이블 여부 확정
-- [ ] Resend 발송 환경변수와 테스트 발송 방식 확인
-- [ ] 예약 실행 방식(cron/manual job)과 idempotency key 확정
+- [x] 신규 `internal_reminder_*` 물리 테이블 확정 — `lib/db/schema.ts`, `drizzle/0057_add_internal_reminder_tables.sql`
+- [x] Resend 발송 환경변수와 테스트 발송 방식 확인 — `RESEND_API_KEY`/`EMAIL_FROM` 없으면 provider missing으로 잠금, 있으면 `POST /api/internal-reminders/rules/[ruleId]/test-send`
+- [x] 실행 방식과 idempotency key 확정 — v1은 수동 즉시 발송 + deterministic idempotency key. Vercel Cron 자동 예약 실행은 후속
 - [x] QA 시나리오 작성 및 Backlog Context Lock 연결
 
 ## 9. Acceptance Criteria
 
 1. 리마인드는 회사 내부 수신자에게만 발송된다.
 2. 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태가 리마인드 대상으로 연결된다.
-3. 수신자는 staff 또는 직원 명부 기반으로 결정되며, notification disabled 대상은 제외된다.
-4. 같은 조건의 예약 리마인드는 idempotency key로 중복 발송되지 않는다.
+3. v1 수신자는 담당자 본인·내부 staff로 결정되며, 비활성/이메일 없는 대상은 제외된다. 직원 명부 기반 직원 수신은 후속이다.
+4. 같은 조건의 수동 리마인드는 idempotency key로 중복 발송되지 않는다. 예약 Cron은 후속이다.
 5. 발송 로그는 성공/실패/스킵 상태와 실패 사유를 남긴다.
 6. 외부 고객 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출/납부는 제공하지 않는다.
 7. 로딩·빈·오류·provider missing 상태가 UI Preview와 구현에 포함된다.
@@ -191,8 +191,8 @@ type InternalReminderSummary = {
 ## 10. Open Items
 
 - v1 수신자는 담당자 본인·내부 staff로 확정(2026-07-02). 직원 명부 기반 직원 수신은 후속.
-- 예약 실행을 Vercel Cron으로 할지, 내부 수동 실행으로 시작할지 결정이 필요하다.
-- 이메일 템플릿 편집을 v1에 포함할지, 고정 템플릿으로 시작할지 결정이 필요하다.
+- Vercel Cron 자동 예약 실행은 후속이다. v1은 화면의 예약 규칙 표시와 수동 즉시 발송으로 시작한다.
+- 이메일 템플릿 편집 UI는 후속이다. v1은 고정 템플릿과 기본 규칙 토글로 시작한다.
 
 ## 11. Related Documents
 

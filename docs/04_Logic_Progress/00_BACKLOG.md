@@ -28,7 +28,7 @@
 | JC-013 | done | Build filing support workspace | `lib/filing-support`, `app/(dashboard)/dashboard/filing-support`, `app/api/filing` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 | JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 프로비저닝 후 파일 업로드→저장→AI 파싱→정규화 E2E 검증 (현재 전부 플레이스홀더라 세션 생성까지만 검증됨) |
 | JC-015 | doing | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리하고, 급여·4대보험 고지액 매칭·내부 리마인드 수신자 source로 사용. read model·화면·추가/수정 API·0056 migration 구현 완료 |
-| JC-016 | todo | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태를 회사 내부 수신자에게 리마인드하고, 외부 고객 요청 메일/자동 신고는 제외 |
+| JC-016 | doing | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 내부 staff/본인 수신 기반 리마인드 read model·화면·토글/테스트 발송/즉시 발송 API·0057 migration 구현. 직원 명부 기반 직원 수신과 Cron 자동 예약은 후속 |
 
 ## Implementation Rule
 
@@ -264,20 +264,20 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] UI Preview 작성 및 사용자 확인 — 완료(2026-07-02), [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html)
   - [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/reminders`
   - [x] 수신자 source 결정 — v1은 담당자 본인·내부 staff 발송(자가 리마인드). 직원 명부(JC-015) 기반 직원 수신은 후속
-  - [ ] `internal_reminder_*` 물리 Drizzle migration 확정 — **미충족(구현 PR)**
-  - [ ] Resend/env/test-send 확인 — **미충족(구현 PR)**
-  - [ ] 예약 실행 방식과 idempotency key 확정 — **미충족(구현 PR)**
+  - [x] `internal_reminder_*` 물리 Drizzle migration 확정 — `lib/db/schema.ts`, `drizzle/0057_add_internal_reminder_tables.sql`
+  - [x] Resend/env/test-send 확인 — provider missing guard + 테스트 발송 API 구현. 실제 provider E2E는 배포 env 설정 후 검증
+  - [x] 실행 방식과 idempotency key 확정 — v1은 수동 즉시 발송 + deterministic idempotency key. Vercel Cron 자동 예약은 후속
 - Acceptance Criteria:
-  - [ ] 리마인드는 회사 내부 수신자에게만 발송된다.
-  - [ ] 확인 필요 상태가 리마인드 대상으로 연결된다.
-  - [ ] 수신자는 staff 또는 직원 명부 기반으로 결정되며, notification disabled 대상은 제외된다.
-  - [ ] 같은 조건의 예약 리마인드는 idempotency key로 중복 발송되지 않는다.
-  - [ ] 발송 로그는 성공/실패/스킵 상태와 실패 사유를 남긴다.
-  - [ ] 외부 고객 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출/납부는 제공하지 않는다.
-  - [ ] 로딩·빈·오류·provider missing 상태가 구현된다.
-- Document Sync Check: Screen Flow 8 / UI Design 4.9 / Prototype Review / HTML Preview / DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview·화면 승인·수신자 source(v1 staff/본인) 확정. 남은 구현 전제조건(물리 테이블·Resend·예약/idempotency)은 구현 PR에서 확정**.
+  - [x] 리마인드는 회사 내부 수신자에게만 발송된다.
+  - [x] 확인 필요 상태가 리마인드 대상으로 연결된다.
+  - [x] v1 수신자는 담당자 본인·내부 staff로 결정되며, 비활성/이메일 없는 대상은 제외된다. 직원 명부 기반 직원 수신은 후속이다.
+  - [x] 같은 조건의 수동 리마인드는 idempotency key로 중복 발송되지 않는다. Cron 자동 예약은 후속이다.
+  - [x] 발송 로그는 성공/실패/스킵 상태와 실패 사유를 남긴다.
+  - [x] 외부 고객 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출/납부는 제공하지 않는다.
+  - [x] 로딩·빈·오류·provider missing 상태가 구현된다.
+- Document Sync Check: Screen Flow 8 / UI Design 4.9 / Prototype Review / HTML Preview / DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0057_add_internal_reminder_tables.sql`, `lib/internal-reminders/summary.ts`, `lib/internal-reminders/send.ts`, `lib/internal-reminders/summary.test.ts`, `lib/internal-reminders/send.test.ts`, `lib/validations/internal-reminders.ts`, `app/(dashboard)/dashboard/reminders/page.tsx`, `_components/internal-reminders-workspace.tsx`, `_components/reminder-actions.tsx`, `_components/internal-reminders-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/internal-reminders/rules/[ruleId]/route.ts`, `app/api/internal-reminders/rules/[ruleId]/test-send/route.ts`, `app/api/internal-reminders/send-now/route.ts`, `app/(dashboard)/_components/sidebar.tsx`, `app/(dashboard)/layout.tsx`.
 
-> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 UI Preview 작성·화면 승인(2026-07-02)과 수신자 source(v1 담당자 본인·내부 staff)를 확정했고, 남은 구현 전제조건(물리 테이블·Resend·예약/idempotency)은 구현 PR에서 확정한다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
+> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신과 Vercel Cron 자동 예약 실행은 후속이다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
