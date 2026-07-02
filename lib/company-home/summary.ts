@@ -106,7 +106,7 @@ type LoadCompanyHomeSummaryParams = {
 const ROUTES = {
   sourceCollection: '/dashboard/direct-upload',
   bookkeeping: '/dashboard/bookkeeping',
-  vat: '/dashboard#vat-status',
+  vat: '/dashboard/vat',
   payroll: '/dashboard/payroll',
   filingSupport: '/dashboard#filing-support-status',
   receipts: '/dashboard#recent-activity',

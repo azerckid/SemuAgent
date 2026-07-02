@@ -10,7 +10,7 @@ const HOME_NAV = {
 const FLOW_NAV = [
   { href: '/dashboard/direct-upload', label: '자료수집', glyph: '↥' },
   { href: '/dashboard/bookkeeping', label: '기장검토', glyph: '▤', badgeKey: 'bookkeepingPending' },
-  { href: '/dashboard#vat-status', label: '부가세', glyph: '％' },
+  { href: '/dashboard/vat', label: '부가세', glyph: '％' },
   { href: '/dashboard/payroll', label: '급여', glyph: '₩' },
   { href: '/dashboard#filing-support-status', label: '신고지원', glyph: '↧' },
 ] as const

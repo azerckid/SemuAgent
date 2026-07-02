@@ -1,6 +1,6 @@
 # VAT Pre-Code Technical Brief
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-02 11:03
+> Last Updated: 2026-07-02 11:26
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -27,9 +27,10 @@ JC-011 부가세 구현 직전 계약. 기장검토에서 확정된 전표와 VA
 5. 신고 패키지 미리보기와 생성 잠금
 6. 로딩, 빈 상태, 오류 상태
 
-현재 `lib/db/schema.ts`에는 `vat_*` 전용 테이블이 없다. 따라서 JC-011 구현은
-Drizzle migration에서 `vat_period_summary`, `vat_deduction_review`를 추가한 뒤
-read model과 화면을 구현한다. DB Schema 문서의 4.1은 이 Brief 기준으로 구체화한다.
+JC-011 구현은 Drizzle migration에서 `vat_period_summary`, `vat_deduction_review`를
+먼저 추가한 뒤 read model과 화면을 구현한다. DB Schema 문서의 4.1은 이 Brief 기준으로
+구체화했고, 구현 1단계에서 `lib/db/schema.ts`와 `drizzle/0053_add_vat_tables.sql`에
+물리 스키마를 추가한다.
 
 ## 2. Route and Component Boundary
 
@@ -111,7 +112,7 @@ type VatSummary = {
 | 기간 | URL `period`, `buildCompanyHomePeriod` | startMonth, endMonth, deadline | 부가세 1기/2기 확정 신고 기준 |
 | 전표 집계 | `bookkeeping_journal_entry_voucher`, `bookkeeping_journal_entry_voucher_line`, `bookkeeping_journal_entry_run`, `upload_session` | status, entryDate, closePeriod, accountName/accountCode, amountKrw | 확정 전표만 집계. tenant+businessEntity+기간 제한 |
 | 매출세액 | voucher line | `부가세예수금` 또는 code `255`, credit amount | outputTaxKrw |
-| 매입세액 | voucher line + `vat_deduction_review` | `부가세대급금` 또는 code `135`, debit amount, decision | pending 제외/확정 반영 후 inputTaxDeductibleKrw |
+| 매입세액 | voucher line + `vat_deduction_review` | `부가세대급금` 또는 code `135`, debit amount, decision | 전체 매입세액을 예정 공제액으로 두고 불공제/안분 확정분만 차감 |
 | 매출 구분 | `vat_period_summary` | taxable/zero/exempt supply, output tax | 현재 voucher line만으로 영세율·면세 구분이 불완전하므로 snapshot 필수 |
 | 공제 검토 | `vat_deduction_review` | kind, decision, reason, prorationRateBps, source refs | 불공제 후보·안분 필요·공제 확정 |
 | 부속 명세 | summary + review count | tax invoice/card/non-deductible statuses | 준비됨/검토 대기 |
@@ -152,7 +153,7 @@ type VatSummary = {
 - voucher 집계는 `bookkeeping_journal_entry_voucher.status='confirmed'`만 사용한다.
 - `outputTaxKrw`는 `부가세예수금`(code `255`) credit line 합계다.
 - `inputTaxKrw`는 `부가세대급금`(code `135`) debit line 합계다.
-- `inputTaxDeductibleKrw`는 `vat_deduction_review.decision`이 `deductible` 또는 `prorated`로 확정된 금액만 반영한다. `pending`인 후보는 잠금 사유로 남긴다.
+- `inputTaxDeductibleKrw`는 전체 매입세액(`inputTaxKrw`)을 예정 공제액으로 두고, `vat_deduction_review.decision='non_deductible'`은 전액 차감, `prorated`는 비공제분만 차감한다. `pending` 후보는 아직 차감하지 않고 잠금 사유로 남긴다.
 - `payableTaxKrw = outputTaxKrw - inputTaxDeductibleKrw`.
 - 매출 구분(과세/영세율/면세)은 `vat_period_summary`의 snapshot 값을 사용한다. 현재 전표 라인만으로는 영세율·면세를 안정적으로 복원하지 않는다.
 - 불공제 후보 기본 규칙:
@@ -174,7 +175,7 @@ type VatSummary = {
 | 홈택스 제출·납부 | X | v1 범위 밖 |
 | 전표 수정·분류 승인 | X | JC-010 기장검토 화면 |
 
-- mutation 성공 후 `vat_period_summary`를 재계산하거나 서버에서 revalidate한다.
+- mutation 성공 후 `vat_period_summary`를 재계산하거나 서버에서 revalidate한다. 이미 생성된 패키지가 있더라도 공제 판정이 바뀌면 `packageStatus`는 `ready`로 되돌려 stale 패키지를 방지한다.
 - 일부 공제 검토가 남아 있으면 패키지 생성 API는 409를 반환한다.
 - Loading: `loading.tsx` 스켈레톤.
 - Empty: 확정 전표 또는 VAT summary가 없으면 "기장검토 먼저 확정하기".
@@ -194,15 +195,15 @@ type VatSummary = {
 
 ## 8. Implementation Sequence
 
-1. Drizzle schema + migration: `vat_period_summary`, `vat_deduction_review` 추가.
-2. `lib/vat/summary.ts` read model + 순수 파생 함수(세액 계산, pending count, package lock).
-3. `lib/vat/summary.test.ts` - 산식·기간·공제 판정·잠금·tenant 범위.
-4. `/dashboard/vat/page.tsx` SSR + 사업장/전표 없음 빈 상태.
-5. `_components/vat-workspace.tsx` - Preview 4.4 구조(세액 요약 -> 매출 구분 -> 공제 검토 -> 부속 명세 -> 패키지).
-6. 공제 판정 mutation API + UI 배선.
-7. 패키지 생성 guard API + locked button wrapper.
-8. `loading.tsx`/`error.tsx`.
-9. 사이드바·회사 홈 `ROUTES.vat` 재지정 + 정적 테스트.
+1. Drizzle schema + migration: `vat_period_summary`, `vat_deduction_review` 추가. **완료: `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`**
+2. `lib/vat/summary.ts` read model + 순수 파생 함수(세액 계산, pending count, package lock). **완료**
+3. `lib/vat/summary.test.ts` - 산식·기간·공제 판정·잠금·tenant 범위. **완료**
+4. `/dashboard/vat/page.tsx` SSR + 사업장/전표 없음 빈 상태. **완료**
+5. `_components/vat-workspace.tsx` - Preview 4.4 구조(세액 요약 -> 매출 구분 -> 공제 검토 -> 부속 명세 -> 패키지). **완료**
+6. 공제 판정 mutation API + UI 배선. **완료: `PATCH /api/vat/deduction-reviews/[reviewId]`, `vat-actions.tsx`**
+7. 패키지 생성 guard API + locked button wrapper. **완료: `POST /api/vat/periods/[periodKey]/package`, `vat-actions.tsx`**
+8. `loading.tsx`/`error.tsx`. **완료**
+9. 사이드바·회사 홈 `ROUTES.vat` 재지정 + 정적 테스트. **완료**
 10. 로컬 QA seed로 Preview 숫자(32,000,000 - 18,000,000 = 14,000,000, 검토 3건)를 재현하고 브라우저 캡처 비교.
 
 ## 9. Acceptance Criteria

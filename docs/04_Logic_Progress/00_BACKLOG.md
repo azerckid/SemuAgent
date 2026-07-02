@@ -17,13 +17,13 @@
 | JC-002 | done | Link local Solmate skills | solmate-skills | `.agent/skills` contains symlinks to local skill folders with `SKILL.md` |
 | JC-003 | done | Switch package manager baseline to npm | package setup | README and PR template use npm commands; pnpm files removed |
 | JC-004 | todo | Audit copied routes and rename accounting-firm assumptions | `app`, `lib`, `components` | Company self-use terminology and responsibility boundary are reflected in visible routes |
-| JC-005 | doing | Define company tenant data model delta | `lib/db/schema.ts` | Company/operator model documented before DB migration — 설계: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) (client→business_entity 재정의, 이메일 서브시스템 v1 제외). 부가세 논리 컬럼은 JC-011 게이트에서 확정, 물리 마이그레이션·신고 신규 테이블 컬럼은 후속 |
+| JC-005 | doing | Define company tenant data model delta | `lib/db/schema.ts` | Company/operator model documented before DB migration — 설계: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) (client→business_entity 재정의, 이메일 서브시스템 v1 제외). 부가세 물리 마이그레이션은 JC-011 구현에서 추가, 신고 신규 테이블 컬럼은 후속 |
 | JC-006 | done | Shape first working dashboard | `app/(dashboard)`, `components/ui` | Dashboard shows collection, bookkeeping, VAT, payroll, filing support status |
 | JC-007 | todo | Define filing package model | bookkeeping/payroll modules | Filing material package can store generated docs, Hometax guide, receipt, and audit state |
 | JC-008 | todo | Review residual npm audit findings | `package.json`, parser/import libraries | Decide replacements or mitigations for `xlsx`, `viem/ws`, `drizzle-kit/esbuild`, and Next/PostCSS audit advisories |
 | JC-009 | done | Build source collection workspace | `app/(dashboard)/dashboard/direct-upload`, `lib/source-collection`, `components/ui` | Company-internal upload → parse → normalize flow matches approved 자료수집 UI; external client portal excluded (PR #4 머지) |
 | JC-010 | done | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
-| JC-011 | todo | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
+| JC-011 | doing | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
 | JC-012 | todo | Build payroll workspace | `lib/payroll`, `components/ui` | Payroll register with derived totals, withholding/4-insurance deduction, payslip/statement preview, and close (locked until missing-employee issues resolved) match approved 급여 UI; PII masking applied |
 | JC-013 | todo | Build filing support workspace | `lib/bookkeeping`, `lib/payroll`, `components/ui` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 | JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 프로비저닝 후 파일 업로드→저장→AI 파싱→정규화 E2E 검증 (현재 전부 플레이스홀더라 세션 생성까지만 검증됨) |
@@ -54,7 +54,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 이메일 요청·수신함 서브시스템 v1 제외 방침 문서화
   - [x] 부가세 신규 테이블 논리 컬럼 확정 — [DB Schema 4.1](../03_Technical_Specs/03_DB_SCHEMA.md), [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)
   - [ ] `business_entity` 물리 rename 여부와 마이그레이션 순서 확정 — **미충족**
-  - [ ] 부가세 물리 Drizzle migration·인덱스·FK 적용 순서, 신고지원 신규 테이블 컬럼·인덱스·FK 확정 — **미충족**
+  - [x] 부가세 물리 Drizzle migration·인덱스·FK 적용 — `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`
+  - [ ] 신고지원 신규 테이블 컬럼·인덱스·FK 확정 — **미충족**
   - [ ] 과세기간·귀속월·전표 기간 표현 모델 확정 — **미충족**
   - [ ] QA 테스트 시나리오 작성 (Layer 5) — **미충족**
 - Acceptance Criteria:
@@ -63,8 +64,9 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] v1 제외 테이블과 제외 사유가 제품 범위와 일치한다.
   - [ ] 실제 Drizzle 스키마 변경안과 마이그레이션 순서가 확정된다.
   - [x] 부가세 테이블의 최소 논리 컬럼이 구현 가능한 수준으로 확정된다.
-  - [ ] 부가세 물리 FK/인덱스와 신고지원 테이블의 최소 컬럼, FK, 인덱스가 구현 가능한 수준으로 확정된다.
-- Document Sync Check: DB Schema / Backlog / 6개 승인 Preview의 데이터 요구사항을 상호 링크함 (2026-07-02 기준, 부가세 논리 컬럼 확정, 물리 마이그레이션은 후속)
+  - [x] 부가세 물리 FK/인덱스가 구현 가능한 수준으로 확정되어 migration에 반영된다.
+  - [ ] 신고지원 테이블의 최소 컬럼, FK, 인덱스가 구현 가능한 수준으로 확정된다.
+- Document Sync Check: DB Schema / Backlog / 6개 승인 Preview의 데이터 요구사항을 상호 링크함 (2026-07-02 기준, 부가세 물리 Drizzle migration 추가, 신고지원 물리 스키마는 후속)
 
 ### JC-006 · Shape first working dashboard (회사 홈)
 
@@ -153,7 +155,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] UI-First Gate 통과 (사용자 확인 완료)
   - [x] Component & Library Plan에 부가세 전용 컴포넌트(Tax Summary·Deduction Review·잠금 버튼 래퍼) 반영 — [Component Plan 7.4](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
   - [x] Pre-Code Technical Brief(확정 전표 집계·공제 판정·공통매입 안분·패키지 생성 mutation) 정리 — [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)
-  - [x] 회사 tenant/기간·전표/VAT 논리 데이터 모델 확정 — [DB Schema 4.1](../03_Technical_Specs/03_DB_SCHEMA.md), 물리 Drizzle migration은 구현 순서 1
+  - [x] 회사 tenant/기간·전표/VAT 데이터 모델 확정 — [DB Schema 4.1](../03_Technical_Specs/03_DB_SCHEMA.md), 물리 Drizzle migration `0053_add_vat_tables.sql`
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
 - Acceptance Criteria:
   - [ ] 확정 전표 기준 매출세액·매입세액·납부(예정)세액이 집계·표시된다.
@@ -163,7 +165,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 신고 패키지 생성 버튼은 공제 검토 완료 전까지 잠금(disabled + aria-disabled)이며, 사유가 함께 노출된다. React 구현 시 disabled 버튼을 래퍼로 감싸 툴팁을 접근성 있게 처리한다.
   - [ ] 자동 홈택스 제출은 제공하지 않는다(패키지 + 입력 가이드까지). 세액은 검토 완료 전 "예정" 표기.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: Screen Flow 4d / UI Design 4.4 / Prototype Review / Preview / Component Plan 7.4 / VAT Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일은 착수 후 갱신.
+- Document Sync Check: Screen Flow 4d / UI Design 4.4 / Prototype Review / Preview / Component Plan 7.4 / VAT Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일(1~9단계): `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`, `lib/vat/summary.ts`, `lib/vat/summary.test.ts`, `lib/validations/vat.ts`, `lib/validations/vat.test.ts`, `app/api/vat/deduction-reviews/[reviewId]/route.ts`, `app/api/vat/periods/[periodKey]/package/route.ts`, `app/(dashboard)/dashboard/vat/page.tsx`, `app/(dashboard)/dashboard/vat/_components/vat-workspace.tsx`, `app/(dashboard)/dashboard/vat/_components/vat-actions.tsx`, `app/(dashboard)/dashboard/vat/_components/vat-workspace.test.ts`, `app/(dashboard)/dashboard/vat/loading.tsx`, `app/(dashboard)/dashboard/vat/error.tsx`, `app/(dashboard)/_components/sidebar.tsx`, `lib/company-home/summary.ts`.
 
 ### JC-012 · Build payroll workspace (급여) — 신규
 
@@ -214,7 +216,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011 게이트에서 부가세 논리 컬럼을 확정했다. 물리 Drizzle migration·신고 신규 테이블 컬럼·기간 모델 세부 정합은 후속이다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-011은 Pre-Code Brief·Component Plan·QA 시나리오 게이트가 완료되어 구현 PR에서 DB migration부터 착수 가능하다. JC-012~013은 구현 전 게이트/구현이 남아 있다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료). 남은 공통 구현 착수 전제조건은 JC-012~013 **Pre-Code Brief**, JC-012 개인정보 마스킹 방침, **Layer 5 QA**(JC-006·JC-009·JC-010·JC-011 완료, 나머지 미작성)이다.
+> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration 1단계를 추가했다. 신고지원 신규 테이블 컬럼·기간 모델 세부 정합은 후속이다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-011은 Pre-Code Brief·Component Plan·QA 시나리오 게이트가 완료되어 VAT read model/UI 구현을 진행 중이다. JC-012~013은 구현 전 게이트/구현이 남아 있다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료). 남은 공통 구현 착수 전제조건은 JC-012~013 **Pre-Code Brief**, JC-012 개인정보 마스킹 방침, **Layer 5 QA**(JC-006·JC-009·JC-010·JC-011 완료, 나머지 미작성)이다.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
