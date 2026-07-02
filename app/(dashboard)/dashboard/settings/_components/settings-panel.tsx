@@ -9,7 +9,6 @@ import { TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { WorkEmailAddressesPanel } from '../../emails/_components/work-email-addresses-panel'
@@ -18,7 +17,7 @@ import type {
   WorkEmailStaffOption,
 } from '../../emails/_components/mail-console-types'
 
-const SETTINGS_TABS = ['tenant', 'staff', 'mail', 'cc', 'clients'] as const
+const SETTINGS_TABS = ['tenant', 'staff', 'mail', 'clients'] as const
 
 type Tab = (typeof SETTINGS_TABS)[number]
 
@@ -60,23 +59,11 @@ const MAILBOX_STATE_LABEL: Record<string, string> = {
   retired: '폐기',
 }
 
-type CcGroupPurpose = 'general' | 'payroll' | 'all'
-
-interface InternalCcGroupRow {
-  id: string
-  name: string
-  purpose: CcGroupPurpose
-  emails: string
-  isDefault: boolean
-  createdAt: string
-}
-
 interface Props {
   tenant: TenantData
   staffList: StaffRow[]
   currentUserId: string
   currentStaffPhone: string
-  internalCcGroups: InternalCcGroupRow[]
   workEmailAddresses: WorkEmailAddressRow[]
   workEmailStaffOptions: WorkEmailStaffOption[]
 }
@@ -96,25 +83,12 @@ const PLAN_LABEL: Record<string, string> = {
   enterprise: 'Enterprise',
 }
 
-const PURPOSE_LABEL: Record<CcGroupPurpose, string> = {
-  general: '기장',
-  payroll: '급여',
-  all: '전체',
-}
-
-function errorMessageFromResponse(data: unknown, fallback: string) {
-  if (!data || typeof data !== 'object') return fallback
-  const error = (data as { error?: unknown }).error
-  if (typeof error === 'string') return error
-  return fallback
-}
 
 export function SettingsPanel({
   tenant: initialTenant,
   staffList: initialStaff,
   currentUserId,
   currentStaffPhone,
-  internalCcGroups: initialInternalCcGroups,
   workEmailAddresses,
   workEmailStaffOptions,
 }: Props) {
@@ -171,16 +145,6 @@ export function SettingsPanel({
   const [renameValue, setRenameValue] = useState('')
 
   // ── 메일/CC 설정 state
-  const [internalCcGroups, setInternalCcGroups] = useState(initialInternalCcGroups)
-  const [internalCcForm, setInternalCcForm] = useState({
-    name: '',
-    purpose: 'all' as CcGroupPurpose,
-    emails: '',
-    isDefault: false,
-  })
-  const [internalCcError, setInternalCcError] = useState('')
-  const [internalCcSaving, setInternalCcSaving] = useState(false)
-  const [internalCcDeletingId, setInternalCcDeletingId] = useState<string | null>(null)
 
   const reminderDaysValid = isReminderDaysBeforeInRange(reminderDaysBefore)
   const currentStaff = initialStaff.find((staffMember) => staffMember.id === currentUserId)
@@ -277,51 +241,6 @@ export function SettingsPanel({
     }
   }
 
-  const handleInternalCcCreate = async (e: React.SyntheticEvent) => {
-    e.preventDefault()
-    if (!canManageMailSettings) {
-      setInternalCcError('CC 참조메일 그룹 변경은 관리자만 할 수 있습니다.')
-      return
-    }
-    setInternalCcSaving(true)
-    setInternalCcError('')
-    const res = await fetch('/api/settings/internal-cc-groups', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(internalCcForm),
-    })
-    setInternalCcSaving(false)
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setInternalCcError(errorMessageFromResponse(data, 'CC 참조메일 그룹 저장에 실패했습니다'))
-      return
-    }
-    const rows = await fetch('/api/settings/internal-cc-groups').then((r) => r.json()).catch(() => null)
-    if (Array.isArray(rows)) setInternalCcGroups(rows)
-    setInternalCcForm({ name: '', purpose: 'all', emails: '', isDefault: false })
-    toast.success('CC 참조메일 그룹을 저장했습니다.')
-  }
-
-  const handleInternalCcDelete = async (groupId: string) => {
-    if (!canManageMailSettings) {
-      setInternalCcError('CC 참조메일 그룹 변경은 관리자만 할 수 있습니다.')
-      return
-    }
-    setInternalCcDeletingId(groupId)
-    setInternalCcError('')
-    const res = await fetch(`/api/settings/internal-cc-groups/${groupId}`, {
-      method: 'DELETE',
-    })
-    setInternalCcDeletingId(null)
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setInternalCcError(errorMessageFromResponse(data, 'CC 참조메일 그룹 삭제에 실패했습니다'))
-      return
-    }
-    setInternalCcGroups((prev) => prev.filter((group) => group.id !== groupId))
-    toast.success('CC 참조메일 그룹을 삭제했습니다.')
-  }
-
   const handleTabChange = (nextTab: Tab) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set('tab', nextTab)
@@ -332,7 +251,6 @@ export function SettingsPanel({
     { key: 'tenant', label: '테넌트 설정' },
     { key: 'staff', label: '담당자 관리' },
     { key: 'mail', label: '업무메일 설정' },
-    { key: 'cc', label: 'CC 참조메일 설정' },
     { key: 'clients', label: '사업장 관리' },
   ]
 
@@ -428,7 +346,7 @@ export function SettingsPanel({
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">담당자</CardTitle>
-                <CardDescription>사무소 담당자의 권한·활성 상태를 관리합니다. 내 전화번호는 본인 행의 수정 버튼으로 편집합니다.</CardDescription>
+                <CardDescription>회사 내부 담당자의 권한·활성 상태를 관리합니다. 내 전화번호는 본인 행의 수정 버튼으로 편집합니다.</CardDescription>
               </CardHeader>
               <CardContent className="overflow-x-auto p-0">
               {staffList.length === 0 ? (
@@ -644,7 +562,7 @@ export function SettingsPanel({
               <div>
                 <h3 className="text-sm font-semibold text-foreground">업무전용 이메일</h3>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  담당자가 바뀌어도 업무 메일주소와 회신 이력은 사무소 기록으로 남아 다음 담당자에게 인계됩니다.
+                  담당자가 바뀌어도 업무 메일주소와 회신 이력은 회사 업무 기록으로 남아 다음 담당자에게 인계됩니다.
                 </p>
               </div>
               <WorkEmailAddressesPanel
@@ -700,132 +618,6 @@ export function SettingsPanel({
                 </CardFooter>
               </Card>
             </form>
-          </div>
-        )}
-
-        {/* ── CC 참조메일 설정 탭 */}
-        {tab === 'cc' && (
-          <div className="max-w-5xl space-y-5">
-            <div className="space-y-2">
-              <h2 className="text-base font-semibold text-foreground">CC 참조메일 설정</h2>
-              <p className="text-sm text-muted-foreground">
-                요청 메일에 공통으로 참조할 내부 주소 그룹을 관리합니다.
-              </p>
-            </div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">CC 참조메일 그룹</CardTitle>
-                <CardDescription>
-                  요청 메일에 공통으로 참조(CC)할 주소를 묶습니다. 고객사 CC와 별도로 관리되며, 메일 작성 시 선택하면 참조에 추가됩니다.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {internalCcGroups.length === 0 ? (
-                  <p className="px-5 py-8 text-center text-sm text-muted-foreground">아직 등록된 CC 참조메일 그룹이 없습니다.</p>
-                ) : (
-                  <ul className="divide-y divide-border border-t border-border">
-                    {internalCcGroups.map((group) => (
-                      <li key={group.id} className="flex items-start justify-between gap-4 px-4 py-3">
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium text-foreground">{group.name}</p>
-                            <Badge variant="secondary">{PURPOSE_LABEL[group.purpose]}</Badge>
-                            {group.isDefault && <Badge variant="info">기본</Badge>}
-                          </div>
-                          <p className="mt-1 break-all text-sm text-muted-foreground">{group.emails}</p>
-                        </div>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleInternalCcDelete(group.id)}
-                          disabled={!canManageMailSettings || internalCcDeletingId === group.id}
-                          className="shrink-0 text-destructive hover:text-destructive"
-                        >
-                          {internalCcDeletingId === group.id ? '삭제 중…' : '삭제'}
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">CC 참조메일 그룹 추가</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleInternalCcCreate} className="grid gap-4">
-                  {!canManageMailSettings && (
-                    <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                      CC 참조메일 그룹 변경은 관리자만 할 수 있습니다.
-                    </p>
-                  )}
-                  <div className="grid gap-1.5">
-                    <label htmlFor="cc-name" className="text-sm font-medium text-foreground">그룹명</label>
-                    <Input
-                      id="cc-name"
-                      maxLength={80}
-                      value={internalCcForm.name}
-                      onChange={(e) => setInternalCcForm((prev) => ({ ...prev, name: e.target.value }))}
-                      placeholder="예: 내부보고"
-                      disabled={!canManageMailSettings}
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-1.5">
-                    <label htmlFor="cc-purpose" className="text-sm font-medium text-foreground">용도</label>
-                    <Select
-                      id="cc-purpose"
-                      value={internalCcForm.purpose}
-                      onChange={(e) => setInternalCcForm((prev) => ({ ...prev, purpose: e.target.value as CcGroupPurpose }))}
-                      disabled={!canManageMailSettings}
-                    >
-                      <option value="general">기장</option>
-                      <option value="payroll">급여</option>
-                      <option value="all">전체</option>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">이 참조 그룹을 어떤 요청 메일에 붙일지 정합니다. 기장 요청에만 / 급여 요청에만 / 전체(둘 다).</p>
-                  </div>
-                  <div className="grid gap-1.5">
-                    <label htmlFor="cc-emails" className="text-sm font-medium text-foreground">참조 이메일</label>
-                    <Textarea
-                      id="cc-emails"
-                      rows={4}
-                      maxLength={1000}
-                      value={internalCcForm.emails}
-                      onChange={(e) => setInternalCcForm((prev) => ({ ...prev, emails: e.target.value }))}
-                      placeholder="partner@example.com, manager@example.com"
-                      disabled={!canManageMailSettings}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">쉼표, 세미콜론, 줄바꿈으로 여러 명을 입력할 수 있습니다.</p>
-                  </div>
-                  <div>
-                    <label className="flex items-center gap-2 text-sm text-foreground">
-                      <input
-                        type="checkbox"
-                        checked={internalCcForm.isDefault}
-                        onChange={(e) => setInternalCcForm((prev) => ({ ...prev, isDefault: e.target.checked }))}
-                        disabled={!canManageMailSettings}
-                        className="size-4 rounded border-input"
-                      />
-                      기본 그룹으로 표시
-                    </label>
-                    <p className="ml-6 mt-1 text-xs text-muted-foreground">
-                      요청 메일 작성 시 같은 용도의 기본 그룹이 자동으로 참조(CC)에 들어갑니다. (담당자가 작성 화면에서 다른 그룹으로 바꿀 수 있습니다.)
-                    </p>
-                  </div>
-                  {internalCcError && <p className="text-xs text-destructive">{internalCcError}</p>}
-                  <div>
-                    <Button type="submit" disabled={!canManageMailSettings || internalCcSaving}>
-                      {internalCcSaving ? '저장 중…' : 'CC 참조메일 그룹 저장'}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
           </div>
         )}
 
