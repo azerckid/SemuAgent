@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { PayrollAdaptiveStructuringEligibility } from '@/lib/payroll/adaptive-structuring-eligibility'
 import type { PayrollRow } from '@/lib/payroll/load-payroll-summary-by-event-id'
@@ -52,7 +50,6 @@ export function PayrollExtractionStatusPopup({
   reviewNotice,
   successMessage,
   rerunDisabled,
-  sessionDetailLink,
   adaptiveStructuring,
 }: {
   status: PayrollDisplayStatus
@@ -63,7 +60,6 @@ export function PayrollExtractionStatusPopup({
   reviewNotice: string | null
   successMessage: string | null
   rerunDisabled: boolean
-  sessionDetailLink: { show: boolean; label: string } | null
   adaptiveStructuring: {
     eligibility: PayrollAdaptiveStructuringEligibility
     candidateFiles: { id: string; originalFilename: string }[]
@@ -93,11 +89,6 @@ export function PayrollExtractionStatusPopup({
               />
             )}
             <RerunPayrollExtractionButton sessionId={sessionId} disabled={rerunDisabled} />
-            {sessionDetailLink?.show && (
-              <Link href={`/dashboard/sessions/${sessionId}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                {sessionDetailLink.label}
-              </Link>
-            )}
           </>
         )
       }

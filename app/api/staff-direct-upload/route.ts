@@ -145,7 +145,7 @@ export async function POST(req: Request) {
         eventId,
         resultPath: requestKind === 'payroll'
           ? `/dashboard/payroll?eventId=${eventId}`
-          : `/dashboard/reviews?sessionId=${result.sessionId}`,
+          : `/dashboard/direct-upload?sessionId=${result.sessionId}`,
       }
     })
 

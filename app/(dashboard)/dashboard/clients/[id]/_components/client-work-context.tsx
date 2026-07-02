@@ -54,6 +54,10 @@ function summarizeSessionStatus(status: string) {
   return RECENT_SUMMARY_STATUS.needs_check
 }
 
+function workspaceHrefForRequestKind(requestKind: string) {
+  return requestKind === 'payroll' ? '/dashboard/payroll' : '/dashboard/direct-upload'
+}
+
 export type ReviewDerivedStatus = { label: string; detail: string; tone: string }
 export type PayrollDerivedStatus = { label: string; detail: string; tone: string }
 
@@ -109,13 +113,11 @@ type RecentRequestItem = {
 }
 
 export function buildRecentRequestItems({
-  clientId,
   events,
   sessions,
   reviewStatusBySessionId,
   payrollStatusBySessionId,
 }: {
-  clientId: string
   events: ClientDetailEvent[]
   sessions: ClientDetailSession[]
   reviewStatusBySessionId: Record<string, ReviewDerivedStatus>
@@ -142,7 +144,7 @@ export function buildRecentRequestItems({
       detail: `${getRequestEventCadenceLabel(event)} · 제출 기한 ${fromISO(event.dueAt).toFormat('M월 d일 HH:mm')}`,
       status: summaryStatus.label,
       statusClass: summaryStatus.className,
-      href: `/dashboard/clients/${clientId}/events/${event.id}`,
+      href: workspaceHrefForRequestKind(event.requestKind),
       createdAt: event.createdAt,
     }
   })
@@ -168,7 +170,7 @@ export function buildRecentRequestItems({
         detail: `${FREQUENCY_LABEL[frequency] ?? frequency} · 제출 기한 ${fromISO(session.expiresAt).toFormat('M월 d일 HH:mm')}`,
         status: summaryStatus.label,
         statusClass: summaryStatus.className,
-        href: `/dashboard/sessions/${session.id}`,
+        href: workspaceHrefForRequestKind(session.requestKind),
         createdAt: session.createdAt,
       }
     })
@@ -178,20 +180,17 @@ export function buildRecentRequestItems({
 }
 
 export function ClientWorkContext({
-  clientId,
   events,
   sessions,
   reviewStatusBySessionId = {},
   payrollStatusBySessionId = {},
 }: {
-  clientId: string
   events: ClientDetailEvent[]
   sessions: ClientDetailSession[]
   reviewStatusBySessionId?: Record<string, ReviewDerivedStatus>
   payrollStatusBySessionId?: Record<string, PayrollDerivedStatus>
 }) {
   const recentItems = buildRecentRequestItems({
-    clientId,
     events,
     sessions,
     reviewStatusBySessionId,

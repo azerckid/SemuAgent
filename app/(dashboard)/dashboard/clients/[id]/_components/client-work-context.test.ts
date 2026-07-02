@@ -81,7 +81,6 @@ describe('buildRecentRequestItems — review status reuse', () => {
     // session.status === 'submitted' would normally map to 제출확인 via summarizeSessionStatus,
     // but the actual review screen says there is an actionable issue — that must win.
     const items = buildRecentRequestItems({
-      clientId: 'client-1',
       events: [],
       sessions: [baseSession],
       reviewStatusBySessionId: { [baseSession.id]: status('검토필요') },
@@ -89,11 +88,11 @@ describe('buildRecentRequestItems — review status reuse', () => {
     })
 
     expect(items[0].status).toBe('검토필요')
+    expect(items[0].href).toBe('/dashboard/direct-upload')
   })
 
   it('falls back to the raw session.status mapping when no review status is available', () => {
     const items = buildRecentRequestItems({
-      clientId: 'client-1',
       events: [],
       sessions: [{ ...baseSession, status: 'requested' }],
       reviewStatusBySessionId: {},
@@ -106,7 +105,6 @@ describe('buildRecentRequestItems — review status reuse', () => {
   it('uses payroll-derived status for payroll sessions, not the raw session.status or review status map', () => {
     const payrollSession: ClientDetailSession = { ...baseSession, requestKind: 'payroll', status: 'requested' }
     const items = buildRecentRequestItems({
-      clientId: 'client-1',
       events: [],
       sessions: [payrollSession],
       // page.tsx never populates this for a payroll session id, but the
@@ -116,12 +114,12 @@ describe('buildRecentRequestItems — review status reuse', () => {
     })
 
     expect(items[0].status).toBe('제출확인')
+    expect(items[0].href).toBe('/dashboard/payroll')
   })
 
   it('prefers the linked session review status over the event\'s own status', () => {
     const event: ClientDetailEvent = { ...baseEvent, status: 'sent', uploadSessionId: 'session-1' }
     const items = buildRecentRequestItems({
-      clientId: 'client-1',
       events: [event],
       sessions: [],
       reviewStatusBySessionId: { 'session-1': status('제출 확인') },
@@ -134,7 +132,6 @@ describe('buildRecentRequestItems — review status reuse', () => {
   it('falls back to the event status mapping when the linked session has no review status yet', () => {
     const event: ClientDetailEvent = { ...baseEvent, status: 'sent', uploadSessionId: 'session-1' }
     const items = buildRecentRequestItems({
-      clientId: 'client-1',
       events: [event],
       sessions: [],
       reviewStatusBySessionId: {},

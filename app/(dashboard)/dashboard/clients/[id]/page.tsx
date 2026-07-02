@@ -330,7 +330,6 @@ export default async function ClientDetailPage({
       </Suspense>
 
       <ClientDetailHeader
-        clientId={currentClient.id}
         clientName={currentClient.name}
         contactName={currentClient.contactName}
         staffName={currentClient.staffName}

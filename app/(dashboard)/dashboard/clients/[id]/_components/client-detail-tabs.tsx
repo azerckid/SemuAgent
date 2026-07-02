@@ -56,13 +56,12 @@ export function ClientDetailTabs({
   const recentCount = useMemo(
     () =>
       buildRecentRequestItems({
-        clientId,
         events,
         sessions,
         reviewStatusBySessionId,
         payrollStatusBySessionId,
       }).length,
-    [clientId, events, sessions, reviewStatusBySessionId, payrollStatusBySessionId],
+    [events, sessions, reviewStatusBySessionId, payrollStatusBySessionId],
   )
 
   const TABS: { key: Tab; label: string; count: number }[] = [
@@ -92,7 +91,6 @@ export function ClientDetailTabs({
 
       {tab === 'requests' && (
         <ClientWorkContext
-          clientId={clientId}
           events={events}
           sessions={sessions}
           reviewStatusBySessionId={reviewStatusBySessionId}

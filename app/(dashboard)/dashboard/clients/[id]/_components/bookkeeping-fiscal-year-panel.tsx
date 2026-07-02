@@ -260,10 +260,10 @@ export function BookkeepingFiscalYearPanel({
                   </button>
                   {month.lastUploadSessionId ? (
                     <Link
-                      href={`/dashboard/sessions/${month.lastUploadSessionId}`}
+                      href="/dashboard/direct-upload"
                       className="mt-3 inline-flex text-xs font-medium text-blue-700 hover:underline"
                     >
-                      최근 세션 보기
+                      자료수집에서 확인
                     </Link>
                   ) : (
                     <p className="mt-3 text-xs text-gray-400">최근 세션 없음</p>
