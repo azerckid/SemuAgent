@@ -108,7 +108,7 @@ const ROUTES = {
   bookkeeping: '/dashboard/bookkeeping',
   vat: '/dashboard/vat',
   payroll: '/dashboard/payroll',
-  filingSupport: '/dashboard#filing-support-status',
+  filingSupport: '/dashboard/filing-support',
   receipts: '/dashboard#recent-activity',
 }
 

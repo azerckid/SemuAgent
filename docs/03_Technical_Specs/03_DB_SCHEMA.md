@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-02 20:23
+> Last Updated: 2026-07-02 20:56
 
 ## 1. 목적 및 범위
 
@@ -237,7 +237,7 @@ index(`tenant_id`, `client_id`, `completed`).
 ## 6. 구현 상태 및 미결(JC-005 구현 단계 확정 대상)
 - 완료: 부가세 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-011 구현 PR에서 `0053_add_vat_tables.sql`로 적용.
 - 완료: 급여 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-012 구현 PR에서 `0054_add_payroll_workspace_tables.sql`로 적용.
-- 설계 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정. 구현 PR에서 물리 migration 적용 예정.
+- 구현 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정했고, `0055_add_filing_support_tables.sql`로 물리 migration을 적용한다.
 - 미결: `business_entity` 물리 rename 여부 및 마이그레이션 순서.
 - 미결: 과세기간(부가세 1기/2기·예정/확정) 표현 모델과 급여 귀속월·전표 기간의 정합.
 - 미결: v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭).

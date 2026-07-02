@@ -1609,6 +1609,92 @@ export const payrollInsuranceNoticeLine = sqliteTable('payroll_insurance_notice_
 }))
 
 // ---------------------------------------------------------------------------
+// filing_item
+// 신고지원 워크스페이스의 신고 항목 상태 스냅샷. 실제 홈택스/EDI 제출은 회사가
+// 직접 수행하며, 이 테이블은 내부 패키지와 사용자가 기록한 제출 상태만 보관한다.
+// ---------------------------------------------------------------------------
+export const filingItem = sqliteTable('filing_item', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  filingPeriodKey: text('filing_period_key').notNull(),
+  payrollPeriodKey: text('payroll_period_key').notNull(),
+  itemType: text('item_type', {
+    enum: ['vat', 'withholding', 'social_insurance'],
+  }).notNull(),
+  sourceModule: text('source_module', { enum: ['vat', 'payroll'] }).notNull(),
+  sourceRefId: text('source_ref_id'),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  status: text('status', {
+    enum: ['locked', 'ready', 'needs_review', 'submitted'],
+  }).notNull().default('locked'),
+  packageStatus: text('package_status', {
+    enum: ['locked', 'ready', 'generated', 'submitted'],
+  }).notNull().default('locked'),
+  lockReason: text('lock_reason'),
+  packageStorageKey: text('package_storage_key'),
+  generatedAt: text('generated_at'),
+  submittedAt: text('submitted_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  scopeUidx: uniqueIndex('filing_item_scope_uidx').on(t.tenantId, t.clientId, t.filingPeriodKey, t.itemType),
+  statusIdx: index('filing_item_status_idx').on(t.tenantId, t.clientId, t.status),
+  packageIdx: index('filing_item_package_idx').on(t.tenantId, t.clientId, t.packageStatus),
+}))
+
+// ---------------------------------------------------------------------------
+// filing_receipt
+// 홈택스/EDI에서 회사가 직접 제출한 뒤 받은 접수증 보관 메타데이터.
+// storage_key는 private Blob key/URL이므로 UI에 직접 노출하지 않는다.
+// ---------------------------------------------------------------------------
+export const filingReceipt = sqliteTable('filing_receipt', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  filingItemId: text('filing_item_id').notNull().references(() => filingItem.id),
+  receiptType: text('receipt_type', {
+    enum: ['hometax_receipt', 'payment_receipt', 'insurance_receipt'],
+  }).notNull(),
+  originalFilename: text('original_filename').notNull(),
+  storageKey: text('storage_key').notNull(),
+  fileHash: text('file_hash'),
+  uploadedByStaffId: text('uploaded_by_staff_id').references(() => staff.id),
+  uploadedAt: text('uploaded_at').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  itemIdx: index('filing_receipt_item_idx').on(t.tenantId, t.clientId, t.filingItemId),
+  typeIdx: index('filing_receipt_type_idx').on(t.tenantId, t.clientId, t.receiptType),
+}))
+
+// ---------------------------------------------------------------------------
+// filing_checklist_item
+// 제출 후 납부·접수증 보관 같은 사후 확인 상태. 완료 체크는 내부 확인일 뿐
+// 시스템이 제출/납부를 대행했다는 뜻이 아니다.
+// ---------------------------------------------------------------------------
+export const filingChecklistItem = sqliteTable('filing_checklist_item', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  filingPeriodKey: text('filing_period_key').notNull(),
+  filingItemId: text('filing_item_id').references(() => filingItem.id),
+  code: text('code').notNull(),
+  label: text('label').notNull(),
+  description: text('description').notNull(),
+  sortOrder: integer('sort_order').notNull().default(0),
+  completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
+  completedByStaffId: text('completed_by_staff_id').references(() => staff.id),
+  completedAt: text('completed_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  scopeUidx: uniqueIndex('filing_checklist_item_scope_uidx').on(t.tenantId, t.clientId, t.filingPeriodKey, t.code),
+  completedIdx: index('filing_checklist_item_completed_idx').on(t.tenantId, t.clientId, t.completed),
+}))
+
+// ---------------------------------------------------------------------------
 // consultation_source_cache
 //   AI 전문 상담 Slice 1 — 공식 출처(law.go.kr) 응답 캐시.
 //   law.go.kr 법령 데이터는 공개·비고객 기준자료라 모든 테넌트가 동일하게
