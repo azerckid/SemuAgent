@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-02 20:56
+> Last Updated: 2026-07-02 21:18
 
 ## 1. 목적 및 범위
 
@@ -25,7 +25,9 @@ tenant (로그인 주체 = 회사/대표)
         ├─ 기장/전표 (bookkeeping_*)
         ├─ 부가세 자료 (신규: vat_*)
         ├─ 급여/직원 (payroll_*)
-        └─ 신고 항목 (신규: filing_*)
+        ├─ 신고 항목 (신규: filing_*)
+        ├─ 직원 명부 (신규 후보: employee_profile)
+        └─ 내부 리마인드 (신규 후보: internal_reminder_*)
 ```
 
 - `clientId` → `businessEntityId` 개념 전환. 전체 도메인 테이블이 이 키를 유지하므로 구조·GIWA 코드 최대 재사용.
@@ -57,6 +59,8 @@ tenant (로그인 주체 = 회사/대표)
 | 급여 | `payroll_excel_template`, `client_payroll_rule_profile(_source)`, `payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`, `payroll_excel_draft` + 아래 4.2 신규 | 재사용 + 신규 필요 |
 | 부가세 | (기존 전용 테이블 없음 — 아래 4.1 신규) | 신규 필요 |
 | 신고지원 | (기존 전용 테이블 없음 — 아래 4.3 신규) | 신규 필요 |
+| 직원 명부 | (기존 전용 직원 마스터 없음 — 아래 4.4 신규 후보) | 신규 필요 |
+| 내부 리마인드 | (GIWA 이메일 요청 테이블은 v1 제외 — 아래 4.5 신규 후보) | 신규 필요 |
 | 인프라/부가 | `audit_proof`, `cron_run`, `consultation_source_cache`, `adaptive_structure_model(_run)`, `review_attribution_saved_prompt` | 재사용 |
 | 결제(SaaS) | `billing_*`, `tenant_billing_profile`, `tenant_subscription` | 유지(테넌트 SaaS 과금, MVP UI 범위 밖) |
 
@@ -64,7 +68,8 @@ tenant (로그인 주체 = 회사/대표)
 
 부가세·급여·신고지원 화면은 기존 추출/전표 테이블만으로는 사용자 판정·마감·패키지 상태를
 안정적으로 표현하기 어렵다. 부가세 4.1은 JC-011 구현에서 물리 적용했고, 급여 4.2는
-JC-012 구현에서 물리 적용했다. 신고지원 4.3은 JC-013 게이트에서 논리 컬럼을 확정했다.
+JC-012 구현에서 물리 적용했다. 신고지원 4.3은 JC-013 구현에서 물리 적용했다.
+직원 명부 4.4와 내부 리마인드 4.5는 후속 게이트(JC-015/JC-016)에서 논리 초안을 먼저 확정한다.
 
 ### 4.1 부가세 (VAT) — JC-011 물리 스키마 적용
 
@@ -226,6 +231,90 @@ index(`tenant_id`, `client_id`, `receipt_type`).
 권장 인덱스: unique(`tenant_id`, `client_id`, `filing_period_key`, `code`),
 index(`tenant_id`, `client_id`, `completed`).
 
+### 4.4 직원 명부 (Employee Directory) — JC-015 논리 설계 초안
+
+기존 `payroll_employee_line`은 귀속월별 급여 실행 결과이며 상시 직원 마스터가 아니다.
+직원 명부는 급여·4대보험 고지액 매칭·내부 리마인드의 기준 데이터로 별도 관리한다.
+
+#### `employee_profile`
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id` | tenant + businessEntity 범위 |
+| `employee_code` | 사번 또는 내부 식별자 |
+| `display_name` | 화면 표시 이름 |
+| `department`, `job_title` | 조직 정보 |
+| `employee_status` | `active` / `leave` / `terminated` |
+| `payroll_eligibility` | 급여 대상 여부 |
+| `insurance_enrollment_status` | 4대보험 확인 상태 |
+| `hire_date`, `termination_date` | 입퇴사 기준 |
+| `work_email` | 내부 리마인드 수신 후보 |
+| `notification_enabled` | 내부 알림 수신 허용 |
+| `created_by_staff_id`, `updated_by_staff_id` | 감사 |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+권장 인덱스: unique(`tenant_id`, `client_id`, `employee_code`),
+index(`tenant_id`, `client_id`, `employee_status`),
+index(`tenant_id`, `client_id`, `payroll_eligibility`).
+
+개인정보 경계: 주민등록번호·계좌번호·전화번호 원문 저장은 v1 기본 범위에서 제외한다.
+필요 시 별도 개인정보/암호화 설계와 QA를 선행한다.
+
+### 4.5 내부 리마인드 메일 (Internal Reminder Mail) — JC-016 논리 설계 초안
+
+내부 리마인드는 회사 내부 staff 또는 직원 명부의 직원에게 업무 마감과 확인 필요 상태를 알리는 기능이다.
+GIWA의 고객사 자료 요청 메일 테이블(`request_template`, `client_request_schedule`,
+`client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox`)은 v1 리마인드 도메인 모델로 재사용하지 않는다.
+
+#### `internal_reminder_rule`
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id` | tenant + businessEntity 범위 |
+| `domain` | `source_collection` / `bookkeeping_review` / `vat` / `payroll` / `filing_support` |
+| `trigger_type` | `deadline_offset` / `daily_digest` / `manual` |
+| `offset_days` | D-7/D-3/D-1 같은 마감 기준 |
+| `enabled` | 활성 여부 |
+| `recipient_source` | `staff` / `employee_directory` / `mixed` |
+| `subject_template`, `body_template` | 템플릿. 민감정보 원문 삽입 금지 |
+| `created_by_staff_id`, `updated_by_staff_id` | 감사 |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+#### `internal_reminder_recipient_override`
+
+규칙별 예외 수신자만 저장한다. 기본 수신자는 staff와 `employee_profile`에서 파생한다.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id`, `rule_id` | 범위와 규칙 연결 |
+| `recipient_type` | `staff` / `employee` / `email` |
+| `staff_id`, `employee_id` | 내부 수신자 연결 |
+| `email_hash`, `email_label` | 직접 이메일 입력 시 원문 최소화와 표시 라벨 |
+| `enabled` | 예외 수신자 활성 여부 |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+#### `internal_reminder_send_log`
+
+발송 결과와 중복 방지 상태를 저장한다.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id` | 범위 |
+| `rule_id` | 규칙 연결. 수동 발송은 null 가능 |
+| `domain`, `context_key` | 업무 영역과 중복 방지 대상 |
+| `recipient_type`, `recipient_ref_id`, `recipient_label` | 수신자 표시와 감사 |
+| `idempotency_key` | 같은 조건 중복 발송 방지 |
+| `status` | `queued` / `sent` / `failed` / `skipped` |
+| `provider_message_id` | Resend 등 provider 응답 |
+| `error_message` | 실패 사유 |
+| `queued_at`, `sent_at` | 발송 시각 |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+권장 인덱스: unique(`tenant_id`, `client_id`, `idempotency_key`),
+index(`tenant_id`, `client_id`, `status`), index(`tenant_id`, `client_id`, `domain`).
+
+자동 홈택스 제출·자동 납부·외부 고객 요청 메일은 비범위다.
+
 ## 5. 명명·마이그레이션 방침 (JC-005에서 실행)
 
 - 물리 테이블명 즉시 rename(`client` → `business_entity`)은 마이그레이션·코드 영향이 크다.
@@ -237,7 +326,9 @@ index(`tenant_id`, `client_id`, `completed`).
 ## 6. 구현 상태 및 미결(JC-005 구현 단계 확정 대상)
 - 완료: 부가세 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-011 구현 PR에서 `0053_add_vat_tables.sql`로 적용.
 - 완료: 급여 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-012 구현 PR에서 `0054_add_payroll_workspace_tables.sql`로 적용.
-- 구현 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정했고, `0055_add_filing_support_tables.sql`로 물리 migration을 적용한다.
+- 구현 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정했고, `0055_add_filing_support_tables.sql`로 물리 migration을 적용했다.
+- 설계 초안: 직원 명부 논리 컬럼은 [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)에서 정리했다. 물리 migration은 JC-015 구현 전 확정한다.
+- 설계 초안: 내부 리마인드 메일 논리 컬럼은 [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)에서 정리했다. 물리 migration은 JC-016 구현 전 확정한다.
 - 미결: `business_entity` 물리 rename 여부 및 마이그레이션 순서.
 - 미결: 과세기간(부가세 1기/2기·예정/확정) 표현 모델과 급여 귀속월·전표 기간의 정합.
 - 미결: v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭).
@@ -251,4 +342,6 @@ index(`tenant_id`, `client_id`, `completed`).
 - **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 신규 테이블·read model 구현 계약
 - **Technical_Specs**: [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 신규 테이블·고지액 매칭 구현 계약
 - **Technical_Specs**: [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) - 신고지원 신규 테이블·책임 경계 구현 계약
-- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-005(데이터 모델) 및 JC-006~013 착수 전제조건
+- **Technical_Specs**: [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 마스터·급여/리마인드 참조 계약
+- **Technical_Specs**: [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) - 내부 리마인드 메일·발송 로그 계약
+- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-005(데이터 모델) 및 JC-006~016 착수 전제조건

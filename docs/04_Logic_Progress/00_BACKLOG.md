@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-02 20:56
+> Last Updated: 2026-07-02 21:18
 
 ## Status Legend
 
@@ -27,6 +27,8 @@
 | JC-012 | done | Build payroll workspace | `lib/payroll-workspace`, `app/(dashboard)/dashboard/payroll`, `app/api/payroll` | Payroll register with derived totals, withholding/4-insurance deduction, insurance notice manual input/match, payslip/statement preview, and close guard match approved 급여 UI; PII raw fields/storage keys not exposed |
 | JC-013 | done | Build filing support workspace | `lib/filing-support`, `app/(dashboard)/dashboard/filing-support`, `app/api/filing` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 | JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 프로비저닝 후 파일 업로드→저장→AI 파싱→정규화 E2E 검증 (현재 전부 플레이스홀더라 세션 생성까지만 검증됨) |
+| JC-015 | todo | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리하고, 급여·4대보험 고지액 매칭·내부 리마인드 수신자 source로 사용 |
+| JC-016 | todo | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태를 회사 내부 수신자에게 리마인드하고, 외부 고객 요청 메일/자동 신고는 제외 |
 
 ## Implementation Rule
 
@@ -218,11 +220,67 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 로딩·빈·오류 상태가 화면에 구현된다. (`loading.tsx`, `error.tsx`, 빈 상태)
 - Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview / Component Plan 7.6 / DB Schema 4.3 / Filing Support Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0055_add_filing_support_tables.sql`, `lib/filing-support/summary.ts`, `lib/filing-support/summary.test.ts`, `lib/validations/filing-support.ts`, `app/(dashboard)/dashboard/filing-support/page.tsx`, `_components/filing-support-workspace.tsx`, `_components/filing-actions.tsx`, `_components/filing-support-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/filing/receipts/route.ts`, `app/api/filing/receipts/[receiptId]/route.ts`, `app/api/filing/checklist-items/[itemId]/route.ts`.
 
-> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
+### JC-015 · Build employee directory (직원 명부) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 회사 셀프사용 운영 데이터
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) — **직원 명부 화면은 아직 미작성**
+- Related HTML Preview: N/A — 직원 명부 Preview 미작성. 구현 전 UI Preview와 사용자 확인 필요.
+- Related Technical Docs: [DB Schema 4.4](../03_Technical_Specs/03_DB_SCHEMA.md) · [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md)
+- Related QA Docs: [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md)
+- Prototype Review / 승인: 미완료 — 기능 방향만 승인(2026-07-02), 화면 승인 아님.
+- Implementation Preconditions:
+  - [x] 기능 방향 승인 — 직원 명부가 급여·4대보험 고지액 매칭·리마인드의 기준 데이터가 되어야 함
+  - [x] Pre-Code Technical Brief 작성 — [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)
+  - [x] DB Schema 논리 초안 작성 — [DB Schema 4.4](../03_Technical_Specs/03_DB_SCHEMA.md)
+  - [x] QA 테스트 시나리오 작성 — [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md)
+  - [ ] UI Preview 작성 및 사용자 확인 — **미충족**
+  - [ ] 화면 진입 위치(`/dashboard/employees` vs 설정 하위) 확정 — **미충족**
+  - [ ] `employee_profile` 물리 Drizzle migration 확정 — **미충족**
+  - [ ] 개인정보 저장 금지/마스킹/권한 정책 확정 — **미충족**
+  - [ ] 급여 line과 직원 마스터 연결 방식 확정 — **미충족**
+- Acceptance Criteria:
+  - [ ] 직원 명부는 급여 실행 결과와 분리된 마스터 데이터로 관리된다.
+  - [ ] 재직 상태, 급여 대상 여부, 4대보험 확인 상태가 직원별로 표시된다.
+  - [ ] 급여 화면은 직원 명부를 참조하되, 마감된 급여 실행 결과를 임의 변경하지 않는다.
+  - [ ] 리마인드 메일은 직원 명부의 workEmail/notificationEnabled를 수신자 후보로 사용한다.
+  - [ ] 주민등록번호·계좌번호·전화번호 원문은 신규 명부 화면과 QA seed에 저장/노출하지 않는다.
+  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
+- Document Sync Check: DB Schema 4.4 / Employee Directory Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview 미작성으로 구현 착수 금지**.
+
+### JC-016 · Build internal reminder mail (내부 리마인드 메일) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 신고 보조 책임 경계, 자동 제출 제외
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) — **리마인드 화면은 아직 미작성**
+- Related HTML Preview: N/A — 내부 리마인드 Preview 미작성. 구현 전 UI Preview와 사용자 확인 필요.
+- Related Technical Docs: [DB Schema 4.5](../03_Technical_Specs/03_DB_SCHEMA.md) · [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) · [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)
+- Related QA Docs: [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md)
+- Prototype Review / 승인: 미완료 — 기능 방향만 승인(2026-07-02), 화면 승인 아님.
+- Implementation Preconditions:
+  - [x] 기능 방향 승인 — 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태를 내부 수신자에게 리마인드
+  - [x] 책임 경계 확정 — 외부 고객 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출/납부는 제외
+  - [x] Pre-Code Technical Brief 작성 — [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)
+  - [x] DB Schema 논리 초안 작성 — [DB Schema 4.5](../03_Technical_Specs/03_DB_SCHEMA.md)
+  - [x] QA 테스트 시나리오 작성 — [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md)
+  - [ ] UI Preview 작성 및 사용자 확인 — **미충족**
+  - [ ] 수신자 source 결정(staff-only vs employee_profile 포함) — **미충족**
+  - [ ] `internal_reminder_*` 물리 Drizzle migration 확정 — **미충족**
+  - [ ] Resend/env/test-send 확인 — **미충족**
+  - [ ] 예약 실행 방식과 idempotency key 확정 — **미충족**
+- Acceptance Criteria:
+  - [ ] 리마인드는 회사 내부 수신자에게만 발송된다.
+  - [ ] 확인 필요 상태가 리마인드 대상으로 연결된다.
+  - [ ] 수신자는 staff 또는 직원 명부 기반으로 결정되며, notification disabled 대상은 제외된다.
+  - [ ] 같은 조건의 예약 리마인드는 idempotency key로 중복 발송되지 않는다.
+  - [ ] 발송 로그는 성공/실패/스킵 상태와 실패 사유를 남긴다.
+  - [ ] 외부 고객 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출/납부는 제공하지 않는다.
+  - [ ] 로딩·빈·오류·provider missing 상태가 구현된다.
+- Document Sync Check: DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview 미작성과 수신자 source 미결정으로 구현 착수 금지**.
+
+> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015/JC-016은 문서 게이트 초안만 작성됐고, UI Preview와 사용자 확인 전까지 구현 금지. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 화면 흐름·컴포넌트(Context Lock 참조 대상)
 - **UI_Screens**: [HTML Preview 폴더](../02_UI_Screens/previews/) - 승인된 화면 프로토타입(6화면)
-- **Technical_Specs**: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) - 스택 및 컴포넌트/급여·신고지원 구현 계약
-- **QA_Validation**: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md) · [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) · [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md) - 검증 기준(Acceptance 연계)
+- **Technical_Specs**: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) · [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) · [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) - 스택 및 컴포넌트/급여·신고지원·직원 명부·내부 리마인드 구현 계약
+- **QA_Validation**: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md) · [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) · [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md) · [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md) · [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md) - 검증 기준(Acceptance 연계)
