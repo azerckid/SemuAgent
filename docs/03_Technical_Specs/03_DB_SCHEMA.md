@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-01 22:45
+> Last Updated: 2026-07-02 11:03
 
 ## 1. 목적 및 범위
 
@@ -60,15 +60,52 @@ tenant (로그인 주체 = 회사/대표)
 | 인프라/부가 | `audit_proof`, `cron_run`, `consultation_source_cache`, `adaptive_structure_model(_run)`, `review_attribution_saved_prompt` | 재사용 |
 | 결제(SaaS) | `billing_*`, `tenant_billing_profile`, `tenant_subscription` | 유지(테넌트 SaaS 과금, MVP UI 범위 밖) |
 
-## 4. 신규 테이블 (설계 초안 — JC-005에서 확정)
+## 4. 신규 테이블 (설계 초안 — 화면 게이트에서 순차 확정)
 
 부가세·신고지원 화면은 기존 전용 테이블이 없다. 기장 확정 전표에서 파생 계산하되, 사용자 판정·상태를
-저장할 최소 테이블이 필요하다. 아래는 초안이며 컬럼은 구현 단계에서 확정한다.
+저장할 최소 테이블이 필요하다. 부가세 4.1은 JC-011 게이트에서 논리 컬럼을 확정하고,
+신고지원 4.2는 JC-013 게이트에서 구체화한다.
 
-### 4.1 부가세 (VAT)
-- `vat_period_summary` — 사업장·과세기간별 매출세액·매입세액·납부(예정)세액 스냅샷, 확정 여부.
-- `vat_deduction_review` — 매입 거래별 공제 판정(공제/불공제/안분), 사유, 확정자. (기장 전표 참조)
-- 매출 구분(과세/영세율/면세)은 전표/거래 분류에서 파생하거나 요약 스냅샷에 포함.
+### 4.1 부가세 (VAT) — JC-011 게이트에서 최소 논리 컬럼 확정
+
+현재 `lib/db/schema.ts`에는 `vat_*` 전용 테이블이 없다. JC-011 구현은 아래 두 테이블을
+Drizzle schema/migration으로 추가한 뒤 진행한다. 물리 컬럼명은 snake_case, 코드 타입은
+camelCase를 따른다.
+
+#### `vat_period_summary`
+
+사업장·부가세 기간별 세액/패키지 상태 스냅샷.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id` | tenant + business_entity 범위 |
+| `period_key`, `period_start_month`, `period_end_month`, `filing_type` | 예: `2026-H1`, `2026-01`~`2026-06`, `final` |
+| `taxable_supply_krw`, `taxable_output_tax_krw` | 과세 매출 공급가액·매출세액 |
+| `zero_rated_supply_krw` | 영세율 매출 공급가액 |
+| `exempt_supply_krw` | 면세 매출 공급가액 |
+| `output_tax_krw`, `input_tax_krw`, `input_tax_deductible_krw`, `payable_tax_krw` | 세액 요약 |
+| `pending_deduction_count`, `is_final` | 검토 대기·예정/확정 |
+| `package_status`, `package_storage_key`, `generated_at` | 신고 패키지 생성 상태(제출/납부 아님) |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+#### `vat_deduction_review`
+
+매입 거래/전표별 공제 판정 상태.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id`, `period_key` | 범위 |
+| `source_voucher_id`, `source_voucher_line_id`, `classification_row_id` | 원천 전표/거래 추적 |
+| `description`, `counterparty`, `supply_amount_krw`, `input_tax_krw` | 화면 표시 스냅샷 |
+| `kind` | `deductible` / `non_deductible_candidate` / `proration_required` |
+| `decision` | `pending` / `deductible` / `non_deductible` / `prorated` |
+| `reason`, `proration_rate_bps` | 판정 근거와 안분율 |
+| `confirmed_by_staff_id`, `confirmed_at` | 사용자 확정 |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+매출 구분(과세/영세율/면세)은 현재 전표 라인만으로 안정적으로 복원할 수 없으므로
+`vat_period_summary` snapshot에 저장한다. 향후 거래/전표에 세무 구분 태그가 추가되면
+파생 방식으로 전환할 수 있다.
 
 ### 4.2 신고지원 (Filing Support)
 - `filing_item` — 사업장·기간·신고종류(부가세/원천세/4대보험)별 패키지 상태(준비됨/대기/확인필요).
@@ -86,7 +123,8 @@ tenant (로그인 주체 = 회사/대표)
 
 ## 6. 미결(JC-005 구현 단계 확정 대상)
 - `business_entity` 물리 rename 여부 및 마이그레이션 순서.
-- 부가세·신고지원 신규 테이블의 정확한 컬럼·인덱스·FK.
+- 부가세 신규 테이블의 물리 Drizzle migration·인덱스·FK 적용 순서(JC-011 구현 PR). 논리 컬럼은 [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md)와 본 문서 4.1 기준.
+- 신고지원 신규 테이블의 정확한 컬럼·인덱스·FK.
 - 과세기간(부가세 1기/2기·예정/확정) 표현 모델과 급여 귀속월·전표 기간의 정합.
 - v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭).
 
@@ -96,4 +134,5 @@ tenant (로그인 주체 = 회사/대표)
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 화면별 표시/저장 데이터
 - **Technical_Specs**: [Development Setup](./01_DEVELOPMENT_SETUP.md) - Drizzle/Turso 스택
 - **Technical_Specs**: [Component & Library Plan](./02_COMPONENT_LIBRARY_PLAN.md) - 화면 컴포넌트(데이터 소비처)
+- **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 신규 테이블·read model 구현 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-005(데이터 모델) 및 JC-006~013 착수 전제조건

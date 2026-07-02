@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-02 09:25
+> Last Updated: 2026-07-02 11:03
 
 ## 1. 목적 및 범위
 
@@ -11,7 +11,8 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 회사 홈 — [00_company_home.html](../02_UI_Screens/previews/00_company_home.html)
 - 자료수집 — [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html)
 - 기장검토 — [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html)
-- 부가세·급여·신고지원은 각 화면 게이트(Pre-Code Brief) 진행 시 §7에 추가한다.
+- 부가세 — [03_vat.html](../02_UI_Screens/previews/03_vat.html)
+- 급여·신고지원은 각 화면 게이트(Pre-Code Brief) 진행 시 §7에 추가한다.
 
 원칙: **JARYO-GIWA 자산 최대 재사용 + 최소 신규 도입(YAGNI/KISS/DRY)**. 이미 설치된
 것을 우선 쓰고, 없을 때만 shadcn 표준 컴포넌트를 추가한다. 새 npm 패키지는 대상 화면
@@ -104,6 +105,24 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 승인/수정 mutation은 **기존 세션 API 호출**(신규 컴포넌트에서 fetch). GIWA `/dashboard/reviews` 워크스페이스 컴포넌트는 재사용/import하지 않는다(Preview 계약, Brief §0).
 - 공용 원자 컴포넌트(StatusChip·Dot·State*)는 앞 화면들과 공유(DRY).
 
+### 7.4 부가세 (UI Design 4.4)
+
+| 화면 컴포넌트 | 구현 방식 | 기반 |
+|:---|:---|:---|
+| VAT Summary Hero | 커스텀 `VatSummaryHero` | `card` + 3셀 계산 레이아웃 + 상태 안내 |
+| Sales Grouping Cards | 커스텀 `VatSalesGroupCards` | `card` + `badge` |
+| Deduction Review Table | 커스텀 `VatDeductionReviewTable` | `table` + `badge` + 행 액션 `button` |
+| Deduction Action Controls | 커스텀 `VatDeductionActions` | `button` + `sonner` 피드백 |
+| Schedule Status List | 커스텀 `VatScheduleList` | `card` + 상태칩 |
+| Filing Package Preview | 커스텀 `VatPackagePreview` | `card` + disabled `button` wrapper |
+| Locked Action Wrapper | 커스텀 `LockedActionButton` | visible locknote + `aria-describedby`; 별도 tooltip 패키지 미도입 |
+| State(로딩/빈/오류) | 공용 재사용 | `skeleton` + `button` |
+
+- 신규 shadcn 없음. `progress`/`skeleton`과 기존 `card`/`badge`/`button`/`table` 재사용.
+- 패키지 생성 버튼은 공제 검토 완료 전 `disabled` + `aria-disabled="true"` + visible locknote를 사용한다. 브라우저별 `title` 툴팁에 의존하지 않는다.
+- 부가세 화면은 회사용 `/dashboard/vat`로 새로 구성하며, GIWA `/dashboard/reviews` 워크스페이스 컴포넌트를 import/render하지 않는다.
+- 자동 홈택스 제출·자동 납부 UI는 만들지 않는다. 홈택스 입력 가이드는 JC-013 신고지원에서 최종 연결한다.
+
 ## 8. Library Plan
 
 ### 8.1 이미 설치됨 — 재사용 (신규 설치 없음)
@@ -138,16 +157,18 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 - 회사 홈 Pre-Code Brief: [04_COMPANY_HOME_PRE_CODE_BRIEF.md](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) (JC-006 구현·머지 완료).
 - 자료수집 Pre-Code Brief: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) (JC-009 구현·머지 완료).
-- 기장검토 Pre-Code Brief: [06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) (JC-010 게이트 완료, 구현 착수 가능).
-- 부가세·급여·신고지원은 구현 전 화면별 Pre-Code Brief와 QA 시나리오가 필요하다.
+- 기장검토 Pre-Code Brief: [06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) (JC-010 구현·머지 완료).
+- 부가세 Pre-Code Brief: [07_VAT_PRE_CODE_BRIEF.md](./07_VAT_PRE_CODE_BRIEF.md) (JC-011 게이트 진행, 구현 전 DB migration 필요).
+- 급여·신고지원은 구현 전 화면별 Pre-Code Brief와 QA 시나리오가 필요하다.
 
 ## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
-- **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 컴포넌트 4.1~4.3 근거
+- **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 컴포넌트 4.1~4.4 근거
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 화면 흐름·데이터 입출력
 - **UI_Screens**: [HTML Preview 폴더](../02_UI_Screens/previews/) - 화면 프로토타입
 - **Technical_Specs**: [Development Setup](./01_DEVELOPMENT_SETUP.md) - 런타임·패키지·스택
 - **Technical_Specs**: [Company Home Pre-Code Brief](./04_COMPANY_HOME_PRE_CODE_BRIEF.md) - 회사 홈 데이터 소스·상태·acceptance 계약
 - **Technical_Specs**: [Source Collection Pre-Code Brief](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) - 자료수집 mutation·라우트·acceptance 계약
 - **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) - 기장검토 분류 큐·승인 mutation·Preview 계약
-- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009/JC-010 Context Lock
+- **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 세액 집계·공제 검토·패키지 잠금 계약
+- **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009/JC-010/JC-011 Context Lock
