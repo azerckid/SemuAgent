@@ -1,32 +1,9 @@
-import { and, asc, desc, eq, ne } from 'drizzle-orm'
+import { and, asc, eq, ne } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
-import { tenant, staff, client, internalCcGroup, staffMailbox } from '@/lib/db/schema'
+import { tenant, staff, client, staffMailbox } from '@/lib/db/schema'
 import { requireTenantSession } from '@/lib/auth-helpers'
-import { isMissingInternalCcGroupTableError } from '@/lib/internal-cc-groups/errors'
 import { SettingsPanel } from './_components/settings-panel'
-
-async function loadInternalCcGroups(tenantId: string) {
-  try {
-    return await db
-      .select({
-        id: internalCcGroup.id,
-        name: internalCcGroup.name,
-        purpose: internalCcGroup.purpose,
-        emails: internalCcGroup.emails,
-        isDefault: internalCcGroup.isDefault,
-        createdAt: internalCcGroup.createdAt,
-      })
-      .from(internalCcGroup)
-      .where(eq(internalCcGroup.tenantId, tenantId))
-      .orderBy(desc(internalCcGroup.isDefault), asc(internalCcGroup.name))
-  } catch (err) {
-    if (isMissingInternalCcGroupTableError(err)) {
-      return []
-    }
-    throw err
-  }
-}
 
 export default async function SettingsPage() {
   let tenantId: string
@@ -104,8 +81,6 @@ export default async function SettingsPage() {
   const currentStaffId = currentStaffRows[0]?.id ?? ''
   const currentStaffPhone = currentStaffRows[0]?.phone ?? ''
 
-  const internalCcGroups = await loadInternalCcGroups(tenantId)
-
   const staffNameById = new Map(staffRows.map((row) => [row.id, row.name]))
   const workEmailAddresses = mailboxRows.map((row) => ({
     id: row.id,
@@ -138,7 +113,6 @@ export default async function SettingsPage() {
         staffList={staffList}
         currentUserId={currentStaffId}
         currentStaffPhone={currentStaffPhone}
-        internalCcGroups={internalCcGroups}
         workEmailAddresses={workEmailAddresses}
         workEmailStaffOptions={workEmailStaffOptions}
       />

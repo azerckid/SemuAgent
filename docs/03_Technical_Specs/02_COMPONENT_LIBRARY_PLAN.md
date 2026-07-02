@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-02 20:56
+> Last Updated: 2026-07-03
 
 ## 1. 목적 및 범위
 
@@ -58,8 +58,9 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 | shadcn `table` | `components/ui/table.tsx` | 최근 제출·영수증(홈), 수집 상태(자료수집) |
 | shadcn `card`/`badge`/`button` | `components/ui/*` | 카드·상태칩·CTA 전반 |
 
-주의: `sidebar-mail-nav.tsx`, `usage-help`, `field-test-concierge`는 GIWA 세무사무소
-문맥이므로 대상 화면 범위에서는 재사용하지 않는다(별도 검토 대상).
+주의: `sidebar-mail-nav.tsx`, `usage-help`는 GIWA 세무사무소 문맥이므로 대상 화면
+범위에서는 재사용하지 않는다. `field-test-concierge`는 JC-004 노출 표면 감사에서
+미렌더 dead code로 확인되어 삭제했다.
 
 ## 7. 화면별 컴포넌트 매핑
 
