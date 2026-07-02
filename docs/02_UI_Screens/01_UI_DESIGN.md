@@ -1,6 +1,6 @@
 # JARYO Company UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-02 14:21
+> Last Updated: 2026-07-02
 
 ## 1. 디자인 방향
 
@@ -144,7 +144,23 @@
 - 운영 흐름 화면(자료수집·기장검토·부가세·급여·신고지원) → 회사 홈: 사이드바 "회사 홈" + 브랜드 + 상단 breadcrumb.
 - 신고지원 항목의 "부가세 열기 / 급여 열기"로 선행 화면과 직접 연동.
 - 운영 흐름 6개 화면 전체가 사이드바로 상호 이동 가능하다.
+- 직원 명부는 사이드바 "관리" 그룹의 설정 아래 항목으로 진입하며, 6개 워크스페이스 프리뷰와 상호 이동한다.
 - 구현된 화면은 사이드바 "다음" 배지를 제거한다.
+
+### 4.8 직원 명부 (06_employee_directory.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Stats Row | 재직·급여 대상·4대보험 확인 필요·퇴사 카운트 | 확인 필요 카드는 warn 강조 |
+| Toolbar | 이름·사번·부서 검색 + 재직 상태/급여 대상 필터 | 세그먼트 토글 |
+| Employee Table | 직원별 재직 상태·급여 대상·4대보험 확인·입사일·최근 급여·업무 이메일 | 상태칩(재직/휴직/퇴사, 대상/제외, 가입 확인/확인 필요/해당 없음), 확인 필요 행 강조 |
+| Add/Edit Panel | 직원 추가·수정(이름·사번·부서·직책·재직상태·입사일·업무 이메일), 급여 대상·리마인드 수신 토글 | 개인정보 최소 수집 안내 포함 |
+| Linkage Card | 급여·4대보험 매칭·내부 리마인드 연결 상태 | 참조 화면 표시 |
+| State Card | 로딩/빈(첫 직원 추가)/오류 표준 (공용) | 스켈레톤·빈안내·오류+재시도 |
+
+- **개인정보 경계 규칙**: 주민등록번호·계좌번호·전화번호 원문은 저장·노출하지 않는다. 이름·사번·부서·업무 이메일만 관리한다. 패널·하단 안내에 반복 노출한다.
+- 직원 명부는 급여 실행 결과(`payroll_employee_line`)와 분리된 상시 마스터이며, 급여·4대보험 고지액 매칭·내부 리마인드(JC-016) 수신자의 기준 데이터다.
+- 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
 ## 5. 핵심 CTA 우선순위
 
@@ -186,6 +202,7 @@
 - Preview (부가세): [03_vat.html](./previews/03_vat.html)
 - Preview (급여): [04_payroll.html](./previews/04_payroll.html)
 - Preview (신고지원): [05_filing_support.html](./previews/05_filing_support.html)
+- Preview (직원 명부): [06_employee_directory.html](./previews/06_employee_directory.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -197,6 +214,9 @@
 - **UI_Screens**: [VAT Prototype Review](./05_VAT_PROTOTYPE_REVIEW.md) - 부가세 확인 결과
 - **UI_Screens**: [Payroll Prototype Review](./06_PAYROLL_PROTOTYPE_REVIEW.md) - 급여 확인 결과
 - **UI_Screens**: [Filing Support Prototype Review](./07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) - 신고지원 확인 결과
+- **UI_Screens**: [Employee Directory Prototype Review](./08_EMPLOYEE_DIRECTORY_PROTOTYPE_REVIEW.md) - 직원 명부 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
 - **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
+- **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 구현 전 데이터·mutation 계약
 - **QA_Validation**: [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) - 급여 구현 검증 시나리오
+- **QA_Validation**: [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md) - 직원 명부 구현 검증 시나리오

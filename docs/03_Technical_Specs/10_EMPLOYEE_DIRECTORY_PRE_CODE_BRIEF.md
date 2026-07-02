@@ -1,12 +1,12 @@
 # Employee Directory Pre-Code Technical Brief
 > Created: 2026-07-02 21:18
-> Last Updated: 2026-07-02 21:18
+> Last Updated: 2026-07-02
 
 ## 0. Governing Principle
 
 JC-015 직원 명부는 급여 실행 결과가 아니라 회사의 상시 직원 마스터다. 급여대장(`payroll_employee_line`)은 특정 귀속월의 실행 스냅샷이고, 직원 명부는 급여·4대보험 고지액 매칭·내부 리마인드의 기준 데이터다.
 
-- 보이는 UI는 회사용 직원 명부 화면 또는 설정 하위 화면으로 새로 구성한다.
+- 보이는 UI는 독립 메뉴 `/dashboard/employees`의 회사용 직원 명부 화면으로 구성한다.
 - 직원 명부는 회사 내부 운영자/담당자가 관리한다.
 - 주민등록번호·계좌번호·전화번호 원문 저장은 v1 기본 범위에서 제외한다. 필요 시 별도 개인정보/암호화 설계를 선행한다.
 - 기존 급여 실행 테이블을 직원 마스터처럼 재사용하지 않는다.
@@ -30,7 +30,7 @@ JC-015는 다음 기능의 구현 전 계약이다.
 
 | 항목 | 결정 |
 |:---|:---|
-| Route | 후보: `/dashboard/employees` 또는 `/dashboard/settings/employees` |
+| Route | `/dashboard/employees` |
 | 화면 성격 | 운영 데이터 관리 화면. 급여 화면의 하위 표가 아니라 독립 마스터 관리 |
 | Read model | `lib/employee-directory/summary.ts` 후보 |
 | Persistence | 신규 `employee_profile` 또는 기존 `payroll_employee_line`과 분리된 직원 마스터 테이블 |
@@ -127,8 +127,8 @@ type EmployeeDirectorySummary = {
 
 ## 8. Implementation Preconditions
 
-- [ ] UI Preview 작성 및 사용자 확인
-- [ ] 화면 진입 위치(`/dashboard/employees` vs 설정 하위) 확정
+- [x] UI Preview 작성 및 사용자 확인 — [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html) (2026-07-02)
+- [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/employees`
 - [ ] 신규 `employee_profile` 물리 테이블 여부 확정
 - [ ] 급여 line과 직원 마스터 연결 방식 확정
 - [ ] 개인정보 저장 금지/마스킹 방침 확정
@@ -146,14 +146,14 @@ type EmployeeDirectorySummary = {
 
 ## 10. Open Items
 
-- 직원 명부를 독립 메뉴로 둘지, 설정 하위 메뉴로 둘지 결정이 필요하다.
+- 직원 명부 진입 위치는 독립 메뉴 `/dashboard/employees`로 확정(2026-07-02, UI Preview 승인 시).
 - 직원 이메일이 없는 경우 리마인드 수신자를 staff 계정으로 대체할지 결정이 필요하다.
 - 기존 payroll line의 `employeeCode`를 employee_profile과 자동 매칭할지, 사용자 확인 후 연결할지 결정이 필요하다.
 
 ## 11. Related Documents
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 셀프사용 제품 목적
-- **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 기존 6개 워크스페이스 흐름
+- **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 기존 6개 워크스페이스와 직원 명부 흐름
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 디자인 시스템과 상태 표현
 - **Technical_Specs**: [DB Schema](./03_DB_SCHEMA.md) - 급여·직원 데이터 모델 확장 기준
 - **Technical_Specs**: [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 line과 4대보험 고지액 매칭 선행 흐름

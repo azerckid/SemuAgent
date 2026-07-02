@@ -1,6 +1,6 @@
 # JARYO Company Screen Flow
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-02 20:56
+> Last Updated: 2026-07-02
 
 ## 1. 범위
 
@@ -11,8 +11,9 @@
 4. **부가세(VAT)** — 승인 완료(2026-07-01)
 5. **급여(Payroll)** — 승인 완료(2026-07-01)
 6. **신고지원(Filing Support)** — 승인 완료(2026-07-01)
+7. **직원 명부(Employee Directory)** — UI Preview 승인 완료(2026-07-02, 운영 보조 화면·JC-015)
 
-6개 워크스페이스 전체 프리뷰 승인 완료(6/6 UI 확정, 2026-07-01).
+6개 워크스페이스 전체 프리뷰 승인 완료(6/6 UI 확정, 2026-07-01). 직원 명부는 급여·4대보험 매칭·내부 리마인드의 기준 마스터로, UI Preview 승인 완료(2026-07-02) 후 구현 대기.
 
 외부 연동(고객 업로드 포털 `/upload/[token]`, 외부 세무사 검토 흐름)은 v1 범위에서 제외한다.
 회사 내부 운영 화면만 다룬다.
@@ -167,15 +168,15 @@
 
 ## 5. 상태 커버리지
 
-여섯 화면 공통 상태 규약. 각 화면 Preview 하단 "화면 상태 예시"에 로딩/빈/오류를 명시한다.
+기존 6개 워크스페이스와 직원 명부 공통 상태 규약. 각 화면 Preview 하단 "화면 상태 예시"에 로딩/빈/오류를 명시한다.
 
-| 상태 | 회사 홈 | 자료수집 | 기장검토 | 부가세 | 급여 | 신고지원 |
-|:---|:---|:---|:---|:---|:---|:---|
-| Default | 대시보드 집계 | 수집 상태 | 분류 큐 | 세액·공제 검토 | 급여대장 | 신고 항목·접수증 |
-| Loading | 카드·표 스켈레톤 | 동일 | 동일 | 동일 | 동일 | 동일 |
-| Empty | "첫 자료 업로드" | "첫 자료 업로드" | "확정 전표 보기" | "기장검토 먼저 확정" | "급여 자료 불러오기" | "부가세·급여 먼저 확정" |
-| Error | "현황을 불러오지 못했습니다" | "파일을 처리하지 못했습니다" | "분류 큐를 불러오지 못했습니다" | "세액 집계를 불러오지 못했습니다" | "급여 계산을 불러오지 못했습니다" | "신고 항목을 불러오지 못했습니다" |
-| 권한 없음 | tenant 미소속/미인증 시 접근 차단 (구현 단계에서 확정) | 동일 | 동일 | 동일 | 동일(개인정보 마스킹) | 동일 |
+| 상태 | 회사 홈 | 자료수집 | 기장검토 | 부가세 | 급여 | 신고지원 | 직원 명부 |
+|:---|:---|:---|:---|:---|:---|:---|:---|
+| Default | 대시보드 집계 | 수집 상태 | 분류 큐 | 세액·공제 검토 | 급여대장 | 신고 항목·접수증 | 직원 통계·목록 |
+| Loading | 카드·표 스켈레톤 | 동일 | 동일 | 동일 | 동일 | 동일 | 목록 스켈레톤 |
+| Empty | "첫 자료 업로드" | "첫 자료 업로드" | "확정 전표 보기" | "기장검토 먼저 확정" | "급여 자료 불러오기" | "부가세·급여 먼저 확정" | "첫 직원 추가" |
+| Error | "현황을 불러오지 못했습니다" | "파일을 처리하지 못했습니다" | "분류 큐를 불러오지 못했습니다" | "세액 집계를 불러오지 못했습니다" | "급여 계산을 불러오지 못했습니다" | "신고 항목을 불러오지 못했습니다" | "직원 명부를 불러오지 못했습니다" |
+| 권한 없음 | tenant 미소속/미인증 시 접근 차단 (구현 단계에서 확정) | 동일 | 동일 | 동일 | 동일(개인정보 마스킹) | 동일 | 동일(개인정보 마스킹) |
 
 ## 6. HTML UI Preview
 
@@ -185,7 +186,8 @@
 - Preview (부가세): [03_vat.html](./previews/03_vat.html)
 - Preview (급여): [04_payroll.html](./previews/04_payroll.html)
 - Preview (신고지원): [05_filing_support.html](./previews/05_filing_support.html)
-- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 여섯 화면은 사이드바/CTA로 상호 이동 가능.
+- Preview (직원 명부): [06_employee_directory.html](./previews/06_employee_directory.html)
+- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 기존 6개 워크스페이스와 직원 명부는 사이드바/CTA로 상호 이동 가능.
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자 정의
@@ -197,6 +199,9 @@
 - **UI_Screens**: [VAT Prototype Review](./05_VAT_PROTOTYPE_REVIEW.md) - 부가세 확인 결과
 - **UI_Screens**: [Payroll Prototype Review](./06_PAYROLL_PROTOTYPE_REVIEW.md) - 급여 확인 결과
 - **UI_Screens**: [Filing Support Prototype Review](./07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) - 신고지원 확인 결과
+- **UI_Screens**: [Employee Directory Prototype Review](./08_EMPLOYEE_DIRECTORY_PROTOTYPE_REVIEW.md) - 직원 명부 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
 - **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
+- **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 구현 전 데이터·mutation 계약
 - **QA_Validation**: [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) - 급여 구현 검증 시나리오
+- **QA_Validation**: [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md) - 직원 명부 구현 검증 시나리오
