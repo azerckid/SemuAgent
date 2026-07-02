@@ -27,7 +27,7 @@
 | JC-012 | done | Build payroll workspace | `lib/payroll-workspace`, `app/(dashboard)/dashboard/payroll`, `app/api/payroll` | Payroll register with derived totals, withholding/4-insurance deduction, insurance notice manual input/match, payslip/statement preview, and close guard match approved 급여 UI; PII raw fields/storage keys not exposed |
 | JC-013 | done | Build filing support workspace | `lib/filing-support`, `app/(dashboard)/dashboard/filing-support`, `app/api/filing` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 | JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 프로비저닝 후 파일 업로드→저장→AI 파싱→정규화 E2E 검증 (현재 전부 플레이스홀더라 세션 생성까지만 검증됨) |
-| JC-015 | todo | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리하고, 급여·4대보험 고지액 매칭·내부 리마인드 수신자 source로 사용 |
+| JC-015 | doing | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리하고, 급여·4대보험 고지액 매칭·내부 리마인드 수신자 source로 사용. read model·화면·추가/수정 API·0056 migration 구현 완료 |
 | JC-016 | todo | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태를 회사 내부 수신자에게 리마인드하고, 외부 고객 요청 메일/자동 신고는 제외 |
 
 ## Implementation Rule
@@ -235,9 +235,9 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] QA 테스트 시나리오 작성 — [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md)
   - [x] UI Preview 작성 및 사용자 확인 — 완료(2026-07-02), [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html)
   - [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/employees`(설정 하위 아님)
-  - [ ] `employee_profile` 물리 Drizzle migration 확정 — **미충족(구현 PR)**
-  - [ ] 개인정보 저장 금지/마스킹/권한 정책 확정 — **미충족(구현 PR)**
-  - [ ] 급여 line과 직원 마스터 연결 방식 확정 — **미충족(구현 PR)**
+  - [x] `employee_profile` 물리 Drizzle migration 확정 — `lib/db/schema.ts`, `drizzle/0056_add_employee_profile.sql`
+  - [x] 개인정보 저장 금지/마스킹 정책 확정 — 주민번호·계좌·전화 필드 미보유, `maskEmployeeName`+`canViewEmployeeNames`. 세밀한 접근 권한(role)은 후속
+  - [x] 급여 line과 직원 마스터 연결 방식 확정 — `employee_code` 읽기 전용 매칭(최근 급여 귀속월 표시), 수동 연결 mutation 없음
 - Acceptance Criteria:
   - [ ] 직원 명부는 급여 실행 결과와 분리된 마스터 데이터로 관리된다.
   - [ ] 재직 상태, 급여 대상 여부, 4대보험 확인 상태가 직원별로 표시된다.
@@ -276,7 +276,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류·provider missing 상태가 구현된다.
 - Document Sync Check: DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview 미작성과 수신자 source 미결정으로 구현 착수 금지**.
 
-> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview 작성·화면 승인 완료(2026-07-02)했고, 남은 구현 전제조건(물리 테이블·개인정보 정책·급여 line 연결)은 구현 PR에서 확정한다. JC-016은 문서 게이트 초안만 작성됐고, UI Preview와 사용자 확인 전까지 구현 금지. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
+> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 문서 게이트 초안만 작성됐고, UI Preview와 사용자 확인 전까지 구현 금지. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위

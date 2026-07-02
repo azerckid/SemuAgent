@@ -15,11 +15,10 @@ const FLOW_NAV = [
   { href: '/dashboard/filing-support', label: '신고지원', glyph: '↧' },
 ] as const
 
-const SETTINGS_NAV = {
-  href: '/dashboard/settings',
-  label: '설정',
-  glyph: '⚙',
-} as const
+const MANAGE_NAV = [
+  { href: '/dashboard/settings', label: '설정', glyph: '⚙' },
+  { href: '/dashboard/employees', label: '직원 명부', glyph: '◍' },
+] as const
 
 interface SidebarProps {
   userName: string
@@ -84,10 +83,12 @@ export function Sidebar({
           관리
         </p>
 
-        <SidebarNavLink href={SETTINGS_NAV.href}>
-          <NavGlyph>{SETTINGS_NAV.glyph}</NavGlyph>
-          <span className="min-w-0 flex-1 truncate">{SETTINGS_NAV.label}</span>
-        </SidebarNavLink>
+        {MANAGE_NAV.map((item) => (
+          <SidebarNavLink key={item.href} href={item.href}>
+            <NavGlyph>{item.glyph}</NavGlyph>
+            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          </SidebarNavLink>
+        ))}
       </nav>
 
       <div className="mt-2 border-t border-company-border pt-2">
