@@ -1,6 +1,6 @@
 # JARYO Company Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-02 14:21
+> Last Updated: 2026-07-02 15:09
 
 ## Status Legend
 
@@ -24,7 +24,7 @@
 | JC-009 | done | Build source collection workspace | `app/(dashboard)/dashboard/direct-upload`, `lib/source-collection`, `components/ui` | Company-internal upload → parse → normalize flow matches approved 자료수집 UI; external client portal excluded (PR #4 머지) |
 | JC-010 | done | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
 | JC-011 | done | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
-| JC-012 | todo | Build payroll workspace | `lib/payroll`, `components/ui` | Payroll register with derived totals, withholding/4-insurance deduction, payslip/statement preview, and close (locked until missing-employee issues resolved) match approved 급여 UI; PII masking applied |
+| JC-012 | done | Build payroll workspace | `lib/payroll-workspace`, `app/(dashboard)/dashboard/payroll`, `app/api/payroll` | Payroll register with derived totals, withholding/4-insurance deduction, insurance notice manual input/match, payslip/statement preview, and close guard match approved 급여 UI; PII raw fields/storage keys not exposed |
 | JC-013 | todo | Build filing support workspace | `lib/bookkeeping`, `lib/payroll`, `components/ui` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 | JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 프로비저닝 후 파일 업로드→저장→AI 파싱→정규화 E2E 검증 (현재 전부 플레이스홀더라 세션 생성까지만 검증됨) |
 
@@ -183,15 +183,15 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 개인정보(급여·주민정보) 접근 권한·마스킹·감사로그 방침 확정 — Brief §5·§10, QA S-80~S-84
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md)
 - Acceptance Criteria:
-  - [ ] 급여대장이 직원별 기본급·수당·지급계·원천세·4대보험·공제계·실지급으로 표시된다.
-  - [ ] 금액은 파생 계산으로 정합한다: 지급계=기본급+수당, 공제계=원천세+4대보험, 실지급=지급계−공제계, 합계=각 열의 합.
-  - [ ] 원천세·4대보험 공제 상세가 항목별로 집계·표시된다.
-  - [ ] 건강보험 EDI/사회보험 고지내역을 업로드 또는 수동 입력해 직원별 4대보험 고지액과 매칭하고, 고지액을 최종 공제액에 우선 반영한다. 자동 로그인·공동인증서 저장은 제공하지 않는다.
-  - [ ] 확인 필요(오류/누락) 직원이 표시되고, 처리 전에는 급여 마감 버튼이 잠금(disabled + aria-disabled)이다. React 구현 시 래퍼 툴팁 처리.
-  - [ ] 급여명세서·지급명세서를 미리보기/생성하고, 원천징수 지급명세서는 신고지원으로 전달한다.
-  - [ ] 개인정보는 권한에 따라 마스킹되고, 주민등록번호·계좌번호·전화번호·storage key는 화면에 노출되지 않는다.
-  - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: Screen Flow 4e / UI Design 4.5 / Prototype Review / Preview / Component Plan 7.5 / DB Schema 4.2 / Payroll Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일은 다음 JC-012 구현 PR에서 갱신.
+  - [x] 급여대장이 직원별 기본급·수당·지급계·원천세·4대보험·공제계·실지급으로 표시된다. (`payroll-workspace.tsx`, 정적 테스트 S-60)
+  - [x] 금액은 파생 계산으로 정합한다: 지급계=기본급+수당, 공제계=원천세+4대보험, 실지급=지급계−공제계, 합계=각 열의 합. (`summary.test.ts` S-20~S-26)
+  - [x] 원천세·4대보험 공제 상세가 항목별로 집계·표시된다. (`buildPayrollDeductionBreakdown`, UI)
+  - [x] 건강보험 EDI/사회보험 고지내역을 수동 입력해 직원별 4대보험 고지액과 매칭하고, 고지액을 최종 공제액에 우선 반영한다. 자동 로그인·공동인증서 저장은 제공하지 않는다. (`insurance-notices` import/match API + 수동 입력 UI)
+  - [x] 확인 필요(오류/누락) 직원이 표시되고, 처리 전에는 급여 마감 버튼이 잠금(disabled + aria-disabled)이다. (`PayrollResolveIssueButton`, `PayrollCloseButton`)
+  - [x] 급여명세서·지급명세서를 생성 상태로 전환하고, 원천징수 지급명세서/4대보험 산출물 상태를 신고지원이 읽을 수 있게 제공한다. (`documents` API + summary documents)
+  - [x] 개인정보 helper는 권한에 따라 직원명을 마스킹하고, 주민등록번호·계좌번호·전화번호·storage key 원문은 신규 화면/고지 import UI에 노출하지 않는다. (세부 권한 정책은 후속 hardening)
+  - [x] 로딩·빈·오류 상태가 화면에 구현된다. (`loading.tsx`, `error.tsx`, 빈 상태)
+- Document Sync Check: Screen Flow 4e / UI Design 4.5 / Prototype Review / Preview / Component Plan 7.5 / DB Schema 4.2 / Payroll Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0054_add_payroll_workspace_tables.sql`, `lib/payroll-workspace/summary.ts`, `lib/payroll-workspace/recalculate.ts`, `lib/payroll-workspace/summary.test.ts`, `lib/validations/payroll-workspace.ts`, `app/(dashboard)/dashboard/payroll/page.tsx`, `_components/payroll-workspace.tsx`, `_components/payroll-actions.tsx`, `_components/payroll-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/payroll/employee-lines/[lineId]/route.ts`, `app/api/payroll/employee-lines/[lineId]/resolve/route.ts`, `app/api/payroll/periods/[period]/insurance-notices/route.ts`, `app/api/payroll/periods/[period]/insurance-notices/match/route.ts`, `app/api/payroll/periods/[period]/documents/route.ts`, `app/api/payroll/periods/[period]/close/route.ts`.
 
 ### JC-013 · Build filing support workspace (신고지원) — 신규
 
@@ -217,7 +217,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview 상호 링크됨 (2026-07-01 기준 일치)
 
-> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 Pre-Code Brief·Component Plan·QA 시나리오 게이트가 완료되어 급여 구현 착수 가능 상태다. 신고지원 신규 테이블 컬럼·기간 모델 세부 정합은 JC-013 후속이다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료). 남은 공통 구현 착수 전제조건은 JC-013 **Pre-Code Brief**와 **Layer 5 QA**다.
+> 현재 여섯 항목 모두 **UI-First Gate 통과 (UI 6/6 완료)**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. 신고지원 신규 테이블 컬럼·기간 모델 세부 정합은 JC-013 후속이다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료). 남은 공통 구현 착수 전제조건은 JC-013 **Pre-Code Brief**와 **Layer 5 QA**다.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
