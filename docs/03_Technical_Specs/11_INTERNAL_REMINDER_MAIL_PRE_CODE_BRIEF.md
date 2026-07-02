@@ -1,12 +1,12 @@
 # Internal Reminder Mail Pre-Code Technical Brief
 > Created: 2026-07-02 21:18
-> Last Updated: 2026-07-02 21:18
+> Last Updated: 2026-07-02
 
 ## 0. Governing Principle
 
 JC-016 내부 리마인드 메일은 회사 내부 사용자에게 업무 마감과 누락 상태를 알려주는 기능이다. GIWA의 고객사 자료 요청 메일 흐름을 되살리는 기능이 아니다.
 
-- 수신자는 회사 내부 staff 또는 JC-015 직원 명부의 직원이다.
+- v1 수신자는 담당자 본인·회사 내부 staff다. JC-015 직원 명부 기반 직원 수신은 후속 범위로 남긴다.
 - 외부 고객 포털, 고객사 요청 메일, 회계사무소 대행 흐름은 v1 범위에서 제외한다.
 - 자동 홈택스 제출, 자동 납부, 외부 사이트 로그인, 공동인증서 저장은 제공하지 않는다.
 - 기존 `request_template`, `client_request_schedule`, `client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox` 계열은 v1 리마인드 도메인 모델로 재사용하지 않는다.
@@ -19,7 +19,7 @@ JC-016은 다음 기능의 구현 전 계약이다.
 1. 내부 리마인드 규칙 조회
 2. 리마인드 규칙 생성/수정/비활성화
 3. 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태를 리마인드 대상으로 연결
-4. 직원 명부 또는 staff 계정 기반 수신자 선택
+4. staff 계정 기반 수신자 선택
 5. 수동 발송과 테스트 발송
 6. 마감 D-7/D-3/D-1 또는 일일 요약 같은 예약 발송
 7. 발송 로그, 중복 방지, 실패 재시도 상태 기록
@@ -31,7 +31,7 @@ JC-016은 다음 기능의 구현 전 계약이다.
 
 | 항목 | 결정 |
 |:---|:---|
-| Route | 후보: `/dashboard/reminders` 또는 `/dashboard/settings/reminders` |
+| Route | `/dashboard/reminders` |
 | 화면 성격 | 내부 운영 알림 설정·발송 로그 화면 |
 | Read model | `lib/internal-reminders/summary.ts` 후보 |
 | Persistence | 신규 `internal_reminder_rule`, `internal_reminder_send_log` 후보 |
@@ -88,11 +88,13 @@ type InternalReminderSummary = {
 
 | Domain | 리마인드 조건 | 수신자 후보 |
 |:---|:---|:---|
-| `source_collection` | 미수집 자료, 파싱 오류, 정규화 확인 필요 | 담당 staff, 자료 담당 직원 |
+| `source_collection` | 미수집 자료, 파싱 오류, 정규화 확인 필요 | 담당 staff |
 | `bookkeeping_review` | 미분류 거래, 낮은 신뢰도, 계정 지정 필요 | 담당 staff |
 | `vat` | 공제 검토 대기, 패키지 생성 잠금, 신고 마감 D-day | 대표/담당 staff |
-| `payroll` | 직원 확인 필요, 고지액 매칭 실패, 급여 미마감 | 급여 담당 staff, 직원 명부 담당자 |
+| `payroll` | 직원 확인 필요, 고지액 매칭 실패, 급여 미마감 | 급여 담당 staff |
 | `filing_support` | 접수증 미보관, 사후 체크리스트 미완료 | 대표/담당 staff |
+
+직원 명부 기반 직원 수신은 JC-015 구현 이후에도 개인정보·알림 동의 정책이 필요하므로 v1 리마인드 발송 대상에서 제외한다.
 
 ## 5. Data Model Draft
 
@@ -168,9 +170,9 @@ type InternalReminderSummary = {
 
 ## 8. Implementation Preconditions
 
-- [ ] UI Preview 작성 및 사용자 확인
-- [ ] 화면 진입 위치(`/dashboard/reminders` vs 설정 하위) 확정
-- [ ] JC-015 직원 명부를 수신자 source로 사용할지, v1은 staff-only로 시작할지 결정
+- [x] UI Preview 작성 및 사용자 확인 — [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html) (2026-07-02)
+- [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/reminders`
+- [x] 수신자 source 결정 — v1은 담당자 본인·내부 staff 발송(자가 리마인드). 직원 명부 기반 직원 수신은 후속
 - [ ] 신규 `internal_reminder_*` 물리 테이블 여부 확정
 - [ ] Resend 발송 환경변수와 테스트 발송 방식 확인
 - [ ] 예약 실행 방식(cron/manual job)과 idempotency key 확정
@@ -188,14 +190,14 @@ type InternalReminderSummary = {
 
 ## 10. Open Items
 
-- v1에서 직원 명부 기반 수신까지 포함할지, staff-only로 먼저 출시할지 결정이 필요하다.
+- v1 수신자는 담당자 본인·내부 staff로 확정(2026-07-02). 직원 명부 기반 직원 수신은 후속.
 - 예약 실행을 Vercel Cron으로 할지, 내부 수동 실행으로 시작할지 결정이 필요하다.
 - 이메일 템플릿 편집을 v1에 포함할지, 고정 템플릿으로 시작할지 결정이 필요하다.
 
 ## 11. Related Documents
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 셀프사용·신고 보조 책임 경계
-- **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 기존 6개 워크스페이스 흐름
+- **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 기존 6개 워크스페이스와 직원 명부·리마인드 흐름
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 디자인 시스템과 상태 표현
 - **Technical_Specs**: [DB Schema](./03_DB_SCHEMA.md) - 리마인드 논리 테이블 초안
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 기반 수신자 source

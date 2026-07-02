@@ -145,6 +145,7 @@
 - 신고지원 항목의 "부가세 열기 / 급여 열기"로 선행 화면과 직접 연동.
 - 운영 흐름 6개 화면 전체가 사이드바로 상호 이동 가능하다.
 - 직원 명부는 사이드바 "관리" 그룹의 설정 아래 항목으로 진입하며, 6개 워크스페이스 프리뷰와 상호 이동한다.
+- 리마인드는 사이드바 "관리" 그룹의 직원 명부 아래 항목으로 진입하며, 전 화면과 상호 이동한다.
 - 구현된 화면은 사이드바 "다음" 배지를 제거한다.
 
 ### 4.8 직원 명부 (06_employee_directory.html)
@@ -160,6 +161,22 @@
 
 - **개인정보 경계 규칙**: 주민등록번호·계좌번호·전화번호 원문은 저장·노출하지 않는다. 이름·사번·부서·업무 이메일만 관리한다. 패널·하단 안내에 반복 노출한다.
 - 직원 명부는 급여 실행 결과(`payroll_employee_line`)와 분리된 상시 마스터이며, 급여·4대보험 고지액 매칭·내부 리마인드(JC-016) 수신자의 기준 데이터다.
+- 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
+
+### 4.9 리마인드 (07_internal_reminder.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Internal-only Banner | 회사 내부 업무 알림 책임 경계 고지 | accent 배너, 고객사 메일·자동 제출/납부 없음 반복 |
+| Stats Row | 활성 규칙·리마인드 대상(확인 필요)·발송 실패 카운트 | 대상 카드는 warn 강조 |
+| Rule List | 업무 영역별(자료수집/기장검토/부가세/급여/신고지원) 규칙 | 트리거 태그(마감 D-7/D-3/D-1·일일 요약·수동), 활성 토글, 테스트 발송 |
+| Recipient Preview | 담당자 본인·내부 staff 수신자 | 본인/staff 칩, 알림 꺼짐 대상은 제외 표시 |
+| Send Log Table | 최근 발송 로그 | 상태칩(발송됨/실패/스킵), 실패 사유·중복 방지(idempotency) |
+| State Card | 로딩/빈/오류 + provider missing 표준 | 스켈레톤·빈안내(첫 규칙)·오류+재시도·발송 설정 안내 |
+
+- **책임 경계 규칙**: 회사 내부 업무 알림이다. 고객사 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출·납부는 제공하지 않는다. 배너·하단 안내에 반복 노출한다.
+- 수신자는 담당자 본인·내부 staff에서 파생하며, notification 꺼진 대상은 제외한다. 직원 명부(JC-015) 기반 직원 수신은 후속.
+- 세무 일정(마감 D-day)·확인 필요 상태를 담당자 본인에게 리마인드하는 자가 알림이 v1 핵심 흐름이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
 ## 5. 핵심 CTA 우선순위
@@ -203,6 +220,7 @@
 - Preview (급여): [04_payroll.html](./previews/04_payroll.html)
 - Preview (신고지원): [05_filing_support.html](./previews/05_filing_support.html)
 - Preview (직원 명부): [06_employee_directory.html](./previews/06_employee_directory.html)
+- Preview (리마인드): [07_internal_reminder.html](./previews/07_internal_reminder.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -215,8 +233,11 @@
 - **UI_Screens**: [Payroll Prototype Review](./06_PAYROLL_PROTOTYPE_REVIEW.md) - 급여 확인 결과
 - **UI_Screens**: [Filing Support Prototype Review](./07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) - 신고지원 확인 결과
 - **UI_Screens**: [Employee Directory Prototype Review](./08_EMPLOYEE_DIRECTORY_PROTOTYPE_REVIEW.md) - 직원 명부 확인 결과
+- **UI_Screens**: [Internal Reminder Prototype Review](./09_INTERNAL_REMINDER_PROTOTYPE_REVIEW.md) - 리마인드 확인 결과
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
 - **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 구현 전 데이터·mutation 계약
+- **Technical_Specs**: [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) - 내부 리마인드 구현 전 데이터·mutation 계약
 - **QA_Validation**: [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) - 급여 구현 검증 시나리오
 - **QA_Validation**: [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md) - 직원 명부 구현 검증 시나리오
+- **QA_Validation**: [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md) - 내부 리마인드 구현 검증 시나리오

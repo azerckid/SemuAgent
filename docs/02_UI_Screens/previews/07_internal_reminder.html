@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JARYO Company · 리마인드 (UI Preview)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .brand .name { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+  .brand .sub { font-size: 11px; color: var(--fg-subtle); }
+  .nav-label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 14px 8px 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; cursor: pointer; font-size: 13.5px; }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .8; }
+  .nav-item:hover { background: #f4f4f5; color: var(--fg); }
+  .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 600; }
+  .nav-item .cnt { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; border-radius: 999px; padding: 1px 7px; }
+  .sidebar .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .user .who { font-size: 12.5px; font-weight: 600; }
+  .user .role { font-size: 11px; color: var(--fg-subtle); }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .crumb { font-size: 12.5px; color: var(--fg-subtle); font-weight: 500; }
+  .topbar h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .topbar .co { color: var(--fg-muted); font-weight: 500; font-size: 13px; }
+  .top-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 8px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; color: var(--fg); }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn.sm { padding: 5px 10px; font-size: 11.5px; border-radius: 7px; }
+  .btn.is-disabled { background: #f1f1f2; color: var(--fg-subtle); border-color: var(--border); cursor: not-allowed; }
+
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1240px; }
+
+  /* Internal-only banner */
+  .banner { display: flex; gap: 10px; align-items: flex-start; background: var(--accent-soft); border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 12px 16px; }
+  .banner .b-ico { color: var(--accent); font-weight: 700; font-size: 14px; flex: none; }
+  .banner .b-t { font-size: 12.5px; font-weight: 650; color: #1e40af; }
+  .banner .b-d { font-size: 12px; color: #1d4ed8; margin-top: 1px; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+  .stat .k { font-size: 12px; color: var(--fg-muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .stat .k .dot { width: 7px; height: 7px; border-radius: 999px; }
+  .stat .dot.ok { background: var(--ok); } .stat .dot.warn { background: var(--warn); } .stat .dot.danger { background: var(--danger); }
+  .stat .v { font-size: 24px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .stat .v small { font-size: 13px; color: var(--fg-subtle); font-weight: 600; }
+  .stat.attn { border-color: #fde68a; background: var(--warn-soft); }
+  .stat.attn .v { color: var(--warn); }
+
+  .section-head { display: flex; align-items: baseline; gap: 10px; }
+  .section-head h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+  .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
+
+  .two-col { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; align-items: start; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+  .card h3 { font-size: 13px; font-weight: 650; margin-bottom: 4px; }
+  .card .sub { font-size: 12px; color: var(--fg-subtle); margin-bottom: 14px; }
+
+  /* Rule list */
+  .rule { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .rule:last-child { border-bottom: 0; }
+  .rule .r-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; font-weight: 700; flex: none; }
+  .r-ico.sc { background: #eff6ff; color: #2563eb; }
+  .r-ico.bk { background: #f5f3ff; color: #7c3aed; }
+  .r-ico.vat { background: #ecfeff; color: #0891b2; }
+  .r-ico.pay { background: #f0fdf4; color: #16a34a; }
+  .r-ico.fil { background: #fff7ed; color: #ea580c; }
+  .rule .r-main { flex: 1; min-width: 0; }
+  .rule .r-t { font-size: 13px; font-weight: 600; }
+  .rule .r-sub { font-size: 11.5px; color: var(--fg-subtle); margin-top: 1px; }
+  .rule .r-meta { display: flex; gap: 6px; align-items: center; margin-top: 5px; flex-wrap: wrap; }
+  .tag { font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px; border: 1px solid var(--border); background: #f4f4f5; color: var(--fg-muted); }
+  .tag.trig { border-color: #bfdbfe; background: var(--accent-soft); color: var(--accent); }
+  .rule .r-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+  .toggle { width: 34px; height: 20px; border-radius: 999px; background: var(--ok); position: relative; }
+  .toggle::after { content: ""; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 999px; background: #fff; }
+  .toggle.off { background: #d4d4d8; }
+  .toggle.off::after { right: auto; left: 2px; }
+
+  /* Recipient preview */
+  .rcp { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .rcp:last-child { border-bottom: 0; }
+  .rcp .rc-av { width: 26px; height: 26px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--fg-muted); flex: none; }
+  .rcp .rc-main { flex: 1; min-width: 0; }
+  .rcp .rc-n { font-size: 12.5px; font-weight: 600; }
+  .rcp .rc-e { font-size: 11px; color: var(--fg-subtle); }
+  .chip { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; }
+  .chip.self { color: var(--accent); background: var(--accent-soft); border: 1px solid #bfdbfe; }
+  .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+
+  /* Send log table */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .tbl-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  thead th { text-align: left; font-size: 11px; font-weight: 600; color: var(--fg-subtle); padding: 10px 14px; border-bottom: 1px solid var(--border); background: #fafafa; text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafafa; }
+  td.time { font-variant-numeric: tabular-nums; color: var(--fg-muted); white-space: nowrap; }
+  .st-chip { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+  .st-chip.sent { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .st-chip.failed { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .st-chip.skipped { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+  .st-chip.queued { color: var(--accent); background: var(--accent-soft); border: 1px solid #bfdbfe; }
+  .err-note { font-size: 11px; color: var(--danger); }
+
+  /* States */
+  .states { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .state-card { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 16px; min-height: 130px; display: flex; flex-direction: column; }
+  .state-card .s-label { font-size: 11px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+  .skel { height: 11px; border-radius: 6px; background: linear-gradient(90deg,#eee, #f5f5f5, #eee); margin-bottom: 9px; }
+  .skel.w60 { width: 60%; } .skel.w40 { width: 40%; } .skel.w80 { width: 80%; }
+  .mid { flex: 1; display: grid; place-items: center; text-align: center; color: var(--fg-subtle); }
+  .mid .m-ico { font-size: 20px; opacity: .5; }
+  .mid .m-t { font-size: 12px; margin-top: 6px; }
+  .mid .m-cta { margin-top: 8px; font-size: 11.5px; color: var(--accent); font-weight: 600; }
+  .mid .m-t.err { color: var(--danger); font-weight: 600; }
+
+  .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .note b { color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="00_company_home.html" class="brand">
+      <div class="logo">자</div>
+      <div>
+        <div class="name">JARYO Company</div>
+        <div class="sub">회사 세무·회계 운영</div>
+      </div>
+    </a>
+
+    <a href="00_company_home.html" class="nav-item"><span class="ico">◧</span> 회사 홈</a>
+    <div class="nav-label">운영 흐름</div>
+    <a href="01_source_collection.html" class="nav-item"><span class="ico">↥</span> 자료수집</a>
+    <a href="02_bookkeeping_review.html" class="nav-item"><span class="ico">▤</span> 기장검토</a>
+    <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
+    <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여</a>
+    <a href="05_filing_support.html" class="nav-item"><span class="ico">↧</span> 신고지원</a>
+    <div class="nav-label">관리</div>
+    <div class="nav-item"><span class="ico">⚙</span> 설정</div>
+    <a href="06_employee_directory.html" class="nav-item"><span class="ico">◍</span> 직원 명부</a>
+    <div class="nav-item active"><span class="ico">✉</span> 리마인드 <span class="cnt">3</span></div>
+
+    <div class="spacer"></div>
+    <div class="user">
+      <div class="av">김</div>
+      <div>
+        <div class="who">김대표</div>
+        <div class="role">샘플컴퍼니(주) · 대표</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumb"><a href="00_company_home.html">회사 홈</a> › 리마인드</div>
+        <h1>리마인드</h1>
+      </div>
+      <span class="co">샘플컴퍼니(주)</span>
+      <div class="top-actions">
+        <button class="btn">지금 발송</button>
+        <button class="btn primary">리마인드 규칙 추가</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Internal-only banner -->
+      <div class="banner">
+        <span class="b-ico">ⓘ</span>
+        <div>
+          <div class="b-t">회사 내부 업무 알림입니다</div>
+          <div class="b-d">담당자 본인·내부 담당자에게 마감·확인 필요 상태를 리마인드합니다. 고객사 요청 메일·자동 홈택스 제출/납부는 제공하지 않습니다.</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">
+          <div class="k"><span class="dot ok"></span> 활성 규칙</div>
+          <div class="v">3<small> 개</small></div>
+        </div>
+        <div class="stat attn">
+          <div class="k"><span class="dot warn"></span> 리마인드 대상 (확인 필요)</div>
+          <div class="v">2<small> 건</small></div>
+        </div>
+        <div class="stat">
+          <div class="k"><span class="dot danger"></span> 발송 실패</div>
+          <div class="v">1<small> 건</small></div>
+        </div>
+      </div>
+
+      <!-- Rules + recipient preview -->
+      <div class="section-head">
+        <h2>리마인드 규칙</h2>
+        <span class="hint">업무 영역별 마감·확인 필요 알림</span>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="rule">
+            <div class="r-ico vat">％</div>
+            <div class="r-main">
+              <div class="r-t">부가세 신고 마감 리마인드</div>
+              <div class="r-sub">제목: 부가세 2026년 1기 마감 D-3 · 공제 검토 2건 남음</div>
+              <div class="r-meta">
+                <span class="tag trig">마감 D-7 / D-3 / D-1</span>
+                <span class="tag">수신: 담당자 본인</span>
+                <span class="tag">다음 실행 2026-07-22 09:00</span>
+              </div>
+            </div>
+            <div class="r-right">
+              <span class="toggle" title="활성"></span>
+              <button class="btn sm">테스트 발송</button>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="r-ico pay">₩</div>
+            <div class="r-main">
+              <div class="r-t">급여 마감·확인 필요 리마인드</div>
+              <div class="r-sub">제목: 2026년 6월 급여 확인 필요 1명 · 마감 전 처리</div>
+              <div class="r-meta">
+                <span class="tag trig">일일 요약 09:00</span>
+                <span class="tag">수신: 담당자 본인</span>
+                <span class="tag">마지막 발송 2026-07-02 09:00</span>
+              </div>
+            </div>
+            <div class="r-right">
+              <span class="toggle" title="활성"></span>
+              <button class="btn sm">테스트 발송</button>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="r-ico sc">↥</div>
+            <div class="r-main">
+              <div class="r-t">자료수집 미수집 리마인드</div>
+              <div class="r-sub">제목: 신고 기간 미수집 자료 4건 확인</div>
+              <div class="r-meta">
+                <span class="tag trig">일일 요약 09:00</span>
+                <span class="tag">수신: 담당자 본인</span>
+                <span class="tag">마지막 발송 2026-07-02 09:00</span>
+              </div>
+            </div>
+            <div class="r-right">
+              <span class="toggle" title="활성"></span>
+              <button class="btn sm">테스트 발송</button>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="r-ico fil">↧</div>
+            <div class="r-main">
+              <div class="r-t">신고지원 접수증·체크리스트 리마인드</div>
+              <div class="r-sub">제목: 제출 접수증 보관·사후 체크리스트 확인</div>
+              <div class="r-meta">
+                <span class="tag">수동 발송</span>
+                <span class="tag">수신: 담당자 본인</span>
+                <span class="tag" style="border-color:#d4d4d8;background:#f4f4f5;">비활성</span>
+              </div>
+            </div>
+            <div class="r-right">
+              <span class="toggle off" title="비활성"></span>
+              <button class="btn sm">테스트 발송</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>수신자 미리보기</h3>
+          <div class="sub">기본 수신자는 담당자 본인·내부 staff에서 파생</div>
+          <div class="rcp">
+            <div class="rc-av">김</div>
+            <div class="rc-main">
+              <div class="rc-n">김대표</div>
+              <div class="rc-e">daepyo@sample.co</div>
+            </div>
+            <span class="chip self">본인</span>
+          </div>
+          <div class="rcp">
+            <div class="rc-av">이</div>
+            <div class="rc-main">
+              <div class="rc-n">이수민 · 담당 staff</div>
+              <div class="rc-e">sumin.lee@sample.co</div>
+            </div>
+            <span class="chip muted">staff</span>
+          </div>
+          <div class="rcp">
+            <div class="rc-av">정</div>
+            <div class="rc-main">
+              <div class="rc-n">정하늘 · 담당 staff</div>
+              <div class="rc-e">알림 수신 꺼짐 · 제외</div>
+            </div>
+            <span class="chip muted">제외</span>
+          </div>
+          <div class="note" style="margin-top:14px;">
+            직원 명부(<b>JC-015</b>) 기반 직원 수신은 후속 단계에서 추가됩니다. v1은 담당자 본인·내부 staff 발송입니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- Send log -->
+      <div class="section-head">
+        <h2>최근 발송 로그</h2>
+        <span class="hint">성공 / 실패 / 스킵 · 중복 방지(idempotency)</span>
+      </div>
+      <div class="panel tbl-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>발송 시각</th>
+              <th>영역</th>
+              <th>수신자</th>
+              <th>상태</th>
+              <th>사유</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="time">2026-07-02 09:00</td>
+              <td>급여</td>
+              <td>김대표 (본인)</td>
+              <td><span class="st-chip sent">발송됨</span></td>
+              <td class="err-note" style="color:var(--fg-subtle);">확인 필요 1명 알림</td>
+            </tr>
+            <tr>
+              <td class="time">2026-07-02 09:00</td>
+              <td>자료수집</td>
+              <td>김대표 (본인)</td>
+              <td><span class="st-chip sent">발송됨</span></td>
+              <td style="color:var(--fg-subtle);">미수집 4건 알림</td>
+            </tr>
+            <tr>
+              <td class="time">2026-07-02 09:00</td>
+              <td>부가세</td>
+              <td>이수민 (staff)</td>
+              <td><span class="st-chip failed">실패</span></td>
+              <td class="err-note">메일 발송 실패 — 재시도 예정</td>
+            </tr>
+            <tr>
+              <td class="time">2026-07-01 09:00</td>
+              <td>급여</td>
+              <td>김대표 (본인)</td>
+              <td><span class="st-chip skipped">스킵</span></td>
+              <td style="color:var(--fg-subtle);">동일 조건 이미 발송 (중복 방지)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- States -->
+      <div class="section-head">
+        <h2>화면 상태 예시</h2>
+        <span class="hint">로딩 / 빈 / 오류 / 발송 설정 없음</span>
+      </div>
+      <div class="states">
+        <div class="state-card">
+          <div class="s-label">Loading</div>
+          <div class="skel w40"></div>
+          <div class="skel w80"></div>
+          <div class="skel w60"></div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Empty</div>
+          <div class="mid">
+            <div>
+              <div class="m-ico">✉</div>
+              <div class="m-t">리마인드 규칙이 없습니다</div>
+              <div class="m-cta">첫 리마인드 규칙 만들기</div>
+            </div>
+          </div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Error</div>
+          <div class="mid">
+            <div>
+              <div class="m-t err">리마인드 설정을 불러오지 못했습니다</div>
+              <div class="m-cta">다시 시도</div>
+            </div>
+          </div>
+        </div>
+        <div class="state-card">
+          <div class="s-label">Provider missing</div>
+          <div class="mid">
+            <div>
+              <div class="m-ico">⚙</div>
+              <div class="m-t">메일 발송이 설정되지 않았습니다</div>
+              <div class="m-cta">발송 설정 안내</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Preview 안내</b> — 이 화면은 <b>내부 리마인드</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 발송 내역이 아닙니다.
+        구성: 내부 알림 안내 배너 · 통계(활성 규칙·리마인드 대상·발송 실패) · 규칙 목록(마감 D-offset/일일 요약/수동, 활성 토글, 테스트 발송) · 수신자 미리보기(담당자 본인·내부 staff) · 최근 발송 로그(성공/실패/스킵) · 상태(로딩/빈/오류/발송 설정 없음) 예시.
+        <b>회사 내부 업무 알림</b>이며, 고객사 요청 메일·자동 홈택스 제출/납부는 제공하지 않습니다. 직원 명부 기반 수신은 후속입니다. 좌측 사이드바로 다른 화면과 이동할 수 있습니다.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

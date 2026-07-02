@@ -250,22 +250,23 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-016 · Build internal reminder mail (내부 리마인드 메일) — 신규
 
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 신고 보조 책임 경계, 자동 제출 제외
-- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) — **리마인드 화면은 아직 미작성**
-- Related HTML Preview: N/A — 내부 리마인드 Preview 미작성. 구현 전 UI Preview와 사용자 확인 필요.
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) 8번 항목 · [UI Design 4.9](../02_UI_Screens/01_UI_DESIGN.md) · [Prototype Review](../02_UI_Screens/09_INTERNAL_REMINDER_PROTOTYPE_REVIEW.md)
+- Related HTML Preview: [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html) — UI Preview 작성·사용자 확인 완료(2026-07-02).
 - Related Technical Docs: [DB Schema 4.5](../03_Technical_Specs/03_DB_SCHEMA.md) · [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) · [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)
 - Related QA Docs: [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md)
-- Prototype Review / 승인: 미완료 — 기능 방향만 승인(2026-07-02), 화면 승인 아님.
+- Prototype Review / 승인: 화면 승인 완료(2026-07-02) — [Prototype Review](../02_UI_Screens/09_INTERNAL_REMINDER_PROTOTYPE_REVIEW.md).
 - Implementation Preconditions:
   - [x] 기능 방향 승인 — 자료수집·기장검토·부가세·급여·신고지원의 확인 필요 상태를 내부 수신자에게 리마인드
   - [x] 책임 경계 확정 — 외부 고객 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출/납부는 제외
   - [x] Pre-Code Technical Brief 작성 — [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)
   - [x] DB Schema 논리 초안 작성 — [DB Schema 4.5](../03_Technical_Specs/03_DB_SCHEMA.md)
   - [x] QA 테스트 시나리오 작성 — [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md)
-  - [ ] UI Preview 작성 및 사용자 확인 — **미충족**
-  - [ ] 수신자 source 결정(staff-only vs employee_profile 포함) — **미충족**
-  - [ ] `internal_reminder_*` 물리 Drizzle migration 확정 — **미충족**
-  - [ ] Resend/env/test-send 확인 — **미충족**
-  - [ ] 예약 실행 방식과 idempotency key 확정 — **미충족**
+  - [x] UI Preview 작성 및 사용자 확인 — 완료(2026-07-02), [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html)
+  - [x] 화면 진입 위치 확정 — 독립 메뉴 `/dashboard/reminders`
+  - [x] 수신자 source 결정 — v1은 담당자 본인·내부 staff 발송(자가 리마인드). 직원 명부(JC-015) 기반 직원 수신은 후속
+  - [ ] `internal_reminder_*` 물리 Drizzle migration 확정 — **미충족(구현 PR)**
+  - [ ] Resend/env/test-send 확인 — **미충족(구현 PR)**
+  - [ ] 예약 실행 방식과 idempotency key 확정 — **미충족(구현 PR)**
 - Acceptance Criteria:
   - [ ] 리마인드는 회사 내부 수신자에게만 발송된다.
   - [ ] 확인 필요 상태가 리마인드 대상으로 연결된다.
@@ -274,13 +275,13 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 발송 로그는 성공/실패/스킵 상태와 실패 사유를 남긴다.
   - [ ] 외부 고객 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출/납부는 제공하지 않는다.
   - [ ] 로딩·빈·오류·provider missing 상태가 구현된다.
-- Document Sync Check: DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview 미작성과 수신자 source 미결정으로 구현 착수 금지**.
+- Document Sync Check: Screen Flow 8 / UI Design 4.9 / Prototype Review / HTML Preview / DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. **UI Preview·화면 승인·수신자 source(v1 staff/본인) 확정. 남은 구현 전제조건(물리 테이블·Resend·예약/idempotency)은 구현 PR에서 확정**.
 
-> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 문서 게이트 초안만 작성됐고, UI Preview와 사용자 확인 전까지 구현 금지. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
+> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 DB Schema 설계 초안을 완료했고, JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 UI Preview 작성·화면 승인(2026-07-02)과 수신자 source(v1 담당자 본인·내부 staff)를 확정했고, 남은 구현 전제조건(물리 테이블·Resend·예약/idempotency)은 구현 PR에서 확정한다. JC-004 전체 라우트 감사는 `todo` 유지(JC-009 §3은 업로드 슬라이스만 완료).
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 화면 흐름·컴포넌트(Context Lock 참조 대상)
-- **UI_Screens**: [HTML Preview 폴더](../02_UI_Screens/previews/) - 승인된 화면 프로토타입(6화면)
+- **UI_Screens**: [HTML Preview 폴더](../02_UI_Screens/previews/) - 승인된 화면 프로토타입(6개 워크스페이스 + 직원 명부 + 리마인드)
 - **Technical_Specs**: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) · [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) · [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) - 스택 및 컴포넌트/급여·신고지원·직원 명부·내부 리마인드 구현 계약
 - **QA_Validation**: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md) · [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) · [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md) · [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md) · [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md) - 검증 기준(Acceptance 연계)
