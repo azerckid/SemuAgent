@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { resolveReminderDaysBefore, isReminderDaysBeforeInRange } from '@/lib/tenant/reminder-days'
 import { TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -100,9 +99,6 @@ export function SettingsPanel({
   // ── 테넌트 설정 state
   const [tenantName, setTenantName] = useState(initialTenant.name)
   const [timezone, setTimezone] = useState(initialTenant.timezone)
-  const [reminderDaysBefore, setReminderDaysBefore] = useState(
-    resolveReminderDaysBefore(initialTenant.reminderDaysBefore),
-  )
   const [tenantSaving, setTenantSaving] = useState(false)
   const [tenantError, setTenantError] = useState('')
 
@@ -144,9 +140,6 @@ export function SettingsPanel({
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
-  // ── 메일/CC 설정 state
-
-  const reminderDaysValid = isReminderDaysBeforeInRange(reminderDaysBefore)
   const currentStaff = initialStaff.find((staffMember) => staffMember.id === currentUserId)
   const canManageMailSettings = currentStaff?.role === 'TENANT_ADMIN'
 
@@ -156,7 +149,7 @@ export function SettingsPanel({
     const res = await fetch('/api/settings/tenant', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: tenantName, timezone, reminderDaysBefore }),
+      body: JSON.stringify({ name: tenantName, timezone, reminderDaysBefore: initialTenant.reminderDaysBefore }),
     })
     setTenantSaving(false)
     if (!res.ok) {
@@ -171,15 +164,6 @@ export function SettingsPanel({
   const handleTenantSave = async (e: React.SyntheticEvent) => {
     e.preventDefault()
     await saveTenantSettings('테넌트 설정을 저장했습니다.')
-  }
-
-  const handleReminderSave = async (e: React.SyntheticEvent) => {
-    e.preventDefault()
-    if (!canManageMailSettings) {
-      setTenantError('업무메일 설정 변경은 관리자만 할 수 있습니다.')
-      return
-    }
-    await saveTenantSettings('리마인더 설정을 저장했습니다.')
   }
 
   const handleAddStaff = async (e: React.SyntheticEvent) => {
@@ -554,7 +538,7 @@ export function SettingsPanel({
             <div className="space-y-2">
               <h2 className="text-base font-semibold text-foreground">업무메일 설정</h2>
               <p className="text-sm text-muted-foreground">
-                업무전용 이메일과 리마인더 발송 기준을 관리합니다.
+                담당자별 업무전용 이메일주소를 관리합니다.
               </p>
             </div>
 
@@ -571,53 +555,6 @@ export function SettingsPanel({
                 isAdmin={canManageMailSettings}
               />
             </section>
-
-            <form onSubmit={handleReminderSave}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">리마인더 발송 시점</CardTitle>
-                  <CardDescription>
-                    제출기한이 다가온 미제출 고객에게 언제부터 리마인더를 보낼지 정합니다.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-2">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="tenant-reminder"
-                      type="number"
-                      min={1}
-                      max={14}
-                      step={1}
-                      value={Number.isNaN(reminderDaysBefore) ? '' : reminderDaysBefore}
-                      disabled={!canManageMailSettings || tenantSaving}
-                      onChange={(e) => {
-                        const raw = e.target.value
-                        setReminderDaysBefore(raw === '' ? Number.NaN : Number.parseInt(raw, 10))
-                      }}
-                      className="w-20 text-center"
-                    />
-                    <label htmlFor="tenant-reminder" className="text-sm text-muted-foreground">일 전부터 발송</label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    1~14일 사이에서 설정합니다. 제출 완료를 누른 고객에게는 리마인더를 보내지 않으며, 급여정산 요청은 제외합니다.
-                  </p>
-                  {!canManageMailSettings && (
-                    <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                      리마인더 발송 시점 변경은 관리자만 할 수 있습니다.
-                    </p>
-                  )}
-                  {!reminderDaysValid && (
-                    <p className="text-xs text-destructive">1~14 사이의 일수를 입력해 주세요.</p>
-                  )}
-                  {tenantError && <p className="text-xs text-destructive">{tenantError}</p>}
-                </CardContent>
-                <CardFooter className="justify-end">
-                  <Button type="submit" disabled={!canManageMailSettings || tenantSaving || !reminderDaysValid}>
-                    {tenantSaving ? '저장 중…' : '리마인더 설정 저장'}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </form>
           </div>
         )}
 

@@ -133,7 +133,7 @@ export function WorkEmailAddressesPanel({ addresses, staffOptions, isAdmin }: Wo
           <CardHeader>
             <CardTitle className={consoleCardTitleClass}>업무 메일주소 만들기</CardTitle>
             <CardDescription className={consoleCardDescriptionClass}>
-              담당자에게 사무소 소유 업무 메일주소를 배정합니다. 주소는 담당자가 바뀌어도 인계할 수 있습니다.
+              담당자에게 회사 소유 업무 메일주소를 배정합니다. 주소는 담당자가 바뀌어도 인계할 수 있습니다.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
