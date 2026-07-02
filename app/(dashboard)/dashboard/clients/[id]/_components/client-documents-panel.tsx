@@ -137,7 +137,7 @@ export function ClientDocumentsPanel({
             onClick={togglePanel}
           >
             <span className="inline-flex flex-wrap items-center gap-2">
-              <span className="font-semibold text-gray-950">고객사 문서</span>
+              <span className="font-semibold text-gray-950">사업장 문서</span>
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                 {documents.length}개 등록
               </span>

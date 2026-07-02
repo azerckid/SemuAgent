@@ -188,7 +188,7 @@ export function ScheduleTab({ clientId, schedules: initialSchedules }: Props) {
       <DeleteConfirmDialog
         open={deleteTarget !== null}
         title="정기 요청 메일을 삭제할까요?"
-        description={`이 정기 요청 메일은 화면에서 숨겨집니다.\n이미 발송된 회차가 있으면 고객의 자료 제출 링크가 더 이상 열리지 않습니다.\n기존 메일, 업로드, 분석 기록은 내부 기록으로 보관됩니다.`}
+        description={`이 정기 요청 메일은 화면에서 숨겨집니다.\n이미 발송된 회차가 있으면 사업장의 자료 제출 링크가 더 이상 열리지 않습니다.\n기존 메일, 업로드, 분석 기록은 내부 기록으로 보관됩니다.`}
         loading={deleteTarget !== null && deleting === deleteTarget.id}
         onCancel={() => {
           if (!deleting) setDeleteTarget(null)

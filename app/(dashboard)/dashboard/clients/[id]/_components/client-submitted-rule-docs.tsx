@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import type { ClientSubmittedRuleDocument } from './client-payroll-rule-profile-panel'
 
 /**
- * 고객 또는 담당자가 올린 사내규정 자료 목록.
+ * 사업장 또는 담당자가 올린 사내규정 자료 목록.
  *
  * 제출/업로드는 자료(client_document)까지만이고, 담당자가 여기서 "초안 만들기"를
  * 눌러야 AI 구조화 → draft 프로필이 생성된다. 승인은 그 다음 단계다.
@@ -64,7 +64,7 @@ export function ClientSubmittedRuleDocs({
         <h3 className="text-sm font-medium text-gray-900">사내규정 자료</h3>
       </div>
       <p className="mt-1 text-xs text-gray-500">
-        고객사가 급여정산 포털에서 제출했거나 담당자가 직접 업로드한 규정 자료입니다. 적용 시작 월을 정하고
+        사업장이 급여정산 포털에서 제출했거나 담당자가 직접 업로드한 규정 자료입니다. 적용 시작 월을 정하고
         “초안 만들기”를 누르면 AI가 구조화한 초안이 생성됩니다. 승인 전에는 급여 계산에 적용되지 않습니다.
       </p>
 
@@ -96,7 +96,7 @@ export function ClientSubmittedRuleDocs({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={doc.submittedBy === 'client' ? 'secondary' : 'outline'}>
-                      {doc.submittedBy === 'client' ? '고객 제출' : '담당자 업로드'}
+                      {doc.submittedBy === 'client' ? '사업장 제출' : '담당자 업로드'}
                     </Badge>
                     <p className="truncate text-sm font-medium text-gray-900">{doc.originalFilename}</p>
                   </div>

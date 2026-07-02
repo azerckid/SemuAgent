@@ -207,8 +207,8 @@ export function ClientWorkContext({
           <h2 className="font-semibold text-gray-950">최근 요청</h2>
           <p className="mt-0.5 text-sm text-gray-500">
             {showAll
-              ? '이 고객사의 요청/업로드 흐름 전체를 보여줍니다. 상세 작업은 각 행에서 이동합니다.'
-              : '이 고객사의 최근 흐름만 5건까지 보여줍니다. 상세 작업은 각 행에서 이동합니다.'}
+              ? '이 사업장의 요청/업로드 흐름 전체를 보여줍니다. 상세 작업은 각 행에서 이동합니다.'
+              : '이 사업장의 최근 흐름만 5건까지 보여줍니다. 상세 작업은 각 행에서 이동합니다.'}
           </p>
         </div>
         {hasMoreItems ? (
@@ -224,7 +224,7 @@ export function ClientWorkContext({
 
       {recentItems.length === 0 ? (
         <div className="px-5 py-12 text-center text-sm text-gray-400">
-          아직 이 고객사에 생성된 요청이 없습니다.
+          아직 이 사업장에 생성된 요청이 없습니다.
         </div>
       ) : (
         <div className="overflow-x-auto">

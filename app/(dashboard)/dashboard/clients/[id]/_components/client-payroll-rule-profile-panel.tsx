@@ -36,7 +36,7 @@ export type PayrollRuleProfileView = {
     } | null
     rows: PayrollRuleDraftReviewRow[]
   } | null
-  /** 고객 또는 담당자가 올린 사내규정 자료(아직 초안 미생성 가능). */
+  /** 사업장 또는 담당자가 올린 사내규정 자료(아직 초안 미생성 가능). */
   clientSubmittedRuleDocuments: ClientSubmittedRuleDocument[]
 }
 
@@ -135,7 +135,7 @@ export function ClientPayrollRuleProfilePanel({
       <div className="border-b border-gray-100 px-5 py-4">
         <h2 className="font-semibold text-gray-950">사내급여기준 프로필</h2>
         <p className="mt-0.5 text-sm text-gray-500">
-          고객사 사내 급여 규칙을 승인된 기준으로 만들어 월 급여정산에 적용합니다. AI 초안은 담당자 승인 전에는 급여 계산에 적용되지 않습니다.
+          사업장 사내 급여 규칙을 승인된 기준으로 만들어 월 급여정산에 적용합니다. AI 초안은 담당자 승인 전에는 급여 계산에 적용되지 않습니다.
         </p>
       </div>
 

@@ -45,7 +45,7 @@ export function LedgerJournalEntryWorkspace({
         <div className="flex flex-wrap gap-2">
           <Link href={`/dashboard/clients/${clientId}#bookkeeping-ledger`} className={buttonVariants({ variant: 'outline' })}>
             <ArrowLeft className="size-4" />
-            고객사로 돌아가기
+            사업장으로 돌아가기
           </Link>
         </div>
       </div>

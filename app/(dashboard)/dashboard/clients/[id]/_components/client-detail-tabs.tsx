@@ -67,7 +67,7 @@ export function ClientDetailTabs({
   const TABS: { key: Tab; label: string; count: number }[] = [
     { key: 'requests', label: '최근 요청', count: recentCount },
     { key: 'cc', label: '참조 그룹', count: ccGroups.length },
-    { key: 'documents', label: '고객사 문서', count: documents.length },
+    { key: 'documents', label: '사업장 문서', count: documents.length },
     { key: 'payrollRule', label: '사내급여기준', count: payrollRuleProfile.total },
     { key: 'payrollLegalBasis', label: '법적기준', count: PAYROLL_LEGAL_BASIS_ROWS.length },
   ]
