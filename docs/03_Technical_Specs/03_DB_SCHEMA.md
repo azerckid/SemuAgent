@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-02 11:26
+> Last Updated: 2026-07-02 14:21
 
 ## 1. 목적 및 범위
 
@@ -54,17 +54,17 @@ tenant (로그인 주체 = 회사/대표)
 | 사업장 | `business_entity`(←`client`), `client_document`(←사업장 문서), `client_checklist`·`checklist_template`·`checklist_item`(수집 항목 정의) | 재정의 |
 | 자료수집 | `upload_session`, `upload_file`, `upload_item_declaration`, `request_item_validation`·`request_item_validation_file`(수집 검증) | 재사용 |
 | 기장검토 | `bookkeeping_material_attribution`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_transaction_purpose_request(_row)`, `bookkeeping_journal_entry_run/row/voucher/voucher_line`, `bookkeeping_fiscal_year_ledger`, `bookkeeping_ledger_month`, `analysis_run`, `material_match` | 재사용 |
-| 급여 | `payroll_excel_template`, `client_payroll_rule_profile(_source)`, `payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`, `payroll_excel_draft` | 재사용 |
+| 급여 | `payroll_excel_template`, `client_payroll_rule_profile(_source)`, `payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`, `payroll_excel_draft` + 아래 4.2 신규 | 재사용 + 신규 필요 |
 | 부가세 | (기존 전용 테이블 없음 — 아래 4.1 신규) | 신규 필요 |
-| 신고지원 | (기존 전용 테이블 없음 — 아래 4.2 신규) | 신규 필요 |
+| 신고지원 | (기존 전용 테이블 없음 — 아래 4.3 신규) | 신규 필요 |
 | 인프라/부가 | `audit_proof`, `cron_run`, `consultation_source_cache`, `adaptive_structure_model(_run)`, `review_attribution_saved_prompt` | 재사용 |
 | 결제(SaaS) | `billing_*`, `tenant_billing_profile`, `tenant_subscription` | 유지(테넌트 SaaS 과금, MVP UI 범위 밖) |
 
 ## 4. 신규 테이블 (설계 초안 — 화면 게이트에서 순차 확정)
 
-부가세·신고지원 화면은 기존 전용 테이블이 없다. 기장 확정 전표에서 파생 계산하되, 사용자 판정·상태를
-저장할 최소 테이블이 필요하다. 부가세 4.1은 JC-011 게이트에서 논리 컬럼을 확정했고,
-신고지원 4.2는 JC-013 게이트에서 구체화한다.
+부가세·급여·신고지원 화면은 기존 추출/전표 테이블만으로는 사용자 판정·마감·패키지 상태를
+안정적으로 표현하기 어렵다. 부가세 4.1은 JC-011 구현에서 물리 적용했고, 급여 4.2는
+JC-012 게이트에서 논리 컬럼을 확정했다. 신고지원 4.3은 JC-013 게이트에서 구체화한다.
 
 ### 4.1 부가세 (VAT) — JC-011 물리 스키마 적용
 
@@ -107,7 +107,68 @@ JC-011 구현은 아래 두 테이블을 `lib/db/schema.ts`와
 `vat_period_summary` snapshot에 저장한다. 향후 거래/전표에 세무 구분 태그가 추가되면
 파생 방식으로 전환할 수 있다.
 
-### 4.2 신고지원 (Filing Support)
+### 4.2 급여 (Payroll) — JC-012 게이트에서 물리 스키마 필요
+
+기존 `payroll_extraction_row`는 업로드/AI 추출 후보이고, Preview의 마감 가능한 급여대장과
+4대보험 고지액 매칭 상태를 담기에는 컬럼이 부족하다. JC-012 구현은 아래 테이블을
+`lib/db/schema.ts`와 신규 migration에 추가한 뒤 진행한다.
+
+#### `payroll_period_summary`
+
+사업장·귀속월별 급여 요약과 마감 상태.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id` | tenant + business_entity 범위 |
+| `payroll_period`, `payment_date` | 예: `2026-06`, 지급일 |
+| `employee_count`, `issue_count` | 직원 수·확인 필요 건수 |
+| `gross_pay_krw`, `withholding_tax_krw`, `social_insurance_krw`, `deduction_total_krw`, `net_pay_krw` | 급여 요약 |
+| `notice_import_status` | 4대보험 고지내역 상태(`missing`/`partial`/`matched`) |
+| `close_status`, `closed_by_staff_id`, `closed_at` | 급여 마감 |
+| `payslip_status`, `withholding_statement_status`, `insurance_statement_status` | 급여명세서·지급명세서·4대보험 자료 상태 |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+#### `payroll_employee_line`
+
+직원별 급여대장 실행 결과. 금액은 화면과 신고지원의 source of truth.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id`, `period_summary_id` | 범위 |
+| `source_batch_id`, `source_row_id`, `upload_session_id` | 추출 원천 |
+| `employee_code`, `employee_name`, `department`, `job_title`, `job_type` | 표시 최소 직원 정보 |
+| `base_salary_krw`, `allowance_krw`, `gross_pay_krw` | 지급 |
+| `income_tax_krw`, `local_income_tax_krw` | 원천세 |
+| `national_pension_krw`, `health_insurance_krw`, `long_term_care_krw`, `employment_insurance_krw` | 4대보험 근로자 부담액 |
+| `social_insurance_krw`, `deduction_total_krw`, `net_pay_krw` | 공제·실지급 |
+| `notice_match_status`, `notice_line_id` | 고지액 매칭 |
+| `status`, `issue_code`, `issue_message` | 확인 필요·준비·마감 |
+| `edited_by_staff_id`, `edited_at`, `created_at`, `updated_at` | 감사·동기화 |
+
+#### `payroll_insurance_notice_import`
+
+건강보험 EDI/사회보험 고지내역 파일 또는 수동 입력 묶음. 자격증명은 저장하지 않는다.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id`, `payroll_period` | 범위 |
+| `source_type` | `nhis_edi` / `social_insurance_portal` / `manual` |
+| `original_filename`, `storage_key`, `file_hash` | 원본 추적(private storage key는 UI 미노출) |
+| `status`, `imported_by_staff_id`, `imported_at` | 처리 상태 |
+
+#### `payroll_insurance_notice_line`
+
+고지내역의 직원별 보험료 라인. 주민등록번호 원문은 저장하지 않고 매칭 해시만 사용한다.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id`, `notice_import_id` | 범위 |
+| `employee_code`, `employee_name`, `match_key_hash` | 직원 매칭 |
+| `national_pension_krw`, `health_insurance_krw`, `long_term_care_krw`, `employment_insurance_krw` | 고지된 직원 부담액 |
+| `match_status`, `matched_employee_line_id` | 매칭 결과 |
+| `created_at`, `updated_at` | 감사·동기화 |
+
+### 4.3 신고지원 (Filing Support)
 - `filing_item` — 사업장·기간·신고종류(부가세/원천세/4대보험)별 패키지 상태(준비됨/대기/확인필요).
 - `filing_receipt` — 제출 접수증 보관(사용자 업로드, Vercel Blob storage key).
 - `filing_checklist_item` — 사후 체크리스트 항목·완료 상태.
@@ -123,6 +184,7 @@ JC-011 구현은 아래 두 테이블을 `lib/db/schema.ts`와
 
 ## 6. 구현 상태 및 미결(JC-005 구현 단계 확정 대상)
 - 완료: 부가세 신규 테이블의 물리 Drizzle migration·인덱스·FK는 JC-011 구현 PR에서 `0053_add_vat_tables.sql`로 적용.
+- 설계 완료: 급여 신규 테이블의 논리 컬럼은 [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md)에서 확정. 구현 PR에서 물리 migration 적용 예정.
 - 미결: `business_entity` 물리 rename 여부 및 마이그레이션 순서.
 - 미결: 신고지원 신규 테이블의 정확한 컬럼·인덱스·FK.
 - 미결: 과세기간(부가세 1기/2기·예정/확정) 표현 모델과 급여 귀속월·전표 기간의 정합.
@@ -135,4 +197,5 @@ JC-011 구현은 아래 두 테이블을 `lib/db/schema.ts`와
 - **Technical_Specs**: [Development Setup](./01_DEVELOPMENT_SETUP.md) - Drizzle/Turso 스택
 - **Technical_Specs**: [Component & Library Plan](./02_COMPONENT_LIBRARY_PLAN.md) - 화면 컴포넌트(데이터 소비처)
 - **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 신규 테이블·read model 구현 계약
+- **Technical_Specs**: [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 신규 테이블·고지액 매칭 구현 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-005(데이터 모델) 및 JC-006~013 착수 전제조건
