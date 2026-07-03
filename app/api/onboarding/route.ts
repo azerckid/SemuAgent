@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { createTenantSchema } from '@/lib/validations/match'
 import { createTenantWithOrg } from '@/lib/services/org-sync'
+import { ensureFirstRunSampleDataset } from '@/lib/first-run-sample/seed'
 import { requireSession } from '@/lib/auth-helpers'
 
 export async function POST(req: Request) {
   try {
-    await requireSession()
+    const session = await requireSession()
 
     const body = await req.json()
     const parsed = createTenantSchema.safeParse(body)
@@ -19,7 +20,16 @@ export async function POST(req: Request) {
       await headers(),
     )
 
-    return NextResponse.json({ orgId: org.id })
+    const sampleResult = await ensureFirstRunSampleDataset({
+      tenantId: org.id,
+      userId: session.user.id,
+      source: 'first_run_onboarding',
+    })
+    if (sampleResult.status === 'failed') {
+      console.error('[POST /api/onboarding] first-run sample seed failed', sampleResult.errorMessage)
+    }
+
+    return NextResponse.json({ orgId: org.id, sampleStatus: sampleResult.status })
   } catch (err) {
     console.error('[POST /api/onboarding]', err)
     const message = err instanceof Error ? err.message : '서버 오류'
