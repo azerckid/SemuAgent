@@ -1,6 +1,6 @@
 # SemuAgent Product Baseline
 > Created: 2026-07-01 17:55
-> Last Updated: 2026-07-03 20:10
+> Last Updated: 2026-07-04
 
 ## Purpose
 
@@ -43,12 +43,41 @@ and payment remain user-confirmed actions.
 
 ## MVP Non-Scope
 
-- Automatic Hometax submission.
+- Automatic Hometax submission. (MVP 제외이며 영구 제외가 아님 — 사용자 승인 기반
+  자동제출은 아래 Strategic Direction 및 Backlog JC-023의 로드맵 방향이다.)
 - Server-side storage of Hometax, bank, card, certificate, or password
   credentials.
 - Licensed tax-representative service positioning.
 - Direct financial transactions or tax payments without a separate reviewed
   integration design.
+
+## Strategic Direction (Post-MVP)
+
+MVP는 "홈택스 제출 보조(입력 가이드)"까지이고 자동제출은 하지 않는다. 다만
+"가이드/신고지원"은 **중간 단계**이며, SemuAgent의 최종 목표는 **사용자 승인 기반
+홈택스 자동제출**이다:
+
+- 사용자가 신고 내용을 최종 확인하고 승인하면,
+- SemuAgent가 **사용자 권한 범위 안에서** 홈택스 제출 절차를 자동으로 진행하고,
+- **접수증까지 자동으로 회수·보관**한다.
+
+즉 사용자 승인 기반 원클릭 홈택스 제출이 최종 제품 방향이다.
+
+### 원칙 (자동제출 설계 시 필수)
+
+- **사용자 최종 승인 필수** — 승인 없이는 어떤 제출도 진행하지 않는다.
+- **자격증명 원문 저장 금지** — 홈택스/공동인증서/비밀번호를 서버에 원문 저장하지 않는다.
+- **감사 로그 필수** — 모든 제출 시도·결과를 감사 로그로 남긴다.
+- **접수증 자동 보관** — 제출 후 접수증을 자동 회수·보관한다.
+
+### 조사 과제 (구현 전 선행)
+
+- 홈택스 전자신고 파일 규격
+- 파일변환신고 방식
+- 사용자 인증 기반 제출 자동화 가능성
+- 공식 API vs 비공개 연동 여부
+
+실행 항목: Backlog **JC-023** (Strategic Direction: 사용자 승인 기반 홈택스 자동제출).
 
 ## JARYO-GIWA Relationship
 

@@ -35,6 +35,7 @@
 | JC-020 | done | Fix signup-to-onboarding routing | `app/(auth)/sign-up`, `app/(auth)/sign-in`, `app/(dashboard)/layout.tsx`, `app/onboarding` | 신규 가입자가 tenant/organization이 없는 상태에서 깨진 dashboard/clients 화면으로 이동하지 않고 `/onboarding`으로 안내된다. 기존 tenant가 있는 사용자는 기존 대시보드 진입을 유지한다. **구현(2026-07-04)**: sign-up→`/onboarding`, sign-in은 org 있으면 setActive 후 dashboard·없으면 `/onboarding`, dashboard layout은 활성 테넌트 없으면 `/onboarding` redirect(깨진 children 렌더 제거), onboarding은 이미 org 있는 사용자를 setActive 후 dashboard로 자기교정. |
 | JC-021 | todo | Remove remaining JARYO brand residue from first-run UX | signup welcome modal, onboarding copy, domain suffix | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. |
 | JC-022 | todo | Refine settings screen product language | `app/(dashboard)/dashboard/settings`, `app/onboarding`, `app/api/settings` | 설정 화면의 개발자/상류 용어(`테넌트`, `.jaryo.kr`)를 사용자가 이해하는 회사/사업자 문맥으로 정리한다. 설정 정보구조는 회사 정보·담당자·업무메일·사업장 관리가 SemuAgent 제품 책임과 맞게 보이도록 재검토한다. |
+| JC-023 | todo | Strategic Direction: 사용자 승인 기반 홈택스 자동제출 | `lib/filing-support`, Hometax e-filing 규격, 인증·감사 로그 | **MVP 밖 로드맵/전략 방향** — [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) 참조. 사용자가 신고 내용을 최종 확인·승인하면 SemuAgent가 사용자 권한 범위 안에서 홈택스 제출을 자동 진행하고 접수증까지 자동 회수·보관한다. 현행 "홈택스 입력 가이드/신고지원(JC-013)"은 중간 단계. 원칙: 사용자 최종 승인 필수·자격증명 원문 저장 금지·감사 로그 필수·접수증 자동 보관. 착수 전 조사 필요(전자신고 파일 규격·파일변환신고·인증 기반 제출 자동화 가능성·공식 API vs 비공개 연동). 구현 착수 전 별도 technical brief·법무/보안 검토 필수. |
 
 ## Implementation Rule
 
@@ -367,6 +368,26 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 회사명, 담당자, 업무메일, 사업장 관리가 SemuAgent 책임 경계에 맞는 설명으로 정리된다.
   - [ ] 운영자 콘솔/DB 내부 식별자(`tenant_id`, `jaryo-admin`)는 사용자 설정 화면과 분리해 보존하거나 별도 PR에서 처리한다.
 - Document Sync Check: 2026-07-03 프로덕션 E2E 중 설정 화면에서 발견. 코드 변경은 후속 PR에서 처리하며, JC-021(first-run 브랜드 잔재)와 구현 범위가 겹치면 같은 PR에서 함께 처리 가능.
+
+### JC-023 · Strategic Direction: 사용자 승인 기반 홈택스 자동제출 — 로드맵/전략 방향 (MVP 밖)
+
+- Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — MVP는 자동제출 없음(Non-Scope), 최종 목표는 사용자 승인 기반 홈택스 자동제출
+- Related Domain: [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) — 현행 신고지원(JC-013)은 홈택스 입력 가이드까지의 중간 단계
+- Related HTML Preview: N/A - 로드맵/전략 항목. 구현 착수 시 별도 UI·technical brief 필요.
+- Prototype Review / 승인: N/A - MVP 밖 전략 방향. 구현 전 조사·설계·법무/보안 검토 선행.
+- Implementation Preconditions (조사 과제):
+  - [ ] 홈택스 전자신고 파일 규격 조사
+  - [ ] 파일변환신고 방식 조사
+  - [ ] 사용자 인증 기반 제출 자동화 가능성 조사
+  - [ ] 공식 API vs 비공개 연동 여부 결정
+  - [ ] 법무/보안 검토 — 대리 제출·자격증명 처리 경계, 세무대리 표현 회피
+- Acceptance Criteria (최종 목표 + 필수 원칙):
+  - [ ] 사용자가 신고 내용을 최종 확인·승인한 뒤에만 제출이 진행된다.
+  - [ ] 홈택스/공동인증서/비밀번호 등 자격증명 원문을 서버에 저장하지 않는다.
+  - [ ] 모든 제출 시도·결과가 감사 로그에 남는다.
+  - [ ] 제출 후 접수증을 자동으로 회수·보관한다.
+  - [ ] 자동제출은 사용자 권한 범위 안에서만 수행되며 세무대리로 포지셔닝하지 않는다.
+- Document Sync Check: 2026-07-04 전략 방향 등록. MVP 범위는 변경 없음(자동제출 없음, 홈택스 제출 보조). 본 항목은 조사·설계·검토 완료 후 구현 착수하며, 착수 시 별도 Pre-Code Brief/QA를 신설한다.
 
 > 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 인프라 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작). 2026-07-03 프로덕션 first-run E2E에서 발견된 신규 사용자 경험 후속은 JC-019(샘플 데이터 first-run), JC-020(가입 후 온보딩 라우팅), JC-021(브랜드 잔재 정리), JC-022(설정 화면 제품 언어 정리)로 등록했다.
 
