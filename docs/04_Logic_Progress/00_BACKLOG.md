@@ -247,7 +247,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 리마인드 연동에 필요한 `workEmail`/`notificationEnabled` 필드를 직원 명부에 보유한다. 실제 수신자 후보 사용은 JC-018 후속이다.
   - [x] 주민등록번호·계좌번호·전화번호 원문은 신규 명부 화면과 QA seed에 저장/노출하지 않는다.
   - [x] 로딩·빈·오류 상태가 화면에 구현된다.
-- Document Sync Check: Screen Flow 7 / UI Design 4.8 / Prototype Review / HTML Preview / DB Schema 4.4 / Employee Directory Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0056_add_employee_profile.sql`, `lib/employee-directory/summary.ts`, `lib/employee-directory/summary.test.ts`, `lib/validations/employees.ts`, `app/(dashboard)/dashboard/employees/page.tsx`, `_components/employee-directory-workspace.tsx`, `_components/employee-table.tsx`, `_components/employee-actions.tsx`, `_components/employee-directory-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/employees/route.ts`, `app/api/employees/[employeeId]/route.ts`.
+- Document Sync Check: Screen Flow 7 / UI Design 4.8 / Prototype Review / HTML Preview / DB Schema 4.4 / Employee Directory Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0056_add_employee_profile.sql`, `lib/employee-directory/summary.ts`, `lib/employee-directory/summary.test.ts`, `lib/validations/employee-directory.ts`, `app/(dashboard)/dashboard/employees/page.tsx`, `_components/employee-directory-workspace.tsx`, `_components/employee-table.tsx`, `_components/employee-actions.tsx`, `_components/employee-directory-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/employees/route.ts`, `app/api/employees/[employeeId]/route.ts`.
 
 ### JC-016 · Build internal reminder mail (내부 리마인드 메일) — 신규
 
