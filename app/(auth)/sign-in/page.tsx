@@ -28,8 +28,11 @@ export default function SignInPage() {
     const { data: orgs } = await organization.list()
     if (orgs && orgs.length > 0) {
       await organization.setActive({ organizationId: orgs[0].id })
+      router.push('/dashboard/clients')
+    } else {
+      // 회사(조직/테넌트)가 아직 없는 계정은 회사 등록(온보딩)으로 보낸다(JC-020).
+      router.push('/onboarding')
     }
-    router.push('/dashboard/clients')
   }
 
   return (

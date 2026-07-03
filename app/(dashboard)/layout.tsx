@@ -17,8 +17,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const tenantId = session.session.activeOrganizationId
 
+  // 활성 테넌트(회사)가 없으면 대시보드를 깨진 상태로 렌더하지 않고 회사 등록으로 보낸다(JC-020).
+  // 회사가 이미 있는 사용자는 온보딩 페이지가 setActive 후 대시보드로 되돌려 준다.
   if (!tenantId) {
-    return <>{children}</>
+    redirect('/onboarding')
   }
 
   let tenantName = ''

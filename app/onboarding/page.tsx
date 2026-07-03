@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { organization } from '@/lib/auth-client'
 
@@ -10,6 +10,30 @@ export default function OnboardingPage() {
   const [subdomain, setSubdomain] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // 이미 회사(조직/테넌트)가 있는 사용자가 여기로 오면(예: 활성 테넌트 미설정 상태로 진입),
+  // 회사 등록 폼을 보여주지 않고 setActive 후 대시보드로 되돌린다(JC-020).
+  const [checkingExisting, setCheckingExisting] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    organization
+      .list()
+      .then(async ({ data: orgs }) => {
+        if (!active) return
+        if (orgs && orgs.length > 0) {
+          await organization.setActive({ organizationId: orgs[0].id })
+          if (active) router.replace('/dashboard/clients')
+          return
+        }
+        setCheckingExisting(false)
+      })
+      .catch(() => {
+        if (active) setCheckingExisting(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,6 +61,14 @@ export default function OnboardingPage() {
       setError('서버 오류가 발생했습니다')
       setLoading(false)
     }
+  }
+
+  if (checkingExisting) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <p className="text-sm text-gray-500">확인 중…</p>
+      </div>
+    )
   }
 
   return (

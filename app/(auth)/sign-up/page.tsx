@@ -35,7 +35,9 @@ export default function SignUpPage() {
       return
     }
 
-    router.push('/dashboard/clients')
+    // 신규 가입자는 아직 회사(조직/테넌트)가 없으므로 회사 등록(온보딩)으로 보낸다.
+    // 곧바로 /dashboard/clients로 보내면 활성 테넌트가 없어 대시보드가 깨진다(JC-020).
+    router.push('/onboarding')
   }
 
   return (

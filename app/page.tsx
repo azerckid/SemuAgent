@@ -1,3 +1,7 @@
+import Link from "next/link"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
 const operatingFlow = [
   "자료 수집",
   "AI 분류·기장검토",
@@ -42,7 +46,18 @@ export default function Home() {
               SemuAgent는 증빙 수집, AI 분류, 기장검토, 부가세, 급여정산, 신고자료 패키지 생성을 한 흐름으로 묶습니다.
               회사 내부 담당자가 직접 확인하고 홈택스 제출을 준비할 수 있게 만드는 AI 세무 에이전트입니다.
             </p>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/sign-in" className={cn(buttonVariants(), "px-6")}>
+                로그인
+              </Link>
+              <Link
+                href="/sign-up"
+                className={cn(buttonVariants({ variant: "outline" }), "px-6")}
+              >
+                회원가입
+              </Link>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2">
               {operatingFlow.map((step) => (
                 <span
                   key={step}
