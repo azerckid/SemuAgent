@@ -1,10 +1,10 @@
-# JARYO Company Product Baseline
+# SemuDesk Product Baseline
 > Created: 2026-07-01 17:55
 > Last Updated: 2026-07-01 17:55
 
 ## Purpose
 
-JARYO Company helps a company run its own accounting and tax operation:
+SemuDesk helps a company run its own accounting and tax operation:
 
 `source collection -> classification/bookkeeping -> VAT calculation -> payroll -> review/approval -> filing-material package -> Hometax submission support -> receipt storage`
 
@@ -45,7 +45,7 @@ and dashboard UI.
 Every reused flow must be checked for operator mismatch:
 
 - `client` in JARYO-GIWA often means an accounting-firm customer company.
-- In JARYO Company, the company is the tenant/operator.
+- In SemuDesk, the company is the tenant/operator.
 - Email request and accountant approval flows usually become internal company
   review/approval flows.
 

@@ -98,7 +98,7 @@ type CompanyHomeSummary = {
 
 명시적 제외: 회사 홈 구현에서 `request_template`, `client_request_schedule`,
 `client_request_event`, `outbound_email`, `inbound_email`, `staff_mailbox` 계열은 읽지
-않는다. 이 테이블들은 GIWA 회계사무소 요청·메일 흐름이며 JARYO Company v1 책임
+않는다. 이 테이블들은 GIWA 회계사무소 요청·메일 흐름이며 세무데스크 v1 책임
 경계와 맞지 않는다.
 
 ## 5. Derivation Rules

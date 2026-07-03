@@ -1,4 +1,4 @@
-# JARYO Company MVP QA Baseline
+# SemuDesk MVP QA Baseline
 > Created: 2026-07-01 17:57
 > Last Updated: 2026-07-01 17:57
 

@@ -50,7 +50,7 @@ export function Sidebar({
           자
         </div>
         <div className="min-w-0">
-          <p className="truncate text-[15px] font-semibold tracking-tight">JARYO Company</p>
+          <p className="truncate text-[15px] font-semibold tracking-tight">SemuDesk</p>
           <p className="truncate text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
         </div>
       </div>

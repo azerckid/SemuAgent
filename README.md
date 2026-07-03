@@ -1,8 +1,8 @@
-# JARYO Company
+# SemuDesk
 
 Company-facing accounting and tax operations SaaS.
 
-JARYO Company reuses the proven JARYO-GIWA codebase, but changes the product
+SemuDesk reuses the proven JARYO-GIWA codebase, but changes the product
 operator from an accounting firm to the company itself. The goal is to help a
 company collect evidence, classify transactions, prepare bookkeeping entries,
 calculate VAT and payroll, review the results, and generate filing materials

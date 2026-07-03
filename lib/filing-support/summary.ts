@@ -134,7 +134,7 @@ type FilingItemOverride = {
 const DEFAULT_TZ = 'Asia/Seoul'
 
 export const FILING_RESPONSIBILITY = {
-  title: 'JARYO Company는 신고서 제출을 대행하지 않습니다.',
+  title: '세무데스크는 신고서 제출을 대행하지 않습니다.',
   description: '첨부 패키지 생성과 홈택스 단계별 입력 가이드까지 지원하며, 실제 제출과 납부는 회사가 홈택스에서 직접 진행하고 접수증만 보관합니다.',
 } as const
 
