@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-03 20:24
+> Last Updated: 2026-07-03 23:50
 
 ## Status Legend
 
@@ -31,6 +31,10 @@
 | JC-016 | done | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 내부 staff/본인 수신 기반 리마인드 read model·화면·토글/테스트 발송/즉시 발송 API·0057 migration 구현 완료. Vercel Cron 자동 예약은 JC-017, 직원 명부 기반 직원 수신은 JC-018 후속 |
 | JC-017 | todo | Schedule internal reminder cron | `app/api/cron/reminder`, `vercel.json`, `lib/internal-reminders` | Vercel Cron이 신규 내부 리마인드 발송 흐름을 실행한다. 레거시 세션/outboundEmail 기반 cron과 회사 v1 내부 리마인드 책임을 분리하고, idempotency·발송 로그·provider missing 처리를 검증한다. |
 | JC-018 | todo | Connect employee directory recipients to reminders | `lib/internal-reminders`, `lib/employee-directory`, `employee_profile` | `employee_profile.work_email`과 `notification_enabled`를 내부 리마인드 수신자 후보로 연결한다. 직원 수신자는 비활성/이메일 없음/알림 꺼짐 상태를 제외하고, 기존 담당자 본인·staff 수신 정책과 충돌하지 않는다. |
+| JC-019 | todo | Provide first-run sample workspace data | onboarding, approved previews, workspace read models | 신규 테넌트가 가입 직후 승인 Preview와 같은 샘플 업무 데이터를 보고 메뉴 구조를 이해할 수 있다. 샘플 데이터는 명확히 표시되고, 실사용 전 사용자가 한 번에 삭제할 수 있어야 한다. |
+| JC-020 | todo | Fix signup-to-onboarding routing | `app/(auth)/sign-up`, `app/onboarding`, auth/tenant guards | 신규 가입자가 tenant/organization이 없는 상태에서 깨진 dashboard/clients 화면으로 이동하지 않고 `/onboarding`으로 안내된다. 기존 tenant가 있는 사용자는 기존 대시보드 진입을 유지한다. |
+| JC-021 | todo | Remove remaining JARYO brand residue from first-run UX | signup welcome modal, onboarding copy, domain suffix | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. |
+| JC-022 | todo | Refine settings screen product language | `app/(dashboard)/dashboard/settings`, `app/onboarding`, `app/api/settings` | 설정 화면의 개발자/상류 용어(`테넌트`, `.jaryo.kr`)를 사용자가 이해하는 회사/사업자 문맥으로 정리한다. 설정 정보구조는 회사 정보·담당자·업무메일·사업장 관리가 SemuAgent 제품 책임과 맞게 보이도록 재검토한다. |
 
 ## Implementation Rule
 
@@ -279,7 +283,90 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 로딩·빈·오류·provider missing 상태가 구현된다.
 - Document Sync Check: Screen Flow 8 / UI Design 4.9 / Prototype Review / HTML Preview / DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0057_add_internal_reminder_tables.sql`, `lib/internal-reminders/summary.ts`, `lib/internal-reminders/send.ts`, `lib/internal-reminders/summary.test.ts`, `lib/internal-reminders/send.test.ts`, `lib/validations/internal-reminders.ts`, `app/(dashboard)/dashboard/reminders/page.tsx`, `_components/internal-reminders-workspace.tsx`, `_components/reminder-actions.tsx`, `_components/internal-reminders-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/internal-reminders/rules/[ruleId]/route.ts`, `app/api/internal-reminders/rules/[ruleId]/test-send/route.ts`, `app/api/internal-reminders/send-now/route.ts`, `app/(dashboard)/_components/sidebar.tsx`, `app/(dashboard)/layout.tsx`.
 
-> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작).
+### JC-019 · Provide first-run sample workspace data (첫 가입 샘플 데이터) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 신규 사용자가 회사 셀프사용 흐름을 이해하도록 돕는 온보딩 경험
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md)
+- Related HTML Preview: [00_company_home.html](../02_UI_Screens/previews/00_company_home.html) · [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html) · [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html) · [03_vat.html](../02_UI_Screens/previews/03_vat.html) · [04_payroll.html](../02_UI_Screens/previews/04_payroll.html) · [05_filing_support.html](../02_UI_Screens/previews/05_filing_support.html) · [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html) · [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html)
+- Related Technical Docs: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Company Home Pre-Code Brief](../03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md) · [Source Collection Pre-Code Brief](../03_Technical_Specs/05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) · [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) · [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)
+- Related QA Docs: [Company Home Test Scenarios](../05_QA_Validation/02_COMPANY_HOME_TEST_SCENARIOS.md) · [Source Collection Test Scenarios](../05_QA_Validation/03_SOURCE_COLLECTION_TEST_SCENARIOS.md) · [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) · [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) · [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) · [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md)
+- Prototype Review / 승인: 기존 8개 승인 Preview의 데이터 서사를 first-run 샘플 seed 기준으로 재사용한다. 샘플 데이터 생성/삭제 UI 자체는 구현 전 별도 Preview 또는 UI Design 보강 필요.
+- Implementation Preconditions:
+  - [ ] 샘플 데이터 정책 확정 — 온보딩 완료 시 자동 생성 vs. 사용자가 선택하는 "샘플 데이터 보기" 버튼
+  - [ ] 샘플 데이터 삭제 범위 확정 — 샘플 행만 삭제하고 실데이터는 보존하는 tenant-scoped cleanup 규칙
+  - [ ] 모든 샘플 행 식별 방식 확정 — `sample` flag, seed batch id, visible badge/notice 중 선택
+  - [ ] Preview 데이터와 실제 seed 데이터의 수치 정합표 작성
+  - [ ] 샘플 생성/삭제 QA 시나리오 추가
+- Acceptance Criteria:
+  - [ ] 신규 tenant는 가입/온보딩 직후 승인 Preview와 유사한 채워진 화면을 볼 수 있다.
+  - [ ] 샘플 데이터는 화면에서 명확히 표시되어 실데이터와 혼동되지 않는다.
+  - [ ] 사용자는 실사용 전 샘플 데이터를 한 번에 삭제할 수 있다.
+  - [ ] 샘플 삭제는 같은 tenant의 샘플 데이터에만 작동하고, 실제 업로드/급여/신고 데이터는 삭제하지 않는다.
+  - [ ] 기존 tenant나 이미 실데이터가 있는 tenant에는 샘플 데이터가 자동 재생성되지 않는다.
+- Document Sync Check: 2026-07-03 프로덕션 first-run E2E에서 발견된 제품 후속. 현재는 backlog 등록 단계이며, 구현 착수 전 UI/기술 brief/QA 보강 필요.
+
+### JC-020 · Fix signup-to-onboarding routing (가입 후 온보딩 라우팅) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 회사 사용자가 자기 사업자 회사를 먼저 등록해야 하는 멀티테넌트 구조
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: N/A - 기존 Preview는 로그인 후 워크스페이스 중심이며, auth/onboarding first-run 라우팅은 프로덕션 E2E에서 발견된 버그성 흐름이다.
+- Related Technical Docs: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [DB Schema 2.1](../03_Technical_Specs/03_DB_SCHEMA.md) · [Company Home Pre-Code Brief](../03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md)
+- Related QA Docs: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md) · [Company Home Test Scenarios](../05_QA_Validation/02_COMPANY_HOME_TEST_SCENARIOS.md) S-70~S-71(미인증/tenant 미소속 상태)
+- Prototype Review / 승인: N/A - 사용자 프로덕션 E2E 중 확인된 신규 가입 라우팅 버그. 구현 전 auth/onboarding flow를 짧은 technical brief 또는 QA case로 보강한다.
+- Implementation Preconditions:
+  - [ ] 신규 가입 직후 no-tenant/no-organization 상태의 라우팅 계약 확정
+  - [ ] Better Auth organization/session 생성 타이밍과 `requireTenantSession` 실패 경로 확인
+  - [ ] `/dashboard/clients` 진입 전 tenant 없음 상태를 `/onboarding`으로 redirect하는 위치 결정
+  - [ ] signup success path 회귀 테스트 또는 browser smoke 추가
+- Acceptance Criteria:
+  - [ ] 신규 가입자가 tenant/organization 없이 인증된 상태가 되면 `/onboarding`으로 이동한다.
+  - [ ] 기존 tenant가 있는 사용자는 로그인 후 기존 대시보드/회사 홈으로 이동한다.
+  - [ ] 첫 가입자가 `/dashboard/clients`에서 "현황 로드 실패" 상태를 먼저 보지 않는다.
+  - [ ] 온보딩 완료 후 tenant/member/client 생성 흐름은 기존처럼 정상 동작한다.
+- Document Sync Check: 2026-07-03 프로덕션 E2E에서 회원가입 성공 후 `organization=0`, `tenant=0` 상태로 dashboard/clients에 진입하며 오류가 보인 사실을 근거로 등록.
+
+### JC-021 · Remove remaining JARYO brand residue from first-run UX (첫 가입 브랜드 잔재 정리) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — SemuAgent 제품 정체성과 책임 경계
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: N/A - 문제 표면은 signup welcome modal/onboarding copy로, 기존 워크스페이스 Preview 범위 밖이다. 필요 시 auth/onboarding preview를 추가한다.
+- Related Technical Docs: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
+- Related QA Docs: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md)
+- Prototype Review / 승인: N/A - 2026-07-03 프로덕션 첫 가입 화면에서 발견된 브랜드 잔재. 상류 JARYO-GIWA 이력 문구는 보존하고, 사용자 first-run 노출 문구만 정리한다.
+- Implementation Preconditions:
+  - [ ] 프로덕션 first-run 노출 표면 전수 검색 — signup, sign-in, onboarding, welcome modal, metadata, email sender, domain suffix
+  - [ ] `JARYO beta`, `JARYO Company`, `SemuDesk`, `.jaryo.kr` 잔재를 SemuAgent 정책에 맞게 분류
+  - [ ] `jaryo-admin`/`JARYO_ADMIN_EMAILS`는 운영자 콘솔 식별자 유지 여부를 JC-014/운영자 콘솔 정책과 별도 결정
+  - [ ] 브라우저 smoke로 신규 가입→온보딩 copy 확인
+- Acceptance Criteria:
+  - [ ] 가입 직후 welcome modal은 SemuAgent 문맥과 카피를 사용한다.
+  - [ ] 온보딩 서브도메인 suffix는 `.jaryo.kr`로 노출되지 않는다. SemuAgent 도메인 또는 중립 문구로 교체한다.
+  - [ ] 첫 가입/온보딩 사용자가 보는 표면에 `JARYO Company`, `JARYO beta`, `SemuDesk` 잔재가 없다.
+  - [ ] JARYO-GIWA 출처 기록과 운영자 콘솔 식별자는 제품 first-run UX와 구분해 보존 또는 별도 PR로 처리한다.
+- Document Sync Check: 2026-07-03 프로덕션 E2E에서 `JARYO beta` 모달과 `.jaryo.kr` suffix가 발견되어 등록. 코드 변경은 후속 PR에서 처리.
+
+### JC-022 · Refine settings screen product language (설정 화면 제품 언어 정리) — 신규
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 소규모 회사가 직접 쓰는 세무 보조 제품 문맥
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: N/A - 설정 화면은 기존 승인 workspace Preview 범위 밖이며, 프로덕션 E2E에서 실제 설정 화면을 보고 발견한 UX/용어 후속이다. 필요 시 settings preview를 추가한다.
+- Related Technical Docs: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) · [DB Schema 2.1](../03_Technical_Specs/03_DB_SCHEMA.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
+- Related QA Docs: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md)
+- Prototype Review / 승인: N/A - 현재 설정 화면의 `테넌트 설정`, `테넌트 정보`, `.jaryo.kr` suffix가 사용자 언어와 맞지 않는다는 프로덕션 E2E 관찰에 기반한다.
+- Implementation Preconditions:
+  - [ ] 설정 화면 노출 문구 전수 검색 — `app/(dashboard)/dashboard/settings/page.tsx`, `settings-panel.tsx`, `app/api/settings/*` 오류 메시지
+  - [ ] `테넌트` UI 표기를 사용자 언어로 확정 — 예: `회사 설정`, `회사 정보`, `운영 회사`
+  - [ ] 서브도메인 표시 정책 확정 — 실제 SemuAgent 도메인, neutral preview, 또는 숨김/읽기 전용 설명
+  - [ ] `업무메일 설정` 탭이 JC-016 내부 리마인드와 중복/혼동되지 않는지 검토
+  - [ ] 설정 화면 browser smoke 또는 정적 텍스트 회귀 테스트 추가
+- Acceptance Criteria:
+  - [ ] 설정 화면 탭과 부제에서 개발자 용어 `테넌트`가 사용자에게 보이는 문구로 노출되지 않는다.
+  - [ ] 서브도메인 읽기 전용 필드가 `.jaryo.kr`로 표시되지 않는다.
+  - [ ] 회사명, 담당자, 업무메일, 사업장 관리가 SemuAgent 책임 경계에 맞는 설명으로 정리된다.
+  - [ ] 운영자 콘솔/DB 내부 식별자(`tenant_id`, `jaryo-admin`)는 사용자 설정 화면과 분리해 보존하거나 별도 PR에서 처리한다.
+- Document Sync Check: 2026-07-03 프로덕션 E2E 중 설정 화면에서 발견. 코드 변경은 후속 PR에서 처리하며, JC-021(first-run 브랜드 잔재)와 구현 범위가 겹치면 같은 PR에서 함께 처리 가능.
+
+> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 인프라 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작). 2026-07-03 프로덕션 first-run E2E에서 발견된 신규 사용자 경험 후속은 JC-019(샘플 데이터 first-run), JC-020(가입 후 온보딩 라우팅), JC-021(브랜드 잔재 정리), JC-022(설정 화면 제품 언어 정리)로 등록했다.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위
