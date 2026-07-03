@@ -1,15 +1,15 @@
-# JARYO Company Agent Instructions
+# SemuDesk Agent Instructions
 > Created: 2026-07-01
 
 ## 1. Project Summary
 
-JARYO Company is a company-facing accounting and tax operations SaaS.
+SemuDesk is a company-facing accounting and tax operations SaaS.
 It helps a company collect its own source documents, classify transactions,
 prepare bookkeeping entries, calculate VAT and payroll, review/approve the
 results, and generate the materials needed for Hometax submission.
 
 This is not the same product as JARYO-GIWA. JARYO-GIWA is the accounting-firm
-workflow for managing client documents. JARYO Company is for a company's
+workflow for managing client documents. SemuDesk is for a company's
 representative, finance staff, or operations staff to run the workflow directly.
 
 ## 2. Source Reuse Policy

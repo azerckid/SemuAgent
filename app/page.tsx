@@ -34,7 +34,7 @@ export default function Home() {
       <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-center px-6 py-12 sm:px-10 lg:px-12">
         <div className="grid gap-12 lg:grid-cols-[1fr_0.9fr] lg:items-center">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold text-primary">JARYO Company</p>
+            <p className="text-sm font-semibold text-primary">SemuDesk</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-normal text-foreground sm:text-5xl">
               회사가 직접 운영하는 회계·세무 처리 시스템
             </h1>

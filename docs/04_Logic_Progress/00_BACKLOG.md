@@ -1,4 +1,4 @@
-# JARYO Company Backlog
+# SemuDesk Backlog
 > Created: 2026-07-01 17:57
 > Last Updated: 2026-07-03 14:41
 

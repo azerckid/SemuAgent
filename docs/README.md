@@ -1,8 +1,8 @@
-# JARYO Company Docs
+# SemuDesk Docs
 > Created: 2026-07-01 17:50
 > Last Updated: 2026-07-01 22:55
 
-This documentation set defines JARYO Company, the company-facing version of
+This documentation set defines SemuDesk, the company-facing version of
 JARYO.
 
 ## Layers

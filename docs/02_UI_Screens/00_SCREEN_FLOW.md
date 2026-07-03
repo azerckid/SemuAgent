@@ -1,4 +1,4 @@
-# JARYO Company Screen Flow
+# SemuDesk Screen Flow
 > Created: 2026-07-01 19:40
 > Last Updated: 2026-07-02
 

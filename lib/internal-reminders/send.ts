@@ -74,7 +74,7 @@ export function composeInternalReminderEmail(params: {
     `업무 영역: ${params.rule.domainLabel}`,
     `회사: ${params.companyName}`,
     '',
-    '이 메일은 JARYO Company 내부 업무 리마인드입니다.',
+    '이 메일은 세무데스크 내부 업무 리마인드입니다.',
     '고객사 요청 메일, 자동 홈택스 제출, 자동 납부 기능이 아닙니다.',
   ].join('\n')
   const html = text
