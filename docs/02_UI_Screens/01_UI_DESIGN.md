@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-04 00:20
 
 ## 1. 디자인 방향
 
@@ -179,6 +179,21 @@
 - 세무 일정(마감 D-day)·확인 필요 상태를 담당자 본인에게 리마인드하는 자가 알림이 v1 핵심 흐름이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
+### 4.10 First-run Sample Data (JC-019)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| SampleDataBanner | 모든 dashboard 화면 상단에서 샘플 데이터임을 고지 | active / creating / failed / deleting |
+| SampleDataBadge | 주요 heading·table caption에 샘플 표시 보조 | muted + warn accent |
+| DeleteSampleDataDialog | 샘플 전체 삭제 확인 | 실제 데이터 보존 설명 + confirm/cancel |
+| SampleRetryAction | 샘플 생성 실패 시 재시도 | secondary button + 오류 문구 |
+
+- banner 필수 문구: "샘플 데이터로 보는 화면입니다" / "실제 신고 전에 샘플을 삭제하고 회사 자료를 업로드하세요".
+- CTA: "샘플 데이터 삭제하고 실제 사용 시작". 파괴적 성격이 있으므로 확인 dialog를 반드시 거친다.
+- 삭제 dialog는 "샘플 데이터만 삭제", "실제 업로드·급여·신고 데이터 보존", "삭제 후 자동 재생성 없음"을 명시한다.
+- 기존 8개 승인 Preview의 채워진 화면을 first-run sample 목표 상태로 사용한다. 별도 신규 HTML Preview는 만들지 않고, 이 섹션과 [First-run Sample Data Pre-Code Brief](../03_Technical_Specs/12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md)를 구현 계약으로 삼는다.
+- 상태칩·버튼·dialog는 기존 shadcn `card`/`badge`/`button`/`dialog`를 재사용한다.
+
 ## 5. 핵심 CTA 우선순위
 
 **회사 홈**
@@ -211,6 +226,11 @@
 2. "가이드 값 복사" (홈택스 직접 입력 보조, 자동 제출 아님)
 3. 접수증 업로드, 사후 체크리스트 체크
 
+**First-run Sample**
+1. 전역 banner의 "샘플 데이터 삭제하고 실제 사용 시작"
+2. 삭제 확인 dialog의 최종 confirm
+3. 샘플 생성 실패 시 "샘플 데이터 다시 만들기"
+
 ## 6. HTML UI Preview
 
 - Preview (회사 홈): [00_company_home.html](./previews/00_company_home.html)
@@ -241,3 +261,5 @@
 - **QA_Validation**: [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) - 급여 구현 검증 시나리오
 - **QA_Validation**: [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md) - 직원 명부 구현 검증 시나리오
 - **QA_Validation**: [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md) - 내부 리마인드 구현 검증 시나리오
+- **Technical_Specs**: [First-run Sample Data Pre-Code Brief](../03_Technical_Specs/12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) - 샘플 banner/delete UI 계약
+- **QA_Validation**: [First-run Sample Data Test Scenarios](../05_QA_Validation/10_FIRST_RUN_SAMPLE_DATA_TEST_SCENARIOS.md) - 샘플 생성·표시·삭제 검증 시나리오

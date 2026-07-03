@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-03
+> Last Updated: 2026-07-04 00:20
 
 ## 1. 목적 및 범위
 
@@ -162,6 +162,20 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 자동 홈택스 제출·자동 납부·홈택스/EDI 자격증명 저장 UI는 만들지 않는다. 책임 경계 배너와 하단 안내에서 사용자가 직접 제출/납부함을 명시한다.
 - 접수증은 private storage에 저장하고 화면에는 안전한 파일명·제출일·보관 상태만 표시한다. `storageKey`/Blob URL은 렌더하지 않는다.
 
+### 7.7 First-run Sample Data (UI Design 4.10)
+
+| 화면 컴포넌트 | 구현 방식 | 기반 |
+|:---|:---|:---|
+| SampleDataBanner | 공용 `SampleDataBanner` | `card` + `badge` + `button` |
+| SampleDataBadge | 공용 `SampleDataBadge` | `badge` |
+| DeleteSampleDataDialog | 공용 `DeleteSampleDataDialog` | `dialog` + `button` |
+| SampleRetryAction | 공용 `SampleRetryAction` | `button` + `sonner` |
+
+- 신규 shadcn 없음. 기존 `card`/`badge`/`button`/`dialog`/`sonner` 재사용.
+- 모든 dashboard workspace shell에서 같은 banner를 사용한다(DRY).
+- 삭제 버튼은 destructive copy를 쓰되, 실제 색은 제품 톤을 해치지 않도록 muted danger accent로 제한한다.
+- 구현 계약은 [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md)를 따른다.
+
 ## 8. Library Plan
 
 ### 8.1 이미 설치됨 — 재사용 (신규 설치 없음)
@@ -202,6 +216,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 부가세 Pre-Code Brief: [07_VAT_PRE_CODE_BRIEF.md](./07_VAT_PRE_CODE_BRIEF.md) (JC-011 구현·머지 완료).
 - 급여 Pre-Code Brief: [08_PAYROLL_PRE_CODE_BRIEF.md](./08_PAYROLL_PRE_CODE_BRIEF.md) (JC-012 구현·머지 완료).
 - 신고지원 Pre-Code Brief: [09_FILING_SUPPORT_PRE_CODE_BRIEF.md](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) (JC-013 게이트 완료, 구현 PR에서 물리 migration·workspace 적용).
+- First-run Sample Data Pre-Code Brief: [12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) (JC-019 게이트 완료 후 구현 PR에서 migration·seed/delete API 적용).
 
 ## 11. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -215,4 +230,5 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 세액 집계·공제 검토·패키지 잠금 계약
 - **Technical_Specs**: [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md) - 급여대장·고지액 매칭·마감 잠금 계약
 - **Technical_Specs**: [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) - 신고 항목·입력 가이드·접수증 보관 계약
+- **Technical_Specs**: [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) - 샘플 banner/dialog 컴포넌트 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009/JC-010/JC-011/JC-012/JC-013 Context Lock

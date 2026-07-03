@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-04 00:20
 
 ## 1. 목적 및 범위
 
@@ -76,6 +76,7 @@ tenant (로그인 주체 = 회사/대표)
 | 신고지원 | (기존 전용 테이블 없음 — 아래 4.3 신규) | 신규 필요 |
 | 직원 명부 | (기존 전용 직원 마스터 없음 — 아래 4.4 신규 후보) | 신규 필요 |
 | 내부 리마인드 | (GIWA 이메일 요청 테이블은 v1 제외 — 아래 4.5 신규 후보) | 신규 필요 |
+| 첫 가입 샘플 데이터 | (기존 전용 테이블 없음 — 아래 4.6 신규 후보) | 신규 필요 |
 | 인프라/부가 | `audit_proof`, `cron_run`, `consultation_source_cache`, `adaptive_structure_model(_run)`, `review_attribution_saved_prompt` | 재사용 |
 | 결제(SaaS) | `billing_*`, `tenant_billing_profile`, `tenant_subscription` | 유지(테넌트 SaaS 과금, MVP UI 범위 밖) |
 
@@ -84,7 +85,7 @@ tenant (로그인 주체 = 회사/대표)
 부가세·급여·신고지원 화면은 기존 추출/전표 테이블만으로는 사용자 판정·마감·패키지 상태를
 안정적으로 표현하기 어렵다. 부가세 4.1은 JC-011 구현에서 물리 적용했고, 급여 4.2는
 JC-012 구현에서 물리 적용했다. 신고지원 4.3은 JC-013 구현에서 물리 적용했다.
-직원 명부 4.4와 내부 리마인드 4.5는 후속 게이트(JC-015/JC-016)에서 논리 초안을 먼저 확정한다.
+직원 명부 4.4와 내부 리마인드 4.5는 JC-015/JC-016에서 물리 적용했다. 첫 가입 샘플 데이터 4.6은 JC-019 구현에서 물리 적용한다.
 
 ### 4.1 부가세 (VAT) — JC-011 물리 스키마 적용
 
@@ -330,6 +331,43 @@ index(`tenant_id`, `client_id`, `status`), index(`tenant_id`, `client_id`, `doma
 
 자동 홈택스 제출·자동 납부·외부 고객 요청 메일은 비범위다.
 
+### 4.6 첫 가입 샘플 데이터 (First-run Sample Data) — JC-019 설계 확정
+
+첫 가입 샘플 데이터는 신규 tenant가 승인 Preview와 같은 채워진 화면을 보도록 만드는 학습용 데이터 묶음이다. 샘플 행은 실데이터와 같은 도메인 테이블에 생성하되, 삭제 경계는 별도 registry로 관리한다. 도메인 테이블마다 `is_sample` 컬럼을 추가하지 않는다.
+
+#### `sample_dataset`
+
+tenant·사업장별 샘플 데이터 묶음과 상태.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id` | tenant + businessEntity 범위 |
+| `source` | `first_run_onboarding` / `manual_retry` |
+| `status` | `creating` / `active` / `delete_pending` / `deleted` / `failed` |
+| `seed_version` | seed fixture 버전. Preview 수치 변경 시 갱신 |
+| `period_key`, `payroll_period_key` | 샘플 기준 기간(`2026-H1`, `2026-06`) |
+| `created_by_user_id`, `created_by_staff_id` | 생성 주체 감사 |
+| `error_message` | 생성/삭제 실패 사유 |
+| `created_at`, `updated_at`, `deleted_at` | 감사·동기화 |
+
+권장 인덱스: unique active dataset per tenant/client(`tenant_id`, `client_id`, active 상태), index(`tenant_id`, `client_id`, `status`).
+
+#### `sample_entity_ref`
+
+샘플 seed가 생성한 실제 domain row를 추적하는 registry. 삭제는 이 registry와 서버 whitelist에 있는 테이블만 대상으로 한다.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `id`, `tenant_id`, `client_id`, `sample_dataset_id` | 범위와 dataset 연결 |
+| `entity_table` | whitelist된 물리 테이블명 |
+| `entity_id` | 생성된 domain row id |
+| `delete_order` | 자식 테이블부터 삭제하기 위한 순서 |
+| `created_at` | 감사 |
+
+권장 인덱스: unique(`tenant_id`, `client_id`, `sample_dataset_id`, `entity_table`, `entity_id`), index(`sample_dataset_id`, `delete_order`).
+
+삭제 규칙: `sample_entity_ref`에 없는 행은 삭제하지 않는다. 실제 업로드 파일 원본·Blob storage key·홈택스/은행/카드/EDI 자격증명은 sample seed 대상이 아니다.
+
 ## 5. 명명·마이그레이션 방침 (JC-005 확정)
 
 - 물리 테이블명 즉시 rename(`client` → `business_entity`)은 마이그레이션·코드 영향이 크다.
@@ -345,6 +383,7 @@ index(`tenant_id`, `client_id`, `status`), index(`tenant_id`, `client_id`, `doma
 - 구현 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정했고, `0055_add_filing_support_tables.sql`로 물리 migration을 적용했다.
 - 구현 완료: 직원 명부 논리 컬럼은 [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)에서 확정했고, `0056_add_employee_profile.sql`로 물리 migration을 적용했다.
 - 구현 완료: 내부 리마인드 메일 논리 컬럼은 [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)에서 확정했고, `0057_add_internal_reminder_tables.sql`로 물리 migration을 적용했다.
+- 설계 확정: 첫 가입 샘플 데이터는 [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) 기준 `sample_dataset` + `sample_entity_ref` registry 모델로 구현한다. 물리 migration은 JC-019 구현 PR에서 적용한다.
 - 확정: `business_entity` 물리 rename은 지연한다. v1은 물리명 `client`/`client_id`를 유지하고 개념명만 business entity로 사용한다.
 - 확정: 기간 표현은 도메인별 canonical을 유지한다(부가세·신고 반기 `YYYY-H1/H2`, 급여 월 `YYYY-MM`, 전표 회계연도+월, 신고지원 dual-key 브리지).
 - 후속 범위: v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭)는 현재 제품 노출 범위 밖이며, 즉시 migration 대상이 아니다.
@@ -360,4 +399,5 @@ index(`tenant_id`, `client_id`, `status`), index(`tenant_id`, `client_id`, `doma
 - **Technical_Specs**: [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) - 신고지원 신규 테이블·책임 경계 구현 계약
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 마스터·급여/리마인드 참조 계약
 - **Technical_Specs**: [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) - 내부 리마인드 메일·발송 로그 계약
+- **Technical_Specs**: [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) - 샘플 데이터 registry·삭제 경계 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-005(데이터 모델) 및 JC-006~016 착수 전제조건

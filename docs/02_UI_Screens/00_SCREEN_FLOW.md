@@ -1,6 +1,6 @@
 # SemuAgent Screen Flow
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-04 00:20
 
 ## 1. 범위
 
@@ -23,6 +23,8 @@
 
 ```
 로그인
+  ├─▶ 신규 tenant 온보딩 완료
+  │     └─ first-run sample dataset 자동 생성(샘플 표시 banner)
   └─▶ 회사 홈 (첫 진입 = 대시보드, 마케팅 페이지 아님)
         ├─ 현재 회계기간 상태 확인
         ├─ "다음 할 일"(신고 전 blockers)에서 액션 선택
@@ -167,6 +169,27 @@
 
 신고지원은 **패키지 생성·접수증 보관·체크리스트 갱신 mutation이 발생**한다. 실제 제출/납부는 회사가 홈택스에서 직접 수행한다.
 
+## 4h. First-run Sample Data 흐름 및 데이터
+
+목적: 신규 사용자가 가입 직후 빈 화면 대신 승인 Preview와 유사한 샘플 업무 상태를 보고 메뉴 구조를 이해한다.
+
+```
+온보딩 완료 ──sample seed──▶ 회사 홈/각 워크스페이스(sample active)
+       │                              │
+       │                              └─▶ "샘플 데이터 삭제하고 실제 사용 시작"
+       │                                             │
+       └────────────── seed 실패 시 재시도 안내 ◀─────┘
+```
+
+| 항목 | 입력 | 표시 | 저장/전송 |
+|:---|:---|:---|:---|
+| 샘플 생성 | 신규 tenant·사업장 | 승인 Preview와 유사한 채워진 상태 | sample dataset + domain row seed |
+| 샘플 표시 | active sample dataset | 전역 banner, 샘플 badge, 삭제 CTA | 없음(읽기) |
+| 샘플 삭제 | 사용자 확인 | 삭제 중/완료/실패 상태 | registry 기반 샘플 row 삭제 |
+| 샘플 실패 | seed/delete 오류 | 재시도 CTA | 오류 사유 저장 |
+
+샘플 데이터는 **학습용**이며 실제 신고 자료가 아니다. 삭제는 registry가 추적하는 샘플 행만 대상으로 하며, 실제 업로드·급여·신고 데이터는 삭제하지 않는다.
+
 ## 5. 상태 커버리지
 
 기존 6개 워크스페이스와 직원 명부·리마인드 공통 상태 규약. 각 화면 Preview 하단 "화면 상태 예시"에 로딩/빈/오류를 명시한다.
@@ -178,6 +201,7 @@
 | Empty | "첫 자료 업로드" | "첫 자료 업로드" | "확정 전표 보기" | "기장검토 먼저 확정" | "급여 자료 불러오기" | "부가세·급여 먼저 확정" | "첫 직원 추가" | "첫 리마인드 규칙 만들기" |
 | Error | "현황을 불러오지 못했습니다" | "파일을 처리하지 못했습니다" | "분류 큐를 불러오지 못했습니다" | "세액 집계를 불러오지 못했습니다" | "급여 계산을 불러오지 못했습니다" | "신고 항목을 불러오지 못했습니다" | "직원 명부를 불러오지 못했습니다" | "리마인드 설정을 불러오지 못했습니다" |
 | 권한 없음 | tenant 미소속/미인증 시 접근 차단 (구현 단계에서 확정) | 동일 | 동일 | 동일 | 동일(개인정보 마스킹) | 동일 | 동일(개인정보 마스킹) | 동일 |
+| 샘플 active | 샘플 banner + 삭제 CTA | 동일 | 동일 | 동일 | 동일 | 동일 | 동일 | 동일 |
 
 ## 6. HTML UI Preview
 
@@ -207,6 +231,8 @@
 - **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 구현 전 데이터·mutation 계약
 - **Technical_Specs**: [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) - 내부 리마인드 구현 전 데이터·mutation 계약
+- **Technical_Specs**: [First-run Sample Data Pre-Code Brief](../03_Technical_Specs/12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) - 첫 가입 샘플 생성·삭제 계약
 - **QA_Validation**: [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) - 급여 구현 검증 시나리오
 - **QA_Validation**: [Employee Directory Test Scenarios](../05_QA_Validation/08_EMPLOYEE_DIRECTORY_TEST_SCENARIOS.md) - 직원 명부 구현 검증 시나리오
 - **QA_Validation**: [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md) - 내부 리마인드 구현 검증 시나리오
+- **QA_Validation**: [First-run Sample Data Test Scenarios](../05_QA_Validation/10_FIRST_RUN_SAMPLE_DATA_TEST_SCENARIOS.md) - 샘플 생성·표시·삭제 검증 시나리오

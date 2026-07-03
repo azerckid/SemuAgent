@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-03 23:50
+> Last Updated: 2026-07-04 00:20
 
 ## Status Legend
 
@@ -31,7 +31,7 @@
 | JC-016 | done | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 내부 staff/본인 수신 기반 리마인드 read model·화면·토글/테스트 발송/즉시 발송 API·0057 migration 구현 완료. Vercel Cron 자동 예약은 JC-017, 직원 명부 기반 직원 수신은 JC-018 후속 |
 | JC-017 | todo | Schedule internal reminder cron | `app/api/cron/reminder`, `vercel.json`, `lib/internal-reminders` | Vercel Cron이 신규 내부 리마인드 발송 흐름을 실행한다. 레거시 세션/outboundEmail 기반 cron과 회사 v1 내부 리마인드 책임을 분리하고, idempotency·발송 로그·provider missing 처리를 검증한다. |
 | JC-018 | todo | Connect employee directory recipients to reminders | `lib/internal-reminders`, `lib/employee-directory`, `employee_profile` | `employee_profile.work_email`과 `notification_enabled`를 내부 리마인드 수신자 후보로 연결한다. 직원 수신자는 비활성/이메일 없음/알림 꺼짐 상태를 제외하고, 기존 담당자 본인·staff 수신 정책과 충돌하지 않는다. |
-| JC-019 | todo | Provide first-run sample workspace data | onboarding, approved previews, workspace read models | 신규 테넌트가 가입 직후 승인 Preview와 같은 샘플 업무 데이터를 보고 메뉴 구조를 이해할 수 있다. 샘플 데이터는 명확히 표시되고, 실사용 전 사용자가 한 번에 삭제할 수 있어야 한다. |
+| JC-019 | doing | Provide first-run sample workspace data | onboarding, approved previews, workspace read models | 신규 테넌트가 가입 직후 승인 Preview와 같은 샘플 업무 데이터를 보고 메뉴 구조를 이해할 수 있다. 샘플 데이터는 명확히 표시되고, 실사용 전 사용자가 한 번에 삭제할 수 있어야 한다. |
 | JC-020 | done | Fix signup-to-onboarding routing | `app/(auth)/sign-up`, `app/(auth)/sign-in`, `app/(dashboard)/layout.tsx`, `app/onboarding` | 신규 가입자가 tenant/organization이 없는 상태에서 깨진 dashboard/clients 화면으로 이동하지 않고 `/onboarding`으로 안내된다. 기존 tenant가 있는 사용자는 기존 대시보드 진입을 유지한다. **구현(2026-07-04)**: sign-up→`/onboarding`, sign-in은 org 있으면 setActive 후 dashboard·없으면 `/onboarding`, dashboard layout은 활성 테넌트 없으면 `/onboarding` redirect(깨진 children 렌더 제거), onboarding은 이미 org 있는 사용자를 setActive 후 dashboard로 자기교정. |
 | JC-021 | todo | Remove remaining JARYO brand residue from first-run UX | signup welcome modal, onboarding copy, domain suffix | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. |
 | JC-022 | todo | Refine settings screen product language | `app/(dashboard)/dashboard/settings`, `app/onboarding`, `app/api/settings` | 설정 화면의 개발자/상류 용어(`테넌트`, `.jaryo.kr`)를 사용자가 이해하는 회사/사업자 문맥으로 정리한다. 설정 정보구조는 회사 정보·담당자·업무메일·사업장 관리가 SemuAgent 제품 책임과 맞게 보이도록 재검토한다. |
@@ -288,22 +288,22 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 신규 사용자가 회사 셀프사용 흐름을 이해하도록 돕는 온보딩 경험
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md)
 - Related HTML Preview: [00_company_home.html](../02_UI_Screens/previews/00_company_home.html) · [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html) · [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html) · [03_vat.html](../02_UI_Screens/previews/03_vat.html) · [04_payroll.html](../02_UI_Screens/previews/04_payroll.html) · [05_filing_support.html](../02_UI_Screens/previews/05_filing_support.html) · [06_employee_directory.html](../02_UI_Screens/previews/06_employee_directory.html) · [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html)
-- Related Technical Docs: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Company Home Pre-Code Brief](../03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md) · [Source Collection Pre-Code Brief](../03_Technical_Specs/05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) · [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) · [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)
-- Related QA Docs: [Company Home Test Scenarios](../05_QA_Validation/02_COMPANY_HOME_TEST_SCENARIOS.md) · [Source Collection Test Scenarios](../05_QA_Validation/03_SOURCE_COLLECTION_TEST_SCENARIOS.md) · [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) · [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) · [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) · [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md)
-- Prototype Review / 승인: 기존 8개 승인 Preview의 데이터 서사를 first-run 샘플 seed 기준으로 재사용한다. 샘플 데이터 생성/삭제 UI 자체는 구현 전 별도 Preview 또는 UI Design 보강 필요.
+- Related Technical Docs: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [First-run Sample Data Pre-Code Brief](../03_Technical_Specs/12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) · [Company Home Pre-Code Brief](../03_Technical_Specs/04_COMPANY_HOME_PRE_CODE_BRIEF.md) · [Source Collection Pre-Code Brief](../03_Technical_Specs/05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) · [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) · [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)
+- Related QA Docs: [First-run Sample Data Test Scenarios](../05_QA_Validation/10_FIRST_RUN_SAMPLE_DATA_TEST_SCENARIOS.md) · [Company Home Test Scenarios](../05_QA_Validation/02_COMPANY_HOME_TEST_SCENARIOS.md) · [Source Collection Test Scenarios](../05_QA_Validation/03_SOURCE_COLLECTION_TEST_SCENARIOS.md) · [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) · [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) · [Payroll Test Scenarios](../05_QA_Validation/06_PAYROLL_TEST_SCENARIOS.md) · [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md)
+- Prototype Review / 승인: 기존 8개 승인 Preview의 데이터 서사를 first-run 샘플 seed 기준으로 재사용한다. 샘플 데이터 생성/삭제 UI는 [UI Design 4.10](../02_UI_Screens/01_UI_DESIGN.md)과 [First-run Sample Data Pre-Code Brief](../03_Technical_Specs/12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md)로 보강했다.
 - Implementation Preconditions:
-  - [ ] 샘플 데이터 정책 확정 — 온보딩 완료 시 자동 생성 vs. 사용자가 선택하는 "샘플 데이터 보기" 버튼
-  - [ ] 샘플 데이터 삭제 범위 확정 — 샘플 행만 삭제하고 실데이터는 보존하는 tenant-scoped cleanup 규칙
-  - [ ] 모든 샘플 행 식별 방식 확정 — `sample` flag, seed batch id, visible badge/notice 중 선택
-  - [ ] Preview 데이터와 실제 seed 데이터의 수치 정합표 작성
-  - [ ] 샘플 생성/삭제 QA 시나리오 추가
+  - [x] 샘플 데이터 정책 확정 — 온보딩 완료 시 자동 생성(best effort), 실패해도 onboarding 완료를 막지 않음
+  - [x] 샘플 데이터 삭제 범위 확정 — registry가 추적하는 샘플 행만 삭제하고 실데이터는 보존하는 tenant-scoped cleanup
+  - [x] 모든 샘플 행 식별 방식 확정 — `sample_dataset` + `sample_entity_ref` registry, 전역 visible banner/badge
+  - [x] Preview 데이터와 실제 seed 데이터의 수치 정합표 작성 — [First-run Sample Data Pre-Code Brief §5](../03_Technical_Specs/12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md)
+  - [x] 샘플 생성/삭제 QA 시나리오 추가 — [First-run Sample Data Test Scenarios](../05_QA_Validation/10_FIRST_RUN_SAMPLE_DATA_TEST_SCENARIOS.md)
 - Acceptance Criteria:
   - [ ] 신규 tenant는 가입/온보딩 직후 승인 Preview와 유사한 채워진 화면을 볼 수 있다.
   - [ ] 샘플 데이터는 화면에서 명확히 표시되어 실데이터와 혼동되지 않는다.
   - [ ] 사용자는 실사용 전 샘플 데이터를 한 번에 삭제할 수 있다.
   - [ ] 샘플 삭제는 같은 tenant의 샘플 데이터에만 작동하고, 실제 업로드/급여/신고 데이터는 삭제하지 않는다.
   - [ ] 기존 tenant나 이미 실데이터가 있는 tenant에는 샘플 데이터가 자동 재생성되지 않는다.
-- Document Sync Check: 2026-07-03 프로덕션 first-run E2E에서 발견된 제품 후속. 현재는 backlog 등록 단계이며, 구현 착수 전 UI/기술 brief/QA 보강 필요.
+- Document Sync Check: 2026-07-04 구현 전 게이트 정리. Screen Flow 4h / UI Design 4.10 / Component Plan 7.7 / DB Schema 4.6 / Pre-Code Brief / QA Scenarios가 상호 링크됨. 코드 구현은 후속 PR에서 migration·seed/delete API·banner UI로 진행.
 
 ### JC-020 · Fix signup-to-onboarding routing (가입 후 온보딩 라우팅) — 신규
 
