@@ -1,38 +1,20 @@
 import { and, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { client, sampleDataset } from '@/lib/db/schema'
+import {
+  VISIBLE_SAMPLE_STATUSES,
+  type FirstRunSampleState,
+  type FirstRunSampleVisibleStatus,
+} from './shared'
 
-export type FirstRunSampleVisibleStatus = 'creating' | 'active' | 'delete_pending' | 'failed'
-export type FirstRunSampleState =
-  | { status: 'none'; visible: false }
-  | { status: 'deleted'; visible: false; datasetId: string; clientId: string }
-  | {
-      status: FirstRunSampleVisibleStatus
-      visible: true
-      datasetId: string
-      clientId: string
-      clientName: string | null
-      seedVersion: string
-      periodKey: string
-      payrollPeriodKey: string
-      errorMessage: string | null
-    }
-
-const VISIBLE_SAMPLE_STATUSES = ['creating', 'active', 'delete_pending', 'failed'] as const
-
-export function sampleStatusLabel(status: FirstRunSampleVisibleStatus) {
-  switch (status) {
-    case 'creating':
-      return '샘플 생성 중'
-    case 'delete_pending':
-      return '샘플 삭제 중'
-    case 'failed':
-      return '샘플 생성 실패'
-    case 'active':
-    default:
-      return '샘플 데이터'
-  }
-}
+// client 컴포넌트가 db를 끌어들이지 않도록 client-safe 항목은 shared.ts에 둔다.
+// 서버 코드 호환을 위해 여기서 재export한다.
+export {
+  sampleStatusLabel,
+  VISIBLE_SAMPLE_STATUSES,
+  type FirstRunSampleState,
+  type FirstRunSampleVisibleStatus,
+} from './shared'
 
 export async function loadFirstRunSampleState(tenantId: string): Promise<FirstRunSampleState> {
   const visibleRows = await db

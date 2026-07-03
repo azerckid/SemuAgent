@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { sampleStatusLabel, type FirstRunSampleState } from '@/lib/first-run-sample/summary'
+import { sampleStatusLabel, type FirstRunSampleState } from '@/lib/first-run-sample/shared'
 
 interface SampleDataBannerProps {
   state: FirstRunSampleState
