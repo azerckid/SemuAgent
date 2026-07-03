@@ -1,3 +1,5 @@
+// 서버 전용 가드: DB 클라이언트가 클라이언트 번들에 포함되면 빌드타임에 실패시킨다.
+import 'server-only'
 import { createClient } from '@libsql/client'
 import { drizzle } from 'drizzle-orm/libsql'
 import { env } from '../env'

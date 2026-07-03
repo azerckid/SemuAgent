@@ -1,3 +1,6 @@
+// 서버 전용 가드: 클라이언트 컴포넌트가 이 모듈(=서버 시크릿 검증)을 번들에 끌어들이면
+// 빌드타임에 실패시킨다. 브라우저 번들 누수 → "Missing required environment variables" 크래시 재발 방지.
+import 'server-only'
 import { z } from 'zod'
 import { isGeminiEnabled } from '@/lib/ai/gemini-enabled'
 import { normalizeGeminiAnalysisModel } from '@/lib/ai/models'
