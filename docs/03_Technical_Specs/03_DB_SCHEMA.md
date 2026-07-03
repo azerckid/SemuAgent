@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-04 00:20
+> Last Updated: 2026-07-04 01:43
 
 ## 1. 목적 및 범위
 
@@ -350,7 +350,7 @@ tenant·사업장별 샘플 데이터 묶음과 상태.
 | `error_message` | 생성/삭제 실패 사유 |
 | `created_at`, `updated_at`, `deleted_at` | 감사·동기화 |
 
-권장 인덱스: unique active dataset per tenant/client(`tenant_id`, `client_id`, active 상태), index(`tenant_id`, `client_id`, `status`).
+구현 인덱스: index(`tenant_id`, `client_id`, `status`), index(`tenant_id`, `status`). `client_id`는 물리명 `client` 유지 정책과 cleanup 안전성을 위해 FK를 두지 않고 text scope로 저장한다.
 
 #### `sample_entity_ref`
 
@@ -364,9 +364,9 @@ tenant·사업장별 샘플 데이터 묶음과 상태.
 | `delete_order` | 자식 테이블부터 삭제하기 위한 순서 |
 | `created_at` | 감사 |
 
-권장 인덱스: unique(`tenant_id`, `client_id`, `sample_dataset_id`, `entity_table`, `entity_id`), index(`sample_dataset_id`, `delete_order`).
+구현 인덱스: unique(`tenant_id`, `client_id`, `sample_dataset_id`, `entity_table`, `entity_id`), index(`sample_dataset_id`, `delete_order`), index(`tenant_id`, `client_id`, `sample_dataset_id`). `client_id`는 FK 없이 scope 값으로 저장한다.
 
-삭제 규칙: `sample_entity_ref`에 없는 행은 삭제하지 않는다. 실제 업로드 파일 원본·Blob storage key·홈택스/은행/카드/EDI 자격증명은 sample seed 대상이 아니다.
+삭제 규칙: `sample_entity_ref`에 없는 행은 삭제하지 않는다. whitelist에는 업무 도메인 샘플 행만 포함하고 `client`/사업장 행은 제외한다. 실제 업로드 파일 원본·Blob storage key·홈택스/은행/카드/EDI 자격증명은 sample seed 대상이 아니다.
 
 ## 5. 명명·마이그레이션 방침 (JC-005 확정)
 
@@ -383,7 +383,7 @@ tenant·사업장별 샘플 데이터 묶음과 상태.
 - 구현 완료: 신고지원 신규 테이블의 논리 컬럼은 [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md)에서 확정했고, `0055_add_filing_support_tables.sql`로 물리 migration을 적용했다.
 - 구현 완료: 직원 명부 논리 컬럼은 [Employee Directory Pre-Code Brief](./10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md)에서 확정했고, `0056_add_employee_profile.sql`로 물리 migration을 적용했다.
 - 구현 완료: 내부 리마인드 메일 논리 컬럼은 [Internal Reminder Mail Pre-Code Brief](./11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md)에서 확정했고, `0057_add_internal_reminder_tables.sql`로 물리 migration을 적용했다.
-- 설계 확정: 첫 가입 샘플 데이터는 [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) 기준 `sample_dataset` + `sample_entity_ref` registry 모델로 구현한다. 물리 migration은 JC-019 구현 PR에서 적용한다.
+- 설계/구현 확정: 첫 가입 샘플 데이터는 [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) 기준 `sample_dataset` + `sample_entity_ref` registry 모델과 `0058_add_first_run_sample_tables.sql` migration으로 구현한다.
 - 확정: `business_entity` 물리 rename은 지연한다. v1은 물리명 `client`/`client_id`를 유지하고 개념명만 business entity로 사용한다.
 - 확정: 기간 표현은 도메인별 canonical을 유지한다(부가세·신고 반기 `YYYY-H1/H2`, 급여 월 `YYYY-MM`, 전표 회계연도+월, 신고지원 dual-key 브리지).
 - 후속 범위: v1 제외 이메일 서브시스템 테이블의 물리 처리(보존/드롭)는 현재 제품 노출 범위 밖이며, 즉시 migration 대상이 아니다.

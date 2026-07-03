@@ -1820,6 +1820,51 @@ export const internalReminderSendLog = sqliteTable('internal_reminder_send_log',
   ruleIdx: index('internal_reminder_send_log_rule_idx').on(t.tenantId, t.clientId, t.ruleId),
 }))
 
+
+// ---------------------------------------------------------------------------
+// sample_dataset / sample_entity_ref
+// 첫 가입 사용자가 빈 화면 대신 승인 Preview와 같은 학습용 업무 상태를 볼 수
+// 있게 만드는 샘플 데이터 묶음과 삭제 레지스트리.
+// ---------------------------------------------------------------------------
+export const sampleDataset = sqliteTable('sample_dataset', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull(),
+  source: text('source', { enum: ['first_run_onboarding', 'manual_retry'] }).notNull(),
+  status: text('status', {
+    enum: ['creating', 'active', 'delete_pending', 'deleted', 'failed'],
+  }).notNull().default('creating'),
+  seedVersion: text('seed_version').notNull(),
+  periodKey: text('period_key').notNull().default('2026-H1'),
+  payrollPeriodKey: text('payroll_period_key').notNull().default('2026-06'),
+  createdByUserId: text('created_by_user_id'),
+  createdByStaffId: text('created_by_staff_id').references(() => staff.id),
+  errorMessage: text('error_message'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+  deletedAt: text('deleted_at'),
+}, (t) => ({
+  scopeStatusIdx: index('sample_dataset_scope_status_idx').on(t.tenantId, t.clientId, t.status),
+  tenantStatusIdx: index('sample_dataset_tenant_status_idx').on(t.tenantId, t.status),
+}))
+
+export const sampleEntityRef = sqliteTable('sample_entity_ref', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull(),
+  sampleDatasetId: text('sample_dataset_id').notNull().references(() => sampleDataset.id),
+  entityTable: text('entity_table').notNull(),
+  entityId: text('entity_id').notNull(),
+  deleteOrder: integer('delete_order').notNull().default(100),
+  createdAt: text('created_at').notNull(),
+}, (t) => ({
+  entityUidx: uniqueIndex('sample_entity_ref_entity_uidx')
+    .on(t.tenantId, t.clientId, t.sampleDatasetId, t.entityTable, t.entityId),
+  datasetDeleteIdx: index('sample_entity_ref_dataset_delete_idx')
+    .on(t.sampleDatasetId, t.deleteOrder),
+  scopeIdx: index('sample_entity_ref_scope_idx').on(t.tenantId, t.clientId, t.sampleDatasetId),
+}))
+
 // ---------------------------------------------------------------------------
 // consultation_source_cache
 //   AI 전문 상담 Slice 1 — 공식 출처(law.go.kr) 응답 캐시.
