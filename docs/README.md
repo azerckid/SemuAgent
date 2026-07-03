@@ -1,9 +1,9 @@
-# SemuDesk Docs
+# SemuAgent Docs
 > Created: 2026-07-01 17:50
-> Last Updated: 2026-07-01 22:55
+> Last Updated: 2026-07-03 15:46
 
-This documentation set defines SemuDesk, the company-facing version of
-JARYO.
+This documentation set defines SemuAgent, an AI-powered tax operations
+assistant for small companies preparing their own Hometax filing materials.
 
 ## Layers
 
@@ -14,7 +14,8 @@ JARYO.
 - `05_QA_Validation`: QA scenarios and release checks
 
 JARYO-GIWA remains the primary code reuse source, but these documents decide
-how reused code must be adapted for company self-use.
+how reused code must be adapted for small-company self-use and AI-assisted
+tax-preparation workflows.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](./01_Concept_Design/01_PRODUCT_BASELINE.md)

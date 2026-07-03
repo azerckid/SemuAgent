@@ -1,6 +1,6 @@
 # Filing Support Pre-Code Technical Brief
 > Created: 2026-07-02 20:23
-> Last Updated: 2026-07-02 20:23
+> Last Updated: 2026-07-03 15:46
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -12,7 +12,7 @@ JC-013 신고지원 화면은 승인된 [05_filing_support.html](../02_UI_Screen
 - 회사 홈의 기존 `#filing-support-status` 앵커는 구현 후 전용 route로 재지정한다.
 - 부가세(JC-011)와 급여(JC-012)의 read model·package/document 상태를 내부 의존성으로 재사용한다.
 - 자동 홈택스 제출, 자동 납부, 홈택스/EDI 자격증명 서버 저장, 공동인증서 보관은 v1 범위 밖이다.
-- 상단 책임 경계 배너와 하단 안내에는 "세무데스크는 신고서 제출을 대행하지 않는다"는 문구를 유지한다.
+- 상단 책임 경계 배너와 하단 안내에는 "세무 에이전트는 신고서 제출을 대행하지 않는다"는 문구를 유지한다.
 
 ## 1. Scope
 

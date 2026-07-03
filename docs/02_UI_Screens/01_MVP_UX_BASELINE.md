@@ -1,6 +1,6 @@
-# SemuDesk MVP UX Baseline
+# SemuAgent MVP UX Baseline
 > Created: 2026-07-01 17:56
-> Last Updated: 2026-07-01 17:56
+> Last Updated: 2026-07-03 15:46
 
 ## First Screen Principle
 

@@ -1,10 +1,10 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-03 03:02
+> Last Updated: 2026-07-03 15:46
 
 ## 1. 목적 및 범위
 
-세무데스크의 데이터 모델을 정의한다. 실제 GIWA에서 상속된 앱 스키마
+세무 에이전트의 데이터 모델을 정의한다. 실제 GIWA에서 상속된 앱 스키마
 `lib/db/schema.ts`(56개 테이블)와 Auth 스키마 `lib/db/auth-schema.ts`(7개 테이블)를
 **회사 셀프사용 컨텍스트**로 재정의하는 설계 스펙이다.
 
@@ -15,7 +15,7 @@
 
 ### 2.1 `client` → `business_entity`(사업장)로 재정의
 
-GIWA에서 `client`는 세무사무소의 "고객사"였다. 세무데스크에서는 회사가 자기 자신의 회계를
+GIWA에서 `client`는 세무사무소의 "고객사"였다. 세무 에이전트에서는 회사가 자기 자신의 회계를
 운영하므로 외부 고객사가 없다. `client`를 **회사가 운영하는 사업장(business entity)** 으로 재정의한다.
 
 ```

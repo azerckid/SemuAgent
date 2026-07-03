@@ -1,14 +1,18 @@
-# SemuDesk Product Baseline
+# SemuAgent Product Baseline
 > Created: 2026-07-01 17:55
-> Last Updated: 2026-07-01 17:55
+> Last Updated: 2026-07-03 15:46
 
 ## Purpose
 
-SemuDesk helps a company run its own accounting and tax operation:
+SemuAgent helps a small company use AI-assisted workflows to prepare its own
+tax filing materials:
 
 `source collection -> classification/bookkeeping -> VAT calculation -> payroll -> review/approval -> filing-material package -> Hometax submission support -> receipt storage`
 
-The product is designed for company-side users, not accounting-firm operators.
+The product is designed for small-company users who want to prepare and review
+their own tax filing workflow without routing every step through an accounting
+or tax office. SemuAgent is not automatic tax filing; final Hometax submission
+and payment remain user-confirmed actions.
 
 ## Primary Users
 
@@ -26,6 +30,8 @@ The product is designed for company-side users, not accounting-firm operators.
 - Calculate payroll from structured company payroll inputs.
 - Generate filing-material packages and Hometax entry guidance.
 - Store submission receipts, payment notices, and audit trail.
+- Use AI-assisted automation for source classification, missing-item checks,
+  reminders, and filing-preparation updates.
 
 ## MVP Non-Scope
 
@@ -45,7 +51,7 @@ and dashboard UI.
 Every reused flow must be checked for operator mismatch:
 
 - `client` in JARYO-GIWA often means an accounting-firm customer company.
-- In SemuDesk, the company is the tenant/operator.
+- In SemuAgent, the company is the tenant/operator.
 - Email request and accountant approval flows usually become internal company
   review/approval flows.
 

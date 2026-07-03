@@ -1,6 +1,6 @@
-# SemuDesk UI Design
+# SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-02
+> Last Updated: 2026-07-03 15:46
 
 ## 1. 디자인 방향
 

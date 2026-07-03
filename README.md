@@ -1,12 +1,12 @@
-# SemuDesk
+# SemuAgent
 
-Company-facing accounting and tax operations SaaS.
+AI-powered tax operations assistant for small companies.
 
-SemuDesk reuses the proven JARYO-GIWA codebase, but changes the product
+SemuAgent reuses the proven JARYO-GIWA codebase, but changes the product
 operator from an accounting firm to the company itself. The goal is to help a
-company collect evidence, classify transactions, prepare bookkeeping entries,
-calculate VAT and payroll, review the results, and generate filing materials
-for direct Hometax submission.
+small company use AI-assisted workflows to collect evidence, classify
+transactions, prepare bookkeeping entries, calculate VAT and payroll, review
+the results, and generate filing materials for direct Hometax submission.
 
 ## Product Direction
 
@@ -19,6 +19,7 @@ MVP scope:
 - Review/approval workflow for company staff
 - Filing-material package and Hometax submission guidance
 - Submission receipt and audit-trail storage
+- AI-assisted missing-item checks, reminders, and filing-preparation automation
 
 Out of scope for MVP:
 
@@ -43,7 +44,7 @@ Primary reuse candidates:
 - Drizzle/Turso, Better Auth, Vercel Blob, Resend, and AI provider wiring
 
 Before shipping reused code, adapt accounting-firm assumptions to company
-self-use assumptions.
+self-use and AI-assisted tax-preparation assumptions.
 
 ## Solmate Skills
 

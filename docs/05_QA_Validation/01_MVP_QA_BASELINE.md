@@ -1,6 +1,6 @@
-# SemuDesk MVP QA Baseline
+# SemuAgent MVP QA Baseline
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-01 17:57
+> Last Updated: 2026-07-03 15:46
 
 ## Setup QA
 
@@ -22,7 +22,7 @@
 
 For every adapted JARYO-GIWA module:
 
-- Accounting-firm-only terms are removed from company-facing UI.
+- Accounting-firm-only terms are removed from small-company self-use UI.
 - Tenant isolation is preserved.
 - Data query filters remain company scoped.
 - Tests are preserved or replaced with company-specific equivalents.

@@ -1,16 +1,17 @@
-# SemuDesk Agent Instructions
+# SemuAgent Repository Instructions
 > Created: 2026-07-01
 
 ## 1. Project Summary
 
-SemuDesk is a company-facing accounting and tax operations SaaS.
+SemuAgent is an AI-powered tax operations assistant for small companies.
 It helps a company collect its own source documents, classify transactions,
 prepare bookkeeping entries, calculate VAT and payroll, review/approve the
-results, and generate the materials needed for Hometax submission.
+results, and generate the materials needed for direct Hometax submission.
 
 This is not the same product as JARYO-GIWA. JARYO-GIWA is the accounting-firm
-workflow for managing client documents. SemuDesk is for a company's
-representative, finance staff, or operations staff to run the workflow directly.
+workflow for managing client documents. SemuAgent is for a small company's
+representative, finance staff, or operations staff to automate and review its
+own tax-preparation workflow directly.
 
 ## 2. Source Reuse Policy
 
@@ -48,6 +49,9 @@ boundary before shipping.
 - MVP creates reviewable bookkeeping, VAT, payroll, and filing-material
   packages that a company can use to submit directly through Hometax.
 - The app may guide Hometax entry and preserve submission receipts.
+- AI automation may assist source collection, classification, missing-item
+  checks, reminders, calculations, and filing-package preparation, but final
+  submission and payment remain user-confirmed actions.
 - The app must not store Hometax passwords, joint certificates, bank passwords,
   or card-company credentials.
 - Any future banking/card/Hometax connector must use explicit consent, read-only

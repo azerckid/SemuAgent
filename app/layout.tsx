@@ -5,16 +5,16 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://company.jaaryo.online"),
   title: {
-    default: "SemuDesk — 회사 자가 회계·세무 운영",
-    template: "%s · SemuDesk",
+    default: "SemuAgent — 작은 회사를 위한 AI 세무 에이전트",
+    template: "%s · SemuAgent",
   },
   description:
-    "회사가 직접 증빙을 수집하고 기장, 부가세, 급여정산, 신고자료 생성을 운영하기 위한 세무데스크.",
-  applicationName: "SemuDesk",
+    "작은 회사가 AI로 증빙 수집, 기장검토, 부가세, 급여정산, 신고자료 생성을 자동화하도록 돕는 세무 업무 에이전트.",
+  applicationName: "SemuAgent",
   alternates: { canonical: "/" },
   keywords: [
     "JARYO",
-    "SemuDesk",
+    "SemuAgent",
     "jaryo",
     "자료",
     "회사 회계",
@@ -28,16 +28,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     url: "https://company.jaaryo.online",
-    siteName: "SemuDesk",
-    title: "SemuDesk — 회사 자가 회계·세무 운영",
+    siteName: "SemuAgent",
+    title: "SemuAgent — 작은 회사를 위한 AI 세무 에이전트",
     description:
-      "증빙 수집부터 기장, 부가세, 급여정산, 홈택스 제출 보조 자료까지 회사 내부에서 운영합니다.",
+      "증빙 수집부터 기장검토, 부가세, 급여정산, 홈택스 제출 보조 자료까지 AI로 정리합니다.",
   },
   twitter: {
     card: "summary",
-    title: "SemuDesk — 회사 자가 회계·세무 운영",
+    title: "SemuAgent — 작은 회사를 위한 AI 세무 에이전트",
     description:
-      "회사가 직접 회계·세무 업무를 처리할 수 있도록 신고자료 패키지를 준비합니다.",
+      "작은 회사가 직접 세무신고를 준비할 수 있도록 AI가 신고자료 패키지를 정리합니다.",
   },
   robots: { index: true, follow: true },
 };

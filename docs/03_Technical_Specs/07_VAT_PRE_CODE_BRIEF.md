@@ -1,6 +1,6 @@
 # VAT Pre-Code Technical Brief
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-02 11:26
+> Last Updated: 2026-07-03 15:46
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -11,7 +11,7 @@ Preview의 업무 흐름을 데이터 계약으로 삼는다.
 - 보이는 UI는 회사용 `/dashboard/vat` 화면으로 새로 구성한다.
 - GIWA `/dashboard/reviews` 세션 워크스페이스나 외부 고객 업로드 포털을 부가세 화면에
   import/render/embed하지 않는다.
-- 자동 홈택스 제출·자동 납부·외부 세무사 검토는 v1 범위 밖이다. 세무데스크는
+- 자동 홈택스 제출·자동 납부·외부 세무사 검토는 v1 범위 밖이다. 세무 에이전트는
   세액 집계, 공제 검토, 신고 패키지 초안, 홈택스 입력 가이드까지 보조한다.
 - 신고 패키지 생성은 공제 검토가 모두 끝나기 전까지 잠금 상태여야 한다.
 

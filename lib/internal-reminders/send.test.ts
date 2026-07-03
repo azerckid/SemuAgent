@@ -59,7 +59,7 @@ describe('internal reminder send helpers', () => {
     })
 
     expect(email.subject).toContain('[테스트]')
-    expect(email.text).toContain('세무데스크 내부 업무 리마인드')
+    expect(email.text).toContain('세무 에이전트 내부 업무 리마인드')
     expect(email.text).toContain('자동 홈택스 제출')
     expect(email.text).toContain('자동 납부 기능이 아닙니다')
     expect(email.text).not.toContain('고객사 요청을 발송했습니다')
