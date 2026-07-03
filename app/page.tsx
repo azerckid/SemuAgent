@@ -1,24 +1,24 @@
 const operatingFlow = [
   "자료 수집",
-  "자동 분류·기장",
+  "AI 분류·기장검토",
   "부가세 계산",
   "급여정산",
-  "검토·승인",
-  "신고자료 생성",
+  "신고지원",
+  "접수증 보관",
 ]
 
 const reuseTracks = [
   {
     title: "기장 엔진",
-    body: "JARYO-GIWA의 bookkeeping 모듈을 회사 단위 거래 자동분류와 전표 생성의 출발점으로 재사용합니다.",
+    body: "JARYO-GIWA의 bookkeeping 모듈을 회사 단위 거래 AI 분류와 검토 가능한 전표 초안의 출발점으로 재사용합니다.",
   },
   {
     title: "급여 처리",
-    body: "payroll 모듈의 엑셀 구조화, 급여자료 추출, 명세서 초안 흐름을 회사 내부 담당자 UX로 재구성합니다.",
+    body: "payroll 모듈의 엑셀 구조화, 급여자료 추출, 건강보험 고지액 반영, 명세서 초안 흐름을 회사 내부 담당자 UX로 재구성합니다.",
   },
   {
     title: "증빙·AI 검토",
-    body: "AI 추출, 파일 파싱, 누락·검토 상태 모델은 유지하되 세무사무소 승인 문맥은 회사 승인 문맥으로 바꿉니다.",
+    body: "AI 추출, 파일 파싱, 누락·검토 상태 모델은 유지하되 회사가 직접 신고를 준비하는 책임 경계로 바꿉니다.",
   },
 ]
 
@@ -36,11 +36,11 @@ export default function Home() {
           <div className="max-w-3xl">
             <p className="text-sm font-semibold text-primary">SemuAgent</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-normal text-foreground sm:text-5xl">
-              회사가 직접 운영하는 회계·세무 처리 시스템
+              작은 회사의 세무신고 준비를 AI가 끝까지 정리합니다
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-              JARYO-GIWA에서 검증한 자료 수집, 기장, 급여, AI 검토 코드를 재사용해
-              회사 내부 담당자가 증빙부터 신고자료 생성까지 한 흐름으로 처리하도록 만듭니다.
+              SemuAgent는 증빙 수집, AI 분류, 기장검토, 부가세, 급여정산, 신고자료 패키지 생성을 한 흐름으로 묶습니다.
+              회사 내부 담당자가 직접 확인하고 홈택스 제출을 준비할 수 있게 만드는 AI 세무 에이전트입니다.
             </p>
             <div className="mt-8 flex flex-wrap gap-2">
               {operatingFlow.map((step) => (

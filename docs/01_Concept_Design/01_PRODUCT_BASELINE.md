@@ -1,6 +1,6 @@
 # SemuAgent Product Baseline
 > Created: 2026-07-01 17:55
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-03 20:10
 
 ## Purpose
 
@@ -13,6 +13,14 @@ The product is designed for small-company users who want to prepare and review
 their own tax filing workflow without routing every step through an accounting
 or tax office. SemuAgent is not automatic tax filing; final Hometax submission
 and payment remain user-confirmed actions.
+
+## Public SEO Positioning
+
+- Primary title: `SemuAgent - 작은 회사를 위한 AI 세무 에이전트`
+- One-line description: 작은 회사가 직접 세무신고를 준비할 수 있도록 AI가 증빙, 기장, 부가세, 급여, 신고자료를 정리한다.
+- Core search intents: `AI 세무`, `세무신고 준비`, `홈택스 신고 보조`, `자가 기장`, `부가세 계산`, `급여정산`, `증빙 수집`, `신고자료 생성`.
+- Public positioning: SemuAgent is an AI-assisted tax-preparation workflow for small companies, not an accounting-firm client-management product and not an automatic Hometax submission agent.
+- Canonical URL source: public metadata, robots, and sitemap use `NEXT_PUBLIC_SITE_URL`; the local fallback is `https://semuagent.app` until the production domain is finalized.
 
 ## Primary Users
 

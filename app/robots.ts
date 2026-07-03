@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = 'https://jaaryo.online'
+import { siteConfig } from '@/lib/seo/site'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       // 비공개·인증·토큰 경로는 색인 제외
       disallow: ['/dashboard/', '/api/', '/upload/', '/onboarding', '/jaryo-admin', '/pitch/'],
     },
-    sitemap: `${BASE_URL}/sitemap.xml`,
-    host: BASE_URL,
+    sitemap: `${siteConfig.url}/sitemap.xml`,
+    host: siteConfig.url,
   }
 }

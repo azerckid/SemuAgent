@@ -3,9 +3,10 @@ import type { Metadata } from "next"
 import { GasokPitchDeck } from "./_components/gasok-pitch-deck"
 
 export const metadata: Metadata = {
-  title: "JARYO | GASOK Pitch Deck",
+  title: "GASOK Pitch Deck",
   description:
-    "AI document workflow SaaS for accounting firms with GIWA-based proof of receipt.",
+    "Private pitch deck for an earlier GIWA-based document workflow concept.",
+  robots: { index: false, follow: false },
 }
 
 export default function GasokPitchPage() {
