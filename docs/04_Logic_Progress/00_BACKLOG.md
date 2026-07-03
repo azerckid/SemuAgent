@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-03 20:24
 
 ## Status Legend
 
@@ -26,7 +26,7 @@
 | JC-011 | done | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
 | JC-012 | done | Build payroll workspace | `lib/payroll-workspace`, `app/(dashboard)/dashboard/payroll`, `app/api/payroll` | Payroll register with derived totals, withholding/4-insurance deduction, insurance notice manual input/match, payslip/statement preview, and close guard match approved 급여 UI; PII raw fields/storage keys not exposed |
 | JC-013 | done | Build filing support workspace | `lib/filing-support`, `app/(dashboard)/dashboard/filing-support`, `app/api/filing` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
-| JC-014 | todo | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 실제 Blob 토큰·AI 키·DB 연결을 기준으로 파일 업로드→Blob 저장→AI 파싱→정규화 E2E 검증. 착수 전 `.env.local`의 Blob 토큰 중복과 `JARYO_ADMIN_EMAILS` placeholder를 정리한다. |
+| JC-014 | done | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 착수 전 정리 완료: `.env.local`의 Blob 토큰 중복 제거·`JARYO_ADMIN_EMAILS` 실운영자값·`EMAIL_FROM` 브랜드(SemuAgent). 실제 자격증명 E2E 통과(2026-07-03): 파일→Vercel Blob(private) put/get 바이트 일치→텍스트추출→AI 파싱→`analysis_run` 3건 정규화 저장→상태 전이(needs_review). Gemini·Claude는 "급여대장" high confidence 합의(consensus=medium), 파일 매칭용 checklist 미보유로 material_match 0. **미해결: OPENAI_API_KEY 429(quota/billing) — 3-provider 합의 복구하려면 OpenAI 결제 충전 필요(파이프라인은 2/3로 graceful 동작 확인).** |
 | JC-015 | done | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리. read model·화면·추가/수정 API·0056 migration 구현 완료. 급여 line은 `employee_code` 읽기 전용 최근 귀속월 매칭으로 연결하며, 리마인드 직원 수신자 연동은 JC-018 후속 |
 | JC-016 | done | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 내부 staff/본인 수신 기반 리마인드 read model·화면·토글/테스트 발송/즉시 발송 API·0057 migration 구현 완료. Vercel Cron 자동 예약은 JC-017, 직원 명부 기반 직원 수신은 JC-018 후속 |
 | JC-017 | todo | Schedule internal reminder cron | `app/api/cron/reminder`, `vercel.json`, `lib/internal-reminders` | Vercel Cron이 신규 내부 리마인드 발송 흐름을 실행한다. 레거시 세션/outboundEmail 기반 cron과 회사 v1 내부 리마인드 책임을 분리하고, idempotency·발송 로그·provider missing 처리를 검증한다. |
@@ -116,13 +116,13 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 외부 업로드 포털 제외 방침 반영한 업로드 라우트 재검토 (JC-004 연계, JC-009 범위 슬라이스) — Brief §3
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Source Collection Test Scenarios](../05_QA_Validation/03_SOURCE_COLLECTION_TEST_SCENARIOS.md)
 - Acceptance Criteria:
-  - [ ] 회사 내부 사용자가 XLSX/CSV/PDF/이미지/ZIP을 업로드하면 파싱→정규화 큐에 등록된다. — **부분**: 세션 생성 mutation은 로컬 확인, 실제 파일 저장(Vercel Blob)·AI 파싱 E2E는 환경변수 미프로비저닝으로 미검증(JC-014 대기).
+  - [x] 회사 내부 사용자가 XLSX/CSV/PDF/이미지/ZIP을 업로드하면 파싱→정규화 큐에 등록된다. — 실제 자격증명 E2E 검증 완료(JC-014, 2026-07-03): Vercel Blob(private) 저장·재읽기, AI 파싱, `analysis_run` 정규화 저장, 상태 전이까지 통과.
   - [x] 자료유형(세금계산서/통장/카드/영수증)별 집계와 정규화 상태가 표시된다. (read model + UI 구현, summary.test.ts 단위 검증; 실데이터 표시는 미검증)
   - [x] 파싱 오류 건은 danger 상태로 표시되고 재시도할 수 있다. (`canRetry` 단위 검증 + UI)
   - [x] 수집 완결성(미수집 건수)과 미수집·확인 필요 목록이 표시된다. (단위 검증 + UI)
   - [x] 외부 고객 업로드 포털은 노출되지 않는다(내부 업로드만). (source-collection.test.ts S-70 정적 검증)
   - [x] 로딩·빈·오류 상태가 화면에 구현된다. (`loading.tsx`/`error.tsx` + 빈 상태)
-- Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview / Component Plan 7.2 / Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일(머지 완료): `lib/source-collection/summary.ts`, `app/(dashboard)/dashboard/direct-upload/page.tsx`, `_components/source-collection.tsx`, `_components/source-collection-upload.tsx`, `loading.tsx`, `error.tsx` (PR #4·#5). 남은 검증: 실제 Blob·AI E2E(JC-014).
+- Document Sync Check: Screen Flow 4b / UI Design 4.2 / Prototype Review / Preview / Component Plan 7.2 / Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일(머지 완료): `lib/source-collection/summary.ts`, `app/(dashboard)/dashboard/direct-upload/page.tsx`, `_components/source-collection.tsx`, `_components/source-collection-upload.tsx`, `loading.tsx`, `error.tsx` (PR #4·#5). 실제 Blob·AI E2E 검증 완료(JC-014, 2026-07-03).
 
 ### JC-010 · Build bookkeeping review workspace (기장검토) — 신규
 
@@ -279,7 +279,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 로딩·빈·오류·provider missing 상태가 구현된다.
 - Document Sync Check: Screen Flow 8 / UI Design 4.9 / Prototype Review / HTML Preview / DB Schema 4.5 / Internal Reminder Mail Pre-Code Brief / QA Scenarios / Backlog Context Lock 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0057_add_internal_reminder_tables.sql`, `lib/internal-reminders/summary.ts`, `lib/internal-reminders/send.ts`, `lib/internal-reminders/summary.test.ts`, `lib/internal-reminders/send.test.ts`, `lib/validations/internal-reminders.ts`, `app/(dashboard)/dashboard/reminders/page.tsx`, `_components/internal-reminders-workspace.tsx`, `_components/reminder-actions.tsx`, `_components/internal-reminders-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/internal-reminders/rules/[ruleId]/route.ts`, `app/api/internal-reminders/rules/[ruleId]/test-send/route.ts`, `app/api/internal-reminders/send-now/route.ts`, `app/(dashboard)/_components/sidebar.tsx`, `app/(dashboard)/layout.tsx`.
 
-> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. 남은 핵심 검증은 JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E다.
+> 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작).
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 MVP 범위

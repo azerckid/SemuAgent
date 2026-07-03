@@ -1,6 +1,6 @@
 # Test Scenarios: VAT
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-02 13:10
+> Last Updated: 2026-07-03 20:24
 
 부가세(JC-011) Layer 5 QA 시나리오. [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -17,9 +17,9 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | Functionality | PASS·구현 | read model, 화면, 공제 판정 API, 패키지 guard API 구현 |
 | Potential Impact | PASS·구현 | 회사 자가 신고 준비의 핵심 세액 확정 화면 |
 | Novelty | PASS·구현 | 자동 제출이 아닌 회사 책임형 신고 보조 경계 유지 |
-| UX | Pending | 승인 Preview 4.4와 브라우저 캡처 비교는 로컬 DB/env 준비 후 수행 |
+| UX | PASS·구현 | 승인 Preview 4.4와 `/dashboard/vat?period=2026-H1` 브라우저 캡처 대조 완료 |
 | Open-source | PASS·구현 | `lib/vat/summary.ts` 순수 함수와 기존 전표/tenant 기반 재사용 |
-| Business Plan | Pending | 신고 패키지 생성으로 유료 가치 연결 |
+| Business Plan | PASS·구현 | 신고 패키지 생성 잠금/가이드 흐름으로 유료 가치 연결 |
 
 ## 2. Test Scenarios & Results
 
@@ -110,8 +110,8 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 - **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/validations/vat.test.ts`): S-03, S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~64.
 - **정적 검증 완료** (`vat-workspace.test.ts`): Preview 구조(S-01), 라우트(S-02), reviews 미import(S-70), 책임 경계 문구(S-71~72), mutation tenant guard(S-53), package guard(S-63~64).
-- **브라우저 수동 검증 예정**: 승인 Preview와 실제 `/dashboard/vat?period=2026-H1` 캡처 비교. 숫자/색상/간격/잠금 버튼 확인.
-- **후속 E2E**: 실제 전표 생성부터 VAT summary 생성까지는 JC-014 env/seed 준비 후 검증.
+- **브라우저 수동 검증 완료**: 승인 Preview와 실제 `/dashboard/vat?period=2026-H1` 캡처 비교. 숫자/상태/잠금 버튼/인라인 안분 UI 확인.
+- **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 전표 생성부터 VAT summary 생성까지의 도메인 E2E는 별도 회계 시드 준비 후 검증한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)

@@ -1,6 +1,6 @@
 # Filing Support Pre-Code Technical Brief
 > Created: 2026-07-02 20:23
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-03 20:24
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -238,7 +238,7 @@ type FilingSupportSummary = {
 
 - 실제 PDF/ZIP 패키지 생성 포맷은 JC-013 구현 중 최소 산출물로 결정한다.
 - 홈택스 입력 가이드는 원천세부터 v1으로 구현하고, 부가세 입력 가이드는 VAT package 상태가 generated가 된 뒤 확장한다.
-- 실제 EDI/홈택스 접수증 파일 포맷별 파싱은 JC-014 env/fixture 준비 후 검증한다.
+- JC-014에서 실제 Blob·AI 파싱·정규화 저장은 검증 완료했다. 실제 EDI/홈택스 접수증 파일 포맷별 파싱은 별도 fixture 확보 후 검증한다.
 
 ## 12. Related Documents
 

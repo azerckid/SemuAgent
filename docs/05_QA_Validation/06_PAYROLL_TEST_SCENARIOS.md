@@ -1,6 +1,6 @@
 # Test Scenarios: Payroll
 > Created: 2026-07-02 14:21
-> Last Updated: 2026-07-02 15:49
+> Last Updated: 2026-07-03 20:24
 
 급여(JC-012) Layer 5 QA 시나리오. [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -127,7 +127,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **정적 검증 완료** (`payroll-workspace.test.ts`): Preview 구조(S-01), route(S-02), GIWA 급여 규칙 패널 미import(S-84), 책임 경계 문구(S-83), API tenant guard.
 - **API 구현 완료**: line patch/resolve, insurance notice import/match, documents, close guard(S-42~53, S-70).
 - **브라우저 수동 검증 완료**: local dev DB QA seed로 `/dashboard/payroll?period=2026-06` 로그인 렌더 확인. 승인 Preview 대비 12명·지급 42,600,000·공제 5,840,000·실지급 36,760,000·마감 잠금·배경색 확인.
-- **후속 E2E**: 실제 EDI/사회보험 고지내역 파일 포맷별 import는 JC-014 env/fixture 준비 후 검증.
+- **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 EDI/사회보험 고지내역 파일 포맷별 import는 별도 fixture 확보 후 검증한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [Payroll Prototype Review](../02_UI_Screens/06_PAYROLL_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/04_payroll.html)

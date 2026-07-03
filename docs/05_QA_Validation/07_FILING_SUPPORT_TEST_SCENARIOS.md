@@ -1,6 +1,6 @@
 # Test Scenarios: Filing Support
 > Created: 2026-07-02 20:23
-> Last Updated: 2026-07-02 20:56
+> Last Updated: 2026-07-03 20:24
 
 신고지원(JC-013) Layer 5 QA 시나리오. [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -8,7 +8,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 핵심: **Preview UI 계약 준수**, 부가세·급여 산출물 연동, 홈택스 입력 가이드, 접수증 보관,
 사후 체크리스트, 자동 제출/납부 비범위, tenant/사업장 범위 격리.
 
-표기: Result 범례 - `PASS·단위` / `PASS·구현` / `Pending`(브라우저 수동 대조·후속 E2E).
+표기: Result 범례 - `PASS·단위` / `PASS·구현` / `Pending`(도메인별 후속 E2E).
 
 ## 1. Rubric Validation (Mandatory)
 
@@ -17,7 +17,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | Functionality | PASS·구현 | 신고 항목 read model, 접수증 보관 기록, 체크리스트 mutation 구현 |
 | Potential Impact | PASS·구현 | 회사 직접 신고 보조의 마지막 워크스페이스 |
 | Novelty | PASS·구현 | 자동 제출 대신 책임 경계와 패키지·가이드·보관을 결합 |
-| UX | PASS·구현 | 승인 Preview 4.6 섹션 순서와 주요 문구를 정적 테스트로 고정. 브라우저 캡처 대조는 PR 리뷰 전 수행 |
+| UX | PASS·구현 | 승인 Preview 4.6 섹션 순서와 주요 문구를 정적 테스트로 고정. 화면 구현 후 브라우저 렌더 검증 완료 |
 | Open-source | PASS·구현 | VAT/payroll read model 재사용 + filing 전용 테이블 최소 추가 |
 | Business Plan | PASS·구현 | 신고지원 패키지와 접수증 보관은 유료 가치의 핵심 사용 증거 |
 
@@ -113,9 +113,9 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 - **단위 테스트 완료** (`lib/filing-support/summary.test.ts`): S-03, S-10, S-13~14, S-20~23, S-30~32, S-41~44, S-50~52.
 - **정적 검증 완료** (`filing-support-workspace.test.ts`): Preview 구조(S-01, S-70~73), route(S-02), 책임 경계 문구(S-61~62), 자동 제출/납부 미제공(S-60, S-63), mutation guard 배선(S-40~43, S-50~53).
-- **API 구현 완료**: receipt metadata upload/delete, checklist toggle, tenant/staff guard(S-40~43, S-50~53). 실제 파일 본문 저장은 JC-014 env/blob 검증 범위.
-- **브라우저 수동 검증 예정**: QA seed로 `/dashboard/filing-support?period=2026-H1` 로그인 렌더 후 승인 Preview와 캡처 비교.
-- **후속 E2E**: 실제 홈택스/EDI 접수증 파일 포맷별 업로드는 JC-014 env/fixture 준비 후 검증.
+- **API 구현 완료**: receipt metadata upload/delete, checklist toggle, tenant/staff guard(S-40~43, S-50~53). 실제 Blob 저장 환경은 JC-014에서 검증 완료.
+- **브라우저 수동 검증 완료**: `/dashboard/filing-support?period=2026-H1` 로그인 렌더와 승인 Preview 구조를 확인.
+- **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 홈택스/EDI 접수증 파일 포맷별 업로드는 별도 fixture 확보 후 검증한다.
 
 ## 4. Related Documents
 

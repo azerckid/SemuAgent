@@ -1,6 +1,6 @@
 # Test Scenarios: Bookkeeping Review
 > Created: 2026-07-02 09:10
-> Last Updated: 2026-07-02 09:10
+> Last Updated: 2026-07-03 20:24
 
 기장검토(JC-010) Layer 5 QA 시나리오. [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -98,7 +98,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **자동 단위 완료**(`lib/bookkeeping-review/summary.test.ts`): 탭 집계(S-20~23), 신뢰도·계정지정(S-30~32), 분개 균형(S-42), 제외 테이블(S-61), 기간 필터(S-10).
 - **정적 검증 완료**(`bookkeeping-review.test.ts`): Preview 구조(S-01), GIWA 워크스페이스 미import(S-60), 문구(S-62), 라우트(S-02).
 - **구현 검증 완료**: `tsc --noEmit`, `npm run lint`, `npm run test`, `npm run build`.
-- **후속**: 실제 AI 분류·전표 E2E(JC-014)는 로컬/preview DB 세션 준비 후 별도 검증.
+- **후속**: JC-014에서 실제 Blob·AI 파싱·`analysis_run` 저장 E2E는 통과했다. 기장검토 화면의 실제 분류 큐 반영·전표 생성까지의 도메인 E2E는 별도 시드/세션 준비 후 검증한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [Bookkeeping Review Prototype Review](../02_UI_Screens/04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/02_bookkeeping_review.html)
