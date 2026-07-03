@@ -25,13 +25,20 @@ export default function SignInPage() {
       return
     }
 
-    const { data: orgs } = await organization.list()
-    if (orgs && orgs.length > 0) {
-      await organization.setActive({ organizationId: orgs[0].id })
-      router.push('/dashboard/clients')
-    } else {
-      // 회사(조직/테넌트)가 아직 없는 계정은 회사 등록(온보딩)으로 보낸다(JC-020).
-      router.push('/onboarding')
+    try {
+      const { data: orgs } = await organization.list()
+      if (orgs && orgs.length > 0) {
+        await organization.setActive({ organizationId: orgs[0].id })
+        router.push('/dashboard/clients')
+      } else {
+        // 회사(조직/테넌트)가 아직 없는 계정은 회사 등록(온보딩)으로 보낸다(JC-020).
+        router.push('/onboarding')
+      }
+    } catch {
+      // 로그인 자체는 성공했으나 회사 정보 조회/활성화가 일시 실패한 경우.
+      // 버튼이 계속 loading으로 멈추지 않도록 상태를 풀고 재시도를 안내한다.
+      setError('로그인은 됐지만 회사 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      setLoading(false)
     }
   }
 
