@@ -29,7 +29,7 @@
 | JC-014 | done | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 착수 전 정리 완료: `.env.local`의 Blob 토큰 중복 제거·`JARYO_ADMIN_EMAILS` 실운영자값·`EMAIL_FROM` 브랜드(SemuAgent). 실제 자격증명 E2E 통과(2026-07-03): 파일→Vercel Blob(private) put/get 바이트 일치→텍스트추출→AI 파싱→`analysis_run` 3건 정규화 저장→상태 전이(needs_review). Gemini·Claude는 "급여대장" high confidence 합의(consensus=medium), 파일 매칭용 checklist 미보유로 material_match 0. **미해결: OPENAI_API_KEY 429(quota/billing) — 3-provider 합의 복구하려면 OpenAI 결제 충전 필요(파이프라인은 2/3로 graceful 동작 확인).** |
 | JC-015 | done | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리. read model·화면·추가/수정 API·0056 migration 구현 완료. 급여 line은 `employee_code` 읽기 전용 최근 귀속월 매칭으로 연결하며, 리마인드 직원 수신자 연동은 JC-018 후속 |
 | JC-016 | done | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 내부 staff/본인 수신 기반 리마인드 read model·화면·토글/테스트 발송/즉시 발송 API·0057 migration 구현 완료. Vercel Cron 자동 예약은 JC-017, 직원 명부 기반 직원 수신은 JC-018 후속 |
-| JC-017 | todo | Schedule internal reminder cron (내부 리마인드 cron + 레거시 cron 정리) | `app/api/cron/internal-reminder`(신규), `vercel.json`, `lib/internal-reminders` | **우선순위: 최상(기한 내 신고 완성) · 저위험.** Vercel Cron이 신규 내부 리마인드(`internal_reminder_*`) 발송을 매일 실행한다. 세션 없는 테넌트 스코프 시스템 로더로 활성 규칙을 조회하고, D-day 판정(daily_digest=확인필요 있을때만 / deadline_offset=마감−offsetDays 당일 / manual=제외)으로 발송한다. 레거시 cron 4개(reminder·retry-failed·stale-notify·auto-send-requests)는 vercel.json에서 제거(라우트 코드 삭제는 후속 chore). cleanup-send-locks·billing-renewals 유지. idempotency·발송 로그·provider missing·테넌트 격리 검증. [Internal Reminder Cron Pre-Code Brief](../03_Technical_Specs/14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md) 참조. |
+| JC-017 | done | Schedule internal reminder cron (내부 리마인드 cron + 레거시 cron 정리) | `app/api/cron/internal-reminder`(신규), `vercel.json`, `lib/internal-reminders` | **우선순위: 최상(기한 내 신고 완성) · 저위험.** Vercel Cron이 신규 내부 리마인드(`internal_reminder_*`) 발송을 매일 실행한다. 세션 없는 테넌트 스코프 시스템 로더로 활성 규칙을 조회하고, D-day 판정(daily_digest=확인필요 있을때만 / deadline_offset=마감−offsetDays 당일 / manual=제외)으로 발송한다. 레거시 cron 4개(reminder·retry-failed·stale-notify·auto-send-requests)는 vercel.json에서 제거(라우트 코드 삭제는 후속 chore). cleanup-send-locks·billing-renewals 유지. idempotency·발송 로그·provider missing·테넌트 격리 검증. [Internal Reminder Cron Pre-Code Brief](../03_Technical_Specs/14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md) 참조. |
 | JC-018 | todo | Connect employee directory recipients to reminders | `lib/internal-reminders`, `lib/employee-directory`, `employee_profile` | `employee_profile.work_email`과 `notification_enabled`를 내부 리마인드 수신자 후보로 연결한다. 직원 수신자는 비활성/이메일 없음/알림 꺼짐 상태를 제외하고, 기존 담당자 본인·staff 수신 정책과 충돌하지 않는다. |
 | JC-019 | done | Provide first-run sample workspace data | `lib/first-run-sample`, `app/api/first-run-sample`, `app/(dashboard)/_components/sample-data-banner.tsx`, `app/(dashboard)/layout.tsx` | 신규 테넌트가 가입 직후 승인 Preview와 같은 샘플 업무 데이터를 보고 메뉴 구조를 이해할 수 있다. 샘플 데이터는 명확히 표시되고, 실사용 전 사용자가 한 번에 삭제할 수 있어야 한다. **프로덕션 E2E 완료(2026-07-04)**: 신규가입→온보딩 직후 자동 seed(`sample_dataset` active + registry 427행)→전역 배너·워크스페이스 채워짐→"샘플 삭제" 확인 dialog→**샘플 도메인 행 전부 삭제·`client`(사업장)/tenant/staff 보존**·dataset `deleted`(재생성 없음) 확인. registry+whitelist+delete_order+tenant scope 안전장치 실전 검증. 구현 PR #41 · 핫픽스 PR #42(서버/클라 import 경계) · 재발방지 `server-only` 가드. |
 | JC-020 | done | Fix signup-to-onboarding routing | `app/(auth)/sign-up`, `app/(auth)/sign-in`, `app/(dashboard)/layout.tsx`, `app/onboarding` | 신규 가입자가 tenant/organization이 없는 상태에서 깨진 dashboard/clients 화면으로 이동하지 않고 `/onboarding`으로 안내된다. 기존 tenant가 있는 사용자는 기존 대시보드 진입을 유지한다. **구현(2026-07-04)**: sign-up→`/onboarding`, sign-in은 org 있으면 setActive 후 dashboard·없으면 `/onboarding`, dashboard layout은 활성 테넌트 없으면 `/onboarding` redirect(깨진 children 렌더 제거), onboarding은 이미 org 있는 사용자를 setActive 후 dashboard로 자기교정. |
@@ -297,7 +297,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) 8번 항목 · [Internal Reminder Prototype Review](../02_UI_Screens/09_INTERNAL_REMINDER_PROTOTYPE_REVIEW.md) — 리마인드 규칙·수신자·발송 로그(JC-016에서 승인 완료)
 - Related HTML Preview: [07_internal_reminder.html](../02_UI_Screens/previews/07_internal_reminder.html) — JC-016 승인 화면 재사용(cron은 UI 변경 없음, 백엔드 예약만 추가)
 - Related Technical Docs: [Internal Reminder Cron Pre-Code Brief](../03_Technical_Specs/14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md) — cron 처분·시스템 로더·D-day 판정·멱등성 계약 · [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) — JC-016 발송·규칙 선행 계약
-- Related QA Docs: [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md) — cron due 판정·멱등성·테넌트 격리 시나리오 추가 대상
+- Related QA Docs: [Internal Reminder Mail Test Scenarios](../05_QA_Validation/09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS.md) — cron due 판정·멱등성·테넌트 격리 시나리오 추가됨(S-80~S-88)
 - Prototype Review / 승인: JC-016 화면 승인(2026-07-02) 재사용. cron은 UI 표면 변경 없음.
 - Implementation Preconditions:
   - [x] JC-016 발송·규칙·멱등성 계약 확정 (선행)
@@ -307,12 +307,12 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 세션 없는 시스템 스코프 summary 로더 설계 확정 — `loadInternalReminderSummaryForSystem({ tenantId, periodKey?, today? })`, [Brief §3](../03_Technical_Specs/14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md)
   - [x] 규칙 `domain` ↔ 세무 마감 매핑 확정 — v1 `deadline_offset` 기본 대상은 `vat`, 그 외 도메인은 `daily_digest` 또는 `manual`, [Brief §4](../03_Technical_Specs/14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md)
 - Acceptance Criteria:
-  - [ ] `/api/cron/internal-reminder`가 `verifyCronAuth` 통과 후에만 실행되고, cron lock으로 하루 1회 보장된다.
-  - [ ] daily_digest=확인 필요(attentionCount>0)일 때만 / deadline_offset=마감−offsetDays 당일 / manual=cron 제외로 due가 판정된다.
-  - [ ] 세션 없이 테넌트 스코프로 활성 규칙을 조회·발송한다(userId 의존 제거).
-  - [ ] 한 테넌트 발송 실패가 다른 테넌트를 막지 않고, 기존 send_log 멱등성으로 재발송이 방지된다.
-  - [ ] vercel.json에서 레거시 cron 4개 제거 + 신규 cron 1개 등록. cleanup-send-locks·billing-renewals는 유지.
-  - [ ] 레거시 라우트 코드 삭제는 이 PR 범위가 아니다(후속 chore).
+  - [x] `/api/cron/internal-reminder`가 `verifyCronAuth` 통과 후에만 실행되고, cron lock으로 하루 1회 보장된다. (S-80·S-81)
+  - [x] daily_digest=확인 필요(attentionCount>0)일 때만 / deadline_offset=마감−offsetDays 당일 / manual=cron 제외로 due가 판정된다. (S-82~S-86)
+  - [x] 세션 없이 테넌트 스코프로 활성 규칙을 조회·발송한다(userId 의존 제거). (S-88)
+  - [x] 한 테넌트 발송 실패가 다른 테넌트를 막지 않고, 기존 send_log 멱등성으로 재발송이 방지된다. (S-87·S-43)
+  - [x] vercel.json에서 레거시 cron 4개 제거 + 신규 cron 1개 등록. cleanup-send-locks·billing-renewals는 유지.
+  - [x] 레거시 라우트 코드 삭제는 이 PR 범위가 아니다(후속 chore).
 - Component & Library Plan:
   - shadcn/ui components: N/A - 백엔드 cron 작업, UI 없음
   - Custom components: N/A
@@ -320,7 +320,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - New libraries: N/A - 기존 Resend·drizzle·luxon·cron lock 재사용
   - Libraries intentionally not added: N/A
   - shadcn preset action: N/A - UI 변경 없음
-- Document Sync Check: 구현 완료(2026-07-04). Brief(14) / Backlog Context Lock / JC-016 계약 상호 링크. 구현 파일: `app/api/cron/internal-reminder/route.ts`(신규, 테넌트 순회+due 판정+테넌트 격리), `lib/internal-reminders/summary.ts`(`loadInternalReminderSummaryForSystem`·`isInternalReminderRuleDue`·`INTERNAL_REMINDER_SYSTEM_USER_ID` 추가), `lib/internal-reminders/send.ts`(`InternalReminderSendMode`에 `cron` 추가, staffId nullable, cron persist가 편집자 정보 미덮어씀), `lib/internal-reminders/summary.test.ts`(due 판정·시스템 스코프 수신자 5건 추가), `vercel.json`(레거시 4개 제거+internal-reminder 추가). 전체 204파일 1334건 통과, tsc/eslint 클린. 레거시 라우트 코드 삭제는 후속 chore.
+- Document Sync Check: 구현 완료(2026-07-04). Brief(14) / Backlog Context Lock / JC-016 계약 상호 링크. 구현 파일: `app/api/cron/internal-reminder/route.ts`(신규, 테넌트 순회+due 판정+테넌트 격리), `lib/internal-reminders/summary.ts`(`loadInternalReminderSummaryForSystem`·`isInternalReminderRuleDue`·`INTERNAL_REMINDER_SYSTEM_USER_ID` 추가), `lib/internal-reminders/send.ts`(`InternalReminderSendMode`에 `cron` 추가, staffId nullable, cron persist가 편집자 정보 미덮어씀), `lib/internal-reminders/summary.test.ts`(due 판정·시스템 스코프 수신자 5건 추가), `vercel.json`(레거시 4개 제거+internal-reminder 추가), QA 시나리오 S-80~S-88(09_INTERNAL_REMINDER_MAIL_TEST_SCENARIOS). 전체 204파일 1334건 통과, tsc/eslint 클린, CRON_SECRET Production 설정 확인. 레거시 라우트 코드 삭제는 후속 chore.
 
 ### JC-019 · Provide first-run sample workspace data (첫 가입 샘플 데이터) — 신규
 

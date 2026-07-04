@@ -46,10 +46,19 @@
 | S-71 | State | 미인증 상태로 접근한다. | `/sign-in`으로 redirect된다. | PASS·구현 |
 | S-72 | State | UI Preview와 구현 화면을 비교한다. | 승인된 preview의 레이아웃·색상·상태 구조와 일치한다. | PASS·브라우저 |
 | S-73 | State | Resend/env가 설정되지 않았다. | provider missing 상태로 테스트/실발송이 잠긴다. | PASS·단위/구현 |
+| S-80 | Cron (JC-017) | `verifyCronAuth` 없이(CRON_SECRET 불일치) `/api/cron/internal-reminder`를 호출한다. | 401 Unauthorized로 차단된다. | PASS·구현 |
+| S-81 | Cron (JC-017) | 같은 날 cron이 두 번 실행된다. | `acquireCronLock('internal_reminder','yyyy-MM-dd')`로 두 번째는 skip된다. | PASS·구현 |
+| S-82 | Cron (JC-017) | daily_digest 규칙에 확인 필요 0건이다. | due가 아니며 발송하지 않는다(0건 메일 스팸 방지). | PASS·단위 |
+| S-83 | Cron (JC-017) | daily_digest 규칙에 확인 필요 1건 이상이다. | due가 되어 발송 대상이 된다. | PASS·단위 |
+| S-84 | Cron (JC-017) | deadline_offset(vat) 규칙에서 오늘 == 마감−offsetDays이다. | attention 건수와 무관하게 due가 된다. | PASS·단위 |
+| S-85 | Cron (JC-017) | deadline_offset이 마감일과 다른 날이거나 vat이 아닌 domain이다. | due가 아니며 skip된다(v1은 vat만 마감 매핑). | PASS·단위 |
+| S-86 | Cron (JC-017) | manual 규칙이 cron 실행에 포함된다. | cron에서는 발송하지 않는다. | PASS·단위 |
+| S-87 | Cron (JC-017) | 한 테넌트의 로딩/발송이 실패한다. | 테넌트 단위 try/catch로 다른 테넌트 발송이 계속된다. | PASS·구현 |
+| S-88 | Cron (JC-017) | 세션 없는 시스템 로더로 수신자를 해석한다. | userId 없이 활성·이메일 보유 staff 전원이 수신자가 되고 "본인" 표시가 없다. | PASS·단위 |
 
 ## 3. Automation Plan
 
-- `lib/internal-reminders/summary.test.ts`: provider guard, 수신자 필터, 기본 규칙, 템플릿, 통계 검증
+- `lib/internal-reminders/summary.test.ts`: provider guard, 수신자 필터, 기본 규칙, 템플릿, 통계 검증. **JC-017**: cron due 판정(daily_digest 확인 필요>0, deadline_offset[vat] 마감일 기준, manual 제외, 비활성 제외)과 시스템 스코프 수신자(S-82~S-88) 검증
 - `lib/internal-reminders/send.test.ts`: 메일 본문 책임 경계, context/idempotency key 검증
 - Static tests: `app/(dashboard)/dashboard/reminders/_components/internal-reminders-workspace.test.ts`에서 Preview 섹션 순서, route/API wiring, GIWA request mail 테이블/컴포넌트 import 금지, provider missing 상태 검증
 - Browser QA: 로컬 Playwright로 `/dashboard/reminders` full-page 캡처 대조 완료. 로컬 데이터 차이로 리마인드 대상 건수는 실제 집계값을 표시한다.
@@ -58,6 +67,7 @@
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 셀프사용·신고 보조 책임 경계
 - **Technical_Specs**: [Internal Reminder Mail Pre-Code Brief](../03_Technical_Specs/11_INTERNAL_REMINDER_MAIL_PRE_CODE_BRIEF.md) - 구현 전 계약
+- **Technical_Specs**: [Internal Reminder Cron Pre-Code Brief](../03_Technical_Specs/14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md) - JC-017 cron·due 판정·시스템 로더 계약
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 기반 수신자 source
 - **Technical_Specs**: [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) - `internal_reminder_*` 논리 모델 초안
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-016 Context Lock
