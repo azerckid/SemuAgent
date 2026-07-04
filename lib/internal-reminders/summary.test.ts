@@ -7,6 +7,7 @@ import {
   buildInternalReminderRecipients,
   buildInternalReminderRules,
   buildInternalReminderStats,
+  internalReminderRuleId,
   isInternalReminderProviderConfigured,
   isInternalReminderRuleDue,
   renderReminderTemplate,
@@ -219,6 +220,41 @@ describe('internal reminder rule derivation', () => {
     const vatRule = rules.find((rule) => rule.domain === 'vat')!
     expect(vatRule.recipientSource).toBe('staff')
     expect(vatRule.recipientLabel).toBe('담당자 본인')
+  })
+
+  it('JC-018 P1 regression: normalizes a pre-existing stored payroll rule (recipientSource=staff) to mixed', () => {
+    // JC-018 배포 전에 저장된 테넌트는 payroll 규칙이 recipientSource='staff'로
+    // DB에 남아 있다. payroll의 recipientSource는 코드 고정 정책이라(설정 UI 없음)
+    // 저장값이 있어도 항상 mixed로 정규화되어야 한다 — 그렇지 않으면 기존
+    // 테넌트에서는 직원 발송 게이트가 영구히 꺼진 채로 남는다.
+    const payrollRuleId = internalReminderRuleId({
+      tenantId: 'tenant-1',
+      clientId: 'client-1',
+      domain: 'payroll',
+      triggerType: 'daily_digest',
+      offsetDays: null,
+    })
+    const rules = buildInternalReminderRules({
+      tenantId: 'tenant-1',
+      clientId: 'client-1',
+      period,
+      payrollLabel: '2026년 6월 급여',
+      attentions: [],
+      storedRules: [{
+        id: payrollRuleId,
+        domain: 'payroll',
+        triggerType: 'daily_digest',
+        offsetDays: null,
+        enabled: true,
+        recipientSource: 'staff', // JC-018 이전에 저장된 낡은 값
+        subjectTemplate: '{{payrollLabel}} 급여 확인 필요 {{attentionCount}}건 · 마감 전 처리',
+        bodyTemplate: '급여대장의 확인 필요 직원과 4대보험 고지액 매칭 상태를 확인해 주세요.',
+      }],
+    })
+
+    const payrollRule = rules.find((rule) => rule.domain === 'payroll')!
+    expect(payrollRule.recipientSource).toBe('mixed')
+    expect(payrollRule.recipientLabel).toBe('담당자 본인 + 확인 필요 직원')
   })
 
   it('uses stored rule settings to override default enablement', () => {

@@ -306,12 +306,15 @@ export function buildInternalReminderRules(params: {
       triggerType: definition.triggerType,
       offsetDays: definition.offsetDays,
       enabled: definition.enabled,
-      // JC-018: payroll 도메인만 mixed(담당자+확인 필요 직원). 그 외 도메인은
-      // staff만 유지한다. recipientLabel도 이 값을 그대로 반영한다(UI 정합).
-      recipientSource: (definition.domain === 'payroll' ? 'mixed' : 'staff') as InternalReminderRecipientSource,
+      recipientSource: 'staff' as InternalReminderRecipientSource,
       subjectTemplate: definition.subjectTemplate,
       bodyTemplate: definition.bodyTemplate,
       ...stored,
+      // JC-018: payroll의 recipientSource는 코드로 고정한 정책이라 사용자가
+      // 규칙별로 바꾸는 UI가 없다. 따라서 저장된 값이 'staff'인 것은 JC-018 이전
+      // 낡은 값일 뿐 의도된 선택이 아니므로, stored를 덮어써서라도 항상 mixed로
+      // 정규화한다(기존 테넌트의 payroll 규칙도 자동으로 mixed 전환).
+      ...(definition.domain === 'payroll' ? { recipientSource: 'mixed' as InternalReminderRecipientSource } : {}),
     }
     const domainMeta = INTERNAL_REMINDER_DOMAINS[merged.domain]
     const attention = params.attentions.find((item) => item.domain === merged.domain)
