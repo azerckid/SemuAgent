@@ -627,3 +627,39 @@ export async function loadInternalReminderAttentionCount(tenantId: string, userI
   const summary = await loadInternalReminderSummary({ tenantId, userId })
   return summary.stats.pendingAttentionCount + summary.stats.failedSendCount
 }
+
+// cron은 세션(userId)이 없다. userId를 비우면 "본인"으로 표시되는 staff가 없고,
+// 활성·이메일 보유 staff가 모두 수신자로 포함된다(직원 명부 수신은 JC-018 후속).
+export const INTERNAL_REMINDER_SYSTEM_USER_ID = ''
+
+export function loadInternalReminderSummaryForSystem(params: {
+  tenantId: string
+  periodKey?: string | null
+  today?: DateTime
+}): Promise<InternalReminderSummary> {
+  return loadInternalReminderSummary({ ...params, userId: INTERNAL_REMINDER_SYSTEM_USER_ID })
+}
+
+// cron이 오늘 이 규칙을 발송해야 하는지 판정한다.
+// - daily_digest: 매일
+// - deadline_offset: 오늘 == (신고 마감일 − offsetDays). v1은 vat만 filingDeadline 매핑을 가진다.
+// - manual: cron 제외
+export function isInternalReminderRuleDue(params: {
+  rule: Pick<InternalReminderRuleRow, 'triggerType' | 'offsetDays' | 'enabled' | 'domain'>
+  period: Pick<CompanyHomePeriod, 'filingDeadline'>
+  today: DateTime
+}): boolean {
+  const { rule, period, today } = params
+  if (!rule.enabled) return false
+  if (rule.triggerType === 'manual') return false
+  if (rule.triggerType === 'daily_digest') return true
+  // deadline_offset — v1은 vat 도메인만 신고 마감일(filingDeadline)을 매핑한다.
+  if (rule.domain !== 'vat') return false
+  const fd = period.filingDeadline
+  if (!/^\d{4}-\d{2}-\d{2}/.test(fd)) return false
+  const target = today
+    .set({ year: Number(fd.slice(0, 4)), month: Number(fd.slice(5, 7)), day: Number(fd.slice(8, 10)) })
+    .minus({ days: rule.offsetDays ?? 0 })
+    .toISODate()
+  return target === today.toISODate()
+}

@@ -3,20 +3,8 @@
   "regions": ["hnd1"],
   "crons": [
     {
-      "path": "/api/cron/reminder",
+      "path": "/api/cron/internal-reminder",
       "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/retry-failed",
-      "schedule": "0 */2 * * *"
-    },
-    {
-      "path": "/api/cron/stale-notify",
-      "schedule": "30 0 * * *"
-    },
-    {
-      "path": "/api/cron/auto-send-requests",
-      "schedule": "50 23 * * *"
     },
     {
       "path": "/api/cron/cleanup-send-locks",

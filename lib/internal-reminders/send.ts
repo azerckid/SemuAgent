@@ -14,7 +14,7 @@ import {
   type InternalReminderSummary,
 } from './summary'
 
-export type InternalReminderSendMode = 'test' | 'manual'
+export type InternalReminderSendMode = 'test' | 'manual' | 'cron'
 
 export type InternalReminderSendResult = {
   sent: number
@@ -26,7 +26,7 @@ export type InternalReminderSendResult = {
 type PersistRuleParams = {
   tenantId: string
   clientId: string
-  staffId: string
+  staffId: string | null
   rule: InternalReminderRuleRow
   enabled?: boolean
   timestamp: string
@@ -124,7 +124,8 @@ export async function persistInternalReminderRule({
       target: internalReminderRule.id,
       set: {
         enabled: enabled ?? rule.enabled,
-        updatedByStaffId: staffId,
+        // cron(staffId=null)은 기존 규칙의 편집자 정보를 덮어쓰지 않는다.
+        ...(staffId ? { updatedByStaffId: staffId } : {}),
         updatedAt: timestamp,
       },
     })
@@ -133,7 +134,7 @@ export async function persistInternalReminderRule({
 export async function sendInternalReminderRule(params: {
   summary: InternalReminderSummary
   ruleId: string
-  staffId: string
+  staffId: string | null
   mode: InternalReminderSendMode
   runKey?: string
 }) {

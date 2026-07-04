@@ -320,7 +320,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - New libraries: N/A - 기존 Resend·drizzle·luxon·cron lock 재사용
   - Libraries intentionally not added: N/A
   - shadcn preset action: N/A - UI 변경 없음
-- Document Sync Check: 착수 전 등록(2026-07-04). Brief(14) / Backlog Context Lock / JC-016 계약 상호 링크. 구현 후 cron 라우트·시스템 로더·vercel.json·테스트 파일 목록으로 갱신.
+- Document Sync Check: 구현 완료(2026-07-04). Brief(14) / Backlog Context Lock / JC-016 계약 상호 링크. 구현 파일: `app/api/cron/internal-reminder/route.ts`(신규, 테넌트 순회+due 판정+테넌트 격리), `lib/internal-reminders/summary.ts`(`loadInternalReminderSummaryForSystem`·`isInternalReminderRuleDue`·`INTERNAL_REMINDER_SYSTEM_USER_ID` 추가), `lib/internal-reminders/send.ts`(`InternalReminderSendMode`에 `cron` 추가, staffId nullable, cron persist가 편집자 정보 미덮어씀), `lib/internal-reminders/summary.test.ts`(due 판정·시스템 스코프 수신자 5건 추가), `vercel.json`(레거시 4개 제거+internal-reminder 추가). 전체 204파일 1334건 통과, tsc/eslint 클린. 레거시 라우트 코드 삭제는 후속 chore.
 
 ### JC-019 · Provide first-run sample workspace data (첫 가입 샘플 데이터) — 신규
 
