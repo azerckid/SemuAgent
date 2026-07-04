@@ -36,6 +36,9 @@
 | JC-021 | done | Remove remaining JARYO brand residue from first-run UX | `app/(auth)/_components/public-welcome-modal.tsx`, `app/onboarding/page.tsx` | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. **구현(2026-07-04)**: 환영 모달을 "회계사무소/고객사" 포지셔닝→"작은 회사 세무신고 준비(SemuAgent)"로 카피 재구성, 배지 `JARYO 베타`→`SemuAgent 베타`. 온보딩 `.jaryo.kr` 접미사 제거. 홈/문서의 JARYO-GIWA 이력·jaryo-admin·localStorage 내부키는 보존. |
 | JC-022 | done | Refine settings screen product language | `app/(dashboard)/dashboard/settings/_components/settings-panel.tsx`, `app/(dashboard)/dashboard/settings/page.tsx` | 설정 화면의 개발자/상류 용어(`테넌트`, `.jaryo.kr`)를 사용자가 이해하는 회사/사업자 문맥으로 정리한다. **구현(2026-07-04)**: 탭 `테넌트 설정`→`회사 설정`, 부제 `테넌트 정보…`→`회사 정보…`, 저장 토스트 문구, 서브도메인 읽기전용 필드 `{sub}.jaryo.kr`→`{sub}`(가짜 도메인 제거), 담당자 추가 설명 `JARYO`→`SemuAgent`. 내부 식별자(`tenant_id`)·코드 주석은 보존. 서브도메인 최종 도메인 정책은 실도메인 확정 후 재적용(후속). |
 | JC-023 | todo | Strategic Direction: 사용자 승인 기반 홈택스 자동제출 | `lib/filing-support`, Hometax e-filing 규격, 인증·감사 로그 | **MVP 밖 로드맵/전략 방향** — [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) 참조. 사용자가 신고 내용을 최종 확인·승인하면 SemuAgent가 사용자 권한 범위 안에서 홈택스 제출을 자동 진행하고 접수증까지 자동 회수·보관한다. 현행 "홈택스 입력 가이드/신고지원(JC-013)"은 중간 단계. 원칙: 사용자 최종 승인 필수·자격증명 원문 저장 금지·감사 로그 필수·접수증 자동 보관. 착수 전 조사 필요(전자신고 파일 규격·파일변환신고·인증 기반 제출 자동화 가능성·공식 API vs 비공개 연동). 구현 착수 전 별도 technical brief·법무/보안 검토 필수. |
+| JC-024 | todo | 연말정산·지급명세서 지원 (급여/원천 확장) | `lib/payroll-workspace`, `lib/filing-support`, 급여·원천세 데이터 | **우선순위: 높음 · 법적 리스크: 낮음.** 회사(원천징수의무자)가 연말정산 결과와 지급명세서(근로·사업소득)를 준비·제출 보조한다. 이미 급여(JC-012)·원천세(신고지원 JC-013)·직원명부(JC-015) 데이터가 있어 자연스러운 확장이며, 회사 본인 업무라 세무대리 리스크가 낮다. 매년 반복 신고. 자동 제출은 JC-023 원칙(사용자 최종 승인) 준수. |
+| JC-025 | todo | 종합소득세 신고 지원 (개인사업자, self-filing 보조) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 주의.** 개인사업자 종합소득세(5월) 신고서 계산·초안·검증을 self-filing 보조로 제공한다. 기장검토(JC-010) output을 사용한다. ⚠️ 세무조정이 개입하면 세무사법 제2조("세무서류 작성")에 저촉 소지가 있어, "계산·초안·사용자 최종 확인" 수준으로 한정하고 세무조정계산서 자동작성은 신중히 다룬다. 착수 전 법무 검토 게이트. |
+| JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
 
 ## Implementation Rule
 
@@ -390,6 +393,51 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 제출 후 접수증을 자동으로 회수·보관한다.
   - [ ] 자동제출은 사용자 권한 범위 안에서만 수행되며 세무대리로 포지셔닝하지 않는다.
 - Document Sync Check: 2026-07-04 전략 방향 등록 + **실현가능성 리서치 브리프 작성**([13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md), 5개 병렬 조사 통합). MVP 범위는 변경 없음(자동제출 없음, 홈택스 제출 보조). **핵심 결론**: 파일 생성·파일변환신고까지 실현 가능하나 완전 무인 제출은 공개 조사 기준 일반 공개 제출 채널 미확인 → 실현가능한 최대치는 "사용자 승인 기반 self-filing(사용자 최종 인증 서명)". 남은 게이트: 국세청 126 공식 문의(규격 입수·적합성 검정·오픈API 제출 범위) + 법무 검토. 구현 착수 시 별도 Pre-Code Brief/QA 신설.
+
+### JC-024 · 연말정산·지급명세서 지원 — 급여/원천 도메인 확장 (우선순위 높음 · 저위험)
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 회사 self-use 세무 준비
+- Related Domain: 급여(JC-012) · 신고지원 원천세(JC-013) · 직원 명부(JC-015) 데이터 확장. 자동제출은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 원칙 준수.
+- Related HTML Preview: N/A - 착수 시 급여/신고지원 Preview 확장.
+- Implementation Preconditions:
+  - [ ] 연말정산 대상 데이터(직원 소득·공제)와 급여/직원명부 read model 매핑 확정
+  - [ ] 지급명세서(근로·사업소득) 서식·제출 주기(간이/연간)·전자신고 파일 규격 확인 ([JC-023 Research §2.1](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md), 지급명세서 규격 공개본 존재)
+  - [ ] self-filing 보조 경계(자동 제출 없음, 사용자 최종 승인) 설계
+- Acceptance Criteria:
+  - [ ] 연말정산 결과·지급명세서를 회사 담당자가 확인·수정하는 read model/화면 제공
+  - [ ] 제출은 사용자 승인 기반(JC-023 원칙), 자격증명 원문 미저장
+  - [ ] 급여·원천세·직원명부 기존 데이터와 정합
+- Document Sync Check: 2026-07-04 등록. 급여/원천 도메인 확장으로 저위험. 착수 시 Pre-Code Brief/QA 신설.
+
+### JC-025 · 종합소득세 신고 지원 (개인사업자) — self-filing 보조 (우선순위 중 · 법적 경계 주의)
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related Domain: 기장검토(JC-010) output · 신고지원(JC-013). 법적 경계는 [JC-023 Research §2.3](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md)(세무사법).
+- Related HTML Preview: N/A.
+- Implementation Preconditions:
+  - [ ] 종소세 신고서 계산 로직·필요 데이터(기장 output) 매핑
+  - [ ] 세무조정 개입 범위 확정 — 자동작성 vs 사용자 입력·확인 경계
+  - [ ] **법무 검토** — 세무사법 제2조("세무서류 작성") 저촉 여부, self-filing 경계
+- Acceptance Criteria:
+  - [ ] 계산·초안은 제공하되 세무 판단·최종 확인은 사용자에게 강제한다
+  - [ ] 세무대리로 포지셔닝하지 않고 표시·광고 규제(세무사법 제20조3항·제22조의2 10호) 준수
+  - [ ] 제출은 사용자 승인 기반(JC-023)
+- Document Sync Check: 2026-07-04 등록. 법적 경계로 법무 검토 게이트. 착수 시 Pre-Code Brief/QA 신설.
+
+### JC-026 · 법인세 신고 지원 (법인) — 법적 경계 강함 (우선순위 낮음)
+
+- Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related Domain: 기장검토(JC-010) output. 법적 경계는 [JC-023 Research §2.3](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
+- Related HTML Preview: N/A.
+- Implementation Preconditions:
+  - [ ] 법인세 신고·세무조정계산서 범위 정의 및 복잡도 평가
+  - [ ] **법무 검토(필수 게이트)** — 세무조정계산서 작성 = 세무사 직무(세무사법 제2조), 무자격 세무대리 리스크 최상
+  - [ ] self-filing 보조로 한정 가능한지, 세무사 제휴 필요 여부 판단
+- Acceptance Criteria:
+  - [ ] 세무조정계산서 관련 기능이 세무대리에 해당하지 않는 범위로 한정된다(법무 확인)
+  - [ ] 계산·초안·검증 중심, 세무 판단·최종 확인은 사용자
+  - [ ] 제출은 사용자 승인 기반(JC-023)
+- Document Sync Check: 2026-07-04 등록. 세 항목 중 법적 리스크 최상 → 안정화·저위험 항목 후 착수. 법무 검토 필수.
 
 > 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 인프라 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작). 2026-07-03 프로덕션 first-run E2E에서 발견된 신규 사용자 경험 후속은 JC-019(샘플 데이터 first-run), JC-020(가입 후 온보딩 라우팅), JC-021(브랜드 잔재 정리), JC-022(설정 화면 제품 언어 정리)로 등록했다.
 
