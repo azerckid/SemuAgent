@@ -13,6 +13,7 @@ const FLOW_NAV = [
   { href: '/dashboard/vat', label: '부가세', glyph: '％' },
   { href: '/dashboard/payroll', label: '급여', glyph: '₩' },
   { href: '/dashboard/filing-support', label: '신고지원', glyph: '↧' },
+  { href: '/dashboard/filing-preparation', label: '신고 준비', glyph: '◷' },
 ] as const
 
 const MANAGE_NAV = [
@@ -27,6 +28,7 @@ interface SidebarProps {
   bookkeepingPendingCount?: number
   payrollEmployeeCount?: number
   filingAttentionCount?: number
+  filingPrepAttentionCount?: number
   reminderAttentionCount?: number
 }
 
@@ -41,6 +43,7 @@ export function Sidebar({
   bookkeepingPendingCount = 0,
   payrollEmployeeCount = 0,
   filingAttentionCount = 0,
+  filingPrepAttentionCount = 0,
   reminderAttentionCount = 0,
 }: SidebarProps) {
   return (
@@ -72,7 +75,9 @@ export function Sidebar({
               ? payrollEmployeeCount
               : item.href === '/dashboard/filing-support'
                 ? filingAttentionCount
-                : 0
+                : item.href === '/dashboard/filing-preparation'
+                  ? filingPrepAttentionCount
+                  : 0
 
           return (
             <SidebarNavLink key={item.href} href={item.href} badge={badge}>

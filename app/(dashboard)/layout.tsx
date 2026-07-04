@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { loadBookkeepingReviewPendingCount } from '@/lib/bookkeeping-review/summary'
 import { db } from '@/lib/db'
 import { tenant } from '@/lib/db/schema'
+import { loadFilingPreparationAttentionCount } from '@/lib/filing-preparation/summary'
 import { loadFilingSupportAttentionCount } from '@/lib/filing-support/summary'
 import { loadFirstRunSampleState } from '@/lib/first-run-sample/summary'
 import { loadInternalReminderAttentionCount } from '@/lib/internal-reminders/summary'
@@ -36,12 +37,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     bookkeepingPendingCount,
     payrollEmployeeCount,
     filingAttentionCount,
+    filingPrepAttentionCount,
     reminderAttentionCount,
     firstRunSampleState,
   ] = await Promise.all([
     loadBookkeepingReviewPendingCount(tenantId),
     loadPayrollSidebarEmployeeCount(tenantId),
     loadFilingSupportAttentionCount(tenantId),
+    loadFilingPreparationAttentionCount(tenantId),
     loadInternalReminderAttentionCount(tenantId, session.user.id),
     loadFirstRunSampleState(tenantId),
   ])
@@ -54,6 +57,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         bookkeepingPendingCount={bookkeepingPendingCount}
         payrollEmployeeCount={payrollEmployeeCount}
         filingAttentionCount={filingAttentionCount}
+        filingPrepAttentionCount={filingPrepAttentionCount}
         reminderAttentionCount={reminderAttentionCount}
       />
       <main className="flex min-w-0 flex-col bg-company-bg">
