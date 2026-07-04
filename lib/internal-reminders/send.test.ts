@@ -11,6 +11,7 @@ vi.mock('@/lib/email/from', () => ({
 import {
   buildInternalReminderContextKey,
   buildInternalReminderIdempotencyKey,
+  composeEmployeePayrollReminderEmail,
   composeInternalReminderEmail,
 } from './send'
 
@@ -65,5 +66,27 @@ describe('internal reminder send helpers', () => {
     expect(email.text).not.toContain('고객사 요청을 발송했습니다')
     expect(email.text).not.toContain('제출 완료')
     expect(email.html).toContain('부가세 신고 마감')
+  })
+
+  it('composes a payroll employee reminder that never leaks sensitive payroll details (JC-018)', () => {
+    const email = composeEmployeePayrollReminderEmail({
+      recipientName: '김철수',
+      mode: 'manual',
+    })
+
+    expect(email.subject).toBe('급여 정보 확인 요청')
+    expect(email.text).toContain('김철수님')
+    expect(email.text).toContain('세무 에이전트 내부 업무 리마인드')
+    expect(email.text).toContain('급여 금액이나 세부 내역은 포함하지 않습니다')
+    // 금액·세액·계좌 등 민감정보 관련 키워드가 절대 섞여 들어가지 않는지 확인
+    for (const forbidden of ['원', '₩', 'KRW', '세액', '계좌', '주민등록번호']) {
+      expect(email.text).not.toContain(forbidden)
+      expect(email.html).not.toContain(forbidden)
+    }
+  })
+
+  it('prefixes [테스트] for employee reminders when mode is test', () => {
+    const email = composeEmployeePayrollReminderEmail({ recipientName: '김철수', mode: 'test' })
+    expect(email.subject).toBe('[테스트] 급여 정보 확인 요청')
   })
 })

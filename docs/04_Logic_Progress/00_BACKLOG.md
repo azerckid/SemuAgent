@@ -30,7 +30,7 @@
 | JC-015 | done | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리. read model·화면·추가/수정 API·0056 migration 구현 완료. 급여 line은 `employee_code` 읽기 전용 최근 귀속월 매칭으로 연결하며, 리마인드 직원 수신자 연동은 JC-018 후속 |
 | JC-016 | done | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 내부 staff/본인 수신 기반 리마인드 read model·화면·토글/테스트 발송/즉시 발송 API·0057 migration 구현 완료. Vercel Cron 자동 예약은 JC-017, 직원 명부 기반 직원 수신은 JC-018 후속 |
 | JC-017 | done | Schedule internal reminder cron (내부 리마인드 cron + 레거시 cron 정리) | `app/api/cron/internal-reminder`(신규), `vercel.json`, `lib/internal-reminders` | **우선순위: 최상(기한 내 신고 완성) · 저위험.** Vercel Cron이 신규 내부 리마인드(`internal_reminder_*`) 발송을 매일 실행한다. 세션 없는 테넌트 스코프 시스템 로더로 활성 규칙을 조회하고, D-day 판정(daily_digest=확인필요 있을때만 / deadline_offset=마감−offsetDays 당일 / manual=제외)으로 발송한다. 레거시 cron 4개(reminder·retry-failed·stale-notify·auto-send-requests)는 vercel.json에서 제거(라우트 코드 삭제는 후속 chore). cleanup-send-locks·billing-renewals 유지. idempotency·발송 로그·provider missing·테넌트 격리 검증. [Internal Reminder Cron Pre-Code Brief](../03_Technical_Specs/14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md) 참조. |
-| JC-018 | todo | Connect employee directory recipients to reminders (급여 도메인 한정) | `lib/internal-reminders`, `lib/employee-directory`, `lib/payroll-workspace`, `employee_profile` | **v1 스코프 확정(2026-07-05).** payroll 도메인 내부 리마인드에 한해 담당자(staff) 전체 요약 수신 + **그 시점 확인 필요(needs_review) 급여 line을 가진 직원만** 대상으로 수신자를 연동한다. 직원 이메일은 금액·세액 등 민감정보를 절대 포함하지 않고 일반 문구("급여/인적사항 확인 요청")만 발송한다. `recipient_source`(mixed)는 payroll 도메인에 코드로 고정하며, 규칙별 사용자 설정 UI는 후속(JC-018-후속)이다. 직원 이메일 없음/알림 꺼짐/명부 미매칭이면 해당 직원만 제외(staff는 그대로 전체 요약 수신). |
+| JC-018 | done | Connect employee directory recipients to reminders (급여 도메인 한정) | `lib/internal-reminders`, `lib/employee-directory`, `lib/payroll-workspace`, `employee_profile` | **v1 스코프 확정(2026-07-05).** payroll 도메인 내부 리마인드에 한해 담당자(staff) 전체 요약 수신 + **그 시점 확인 필요(needs_review) 급여 line을 가진 직원만** 대상으로 수신자를 연동한다. 직원 이메일은 금액·세액 등 민감정보를 절대 포함하지 않고 일반 문구("급여/인적사항 확인 요청")만 발송한다. `recipient_source`(mixed)는 payroll 도메인에 코드로 고정하며, 규칙별 사용자 설정 UI는 후속(JC-018-후속)이다. 직원 이메일 없음/알림 꺼짐/명부 미매칭이면 해당 직원만 제외(staff는 그대로 전체 요약 수신). |
 | JC-019 | done | Provide first-run sample workspace data | `lib/first-run-sample`, `app/api/first-run-sample`, `app/(dashboard)/_components/sample-data-banner.tsx`, `app/(dashboard)/layout.tsx` | 신규 테넌트가 가입 직후 승인 Preview와 같은 샘플 업무 데이터를 보고 메뉴 구조를 이해할 수 있다. 샘플 데이터는 명확히 표시되고, 실사용 전 사용자가 한 번에 삭제할 수 있어야 한다. **프로덕션 E2E 완료(2026-07-04)**: 신규가입→온보딩 직후 자동 seed(`sample_dataset` active + registry 427행)→전역 배너·워크스페이스 채워짐→"샘플 삭제" 확인 dialog→**샘플 도메인 행 전부 삭제·`client`(사업장)/tenant/staff 보존**·dataset `deleted`(재생성 없음) 확인. registry+whitelist+delete_order+tenant scope 안전장치 실전 검증. 구현 PR #41 · 핫픽스 PR #42(서버/클라 import 경계) · 재발방지 `server-only` 가드. |
 | JC-020 | done | Fix signup-to-onboarding routing | `app/(auth)/sign-up`, `app/(auth)/sign-in`, `app/(dashboard)/layout.tsx`, `app/onboarding` | 신규 가입자가 tenant/organization이 없는 상태에서 깨진 dashboard/clients 화면으로 이동하지 않고 `/onboarding`으로 안내된다. 기존 tenant가 있는 사용자는 기존 대시보드 진입을 유지한다. **구현(2026-07-04)**: sign-up→`/onboarding`, sign-in은 org 있으면 setActive 후 dashboard·없으면 `/onboarding`, dashboard layout은 활성 테넌트 없으면 `/onboarding` redirect(깨진 children 렌더 제거), onboarding은 이미 org 있는 사용자를 setActive 후 dashboard로 자기교정. |
 | JC-021 | done | Remove remaining JARYO brand residue from first-run UX | `app/(auth)/_components/public-welcome-modal.tsx`, `app/onboarding/page.tsx` | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. **구현(2026-07-04)**: 환영 모달을 "회계사무소/고객사" 포지셔닝→"작은 회사 세무신고 준비(SemuAgent)"로 카피 재구성, 배지 `JARYO 베타`→`SemuAgent 베타`. 온보딩 `.jaryo.kr` 접미사 제거. 홈/문서의 JARYO-GIWA 이력·jaryo-admin·localStorage 내부키는 보존. |
@@ -344,13 +344,13 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] Pre-Code Brief 작성 — [17_PAYROLL_EMPLOYEE_REMINDER_PRE_CODE_BRIEF.md](../03_Technical_Specs/17_PAYROLL_EMPLOYEE_REMINDER_PRE_CODE_BRIEF.md)
   - [x] 직원 매칭 방식 확정 — employeeCode 정확 매칭만 허용(이름 fallback 미사용, 개인 이메일 오발송 방지). 매칭 실패/이메일 없음/알림 꺼짐/퇴사자는 제외([Brief §2](../03_Technical_Specs/17_PAYROLL_EMPLOYEE_REMINDER_PRE_CODE_BRIEF.md))
 - Acceptance Criteria:
-  - [ ] payroll 리마인드 발송 시 staff는 기존과 동일한 전체 요약을 받는다(회귀 없음).
-  - [ ] 해당 시점 급여 확인 필요(needs_review) 직원만 추가로 이메일을 받는다(전체 직원 아님).
-  - [ ] 직원 이메일 본문에 금액·세액·기타 민감정보가 포함되지 않는다.
-  - [ ] 직원 명부 미매칭·이메일 없음·알림 꺼짐 직원은 제외되고, staff 발송에는 영향 없다.
-  - [ ] payroll 외 도메인은 v1에서 동작 변경이 없다(staff만 유지).
-  - [ ] recipient_source 규칙별 설정 UI는 이번 범위에 포함하지 않는다.
-- Document Sync Check: 2026-07-05 v1 스코프 확정 + Pre-Code Brief 작성(17). Context Lock 전제 3/3 충족. 구현 착수 준비 완료.
+  - [x] payroll 리마인드 발송 시 staff는 기존과 동일한 전체 요약을 받는다(회귀 없음).
+  - [x] 해당 시점 급여 확인 필요(needs_review) 직원만 추가로 이메일을 받는다(전체 직원 아님)(mode=manual/cron만; test는 직원 미발송).
+  - [x] 직원 이메일 본문에 금액·세액·기타 민감정보가 포함되지 않는다(고정 템플릿, 단위 테스트로 금지어 검증).
+  - [x] 직원 명부 미매칭·이메일 없음·알림 꺼짐·퇴사자 직원은 제외되고, staff 발송에는 영향 없다.
+  - [x] payroll 외 도메인은 v1에서 동작 변경이 없다(staff만 유지, `rule.domain === 'payroll'` 분기로만 확장).
+  - [x] recipient_source 규칙별 설정 UI는 이번 범위에 포함하지 않는다(payroll 도메인 mixed는 코드 분기).
+- Document Sync Check: 구현 완료(2026-07-05). 구현 파일: `lib/internal-reminders/payroll-attention-employees.ts`(신규, needs_review 직원 조회·순수 필터 함수), `lib/internal-reminders/payroll-attention-employees.test.ts`(8건), `lib/internal-reminders/send.ts`(`composeEmployeePayrollReminderEmail` 신규, `writeSendLog` recipientType 매개변수화, payroll 도메인 직원 발송 루프 추가·staff 루프와 격리), `lib/internal-reminders/send.test.ts`(민감정보 미포함 테스트 2건 추가). 전체 207파일 1375건 통과, tsc/eslint/build 클린.
 
 ### JC-019 · Provide first-run sample workspace data (첫 가입 샘플 데이터) — 신규
 
