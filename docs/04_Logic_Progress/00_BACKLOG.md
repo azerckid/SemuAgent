@@ -41,7 +41,7 @@
 | JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
 | JC-027 | todo | 지방소득세 연동 지원 | 원천세·종소세·법인세 신고, `lib/filing-support` | **우선순위: 낮음(본세 부속) · 법적 리스크: 낮음.** 지방소득세(원천세 특별징수분·종합소득세분·법인세분)를 본세 신고에 연동해 함께 계산·안내한다. 대개 본세와 동반 신고되므로 JC-024/025/026 및 원천세 흐름에 부속으로 붙는다. 독립 우선순위 낮음. |
 | JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
-| JC-029 | todo | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
+| JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 착수 전 영향 감사 필수.** JARYO-GIWA 시절의 대형 레거시 서브시스템을 단계적으로 은퇴한다. JC-004에서 라우트 redirect 차단은 됐으나 스키마·도메인 코드가 살아있고 상호 참조가 많다(uploadSession·outbound_email이 100개 넘는 파일에 광범위 참조, 정확 수치는 검색 범위·시점에 따라 변동). chore가 아니라 별도 에픽으로, 착수 전 라우트·DB·메일·업로드 포털·테스트 영향 범위를 정밀 감사하고 단계별 삭제 계획을 세운다. 고립된 4개 레거시 cron 라우트 삭제는 이 에픽과 별개로 선행 완료(chore/remove-legacy-cron-routes). |
 
@@ -516,15 +516,15 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 사업자 유형(개인/법인/면세)별 노출 규칙 확정 — 해당 없는 세목 트랙은 흐림(dimmed)+"해당 없음" 배지(숨김 아님), [Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md)
   - [x] Pre-Code Brief 작성 — [Filing Preparation Hub Pre-Code Brief](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md)
 - Acceptance Criteria:
-  - [ ] 사이드바 "신고 준비" 진입 시 신고 데이터 준비율, 확인 필요 blocker, 다음 액션이 표시된다
-  - [ ] 공통 기반(자료수집 -> 기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)이 한 화면에 표시된다
-  - [ ] 각 트랙이 입력·산출·handoff 기준으로 읽힌다
-  - [ ] 세무 일정은 하단 보조 섹션으로 표시되고, 화면의 중심은 일정표가 아니다
-  - [ ] 사업자 유형(개인/법인/면세)별 해당 없는 세목 트랙이 흐림(dimmed)+"해당 없음"으로 표시된다
-  - [ ] 최종 제출·납부는 사용자가 직접 수행한다는 책임 경계가 명시된다
-  - [ ] 신규 산출 엔진·신규 DB·자동제출은 JC-029 Preview/1차 구현 범위에 포함하지 않는다
-  - [ ] 화면은 read-only이며 mutation을 수행하지 않는다
-  - [ ] 로딩·빈·오류·권한 없음 상태가 구현된다
+  - [x] 사이드바 "신고 준비" 진입 시 신고 데이터 준비율, 확인 필요 blocker, 다음 액션이 표시된다
+  - [x] 공통 기반(자료수집 -> 기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)이 한 화면에 표시된다
+  - [x] 각 트랙이 입력·산출·handoff 기준으로 읽힌다
+  - [x] 세무 일정은 하단 보조 섹션으로 표시되고, 화면의 중심은 일정표가 아니다
+  - [x] 사업자 유형(개인/법인/면세)별 해당 없는 세목 트랙이 흐림(dimmed)+"해당 없음"으로 표시된다(메커니즘 구현·테스트 완료; 전용 유형 필드 연결은 후속)
+  - [x] 최종 제출·납부는 사용자가 직접 수행한다는 책임 경계가 명시된다
+  - [x] 신규 산출 엔진·신규 DB·자동제출은 JC-029 Preview/1차 구현 범위에 포함하지 않는다
+  - [x] 화면은 read-only이며 mutation을 수행하지 않는다
+  - [x] 로딩·빈·오류·권한 없음 상태가 구현된다
 - Document Sync Check: 2026-07-04 재프레임 + UI-First Gate 승인 + Pre-Code Brief 작성. PR #50의 "세무 일정 허브" Preview는 "신고 준비 현황 허브"로 supersede. Context Lock 전제 6/6 충족(브라우저 검토 승인·흐림 노출 규칙·Brief 15). 구현 완료(2026-07-04): lib/filing-preparation/summary.ts(집계 read model + classifyBusinessType·isTrackApplicable·준비율 순수함수), /dashboard/filing-preparation(page·hub·loading·error), 사이드바 항목+layout badge. 테스트 11건·전체 1345건 통과, tsc/eslint/build 클린. 사업자 유형은 tenant_billing_profile.businessType로 분류(불명확 시 unknown=흐림 없음), 전용 유형 필드는 후속. 저위험.
 
 ### JC-030 · 전자신고 파일 생성·검증 — 파일변환신고용 제출 파일 (우선순위 높음 · 저위험)
