@@ -197,7 +197,24 @@
 - 자동제출·신규 산출 엔진·신규 DB는 JC-029 Preview 범위 밖이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
-### 4.11 First-run Sample Data (JC-019)
+### 4.11 지급명세서·연말정산 (09_payment_year_end.html, JC-024)
+
+신고 준비 허브(4.10)의 "지급명세서/연말정산" 트랙 "열기"로 진입하는 전용 검토 화면. 급여·직원 명부 데이터를 반기/연 단위로 집계한 **read-only** 화면이다.
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Prep Hero | 대상 인원·확인 필요(누락)·데이터 준비 완료 요약 | 진행률 + 카운트 |
+| Next Action List | 급여 미확정·인적사항 누락 blocker + 급여/직원 명부 CTA | danger/warn dot + 라우팅 |
+| 간이지급명세서 Table | 직원별 귀속기간·지급총액·원천징수세액·준비 상태(근로소득 반기) | 준비완료/누락 월/확인 필요 상태칩 |
+| 연말정산 Table | 직원별 재직·연간 지급합계·기납부 원천세·누락·검토 상태 | 검토 준비/월 급여 필요/중도정산 검토 |
+| Responsibility Boundary | 신고 준비 데이터까지·정산액 계산·전자신고 파일(JC-030)·홈택스 제출 제외 | accent 안내 박스 |
+| State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
+
+- 화면 언어는 "제출용"이 아니라 **"신고 준비 데이터"** 로 통일한다(제출 대행 뉘앙스 회피).
+- 단일 스크롤·직원 중심 표. mutation 없음(확인 필요는 기존 업무 화면으로 라우팅).
+- 정산액 계산·전자신고 파일 생성·자동제출은 JC-024 v1 범위 밖. 상태칩·State Card·Table 골격은 공통(DRY).
+
+### 4.12 First-run Sample Data (JC-019)
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
@@ -260,6 +277,7 @@
 - Preview (직원 명부): [06_employee_directory.html](./previews/06_employee_directory.html)
 - Preview (리마인드): [07_internal_reminder.html](./previews/07_internal_reminder.html)
 - Preview (신고 준비): [08_filing_preparation.html](./previews/08_filing_preparation.html)
+- Preview (지급명세서·연말정산): [09_payment_year_end.html](./previews/09_payment_year_end.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자

@@ -435,7 +435,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 회사 self-use 세무 준비
 - Related Domain: 급여(JC-012) · 신고지원 원천세(JC-013) · 직원 명부(JC-015) 데이터 확장. 자동제출은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 원칙 준수.
-- Related HTML Preview: 착수 예정 — 지급명세서/연말정산 **전용 검토 화면** 신규 Preview 필요(UI-First Gate). 신고 준비 허브(JC-029) "지급명세서/연말정산" 트랙을 roadmap→live로 전환.
+- Related HTML Preview: [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html) — 지급명세서·연말정산 전용 검토 화면(UI-First Gate 승인 2026-07-05). 신고 준비 허브(JC-029) "지급명세서/연말정산" 트랙을 roadmap→live로 전환.
 
 - **v1 Scope 확정 (2026-07-05):**
   - **지급명세서**: 간이지급명세서(근로소득) **우선**. 기존 월별 payroll `withholding_statement` 데이터를 반기 단위로 집계. 연간 지급명세서·사업소득 명세서는 후속.
@@ -449,7 +449,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 연말정산 준비·검토 데이터(직원별 연간 지급·기납부) 매핑 확정 (정산액 계산 제외)
   - [ ] 지급명세서 서식·제출 주기 확인 ([JC-023 Research §2.1](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md), 규격 공개본 존재)
   - [ ] self-filing 보조 경계(자동 제출 없음, 사용자 최종 승인) 설계
-  - [ ] **UI-First Gate**: 전용 검토 화면 HTML Preview 작성·사용자 승인
+  - [x] **UI-First Gate**: 전용 검토 화면 HTML Preview 작성·사용자 승인 — [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html), 2026-07-05 승인(단일 스크롤·직원 중심 표·신고 준비 데이터 용어 통일)
   - [ ] Pre-Code Brief 작성
 - Acceptance Criteria:
   - [ ] 간이지급명세서(근로소득) 준비 상태·누락을 회사 담당자가 확인하는 read model/화면 제공
