@@ -59,7 +59,7 @@ cron은 매일 1회 실행되며(`0 0 * * *` 후보, KST 09:00 = UTC 00:00), 각
 
 | triggerType | 발송 조건 | 마감 출처 |
 |:---|:---|:---|
-| `daily_digest` | 매일 1회. 현재 "확인 필요" 상태 요약 발송 | 상태 요약(summary attention) |
+| `daily_digest` | 확인 필요(`attentionCount > 0`)일 때만 1회. 0건이면 발송하지 않는다(0건 메일 스팸 방지) | 상태 요약(summary attention) |
 | `deadline_offset` | **오늘 == (세무 마감일 − `offsetDays`)** 인 날에만 발송 | v1은 `vat` 도메인의 신고 마감일. 구현은 `CompanyHomePeriod.filingDeadline`을 사용하고, 세무 일정 기준은 `lib/tax-calendar.ts`의 VAT occurrence와 맞춘다. |
 | `manual` | cron 대상 **제외**. `/api/internal-reminders/send-now` 버튼만 | - |
 
@@ -79,7 +79,7 @@ cron은 매일 1회 실행되며(`0 0 * * *` 후보, KST 09:00 = UTC 00:00), 각
 
 - [ ] `/api/cron/internal-reminder`가 `verifyCronAuth` 통과 후에만 실행된다.
 - [ ] 하루 중복 실행이 cron lock으로 차단된다.
-- [ ] `daily_digest`는 매일, `deadline_offset`는 마감−offsetDays 당일에만, `manual`은 cron에서 발송되지 않는다.
+- [ ] `daily_digest`는 확인 필요(attentionCount>0)일 때만, `deadline_offset`는 마감−offsetDays 당일에만, `manual`은 cron에서 발송되지 않는다.
 - [ ] 세션 없이 테넌트 스코프로 활성 규칙을 조회·발송한다(userId 의존 제거).
 - [ ] 예약 발송은 `cron` send mode/contextKey로 기록되어 `manual` 즉시 발송 로그와 구분된다.
 - [ ] 한 테넌트 발송 실패가 다른 테넌트 발송을 막지 않는다.

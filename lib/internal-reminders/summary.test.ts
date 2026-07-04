@@ -118,29 +118,37 @@ describe('internal reminder cron due judgment', () => {
       })
       .minus({ days })
 
-  it('sends daily_digest every day and never sends manual via cron', () => {
+  it('sends daily_digest only when there is attention (skips 0-count) and never sends manual via cron', () => {
+    // 확인 필요 건이 있을 때만 발송
     expect(isInternalReminderRuleDue({
-      rule: { triggerType: 'daily_digest', offsetDays: null, enabled: true, domain: 'payroll' },
+      rule: { triggerType: 'daily_digest', offsetDays: null, enabled: true, domain: 'payroll', attentionCount: 1 },
       period,
       today,
     })).toBe(true)
+    // 확인 필요 0건이면 발송하지 않는다 (0건 메일 스팸 방지)
     expect(isInternalReminderRuleDue({
-      rule: { triggerType: 'manual', offsetDays: null, enabled: true, domain: 'filing_support' },
+      rule: { triggerType: 'daily_digest', offsetDays: null, enabled: true, domain: 'payroll', attentionCount: 0 },
+      period,
+      today,
+    })).toBe(false)
+    expect(isInternalReminderRuleDue({
+      rule: { triggerType: 'manual', offsetDays: null, enabled: true, domain: 'filing_support', attentionCount: 5 },
       period,
       today,
     })).toBe(false)
   })
 
-  it('sends deadline_offset(vat) only on filingDeadline − offsetDays', () => {
+  it('sends deadline_offset(vat) on filingDeadline − offsetDays regardless of attention', () => {
     const dueDay = deadlineMinus(3)
+    // deadline_offset은 마감 리마인드이므로 attentionCount 0이어도 마감일 기준으로 발송한다
     expect(isInternalReminderRuleDue({
-      rule: { triggerType: 'deadline_offset', offsetDays: 3, enabled: true, domain: 'vat' },
+      rule: { triggerType: 'deadline_offset', offsetDays: 3, enabled: true, domain: 'vat', attentionCount: 0 },
       period,
       today: dueDay,
     })).toBe(true)
     // 마감 당일(오프셋 0)엔 발송하지 않는다 (offsetDays=3 규칙)
     expect(isInternalReminderRuleDue({
-      rule: { triggerType: 'deadline_offset', offsetDays: 3, enabled: true, domain: 'vat' },
+      rule: { triggerType: 'deadline_offset', offsetDays: 3, enabled: true, domain: 'vat', attentionCount: 2 },
       period,
       today: deadlineMinus(0),
     })).toBe(false)
@@ -148,7 +156,7 @@ describe('internal reminder cron due judgment', () => {
 
   it('skips deadline_offset for non-vat domains (v1 has no other deadline mapping)', () => {
     expect(isInternalReminderRuleDue({
-      rule: { triggerType: 'deadline_offset', offsetDays: 3, enabled: true, domain: 'payroll' },
+      rule: { triggerType: 'deadline_offset', offsetDays: 3, enabled: true, domain: 'payroll', attentionCount: 4 },
       period,
       today: deadlineMinus(3),
     })).toBe(false)
@@ -156,7 +164,7 @@ describe('internal reminder cron due judgment', () => {
 
   it('never sends disabled rules', () => {
     expect(isInternalReminderRuleDue({
-      rule: { triggerType: 'daily_digest', offsetDays: null, enabled: false, domain: 'payroll' },
+      rule: { triggerType: 'daily_digest', offsetDays: null, enabled: false, domain: 'payroll', attentionCount: 9 },
       period,
       today,
     })).toBe(false)

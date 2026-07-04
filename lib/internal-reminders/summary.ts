@@ -641,18 +641,19 @@ export function loadInternalReminderSummaryForSystem(params: {
 }
 
 // cron이 오늘 이 규칙을 발송해야 하는지 판정한다.
-// - daily_digest: 매일
+// - daily_digest: 확인 필요(attentionCount > 0)일 때만. 0건이면 발송하지 않는다(0건 메일 스팸 방지).
 // - deadline_offset: 오늘 == (신고 마감일 − offsetDays). v1은 vat만 filingDeadline 매핑을 가진다.
 // - manual: cron 제외
 export function isInternalReminderRuleDue(params: {
-  rule: Pick<InternalReminderRuleRow, 'triggerType' | 'offsetDays' | 'enabled' | 'domain'>
+  rule: Pick<InternalReminderRuleRow, 'triggerType' | 'offsetDays' | 'enabled' | 'domain' | 'attentionCount'>
   period: Pick<CompanyHomePeriod, 'filingDeadline'>
   today: DateTime
 }): boolean {
   const { rule, period, today } = params
   if (!rule.enabled) return false
   if (rule.triggerType === 'manual') return false
-  if (rule.triggerType === 'daily_digest') return true
+  // daily_digest는 "현재 확인 필요 상태 요약"이므로 확인 필요 건이 있을 때만 발송한다.
+  if (rule.triggerType === 'daily_digest') return (rule.attentionCount ?? 0) > 0
   // deadline_offset — v1은 vat 도메인만 신고 마감일(filingDeadline)을 매핑한다.
   if (rule.domain !== 'vat') return false
   const fd = period.filingDeadline
