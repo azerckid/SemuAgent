@@ -525,27 +525,28 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Domain: 급여(JC-012, `payrollEmployeeLine.localIncomeTaxKrw`), 신고지원(JC-013, `splitWithholdingTax` 정합성 수정 대상), 신고 준비 허브(JC-029, `local_income` 트랙)
 - Related UI Docs: [Screen Flow 4j](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.12](../02_UI_Screens/01_UI_DESIGN.md) — 지방소득세 화면 흐름·컴포넌트(UI-First Gate 승인 2026-07-05).
 - Related HTML Preview: [10_local_income_tax.html](../02_UI_Screens/previews/10_local_income_tax.html) — 지방소득세 준비 전용 화면(JC-024 `09_payment_year_end.html`과 유사한 read-only 집계 패턴 재사용).
-- Related Technical Docs: [Local Income Tax Pre-Code Brief](../03_Technical_Specs/18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md) — 실제값 집계 계약·splitWithholdingTax 교체 계약·허브 트랙 live 전환 계약.
+- Related Technical Docs: [Local Income Tax Pre-Code Brief](../03_Technical_Specs/18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md) — 확정 라인 실제값 집계 계약·splitWithholdingTax 교체 계약·허브 트랙 live 전환 계약.
 - Related QA Docs: N/A - 착수 시 신설.
 - Prototype Review / 승인: 2026-07-05 브라우저 검토 승인. 문구 2건 반영(귀속기간/원천세 신고 주기 기준 표현, 소득세(국세)/지방소득세(특별징수) 컬럼 분리).
 - **v1 Scope 확정 (2026-07-05):**
   - **대상**: "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 완료 이후 별도.
-  - **데이터 소스**: 급여에 **이미 실제 기록된** `payrollEmployeeLine.localIncomeTaxKrw`를 반기/월 단위로 집계한다. **신규 세액 계산 엔진 없음** — 10%/11 근사치 재계산 아님, 실제 저장값 합산만.
+  - **데이터 소스**: 급여에 **이미 실제 기록된** `payrollEmployeeLine.localIncomeTaxKrw`를 반기/월 단위로 집계한다. **신규 세액 계산 엔진 없음** — 10%/11 근사치 재계산 아님. 단, 신고 준비 금액 합계와 신고지원 입력값은 확정 라인(`ready`/`closed`)만 포함하고, `needs_review` 라인은 확인 필요·blocker에만 포함한다.
   - **화면**: 신규 read-only 전용 화면. 신고 준비 허브(JC-029)의 `local_income` 트랙을 roadmap→live로 전환(허브의 마지막 roadmap 트랙 완성).
-  - **데이터 정합성 수정(중요, 같은 범위에 포함)**: 신고지원(JC-013)의 `lib/filing-support/summary.ts` `splitWithholdingTax()`가 원천세 합계(`withholdingTaxKrw`)를 10%/11로 **근사 계산**해 지방소득세를 표시하고 있다. 실제 `localIncomeTaxKrw` 합계(JC-027이 만드는 것과 동일 소스)로 교체해, 신고지원 화면과 JC-027 화면이 **같은 기간에 다른 숫자를 보여주지 않게** 한다.
+  - **데이터 정합성 수정(중요, 같은 범위에 포함)**: 신고지원(JC-013)의 `lib/filing-support/summary.ts` `splitWithholdingTax()`가 원천세 합계(`withholdingTaxKrw`)를 10%/11로 **근사 계산**해 지방소득세를 표시하고 있다. 확정 라인의 실제 `localIncomeTaxKrw` 합계(JC-027이 만드는 것과 동일 소스)로 교체해, 신고지원 화면과 JC-027 화면이 **같은 기간에 다른 숫자를 보여주지 않게** 한다.
   - **제외**: 위택스/이택스 자동 제출, 종합소득세분·법인세분 지방소득세, 신규 세액 계산 로직.
 - Implementation Preconditions:
   - [x] v1 스코프 확정 — 원천세 특별징수분 한정·실제값 소스·신고지원 정합성 수정 포함·위택스 자동제출 제외
   - [x] UI-First Gate: 지방소득세 준비 화면 HTML Preview 작성·사용자 승인 — [10_local_income_tax.html](../02_UI_Screens/previews/10_local_income_tax.html), 2026-07-05 승인
   - [x] Pre-Code Brief 작성 — [18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md](../03_Technical_Specs/18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md)
 - Acceptance Criteria:
-  - [ ] 원천세 특별징수분 지방소득세가 직원별/기간별로 집계·표시된다(실제 `localIncomeTaxKrw` 합계, 파생 계산 아님)
+  - [ ] 원천세 특별징수분 지방소득세가 직원별/기간별로 집계·표시된다(확정 라인의 실제 `localIncomeTaxKrw` 합계, 파생 계산 아님)
+  - [ ] `needs_review` 라인은 대상 인원·확인 필요·blocker에는 포함되지만 Hero/표 합계/신고지원 입력값에는 포함되지 않는다
   - [ ] 신고 준비 허브의 `local_income` 트랙이 roadmap→live로 전환되고 입력·산출·handoff로 읽힌다
-  - [ ] 신고지원(JC-013)의 지방소득세 표시가 `splitWithholdingTax` 근사치 대신 실제 합계를 사용하도록 교체된다(정합성)
+  - [ ] 신고지원(JC-013)의 지방소득세 표시가 `splitWithholdingTax` 근사치 대신 확정 라인 실제 합계를 사용하도록 교체된다(정합성)
   - [ ] 종합소득세분·법인세분 지방소득세는 이번 범위에 포함하지 않는다
   - [ ] 위택스 자동 제출·신규 세액 계산 엔진은 포함하지 않는다
   - [ ] 화면은 read-only이며 mutation을 수행하지 않는다
-- Document Sync Check: 2026-07-04 등록 · 2026-07-05 v1 스코프 확정 + UI-First Gate 승인 + Pre-Code Brief 작성(18). Context Lock 전제 충족. 구현 착수 준비 완료.
+- Document Sync Check: 2026-07-04 등록 · 2026-07-05 v1 스코프 확정 + UI-First Gate 승인 + Pre-Code Brief 작성(18) + 리뷰 반영(`needs_review` 합계 제외 계약). Context Lock 전제 충족. 구현 착수 준비 완료.
 
 ### JC-028 · 사업장현황신고 지원 (면세 개인사업자) — (우선순위 중 · 저위험)
 
