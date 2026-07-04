@@ -435,16 +435,30 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 회사 self-use 세무 준비
 - Related Domain: 급여(JC-012) · 신고지원 원천세(JC-013) · 직원 명부(JC-015) 데이터 확장. 자동제출은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 원칙 준수.
-- Related HTML Preview: N/A - 착수 시 급여/신고지원 Preview 확장.
+- Related HTML Preview: 착수 예정 — 지급명세서/연말정산 **전용 검토 화면** 신규 Preview 필요(UI-First Gate). 신고 준비 허브(JC-029) "지급명세서/연말정산" 트랙을 roadmap→live로 전환.
+
+- **v1 Scope 확정 (2026-07-05):**
+  - **지급명세서**: 간이지급명세서(근로소득) **우선**. 기존 월별 payroll `withholding_statement` 데이터를 반기 단위로 집계. 연간 지급명세서·사업소득 명세서는 후속.
+  - **연말정산**: **데이터 준비·검토까지**. 직원별 연간 지급·기납부 원천세 집계·누락 검토. **정산액(결정세액·환급/추징) 계산은 제외**(후속). 소득·세액공제 자동계산 미포함.
+  - **JC-030 경계**: JC-024는 제출용 명세서 **데이터셋·검토 상태**까지. **전자신고 파일 생성은 JC-030**(JC-024에 넣지 않음).
+  - **허브 live 범위**: 신고 준비 허브 트랙 live 전환 **+ 전용 검토 화면**(지급명세서/연말정산 준비·누락 검토).
+  - 재사용: 급여 `PayrollDocumentPreview.withholding_statement`, 신고지원 `withholding` 항목·`splitWithholdingTax`, 직원 명부.
 - Implementation Preconditions:
-  - [ ] 연말정산 대상 데이터(직원 소득·공제)와 급여/직원명부 read model 매핑 확정
-  - [ ] 지급명세서(근로·사업소득) 서식·제출 주기(간이/연간)·전자신고 파일 규격 확인 ([JC-023 Research §2.1](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md), 지급명세서 규격 공개본 존재)
+  - [x] v1 스코프 확정 (2026-07-05) — 간이지급명세서(근로) 우선 · 연말정산 데이터·검토까지 · JC-030 경계 · 트랙 live+검토 화면
+  - [ ] 간이지급명세서(근로소득) 반기 집계 read model 매핑 확정 (월별 payroll withholding → 반기)
+  - [ ] 연말정산 준비·검토 데이터(직원별 연간 지급·기납부) 매핑 확정 (정산액 계산 제외)
+  - [ ] 지급명세서 서식·제출 주기 확인 ([JC-023 Research §2.1](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md), 규격 공개본 존재)
   - [ ] self-filing 보조 경계(자동 제출 없음, 사용자 최종 승인) 설계
+  - [ ] **UI-First Gate**: 전용 검토 화면 HTML Preview 작성·사용자 승인
+  - [ ] Pre-Code Brief 작성
 - Acceptance Criteria:
-  - [ ] 연말정산 결과·지급명세서를 회사 담당자가 확인·수정하는 read model/화면 제공
+  - [ ] 간이지급명세서(근로소득) 준비 상태·누락을 회사 담당자가 확인하는 read model/화면 제공
+  - [ ] 연말정산 준비·검토(직원별 연간 지급·기납부 집계)를 제공하되 정산액 계산은 v1 범위 밖으로 명시
+  - [ ] 신고 준비 허브의 지급명세서/연말정산 트랙이 roadmap→live로 전환되고 입력·산출·handoff로 읽힌다
+  - [ ] 전자신고 파일 생성은 포함하지 않는다(JC-030 경계)
   - [ ] 제출은 사용자 승인 기반(JC-023 원칙), 자격증명 원문 미저장
   - [ ] 급여·원천세·직원명부 기존 데이터와 정합
-- Document Sync Check: 2026-07-04 등록. 급여/원천 도메인 확장으로 저위험. 착수 시 Pre-Code Brief/QA 신설.
+- Document Sync Check: 2026-07-04 등록 · 2026-07-05 v1 스코프 확정. 급여/원천 도메인 확장으로 저위험. 착수 순서: UI Preview(전용 검토 화면) 승인 → Pre-Code Brief → 구현. QA 신설.
 
 ### JC-025 · 종합소득세 신고 지원 (개인사업자) — self-filing 보조 (우선순위 중 · 법적 경계 주의)
 
