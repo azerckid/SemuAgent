@@ -163,7 +163,7 @@ export function SettingsPanel({
 
   const handleTenantSave = async (e: React.SyntheticEvent) => {
     e.preventDefault()
-    await saveTenantSettings('테넌트 설정을 저장했습니다.')
+    await saveTenantSettings('회사 설정을 저장했습니다.')
   }
 
   const handleAddStaff = async (e: React.SyntheticEvent) => {
@@ -232,7 +232,7 @@ export function SettingsPanel({
   }
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'tenant', label: '테넌트 설정' },
+    { key: 'tenant', label: '회사 설정' },
     { key: 'staff', label: '담당자 관리' },
     { key: 'mail', label: '업무메일 설정' },
     { key: 'clients', label: '사업장 관리' },
@@ -278,7 +278,7 @@ export function SettingsPanel({
                   </div>
                   <Input
                     id="tenant-subdomain"
-                    value={`${initialTenant.subdomain}.jaryo.kr`}
+                    value={initialTenant.subdomain}
                     readOnly
                     className="bg-muted text-muted-foreground"
                   />
@@ -504,7 +504,7 @@ export function SettingsPanel({
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">담당자 추가</CardTitle>
-                <CardDescription>JARYO에 가입된 계정만 추가할 수 있습니다.</CardDescription>
+                <CardDescription>SemuAgent에 가입된 계정만 추가할 수 있습니다.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddStaff} className="flex flex-wrap items-start gap-2">

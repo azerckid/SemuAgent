@@ -106,7 +106,7 @@ export default async function SettingsPage() {
     <div className="p-6 space-y-4">
       <div>
         <h1 className="text-xl font-semibold text-gray-900">설정</h1>
-        <p className="text-sm text-gray-500 mt-0.5">테넌트 정보 및 담당자를 관리합니다.</p>
+        <p className="text-sm text-gray-500 mt-0.5">회사 정보 및 담당자를 관리합니다.</p>
       </div>
       <SettingsPanel
         tenant={tenantRows[0]}

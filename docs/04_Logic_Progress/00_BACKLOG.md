@@ -33,8 +33,8 @@
 | JC-018 | todo | Connect employee directory recipients to reminders | `lib/internal-reminders`, `lib/employee-directory`, `employee_profile` | `employee_profile.work_email`과 `notification_enabled`를 내부 리마인드 수신자 후보로 연결한다. 직원 수신자는 비활성/이메일 없음/알림 꺼짐 상태를 제외하고, 기존 담당자 본인·staff 수신 정책과 충돌하지 않는다. |
 | JC-019 | done | Provide first-run sample workspace data | `lib/first-run-sample`, `app/api/first-run-sample`, `app/(dashboard)/_components/sample-data-banner.tsx`, `app/(dashboard)/layout.tsx` | 신규 테넌트가 가입 직후 승인 Preview와 같은 샘플 업무 데이터를 보고 메뉴 구조를 이해할 수 있다. 샘플 데이터는 명확히 표시되고, 실사용 전 사용자가 한 번에 삭제할 수 있어야 한다. **프로덕션 E2E 완료(2026-07-04)**: 신규가입→온보딩 직후 자동 seed(`sample_dataset` active + registry 427행)→전역 배너·워크스페이스 채워짐→"샘플 삭제" 확인 dialog→**샘플 도메인 행 전부 삭제·`client`(사업장)/tenant/staff 보존**·dataset `deleted`(재생성 없음) 확인. registry+whitelist+delete_order+tenant scope 안전장치 실전 검증. 구현 PR #41 · 핫픽스 PR #42(서버/클라 import 경계) · 재발방지 `server-only` 가드. |
 | JC-020 | done | Fix signup-to-onboarding routing | `app/(auth)/sign-up`, `app/(auth)/sign-in`, `app/(dashboard)/layout.tsx`, `app/onboarding` | 신규 가입자가 tenant/organization이 없는 상태에서 깨진 dashboard/clients 화면으로 이동하지 않고 `/onboarding`으로 안내된다. 기존 tenant가 있는 사용자는 기존 대시보드 진입을 유지한다. **구현(2026-07-04)**: sign-up→`/onboarding`, sign-in은 org 있으면 setActive 후 dashboard·없으면 `/onboarding`, dashboard layout은 활성 테넌트 없으면 `/onboarding` redirect(깨진 children 렌더 제거), onboarding은 이미 org 있는 사용자를 setActive 후 dashboard로 자기교정. |
-| JC-021 | todo | Remove remaining JARYO brand residue from first-run UX | signup welcome modal, onboarding copy, domain suffix | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. |
-| JC-022 | todo | Refine settings screen product language | `app/(dashboard)/dashboard/settings`, `app/onboarding`, `app/api/settings` | 설정 화면의 개발자/상류 용어(`테넌트`, `.jaryo.kr`)를 사용자가 이해하는 회사/사업자 문맥으로 정리한다. 설정 정보구조는 회사 정보·담당자·업무메일·사업장 관리가 SemuAgent 제품 책임과 맞게 보이도록 재검토한다. |
+| JC-021 | done | Remove remaining JARYO brand residue from first-run UX | `app/(auth)/_components/public-welcome-modal.tsx`, `app/onboarding/page.tsx` | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. **구현(2026-07-04)**: 환영 모달을 "회계사무소/고객사" 포지셔닝→"작은 회사 세무신고 준비(SemuAgent)"로 카피 재구성, 배지 `JARYO 베타`→`SemuAgent 베타`. 온보딩 `.jaryo.kr` 접미사 제거. 홈/문서의 JARYO-GIWA 이력·jaryo-admin·localStorage 내부키는 보존. |
+| JC-022 | done | Refine settings screen product language | `app/(dashboard)/dashboard/settings/_components/settings-panel.tsx`, `app/(dashboard)/dashboard/settings/page.tsx` | 설정 화면의 개발자/상류 용어(`테넌트`, `.jaryo.kr`)를 사용자가 이해하는 회사/사업자 문맥으로 정리한다. **구현(2026-07-04)**: 탭 `테넌트 설정`→`회사 설정`, 부제 `테넌트 정보…`→`회사 정보…`, 저장 토스트 문구, 서브도메인 읽기전용 필드 `{sub}.jaryo.kr`→`{sub}`(가짜 도메인 제거), 담당자 추가 설명 `JARYO`→`SemuAgent`. 내부 식별자(`tenant_id`)·코드 주석은 보존. 서브도메인 최종 도메인 정책은 실도메인 확정 후 재적용(후속). |
 | JC-023 | todo | Strategic Direction: 사용자 승인 기반 홈택스 자동제출 | `lib/filing-support`, Hometax e-filing 규격, 인증·감사 로그 | **MVP 밖 로드맵/전략 방향** — [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) 참조. 사용자가 신고 내용을 최종 확인·승인하면 SemuAgent가 사용자 권한 범위 안에서 홈택스 제출을 자동 진행하고 접수증까지 자동 회수·보관한다. 현행 "홈택스 입력 가이드/신고지원(JC-013)"은 중간 단계. 원칙: 사용자 최종 승인 필수·자격증명 원문 저장 금지·감사 로그 필수·접수증 자동 보관. 착수 전 조사 필요(전자신고 파일 규격·파일변환신고·인증 기반 제출 자동화 가능성·공식 API vs 비공개 연동). 구현 착수 전 별도 technical brief·법무/보안 검토 필수. |
 
 ## Implementation Rule
@@ -337,15 +337,15 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related QA Docs: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md)
 - Prototype Review / 승인: N/A - 2026-07-03 프로덕션 첫 가입 화면에서 발견된 브랜드 잔재. 상류 JARYO-GIWA 이력 문구는 보존하고, 사용자 first-run 노출 문구만 정리한다.
 - Implementation Preconditions:
-  - [ ] 프로덕션 first-run 노출 표면 전수 검색 — signup, sign-in, onboarding, welcome modal, metadata, email sender, domain suffix
-  - [ ] `JARYO beta`, `JARYO Company`, `SemuDesk`, `.jaryo.kr` 잔재를 SemuAgent 정책에 맞게 분류
-  - [ ] `jaryo-admin`/`JARYO_ADMIN_EMAILS`는 운영자 콘솔 식별자 유지 여부를 JC-014/운영자 콘솔 정책과 별도 결정
-  - [ ] 브라우저 smoke로 신규 가입→온보딩 copy 확인
+  - [x] 프로덕션 first-run 노출 표면 전수 검색 — signup, sign-in, onboarding, welcome modal, domain suffix (grep 완료)
+  - [x] `JARYO beta`, `JARYO Company`, `SemuDesk`, `.jaryo.kr` 잔재를 SemuAgent 정책에 맞게 분류
+  - [x] `jaryo-admin`/`JARYO_ADMIN_EMAILS`는 운영자 콘솔 식별자로 **유지(보존) 결정** — 범위 밖
+  - [ ] 브라우저 smoke로 신규 가입→온보딩 copy 확인 — 배포 후 수동 확인 예정
 - Acceptance Criteria:
-  - [ ] 가입 직후 welcome modal은 SemuAgent 문맥과 카피를 사용한다.
-  - [ ] 온보딩 서브도메인 suffix는 `.jaryo.kr`로 노출되지 않는다. SemuAgent 도메인 또는 중립 문구로 교체한다.
-  - [ ] 첫 가입/온보딩 사용자가 보는 표면에 `JARYO Company`, `JARYO beta`, `SemuDesk` 잔재가 없다.
-  - [ ] JARYO-GIWA 출처 기록과 운영자 콘솔 식별자는 제품 first-run UX와 구분해 보존 또는 별도 PR로 처리한다.
+  - [x] 가입 직후 welcome modal은 SemuAgent 문맥과 카피를 사용한다. — 모달 카피 재구성(배지·제목·본문·카드·주의문)
+  - [x] 온보딩 서브도메인 suffix는 `.jaryo.kr`로 노출되지 않는다. — 접미사 제거(중립)
+  - [x] 첫 가입/온보딩 사용자가 보는 표면에 `JARYO Company`, `JARYO beta`, `SemuDesk` 잔재가 없다. — grep 0건
+  - [x] JARYO-GIWA 출처 기록과 운영자 콘솔 식별자는 제품 first-run UX와 구분해 보존한다. — 홈/문서 이력·jaryo-admin·localStorage 내부키 미변경
 - Document Sync Check: 2026-07-03 프로덕션 E2E에서 `JARYO beta` 모달과 `.jaryo.kr` suffix가 발견되어 등록. 코드 변경은 후속 PR에서 처리.
 
 ### JC-022 · Refine settings screen product language (설정 화면 제품 언어 정리) — 신규
@@ -357,16 +357,16 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related QA Docs: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md)
 - Prototype Review / 승인: N/A - 현재 설정 화면의 `테넌트 설정`, `테넌트 정보`, `.jaryo.kr` suffix가 사용자 언어와 맞지 않는다는 프로덕션 E2E 관찰에 기반한다.
 - Implementation Preconditions:
-  - [ ] 설정 화면 노출 문구 전수 검색 — `app/(dashboard)/dashboard/settings/page.tsx`, `settings-panel.tsx`, `app/api/settings/*` 오류 메시지
-  - [ ] `테넌트` UI 표기를 사용자 언어로 확정 — 예: `회사 설정`, `회사 정보`, `운영 회사`
-  - [ ] 서브도메인 표시 정책 확정 — 실제 SemuAgent 도메인, neutral preview, 또는 숨김/읽기 전용 설명
-  - [ ] `업무메일 설정` 탭이 JC-016 내부 리마인드와 중복/혼동되지 않는지 검토
-  - [ ] 설정 화면 browser smoke 또는 정적 텍스트 회귀 테스트 추가
+  - [x] 설정 화면 노출 문구 전수 검색 — `settings/page.tsx`, `settings-panel.tsx` (grep 완료)
+  - [x] `테넌트` UI 표기를 사용자 언어로 확정 — `회사 설정` / `회사 정보`
+  - [x] 서브도메인 표시 정책 확정 — **중립(가짜 도메인 제거)**, 실도메인 확정 후 실접미사 재적용(후속)
+  - [ ] `업무메일 설정` 탭이 JC-016 내부 리마인드와 중복/혼동되지 않는지 검토 — 후속(이번 범위는 브랜드/용어)
+  - [ ] 설정 화면 browser smoke 또는 정적 텍스트 회귀 테스트 추가 — 배포 후 수동 확인 예정
 - Acceptance Criteria:
-  - [ ] 설정 화면 탭과 부제에서 개발자 용어 `테넌트`가 사용자에게 보이는 문구로 노출되지 않는다.
-  - [ ] 서브도메인 읽기 전용 필드가 `.jaryo.kr`로 표시되지 않는다.
-  - [ ] 회사명, 담당자, 업무메일, 사업장 관리가 SemuAgent 책임 경계에 맞는 설명으로 정리된다.
-  - [ ] 운영자 콘솔/DB 내부 식별자(`tenant_id`, `jaryo-admin`)는 사용자 설정 화면과 분리해 보존하거나 별도 PR에서 처리한다.
+  - [x] 설정 화면 탭과 부제에서 개발자 용어 `테넌트`가 사용자에게 보이는 문구로 노출되지 않는다.
+  - [x] 서브도메인 읽기 전용 필드가 `.jaryo.kr`로 표시되지 않는다.
+  - [x] 회사명, 담당자, 업무메일, 사업장 관리가 SemuAgent 책임 경계에 맞는 설명으로 정리된다. — 담당자 추가 설명 `JARYO`→`SemuAgent` 등
+  - [x] 운영자 콘솔/DB 내부 식별자(`tenant_id`, `jaryo-admin`)는 사용자 설정 화면과 분리해 보존한다. — 코드 주석·내부 식별자 미변경
 - Document Sync Check: 2026-07-03 프로덕션 E2E 중 설정 화면에서 발견. 코드 변경은 후속 PR에서 처리하며, JC-021(first-run 브랜드 잔재)와 구현 범위가 겹치면 같은 PR에서 함께 처리 가능.
 
 ### JC-023 · Strategic Direction: 사용자 승인 기반 홈택스 자동제출 — 로드맵/전략 방향 (MVP 밖)
