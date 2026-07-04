@@ -43,6 +43,7 @@
 | JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
 | JC-029 | todo | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
+| JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`(131 파일)·`outbound_email`(32 파일) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 착수 전 영향 감사 필수.** JARYO-GIWA 시절의 대형 레거시 서브시스템을 단계적으로 은퇴한다. JC-004에서 라우트 redirect 차단은 됐으나 스키마·도메인 코드가 살아있고 상호 참조가 많다(uploadSession 131 파일, outbound_email 32 파일). chore가 아니라 별도 에픽으로, 착수 전 라우트·DB·메일·업로드 포털·테스트 영향 범위를 정밀 감사하고 단계별 삭제 계획을 세운다. 고립된 4개 레거시 cron 라우트 삭제는 이 에픽과 별개로 선행 완료(chore/remove-legacy-cron-routes). |
 
 ## Implementation Rule
 
@@ -545,6 +546,25 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 자격증명 저장·자동 로그인·자동 제출은 하지 않는다(JC-023 원칙 유지)
   - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
 - Document Sync Check: 2026-07-04 등록. 입력 가이드(JC-013)와 자동제출(JC-023) 사이의 현실적 다리로, 법적 리스크 낮고 체감 편의 큼. 착수 시 Pre-Code Brief/QA/UI Preview 신설. 규격 입수·적합성 검정은 JC-023 국세청 공식 문의와 공유.
+
+### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
+
+- Related Concept: [Product Baseline — JARYO-GIWA Relationship](../01_Concept_Design/01_PRODUCT_BASELINE.md) — GIWA 재사용 자산과 회사 self-use 경계
+- Related Domain: `uploadSession`(131 파일)·`outbound_email`(32 파일) 스키마·도메인. sessions·`/upload/[token]` 포털·emails·request-events·mail-console·일부 대시보드(clients·calendar·emails) 전반에 얽힘.
+- Related HTML Preview: N/A - 코드/데이터 은퇴 에픽. 사용자 화면 변경은 이미 JC-004 redirect 차단으로 처리됨.
+- Prototype Review / 승인: N/A - 내부 정리 에픽.
+- Implementation Preconditions (착수 전 영향 감사 필수):
+  - [ ] 라우트 영향 — 살아있는 sessions·upload 포털·emails·request-events·mail-console 라우트의 실사용/redirect 상태 목록화
+  - [ ] DB 영향 — `uploadSession`·`outbound_email`·연관 테이블(FK 연쇄)과 migration 은퇴 순서
+  - [ ] 메일 영향 — Resend 발송 경로 중 레거시(outbound_email) vs 현행(internal_reminder) 분리 확인
+  - [ ] 업로드 포털 영향 — `/upload/[token]` 외부 포털의 v1 제외 여부 최종 확정
+  - [ ] 테스트 영향 — 레거시 서브시스템에 묶인 테스트 목록과 삭제/이관 계획
+  - [ ] 단계별 삭제 계획 수립 (한 번에 삭제하지 않음)
+- Acceptance Criteria:
+  - [ ] 레거시 서브시스템이 단계적으로 제거되며 각 단계에서 tsc/lint/test가 통과한다
+  - [ ] v1 현행 기능(자료수집·기장·부가세·급여·신고지원·직원명부·리마인드·신고준비)에 영향이 없다
+  - [ ] `clients`(사업장)·`billing`·jaryo-admin 등 유지 대상은 보존된다
+- Document Sync Check: 2026-07-04 등록(에픽). 선행: 고립된 레거시 cron 라우트 4개 삭제 완료(chore/remove-legacy-cron-routes). 착수 전 영향 감사 → 단계별 삭제 계획 필요. 대형 정리라 별도 착수.
 
 > 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 인프라 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작). 2026-07-03 프로덕션 first-run E2E에서 발견된 신규 사용자 경험 후속은 JC-019(샘플 데이터 first-run), JC-020(가입 후 온보딩 라우팅), JC-021(브랜드 잔재 정리), JC-022(설정 화면 제품 언어 정리)로 등록했다.
 
