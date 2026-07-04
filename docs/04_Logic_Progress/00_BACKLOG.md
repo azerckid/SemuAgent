@@ -448,8 +448,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] v1 스코프 확정 (2026-07-05) — 간이지급명세서(근로) 우선 · 연말정산 데이터·검토까지 · JC-030 경계 · 트랙 live+검토 화면
   - [x] 간이지급명세서(근로소득) 반기 집계 read model 매핑 확정 — 지급총액=ΣgrossPay, 원천징수세액=ΣincomeTax(근로소득세), 준비상태 판정([Brief §4](../03_Technical_Specs/16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md))
   - [x] 연말정산 준비·검토 매핑 확정 — 연간 지급합계·기납부 원천세·중도퇴사, 정산액 계산 제외([Brief §5](../03_Technical_Specs/16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md)). 인적사항 누락은 저장 필드로만(주민번호 미저장, §6)
-  - [ ] 지급명세서 서식·제출 주기 확인 ([JC-023 Research §2.1](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md), 규격 공개본 존재)
-  - [ ] self-filing 보조 경계(자동 제출 없음, 사용자 최종 승인) 설계
+  - [x] 지급명세서 제출 주기 확인 완료 — JC-024 v1은 근로소득 간이지급명세서 **반기 제출 주기** 기준([Brief §4](../03_Technical_Specs/16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md)). 전자신고 파일 서식은 JC-030으로 이관([JC-023 Research §2.1](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md))
+  - [x] self-filing 보조 경계 확정 — 자동 제출 없음·자격증명 미저장·최종 제출은 사용자 직접([Brief §0·§1·§10](../03_Technical_Specs/16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md))
   - [x] **UI-First Gate**: 전용 검토 화면 HTML Preview 작성·사용자 승인 — [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html), 2026-07-05 승인(단일 스크롤·직원 중심 표·신고 준비 데이터 용어 통일)
   - [x] Pre-Code Brief 작성 — [16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md](../03_Technical_Specs/16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md)
 - Acceptance Criteria:
