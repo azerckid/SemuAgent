@@ -39,6 +39,8 @@
 | JC-024 | todo | 연말정산·지급명세서 지원 (급여/원천 확장) | `lib/payroll-workspace`, `lib/filing-support`, 급여·원천세 데이터 | **우선순위: 높음 · 법적 리스크: 낮음.** 회사(원천징수의무자)가 연말정산 결과와 지급명세서(근로·사업소득)를 준비·제출 보조한다. 이미 급여(JC-012)·원천세(신고지원 JC-013)·직원명부(JC-015) 데이터가 있어 자연스러운 확장이며, 회사 본인 업무라 세무대리 리스크가 낮다. 매년 반복 신고. 자동 제출은 JC-023 원칙(사용자 최종 승인) 준수. |
 | JC-025 | todo | 종합소득세 신고 지원 (개인사업자, self-filing 보조) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 주의.** 개인사업자 종합소득세(5월) 신고서 계산·초안·검증을 self-filing 보조로 제공한다. 기장검토(JC-010) output을 사용한다. ⚠️ 세무조정이 개입하면 세무사법 제2조("세무서류 작성")에 저촉 소지가 있어, "계산·초안·사용자 최종 확인" 수준으로 한정하고 세무조정계산서 자동작성은 신중히 다룬다. 착수 전 법무 검토 게이트. |
 | JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
+| JC-027 | todo | 지방소득세 연동 지원 | 원천세·종소세·법인세 신고, `lib/filing-support` | **우선순위: 낮음(본세 부속) · 법적 리스크: 낮음.** 지방소득세(원천세 특별징수분·종합소득세분·법인세분)를 본세 신고에 연동해 함께 계산·안내한다. 대개 본세와 동반 신고되므로 JC-024/025/026 및 원천세 흐름에 부속으로 붙는다. 독립 우선순위 낮음. |
+| JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
 
 ## Implementation Rule
 
@@ -438,6 +440,32 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 계산·초안·검증 중심, 세무 판단·최종 확인은 사용자
   - [ ] 제출은 사용자 승인 기반(JC-023)
 - Document Sync Check: 2026-07-04 등록. 세 항목 중 법적 리스크 최상 → 안정화·저위험 항목 후 착수. 법무 검토 필수.
+
+### JC-027 · 지방소득세 연동 지원 — 본세 부속 (우선순위 낮음 · 저위험)
+
+- Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related Domain: 원천세(JC-013)·종합소득세(JC-025)·법인세(JC-026) 신고에 지방소득세 연동.
+- Related HTML Preview: N/A - 본세 화면에 부속.
+- Implementation Preconditions:
+  - [ ] 지방소득세(특별징수분·소득세분·법인세분) 계산·신고 방식 확인
+  - [ ] 본세 신고 항목에 지방세를 연동하는 방식 결정(별도 화면 vs 부속 표시)
+- Acceptance Criteria:
+  - [ ] 원천세·종소세·법인세 신고 시 대응 지방소득세가 함께 계산·안내된다
+  - [ ] 제출은 사용자 승인 기반(JC-023)
+- Document Sync Check: 2026-07-04 등록. 본세에 부속되는 저위험 항목.
+
+### JC-028 · 사업장현황신고 지원 (면세 개인사업자) — (우선순위 중 · 저위험)
+
+- Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related Domain: 기장검토(JC-010)·자료수집(JC-009) 데이터. 부가세 비대상 면세사업자용.
+- Related HTML Preview: N/A.
+- Implementation Preconditions:
+  - [ ] 사업장현황신고 대상(면세사업자)·서식·수입금액/매입 자료 구성 확인
+  - [ ] 부가세 대상/면세 분기 로직(기존 부가세 워크스페이스와 구분)
+- Acceptance Criteria:
+  - [ ] 면세 개인사업자가 사업장현황신고 자료를 준비·검토·제출 보조 받는다
+  - [ ] 제출은 사용자 승인 기반(JC-023)
+- Document Sync Check: 2026-07-04 등록. 회사 본인 업무 저위험.
 
 > 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 인프라 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작). 2026-07-03 프로덕션 first-run E2E에서 발견된 신규 사용자 경험 후속은 JC-019(샘플 데이터 first-run), JC-020(가입 후 온보딩 라우팅), JC-021(브랜드 잔재 정리), JC-022(설정 화면 제품 언어 정리)로 등록했다.
 
