@@ -43,7 +43,7 @@
 | JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
 | JC-029 | todo | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
-| JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`(131 파일)·`outbound_email`(32 파일) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 착수 전 영향 감사 필수.** JARYO-GIWA 시절의 대형 레거시 서브시스템을 단계적으로 은퇴한다. JC-004에서 라우트 redirect 차단은 됐으나 스키마·도메인 코드가 살아있고 상호 참조가 많다(uploadSession 131 파일, outbound_email 32 파일). chore가 아니라 별도 에픽으로, 착수 전 라우트·DB·메일·업로드 포털·테스트 영향 범위를 정밀 감사하고 단계별 삭제 계획을 세운다. 고립된 4개 레거시 cron 라우트 삭제는 이 에픽과 별개로 선행 완료(chore/remove-legacy-cron-routes). |
+| JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 착수 전 영향 감사 필수.** JARYO-GIWA 시절의 대형 레거시 서브시스템을 단계적으로 은퇴한다. JC-004에서 라우트 redirect 차단은 됐으나 스키마·도메인 코드가 살아있고 상호 참조가 많다(uploadSession·outbound_email이 100개 넘는 파일에 광범위 참조, 정확 수치는 검색 범위·시점에 따라 변동). chore가 아니라 별도 에픽으로, 착수 전 라우트·DB·메일·업로드 포털·테스트 영향 범위를 정밀 감사하고 단계별 삭제 계획을 세운다. 고립된 4개 레거시 cron 라우트 삭제는 이 에픽과 별개로 선행 완료(chore/remove-legacy-cron-routes). |
 
 ## Implementation Rule
 
@@ -550,7 +550,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
 
 - Related Concept: [Product Baseline — JARYO-GIWA Relationship](../01_Concept_Design/01_PRODUCT_BASELINE.md) — GIWA 재사용 자산과 회사 self-use 경계
-- Related Domain: `uploadSession`(131 파일)·`outbound_email`(32 파일) 스키마·도메인. sessions·`/upload/[token]` 포털·emails·request-events·mail-console·일부 대시보드(clients·calendar·emails) 전반에 얽힘.
+- Related Domain: `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인. sessions·`/upload/[token]` 포털·emails·request-events·mail-console·일부 대시보드(clients·calendar·emails) 전반에 얽힘.
 - Related HTML Preview: N/A - 코드/데이터 은퇴 에픽. 사용자 화면 변경은 이미 JC-004 redirect 차단으로 처리됨.
 - Prototype Review / 승인: N/A - 내부 정리 에픽.
 - Implementation Preconditions (착수 전 영향 감사 필수):
