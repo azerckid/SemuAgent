@@ -214,7 +214,26 @@
 - 단일 스크롤·직원 중심 표. mutation 없음(확인 필요는 기존 업무 화면으로 라우팅).
 - 정산액 계산·전자신고 파일 생성·자동제출은 JC-024 v1 범위 밖. 상태칩·State Card·Table 골격은 공통(DRY).
 
-### 4.12 First-run Sample Data (JC-019)
+### 4.12 지방소득세 (10_local_income_tax.html, JC-027)
+
+신고 준비 허브(4.10)의 "지방소득세" 트랙 "검토 화면"으로 진입하는 전용 화면. 허브의 마지막 roadmap 트랙을 live로 채운다. 급여에 이미 기록된 `localIncomeTaxKrw`(원천세 특별징수분)를 집계한 **read-only** 화면이다.
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Prep Hero | 대상 인원·확인 필요·지방소득세 합계 요약, "근사치 재계산 아님" 명시 | 진행률 + 카운트 |
+| Next Action List | 급여 미확정 blocker + 급여 CTA | danger dot + 라우팅 |
+| 지방소득세 Table | 직원별 지급총액·소득세(국세)·지방소득세(특별징수)·상태 + 합계 행 | 준비완료/급여 미확정 상태칩 |
+| Consistency Banner | 신고지원(JC-013)과 동일한 실제값임을 명시 | plan 톤 안내 박스 |
+| Responsibility Boundary | 종합소득세·법인세분 지방소득세·위택스 제출 제외 | accent 안내 박스 |
+| State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
+
+- v1은 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 이후.
+- 화면 언어는 "귀속기간·원천세 신고 주기 기준"으로, 월 단위를 못박지 않는다(반기납부 특례 고려).
+- 소득세(국세)와 지방소득세(특별징수)를 컬럼으로 명확히 분리해 "원천징수세액"으로 뭉뚱그리지 않는다.
+- 신고지원(JC-013)의 `splitWithholdingTax` 근사치를 이 화면과 같은 실제값으로 교체(정합성 수정, 구현 시 함께 진행).
+- 단일 스크롤·직원 중심 표. mutation 없음. 상태칩·State Card·Table 골격은 공통(DRY).
+
+### 4.13 First-run Sample Data (JC-019)
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
@@ -278,6 +297,7 @@
 - Preview (리마인드): [07_internal_reminder.html](./previews/07_internal_reminder.html)
 - Preview (신고 준비): [08_filing_preparation.html](./previews/08_filing_preparation.html)
 - Preview (지급명세서·연말정산): [09_payment_year_end.html](./previews/09_payment_year_end.html)
+- Preview (지방소득세): [10_local_income_tax.html](./previews/10_local_income_tax.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자

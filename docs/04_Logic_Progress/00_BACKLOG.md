@@ -523,11 +523,11 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related Domain: 급여(JC-012, `payrollEmployeeLine.localIncomeTaxKrw`), 신고지원(JC-013, `splitWithholdingTax` 정합성 수정 대상), 신고 준비 허브(JC-029, `local_income` 트랙)
-- Related UI Docs: 착수 예정 — 지방소득세 준비 화면 신규 Preview 필요(UI-First Gate). [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md)에 신규 섹션 추가 예정.
-- Related HTML Preview: 착수 예정 — 신규 화면(JC-024 `09_payment_year_end.html`과 유사한 read-only 집계 패턴 재사용).
+- Related UI Docs: [Screen Flow 4j](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.12](../02_UI_Screens/01_UI_DESIGN.md) — 지방소득세 화면 흐름·컴포넌트(UI-First Gate 승인 2026-07-05).
+- Related HTML Preview: [10_local_income_tax.html](../02_UI_Screens/previews/10_local_income_tax.html) — 지방소득세 준비 전용 화면(JC-024 `09_payment_year_end.html`과 유사한 read-only 집계 패턴 재사용).
 - Related Technical Docs: 착수 예정 — Pre-Code Brief 신규 작성.
 - Related QA Docs: N/A - 착수 시 신설.
-- Prototype Review / 승인: N/A - 스코프 확정 단계.
+- Prototype Review / 승인: 2026-07-05 브라우저 검토 승인. 문구 2건 반영(귀속기간/원천세 신고 주기 기준 표현, 소득세(국세)/지방소득세(특별징수) 컬럼 분리).
 - **v1 Scope 확정 (2026-07-05):**
   - **대상**: "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 완료 이후 별도.
   - **데이터 소스**: 급여에 **이미 실제 기록된** `payrollEmployeeLine.localIncomeTaxKrw`를 반기/월 단위로 집계한다. **신규 세액 계산 엔진 없음** — 10%/11 근사치 재계산 아님, 실제 저장값 합산만.
@@ -536,7 +536,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - **제외**: 위택스/이택스 자동 제출, 종합소득세분·법인세분 지방소득세, 신규 세액 계산 로직.
 - Implementation Preconditions:
   - [x] v1 스코프 확정 — 원천세 특별징수분 한정·실제값 소스·신고지원 정합성 수정 포함·위택스 자동제출 제외
-  - [ ] UI-First Gate: 지방소득세 준비 화면 HTML Preview 작성·사용자 승인
+  - [x] UI-First Gate: 지방소득세 준비 화면 HTML Preview 작성·사용자 승인 — [10_local_income_tax.html](../02_UI_Screens/previews/10_local_income_tax.html), 2026-07-05 승인
   - [ ] Pre-Code Brief 작성 — 반기/월 집계 계약, `splitWithholdingTax` 교체 계약, 허브 트랙 live 전환 계약
 - Acceptance Criteria:
   - [ ] 원천세 특별징수분 지방소득세가 직원별/기간별로 집계·표시된다(실제 `localIncomeTaxKrw` 합계, 파생 계산 아님)
