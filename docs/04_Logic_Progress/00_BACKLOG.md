@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-04 01:43
+> Last Updated: 2026-07-04 17:13
 
 ## Status Legend
 
@@ -41,7 +41,7 @@
 | JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
 | JC-027 | todo | 지방소득세 연동 지원 | 원천세·종소세·법인세 신고, `lib/filing-support` | **우선순위: 낮음(본세 부속) · 법적 리스크: 낮음.** 지방소득세(원천세 특별징수분·종합소득세분·법인세분)를 본세 신고에 연동해 함께 계산·안내한다. 대개 본세와 동반 신고되므로 JC-024/025/026 및 원천세 흐름에 부속으로 붙는다. 독립 우선순위 낮음. |
 | JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
-| JC-029 | todo | 세무 일정 허브 (전체 세무 의무 가시화) | `app/(dashboard)/dashboard/tax-schedule`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 허브).** 사이드바에 "세무 일정" 추가(신고지원 아래). 대표/운영자 관점의 "언제까지 뭘 해야 하는가" 허브. 3단 구성: ① 상단=이번 달/분기 해야 할 일 ② 중간=세무 의무 전체 커버리지(부가세·원천세·지방소득세·지급명세서/간이지급명세서·연말정산·종소세·법인세·사업장현황신고·4대보험·접수증/납부, 상태 구현됨/준비중/예정) ③ 하단=예정 기능·법무 검토 필요. 사업자 유형(개인/법인/면세)별 해당 세목만 노출. 각 항목→해당 워크스페이스 이동. 이후 JC-024~028 신고 기능이 여기 꽂힌다. [Product Baseline Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md) 참조. |
+| JC-029 | todo | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 
 ## Implementation Rule
 
@@ -468,26 +468,28 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 제출은 사용자 승인 기반(JC-023)
 - Document Sync Check: 2026-07-04 등록. 회사 본인 업무 저위험.
 
-### JC-029 · 세무 일정 허브 — 전체 세무 의무 가시화 (우선순위 높음 · JC-024 선행)
+### JC-029 · 신고 준비 현황 허브 — 신고 데이터 준비 파이프라인 가시화 (우선순위 높음 · JC-024 선행)
 
-- Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 개인/법인이 해야 하는 세무 전체를 제품 안에서 한눈에.
-- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) — 착수 시 "세무 일정" 화면 추가.
-- Related HTML Preview: **신규 필요** — HTML UI Preview Gate 대상(구현 전 Preview 작성·승인).
-- Related Domain: 부가세(JC-011)·급여/원천세(JC-012)·신고지원(JC-013)·리마인드 기한(JC-016) read model 집계. 로드맵 세목 JC-024~028이 이 허브에 연결됨.
-- Prototype Review / 승인: 미정 — UI-First Gate(HTML Preview 승인) 후 착수.
+- Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md) — 개인/법인이 해야 하는 세무 전체 범위. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 세무 일정에서 신고 준비로 재프레임한 Layer 01 방향.
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) — "신고 준비" 화면 흐름·컴포넌트·상태.
+- Related HTML Preview: [08_filing_preparation.html](../02_UI_Screens/previews/08_filing_preparation.html) — HTML UI Preview Gate 대상(신고 준비 파이프라인 화면).
+- Related Domain: 자료수집(JC-009)·기장검토(JC-010) 공통 기반, 부가세(JC-011)·급여/원천세(JC-012)·신고지원(JC-013)·리마인드 기한(JC-016) read model 집계. 로드맵 세목 JC-024~028이 이 허브에 연결됨.
+- Prototype Review / 승인: 미정 — UI-First Gate(HTML Preview 사용자 승인) 후 Pre-Code Brief 착수.
 - Implementation Preconditions:
-  - [ ] 화면 정보구조 확정 — 3단(① 이번 달/분기 할 일 ② 전체 커버리지 ③ 예정·법무검토)
-  - [ ] 세목별 상태 vocabulary 확정(구현됨/준비중/예정) + 사업자 유형(개인/법인/면세)별 노출 규칙
-  - [ ] 기한·주기 데이터 소스 및 리마인드(JC-016) 연동 방식 확정
-  - [ ] **HTML UI Preview 작성·사용자 승인** (UI-First Gate)
+  - [x] Layer 01 방향 문서 작성 — [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md)
+  - [x] 화면 정보구조 재확정 — 세무 일정(달력) 중심이 아니라 신고 데이터 준비 파이프라인 중심
+  - [x] HTML UI Preview 작성 — [08_filing_preparation.html](../02_UI_Screens/previews/08_filing_preparation.html)
+  - [ ] HTML UI Preview 사용자 승인 (UI-First Gate)
+  - [ ] 사업자 유형(개인/법인/면세)별 노출 규칙 확정
   - [ ] Pre-Code Brief 작성
 - Acceptance Criteria:
-  - [ ] 사이드바 "세무 일정" 진입 시 이번 달/분기 해야 할 일이 상단에 표시된다
-  - [ ] 전체 세무 의무가 상태(구현됨/준비중/예정)와 함께 한 화면에 표시된다
-  - [ ] 사업자 유형(개인/법인/면세)에 맞는 세목만 노출된다
-  - [ ] 각 항목에서 해당 워크스페이스로 이동할 수 있다(read-only 허브)
-  - [ ] 신고·제출 자체는 각 워크스페이스·JC-023 원칙을 따른다(허브는 개요·안내)
-- Document Sync Check: 2026-07-04 등록. **JC-024보다 선행** — 이후 신고 기능들이 꽂히는 허브. 착수 순서: HTML UI Preview → Pre-Code Brief → 구현. 저위험(read-only 집계).
+  - [ ] 사이드바 "신고 준비" 진입 시 신고 데이터 준비율, 확인 필요 blocker, 다음 액션이 표시된다
+  - [ ] 공통 기반(자료수집 -> 기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)이 한 화면에 표시된다
+  - [ ] 각 트랙이 입력·산출·handoff 기준으로 읽힌다
+  - [ ] 세무 일정은 하단 보조 섹션으로 표시되고, 화면의 중심은 일정표가 아니다
+  - [ ] 최종 제출·납부는 사용자가 직접 수행한다는 책임 경계가 명시된다
+  - [ ] 신규 산출 엔진·신규 DB·자동제출은 JC-029 Preview/1차 구현 범위에 포함하지 않는다
+- Document Sync Check: 2026-07-04 재프레임. PR #50의 "세무 일정 허브" Preview는 "신고 준비 현황 허브"로 supersede. 착수 순서: HTML UI Preview 사용자 승인 → Pre-Code Brief → 구현. 저위험(read-only 현황).
 
 > 현재 기존 여섯 워크스페이스는 **UI-First Gate 통과 및 구현 완료**. JC-005는 데이터 모델 델타를 확정했다(`done`) — client→business_entity 재정의(물리명 `client` 유지·rename 지연), 기간 표현 도메인별 canonical, 신규 도메인 migration 0053~0057. JC-011에서 부가세 물리 Drizzle migration과 read model/UI 구현이 완료됐다. JC-006은 회사 홈 구현·머지 완료. JC-009는 자료수집 read model·UI 구현·머지 완료(PR #4·#5, Preview 정합 포함). JC-010은 기장검토 read model·UI 구현과 QA Result 반영 완료. JC-012는 급여 read model·UI·고지액 수동 입력/match·문서 생성·마감 guard 구현을 완료했다. JC-013은 신고지원 read model·UI·접수증 보관·체크리스트 구현과 QA Result 반영을 완료했다. JC-015는 UI Preview·화면 승인(2026-07-02)에 이어 read model·`/dashboard/employees`·추가/수정 API·`0056` migration 구현을 완료했다(급여 line은 읽기 전용 매칭, 개인정보 최소 저장). JC-016은 `internal_reminder_*` 물리 테이블, read model, `/dashboard/reminders`, 토글/테스트 발송/즉시 발송 API, provider missing 상태, idempotency key를 구현했다. 직원 명부 기반 직원 수신은 JC-018, Vercel Cron 자동 예약 실행은 JC-017 후속이다. JC-004는 노출 표면 정리(설정 GIWA CC 탭·사무소 문구 제거), dead GIWA 컴포넌트 삭제, 레거시 GIWA 라우트 10종 redirect 차단, 링크 정리, clients 용어 사업장화, 설정 업무메일 탭 정리, 사업장 상세 GIWA 탭 제거를 완료(`done`, PR #21~#25). `clients`(사업장 등록·관리)·`billing`(요금제)은 v1 필수 기능으로 유지하고, jaryo-admin은 operator allowlist로 격리된 플랫폼 콘솔이라 조치 불필요로 감사 종료했다. JC-014 실제 업로드→Blob 저장→AI 파싱→정규화 E2E 검증을 완료했다(`done`, 2026-07-03) — Gemini·Claude high confidence 합의로 파이프라인 정상 동작 확인. 유일한 인프라 후속은 OPENAI_API_KEY 429(quota) 결제 충전으로 3-provider 합의를 완전 복구하는 것(현재 2/3 graceful 동작). 2026-07-03 프로덕션 first-run E2E에서 발견된 신규 사용자 경험 후속은 JC-019(샘플 데이터 first-run), JC-020(가입 후 온보딩 라우팅), JC-021(브랜드 잔재 정리), JC-022(설정 화면 제품 언어 정리)로 등록했다.
 

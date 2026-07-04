@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-04 00:20
+> Last Updated: 2026-07-04 17:13
 
 ## 1. 디자인 방향
 
@@ -39,7 +39,7 @@
 └───────────┴─────────────────────────────────────┘
 ```
 
-- Sidebar: 브랜드 → "회사 홈"(활성) → 운영 흐름(자료수집·기장검토·부가세·급여·신고지원·세무 일정) → 관리(설정) → 사용자.
+- Sidebar: 브랜드 → "회사 홈"(활성) → 운영 흐름(자료수집·기장검토·부가세·급여·신고지원·신고 준비) → 관리(설정) → 사용자.
   아직 미구현 화면은 "다음" 배지로 표기.
 - Topbar: 회계기간·신고구분 선택 pill을 우측 정렬. 컨텍스트 전환의 단일 지점.
 
@@ -146,7 +146,7 @@
 - 운영 흐름 6개 화면 전체가 사이드바로 상호 이동 가능하다.
 - 직원 명부는 사이드바 "관리" 그룹의 설정 아래 항목으로 진입하며, 6개 워크스페이스 프리뷰와 상호 이동한다.
 - 리마인드는 사이드바 "관리" 그룹의 직원 명부 아래 항목으로 진입하며, 전 화면과 상호 이동한다.
-- 세무 일정은 사이드바 "운영 흐름" 그룹의 신고지원 아래 항목으로 진입하며, 각 세목 항목에서 해당 워크스페이스로 이동한다(read-only 허브·JC-029).
+- 신고 준비는 사이드바 "운영 흐름" 그룹의 신고지원 아래 항목으로 진입하며, 공통 기반(자료수집·기장검토)과 병렬 신고 트랙의 입력·산출·handoff 상태를 보여준다(JC-029).
 - 구현된 화면은 사이드바 "다음" 배지를 제거한다.
 
 ### 4.8 직원 명부 (06_employee_directory.html)
@@ -177,10 +177,27 @@
 
 - **책임 경계 규칙**: 회사 내부 업무 알림이다. 고객사 요청 메일, 외부 업로드 포털 초대, 자동 홈택스 제출·납부는 제공하지 않는다. 배너·하단 안내에 반복 노출한다.
 - 수신자는 담당자 본인·내부 staff에서 파생하며, notification 꺼진 대상은 제외한다. 직원 명부(JC-015) 기반 직원 수신은 후속.
-- 세무 일정(마감 D-day)·확인 필요 상태를 담당자 본인에게 리마인드하는 자가 알림이 v1 핵심 흐름이다.
+- 신고 준비 일정(마감 D-day)·확인 필요 상태를 담당자 본인에게 리마인드하는 자가 알림이 v1 핵심 흐름이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
-### 4.10 First-run Sample Data (JC-019)
+### 4.10 신고 준비 (08_filing_preparation.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·handoff 상태를 요약 | 진행률 + blocker 카운트 |
+| Next Action List | 신고 전 처리해야 할 blocker와 해당 워크스페이스 CTA | danger/warn/ok dot + 라우팅 |
+| Common Foundation Cards | 자료수집 -> 기장검토 공통 기반의 입력·산출 상태 | 누락/검토대기/원장 준비 상태칩 |
+| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세 병렬 트랙 | 입력/산출/handoff 3단 계약 + 상태칩 |
+| Schedule Strip | 다가오는 마감·D-day | 일정은 보조 정보, 중심 프레임 아님 |
+| Responsibility Boundary | 직접 신고·자동제출 제외 경계 | accent 안내 박스 |
+| State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
+
+- 화면의 중심 질문은 "언제까지 무엇을 해야 하는가"가 아니라 "홈택스·위택스에 넣을 확정 데이터가 준비됐는가"다.
+- 세무 일정은 하단 보조 섹션으로만 둔다.
+- 자동제출·신규 산출 엔진·신규 DB는 JC-029 Preview 범위 밖이다.
+- 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
+
+### 4.11 First-run Sample Data (JC-019)
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
@@ -242,9 +259,11 @@
 - Preview (신고지원): [05_filing_support.html](./previews/05_filing_support.html)
 - Preview (직원 명부): [06_employee_directory.html](./previews/06_employee_directory.html)
 - Preview (리마인드): [07_internal_reminder.html](./previews/07_internal_reminder.html)
+- Preview (신고 준비): [08_filing_preparation.html](./previews/08_filing_preparation.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
+- **Concept_Design**: [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) - 신고 준비 파이프라인 방향
 - **UI_Screens**: [Screen Flow](./00_SCREEN_FLOW.md) - 사용자 흐름 및 데이터 입출력
 - **UI_Screens**: [MVP UX Baseline](./01_MVP_UX_BASELINE.md) - 6개 워크스페이스 기준선
 - **UI_Screens**: [Company Home Prototype Review](./02_COMPANY_HOME_PROTOTYPE_REVIEW.md) - 회사 홈 확인 결과

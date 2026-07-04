@@ -1,6 +1,6 @@
 # SemuAgent Product Baseline
 > Created: 2026-07-01 17:55
-> Last Updated: 2026-07-04
+> Last Updated: 2026-07-04 17:13
 
 ## Purpose
 
@@ -129,6 +129,7 @@ Every reused flow must be checked for operator mismatch:
   review/approval flows.
 
 ## Related Documents
+- **Concept_Design**: [Filing Preparation Pipeline](./02_FILING_PREPARATION_PIPELINE.md) - 신고 준비 파이프라인 방향
 - **UI_Screens**: [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md) - 6개 워크스페이스 UX 기준선
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 화면 흐름 및 데이터 입출력
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 디자인 시스템 및 컴포넌트
