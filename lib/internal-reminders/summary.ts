@@ -306,10 +306,15 @@ export function buildInternalReminderRules(params: {
       triggerType: definition.triggerType,
       offsetDays: definition.offsetDays,
       enabled: definition.enabled,
-      recipientSource: 'staff' as const,
+      recipientSource: 'staff' as InternalReminderRecipientSource,
       subjectTemplate: definition.subjectTemplate,
       bodyTemplate: definition.bodyTemplate,
       ...stored,
+      // JC-018: payroll의 recipientSource는 코드로 고정한 정책이라 사용자가
+      // 규칙별로 바꾸는 UI가 없다. 따라서 저장된 값이 'staff'인 것은 JC-018 이전
+      // 낡은 값일 뿐 의도된 선택이 아니므로, stored를 덮어써서라도 항상 mixed로
+      // 정규화한다(기존 테넌트의 payroll 규칙도 자동으로 mixed 전환).
+      ...(definition.domain === 'payroll' ? { recipientSource: 'mixed' as InternalReminderRecipientSource } : {}),
     }
     const domainMeta = INTERNAL_REMINDER_DOMAINS[merged.domain]
     const attention = params.attentions.find((item) => item.domain === merged.domain)
@@ -327,7 +332,10 @@ export function buildInternalReminderRules(params: {
       iconLabel: domainMeta.iconLabel,
       iconClassName: domainMeta.iconClassName,
       triggerLabel: triggerLabel(merged),
-      recipientLabel: '담당자 본인',
+      // JC-018: recipientSource가 mixed면 실제로 확인 필요 직원에게도 발송되므로
+      // 그 사실을 화면에 정확히 반영한다(수신 라벨이 실제 발송 동작과 어긋나면
+      // 안 된다).
+      recipientLabel: merged.recipientSource === 'mixed' ? '담당자 본인 + 확인 필요 직원' : '담당자 본인',
       subjectPreview: renderReminderTemplate(merged.subjectTemplate, context),
       bodyPreview: renderReminderTemplate(merged.bodyTemplate, context),
       lastSentAt: latestSentAtByRuleId.get(merged.id) ?? null,
