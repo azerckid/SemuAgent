@@ -39,7 +39,7 @@
 | JC-024 | todo | 연말정산·지급명세서 지원 (급여/원천 확장) | `lib/payroll-workspace`, `lib/filing-support`, 급여·원천세 데이터 | **우선순위: 높음 · 법적 리스크: 낮음.** 회사(원천징수의무자)가 연말정산 결과와 지급명세서(근로·사업소득)를 준비·제출 보조한다. 이미 급여(JC-012)·원천세(신고지원 JC-013)·직원명부(JC-015) 데이터가 있어 자연스러운 확장이며, 회사 본인 업무라 세무대리 리스크가 낮다. 매년 반복 신고. 자동 제출은 JC-023 원칙(사용자 최종 승인) 준수. |
 | JC-025 | todo | 종합소득세 신고 지원 (개인사업자, self-filing 보조) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 주의.** 개인사업자 종합소득세(5월) 신고서 계산·초안·검증을 self-filing 보조로 제공한다. 기장검토(JC-010) output을 사용한다. ⚠️ 세무조정이 개입하면 세무사법 제2조("세무서류 작성")에 저촉 소지가 있어, "계산·초안·사용자 최종 확인" 수준으로 한정하고 세무조정계산서 자동작성은 신중히 다룬다. 착수 전 법무 검토 게이트. |
 | JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
-| JC-027 | todo | 지방소득세 연동 지원 | 원천세·종소세·법인세 신고, `lib/filing-support` | **우선순위: 낮음(본세 부속) · 법적 리스크: 낮음.** 지방소득세(원천세 특별징수분·종합소득세분·법인세분)를 본세 신고에 연동해 함께 계산·안내한다. 대개 본세와 동반 신고되므로 JC-024/025/026 및 원천세 흐름에 부속으로 붙는다. 독립 우선순위 낮음. |
+| JC-027 | todo | 지방소득세 연동 지원 (원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙) | `lib/local-income-tax`(신규), `lib/payroll-workspace`, `lib/filing-support`, `lib/filing-preparation` | **v1 스코프 확정(2026-07-05) · 우선순위: 높음(허브 마지막 roadmap 트랙) · 법적 리스크: 낮음.** "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 이후. 급여에 이미 실제 기록된 `payrollEmployeeLine.localIncomeTaxKrw`를 반기/월 단위로 집계하는 read-only 전용 화면. 신고 준비 허브(JC-029)의 `local_income` 트랙을 roadmap→live 전환(허브의 마지막 roadmap 트랙 완성). **데이터 정합성 수정 포함**: 신고지원(JC-013)이 `splitWithholdingTax()`(10%/11 파생 근사치)로 지방소득세를 계산·표시하던 것을, JC-027과 동일한 실제 `localIncomeTaxKrw` 합계로 교체해 두 화면이 같은 숫자를 보이게 한다. 위택스 자동제출·신규 세액 계산 엔진은 범위 밖. |
 | JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
@@ -519,18 +519,33 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 제출은 사용자 승인 기반(JC-023)
 - Document Sync Check: 2026-07-04 등록. 세 항목 중 법적 리스크 최상 → 안정화·저위험 항목 후 착수. 법무 검토 필수.
 
-### JC-027 · 지방소득세 연동 지원 — 본세 부속 (우선순위 낮음 · 저위험)
+### JC-027 · 지방소득세 연동 지원 — 원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙 (우선순위 높음 · 저위험)
 
 - Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
-- Related Domain: 원천세(JC-013)·종합소득세(JC-025)·법인세(JC-026) 신고에 지방소득세 연동.
-- Related HTML Preview: N/A - 본세 화면에 부속.
+- Related Domain: 급여(JC-012, `payrollEmployeeLine.localIncomeTaxKrw`), 신고지원(JC-013, `splitWithholdingTax` 정합성 수정 대상), 신고 준비 허브(JC-029, `local_income` 트랙)
+- Related UI Docs: 착수 예정 — 지방소득세 준비 화면 신규 Preview 필요(UI-First Gate). [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md)에 신규 섹션 추가 예정.
+- Related HTML Preview: 착수 예정 — 신규 화면(JC-024 `09_payment_year_end.html`과 유사한 read-only 집계 패턴 재사용).
+- Related Technical Docs: 착수 예정 — Pre-Code Brief 신규 작성.
+- Related QA Docs: N/A - 착수 시 신설.
+- Prototype Review / 승인: N/A - 스코프 확정 단계.
+- **v1 Scope 확정 (2026-07-05):**
+  - **대상**: "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 완료 이후 별도.
+  - **데이터 소스**: 급여에 **이미 실제 기록된** `payrollEmployeeLine.localIncomeTaxKrw`를 반기/월 단위로 집계한다. **신규 세액 계산 엔진 없음** — 10%/11 근사치 재계산 아님, 실제 저장값 합산만.
+  - **화면**: 신규 read-only 전용 화면. 신고 준비 허브(JC-029)의 `local_income` 트랙을 roadmap→live로 전환(허브의 마지막 roadmap 트랙 완성).
+  - **데이터 정합성 수정(중요, 같은 범위에 포함)**: 신고지원(JC-013)의 `lib/filing-support/summary.ts` `splitWithholdingTax()`가 원천세 합계(`withholdingTaxKrw`)를 10%/11로 **근사 계산**해 지방소득세를 표시하고 있다. 실제 `localIncomeTaxKrw` 합계(JC-027이 만드는 것과 동일 소스)로 교체해, 신고지원 화면과 JC-027 화면이 **같은 기간에 다른 숫자를 보여주지 않게** 한다.
+  - **제외**: 위택스/이택스 자동 제출, 종합소득세분·법인세분 지방소득세, 신규 세액 계산 로직.
 - Implementation Preconditions:
-  - [ ] 지방소득세(특별징수분·소득세분·법인세분) 계산·신고 방식 확인
-  - [ ] 본세 신고 항목에 지방세를 연동하는 방식 결정(별도 화면 vs 부속 표시)
+  - [x] v1 스코프 확정 — 원천세 특별징수분 한정·실제값 소스·신고지원 정합성 수정 포함·위택스 자동제출 제외
+  - [ ] UI-First Gate: 지방소득세 준비 화면 HTML Preview 작성·사용자 승인
+  - [ ] Pre-Code Brief 작성 — 반기/월 집계 계약, `splitWithholdingTax` 교체 계약, 허브 트랙 live 전환 계약
 - Acceptance Criteria:
-  - [ ] 원천세·종소세·법인세 신고 시 대응 지방소득세가 함께 계산·안내된다
-  - [ ] 제출은 사용자 승인 기반(JC-023)
-- Document Sync Check: 2026-07-04 등록. 본세에 부속되는 저위험 항목.
+  - [ ] 원천세 특별징수분 지방소득세가 직원별/기간별로 집계·표시된다(실제 `localIncomeTaxKrw` 합계, 파생 계산 아님)
+  - [ ] 신고 준비 허브의 `local_income` 트랙이 roadmap→live로 전환되고 입력·산출·handoff로 읽힌다
+  - [ ] 신고지원(JC-013)의 지방소득세 표시가 `splitWithholdingTax` 근사치 대신 실제 합계를 사용하도록 교체된다(정합성)
+  - [ ] 종합소득세분·법인세분 지방소득세는 이번 범위에 포함하지 않는다
+  - [ ] 위택스 자동 제출·신규 세액 계산 엔진은 포함하지 않는다
+  - [ ] 화면은 read-only이며 mutation을 수행하지 않는다
+- Document Sync Check: 2026-07-04 등록 · 2026-07-05 v1 스코프 확정(원천세 특별징수분 한정 + 신고지원 정합성 수정 포함). 착수 순서: UI Preview 승인 → Pre-Code Brief → 구현.
 
 ### JC-028 · 사업장현황신고 지원 (면세 개인사업자) — (우선순위 중 · 저위험)
 
