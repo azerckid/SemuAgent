@@ -73,12 +73,12 @@ export function PublicWelcomeModal() {
       >
         <header className="flex items-start justify-between gap-4 px-7 pb-5 pt-6 max-sm:px-5">
           <div>
-            <p className="mb-2.5 text-[13px] font-extrabold text-blue-600">JARYO 베타 안내</p>
+            <p className="mb-2.5 text-[13px] font-extrabold text-blue-600">SemuAgent 베타 안내</p>
             <h2
               id="public-welcome-title"
               className="max-w-[440px] text-2xl font-bold leading-[1.28] tracking-normal text-gray-900 max-sm:text-[21px]"
             >
-              회계사무소의 자료 업무를 AI와 함께 정리합니다
+              작은 회사의 세무신고 준비를 AI와 함께 정리합니다
             </h2>
           </div>
           <button
@@ -93,35 +93,35 @@ export function PublicWelcomeModal() {
 
         <div className="px-7 pb-6 max-sm:px-5">
           <p className="m-0 text-[15px] leading-7 text-gray-600">
-            자료 요청, 업로드 검토, 보충 요청, 급여·기장 초안, 법령 검색을 하나의 업무
-            흐름으로 연결합니다. AI는 초안을 만들고 담당자가 확인·승인하는 구조로
+            증빙 수집, AI 분류·기장검토, 부가세·급여, 신고자료 패키지 생성을 하나의 업무
+            흐름으로 연결합니다. AI는 초안을 만들고 회사 담당자가 확인·승인하는 구조로
             운영됩니다.
           </p>
 
           <div className="my-5 grid grid-cols-3 gap-2.5 max-sm:grid-cols-1" aria-label="주요 기능">
             <div className="min-h-[92px] rounded-xl border border-gray-200 bg-slate-50 p-3.5">
-              <strong className="mb-1.5 block text-[13px] text-gray-900">자료 요청</strong>
+              <strong className="mb-1.5 block text-[13px] text-gray-900">자료 수집</strong>
               <span className="block text-xs leading-5 text-gray-500">
-                고객사별 요청과 제출 상태를 한 화면에서 확인합니다.
+                증빙·통장·카드·급여 자료를 한 화면에서 수집·정리합니다.
               </span>
             </div>
             <div className="min-h-[92px] rounded-xl border border-gray-200 bg-slate-50 p-3.5">
-              <strong className="mb-1.5 block text-[13px] text-gray-900">검토 초안</strong>
+              <strong className="mb-1.5 block text-[13px] text-gray-900">AI 검토</strong>
               <span className="block text-xs leading-5 text-gray-500">
-                부족 자료와 보충 메일 초안을 담당자 승인 전제로 준비합니다.
+                기장·부가세·급여 초안을 담당자 확인 전제로 준비합니다.
               </span>
             </div>
             <div className="min-h-[92px] rounded-xl border border-gray-200 bg-slate-50 p-3.5">
-              <strong className="mb-1.5 block text-[13px] text-gray-900">실무 검색</strong>
+              <strong className="mb-1.5 block text-[13px] text-gray-900">신고 준비</strong>
               <span className="block text-xs leading-5 text-gray-500">
-                법령 근거와 실무 안내를 분리해 검토할 수 있습니다.
+                신고자료 패키지 생성과 홈택스 제출 안내를 제공합니다.
               </span>
             </div>
           </div>
 
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-[13px] leading-6 text-amber-800">
-            현재는 베타/파일럿 검증 단계입니다. 세무·회계 판단과 고객 발송은 담당자 검토
-            후 진행하는 것을 전제로 합니다.
+            현재는 베타/파일럿 검증 단계입니다. 세무 판단과 최종 신고 제출은 회사 담당자가
+            확인·승인한 뒤 진행하는 것을 전제로 합니다.
           </div>
         </div>
 

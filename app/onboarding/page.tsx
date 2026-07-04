@@ -126,7 +126,6 @@ export default function OnboardingPage() {
                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="sejong"
               />
-              <span className="text-sm text-gray-400 shrink-0">.jaryo.kr</span>
             </div>
             <p className="text-xs text-gray-400 mt-1">소문자, 숫자, 하이픈만 사용 가능</p>
           </div>
