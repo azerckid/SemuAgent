@@ -453,13 +453,13 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] **UI-First Gate**: 전용 검토 화면 HTML Preview 작성·사용자 승인 — [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html), 2026-07-05 승인(단일 스크롤·직원 중심 표·신고 준비 데이터 용어 통일)
   - [x] Pre-Code Brief 작성 — [16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md](../03_Technical_Specs/16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md)
 - Acceptance Criteria:
-  - [ ] 간이지급명세서(근로소득) 준비 상태·누락을 회사 담당자가 확인하는 read model/화면 제공
-  - [ ] 연말정산 준비·검토(직원별 연간 지급·기납부 집계)를 제공하되 정산액 계산은 v1 범위 밖으로 명시
-  - [ ] 신고 준비 허브의 지급명세서/연말정산 트랙이 roadmap→live로 전환되고 입력·산출·handoff로 읽힌다
-  - [ ] 전자신고 파일 생성은 포함하지 않는다(JC-030 경계)
-  - [ ] 제출은 사용자 승인 기반(JC-023 원칙), 자격증명 원문 미저장
-  - [ ] 급여·원천세·직원명부 기존 데이터와 정합
-- Document Sync Check: 2026-07-04 등록 · 2026-07-05 v1 스코프 확정. 급여/원천 도메인 확장으로 저위험. 착수 순서: UI Preview(전용 검토 화면) 승인 → Pre-Code Brief → 구현. QA 신설.
+  - [x] 간이지급명세서(근로소득) 준비 상태·누락을 회사 담당자가 확인하는 read model/화면 제공
+  - [x] 연말정산 준비·검토(직원별 연간 지급·기납부 집계)를 제공하되 정산액 계산은 v1 범위 밖으로 명시
+  - [x] 신고 준비 허브의 지급명세서/연말정산 트랙이 roadmap→live로 전환되고 입력·산출·handoff로 읽힌다
+  - [x] 전자신고 파일 생성은 포함하지 않는다(JC-030 경계)
+  - [x] 제출은 사용자 승인 기반(JC-023 원칙), 자격증명 원문 미저장 (read-only, mutation 없음)
+  - [x] 급여·원천세·직원명부 기존 데이터와 정합 (신규 테이블·마이그레이션 없음)
+- Document Sync Check: 구현 완료(2026-07-05). 구현 파일: `lib/payment-statements/summary.ts`(반기·연말정산 집계·순수함수), `lib/payment-statements/summary.test.ts`(14건), `app/(dashboard)/dashboard/filing-preparation/payment-statements/`(page·_components/payment-statement-review·loading·error), `lib/filing-preparation/summary.ts`(payment_statement 트랙 roadmap→live). 전체 206파일 1360건 통과, tsc/eslint/build 클린. 기존 컬럼만 조회(payroll·employee_profile) — 신규 마이그레이션 없음(프로덕션 DB 조치 불필요).
 
 ### JC-025 · 종합소득세 신고 지원 (개인사업자) — self-filing 보조 (우선순위 중 · 법적 경계 주의)
 

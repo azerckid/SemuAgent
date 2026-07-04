@@ -54,6 +54,20 @@ describe('buildTracks', () => {
     expect(vat.applicable).toBe(true)
     expect(vat.href).toBe('/dashboard/vat')
   })
+
+  it('payment_statement track: roadmap without count, live with count (JC-024)', () => {
+    const noCount = buildTracks(attentions(), { outputTaxKrw: 0, inputTaxKrw: 0, pendingDeductionCount: 0 }, 'individual')
+      .find((t) => t.id === 'payment_statement')!
+    expect(noCount.status).toBe('roadmap')
+    expect(noCount.href).toBeNull()
+
+    const live = buildTracks(attentions(), { outputTaxKrw: 0, inputTaxKrw: 0, pendingDeductionCount: 0 }, 'individual', { total: 5, attention: 2 })
+      .find((t) => t.id === 'payment_statement')!
+    expect(live.status).toBe('live')
+    expect(live.href).toBe('/dashboard/filing-preparation/payment-statements')
+    expect(live.chipLabel).toBe('확인 2명')
+    expect(live.chipTone).toBe('warn')
+  })
 })
 
 describe('isTrackApplicable / inapplicableReasonFor', () => {

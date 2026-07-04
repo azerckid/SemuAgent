@@ -7,6 +7,7 @@ import {
   type InternalReminderAttention,
   type InternalReminderDomain,
 } from '@/lib/internal-reminders/summary'
+import { loadPaymentStatementAttentionCount } from '@/lib/payment-statements/summary'
 import { expandTaxSchedulesForMonth } from '@/lib/tax-calendar'
 import { now } from '@/lib/time'
 import type { TaxEntityType } from '@/lib/validations/business-entity'
@@ -206,14 +207,15 @@ export async function loadFilingPreparationSummary({
     }
   }
 
-  const [attentions, vat] = await Promise.all([
+  const [attentions, vat, paymentStatement] = await Promise.all([
     loadInternalReminderAttentionItems({ tenantId, periodKey, today }),
     loadVatSummary({ tenantId, periodKey, today }),
+    loadPaymentStatementAttentionCount(tenantId),
   ])
 
   const blockers = buildFilingPreparationBlockers(attentions)
   const readinessPercent = buildFilingPreparationReadiness(attentions)
-  const tracks = buildTracks(attentions, vat.taxSummary, businessType)
+  const tracks = buildTracks(attentions, vat.taxSummary, businessType, paymentStatement)
   const handoffReadyCount = tracks.filter(
     (track) => track.status === 'live' && track.applicable && track.chipTone === 'ok',
   ).length
@@ -267,6 +269,7 @@ export function buildTracks(
   attentions: InternalReminderAttention[],
   vatTax: { outputTaxKrw: number; inputTaxKrw: number; pendingDeductionCount: number },
   type: FilingPrepBusinessType,
+  paymentStatement?: { total: number; attention: number },
 ): FilingPrepTrackCard[] {
   const payroll = attentionByDomain(attentions, 'payroll')
 
@@ -311,16 +314,22 @@ export function buildTracks(
     {
       id: 'payment_statement',
       title: '지급명세서 · 연말정산',
-      cycle: '월/반기/연 · 연간 지급내역 기반',
-      chipLabel: 'JC-024',
-      chipTone: 'plan',
-      status: 'roadmap',
+      cycle: '월/반기/연 · 급여/직원 명부 기반',
+      chipLabel: !paymentStatement
+        ? 'JC-024'
+        : paymentStatement.attention > 0
+          ? `확인 ${paymentStatement.attention}명`
+          : paymentStatement.total > 0 ? '데이터 준비' : '대상 없음',
+      chipTone: !paymentStatement ? 'plan' : paymentStatement.attention > 0 ? 'warn' : 'ok',
+      status: paymentStatement ? 'live' : 'roadmap',
       applicable: isTrackApplicable('payment_statement', type),
       inapplicableReason: inapplicableReasonFor('payment_statement', type),
-      input: '연간 급여·사업소득 지급내역 · 직원 명부',
-      output: '명세서 데이터셋 · 정산액 · 제출용 명세서',
-      handoffLabel: 'handoff: 향후 신고지원 명세서 항목',
-      href: null,
+      input: '연간 급여·지급내역 · 직원 명부',
+      output: '간이지급명세서 반기 집계 · 연말정산 준비 데이터 · 누락/검토 상태',
+      handoffLabel: 'handoff: 신고 준비 데이터 확인 후 JC-030 파일 생성으로 연결',
+      href: paymentStatement && isTrackApplicable('payment_statement', type)
+        ? '/dashboard/filing-preparation/payment-statements'
+        : null,
     },
     {
       id: 'local_income',
