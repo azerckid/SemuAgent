@@ -13,6 +13,7 @@ import {
   client,
   uploadSession,
 } from '@/lib/db/schema'
+import { listActiveSourceBatchSessions, type SourceBatchSessionRow } from '@/lib/source-batch/scope'
 import { DateTime, now, toDBString } from '@/lib/time'
 import {
   periodFromAttributionValue,
@@ -41,7 +42,7 @@ export type FiscalLedgerMonthSummary = {
   }
 }
 
-type SessionSnapshot = typeof uploadSession.$inferSelect
+type SessionSnapshot = SourceBatchSessionRow
 
 type ClientLedgerSummaryParams = {
   tenantId: string
@@ -205,17 +206,10 @@ export async function getOrCreateFiscalYearLedgerSummary(params: ClientLedgerSum
     })
   }
 
-  const sessionRows = await db
-    .select()
-    .from(uploadSession)
-    .where(
-      and(
-        eq(uploadSession.tenantId, params.tenantId),
-        eq(uploadSession.clientId, params.clientId),
-        isNull(uploadSession.deletedAt),
-      ),
-    )
-    .orderBy(uploadSession.createdAt)
+  const sessionRows = [...await listActiveSourceBatchSessions({
+    tenantId: params.tenantId,
+    clientId: params.clientId,
+  })].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
   const sessionById = new Map(sessionRows.map((session) => [session.id, session]))
 
   for (const session of sessionRows) {

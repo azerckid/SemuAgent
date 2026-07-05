@@ -1,10 +1,10 @@
-import { and, between, eq, inArray, isNull } from 'drizzle-orm'
+import { and, between, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import {
   bookkeepingLedgerMaterialLink,
   bookkeepingMaterialAttribution,
-  uploadSession,
 } from '@/lib/db/schema'
+import { listActiveSourceBatchSessions } from '@/lib/source-batch/scope'
 import { periodFromAttributionValue } from './period-range'
 import type { LedgerPeriodRange } from './fiscal-year-ledger-rules'
 
@@ -40,16 +40,10 @@ export async function listLedgerAcceptedMaterials(params: {
 
   if (links.length > 0) return links
 
-  const sessions = await db
-    .select({ id: uploadSession.id })
-    .from(uploadSession)
-    .where(
-      and(
-        eq(uploadSession.tenantId, params.tenantId),
-        eq(uploadSession.clientId, params.clientId),
-        isNull(uploadSession.deletedAt),
-      ),
-    )
+  const sessions = await listActiveSourceBatchSessions({
+    tenantId: params.tenantId,
+    clientId: params.clientId,
+  })
 
   const sessionIds = sessions.map((session) => session.id)
   if (sessionIds.length === 0) return []

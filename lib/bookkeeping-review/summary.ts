@@ -1,6 +1,5 @@
-import { and, desc, eq, inArray, isNull, ne } from 'drizzle-orm'
+import { and, desc, eq, inArray, ne } from 'drizzle-orm'
 import type { DateTime } from 'luxon'
-import { inferBookkeepingPeriodRange } from '@/lib/bookkeeping/period-range'
 import { buildCompanyHomePeriod, type CompanyHomePeriod } from '@/lib/company-home/summary'
 import {
   bookkeepingClassificationRun,
@@ -9,8 +8,10 @@ import {
   bookkeepingTransactionClassification,
   client,
   tenant,
-  uploadSession,
 } from '@/lib/db/schema'
+import { resolveActiveSourceBatchSessionIds } from '@/lib/source-batch/scope'
+
+export { sessionPeriodOverlapsCompanyPeriod, type SessionPeriodInput } from '@/lib/source-batch/scope'
 
 export type BookkeepingReviewConfidence = 'high' | 'medium' | 'low'
 export type BookkeepingReviewRowStatus =
@@ -85,12 +86,6 @@ type ClassificationRunInput = {
   uploadSessionId: string
   status: string
   createdAt: string
-}
-
-type SessionPeriodInput = {
-  accountingPeriod: string
-  bookkeepingPeriodStart: string | null
-  bookkeepingPeriodEnd: string | null
 }
 
 type LoadBookkeepingReviewSummaryParams = {
@@ -187,27 +182,6 @@ export function buildJournalEntry(lines: VoucherLineInput[]): BookkeepingReviewJ
   return { lines: mapped, debitTotal, creditTotal, balanced: debitTotal === creditTotal }
 }
 
-function normalizeMonthValue(value: string | null | undefined) {
-  if (!value) return null
-  if (/^20\d{2}-\d{2}$/.test(value)) return value
-  if (/^20\d{2}-\d{2}-\d{2}$/.test(value)) return value.slice(0, 7)
-  return null
-}
-
-export function sessionPeriodOverlapsCompanyPeriod(
-  session: SessionPeriodInput,
-  period: Pick<CompanyHomePeriod, 'startMonth' | 'endMonth'>,
-) {
-  const snapshotStart = normalizeMonthValue(session.bookkeepingPeriodStart)
-  const snapshotEnd = normalizeMonthValue(session.bookkeepingPeriodEnd)
-  const snapshotRange = snapshotStart && snapshotEnd && snapshotStart <= snapshotEnd
-    ? { start: snapshotStart, end: snapshotEnd }
-    : null
-  const range = snapshotRange ?? inferBookkeepingPeriodRange(session.accountingPeriod)
-
-  return Boolean(range && range.start <= period.endMonth && range.end >= period.startMonth)
-}
-
 export function pickLatestCompletedRunIdsBySession(runs: ClassificationRunInput[]) {
   const latestBySession = new Map<string, ClassificationRunInput>()
   for (const run of runs) {
@@ -268,24 +242,11 @@ export async function loadBookkeepingReviewSummary({
     }
   }
 
-  const sessionRows = await db
-    .select({
-      id: uploadSession.id,
-      accountingPeriod: uploadSession.accountingPeriod,
-      bookkeepingPeriodStart: uploadSession.bookkeepingPeriodStart,
-      bookkeepingPeriodEnd: uploadSession.bookkeepingPeriodEnd,
-    })
-    .from(uploadSession)
-    .where(and(
-      eq(uploadSession.tenantId, tenantId),
-      eq(uploadSession.clientId, businessEntity.id),
-      eq(uploadSession.source, 'staff_direct'),
-      isNull(uploadSession.deletedAt),
-    ))
-
-  const sessionIds = sessionRows
-    .filter((session) => sessionPeriodOverlapsCompanyPeriod(session, period))
-    .map((session) => session.id)
+  const sessionIds = await resolveActiveSourceBatchSessionIds({
+    tenantId,
+    clientId: businessEntity.id,
+    period,
+  })
 
   if (sessionIds.length === 0) {
     return {
@@ -411,24 +372,11 @@ export async function loadBookkeepingReviewPendingCount(tenantId: string): Promi
   const businessEntity = businessEntityRows[0] ?? null
   if (!businessEntity) return 0
 
-  const sessionRows = await db
-    .select({
-      id: uploadSession.id,
-      accountingPeriod: uploadSession.accountingPeriod,
-      bookkeepingPeriodStart: uploadSession.bookkeepingPeriodStart,
-      bookkeepingPeriodEnd: uploadSession.bookkeepingPeriodEnd,
-    })
-    .from(uploadSession)
-    .where(and(
-      eq(uploadSession.tenantId, tenantId),
-      eq(uploadSession.clientId, businessEntity.id),
-      eq(uploadSession.source, 'staff_direct'),
-      isNull(uploadSession.deletedAt),
-    ))
-
-  const sessionIds = sessionRows
-    .filter((session) => sessionPeriodOverlapsCompanyPeriod(session, period))
-    .map((session) => session.id)
+  const sessionIds = await resolveActiveSourceBatchSessionIds({
+    tenantId,
+    clientId: businessEntity.id,
+    period,
+  })
   if (sessionIds.length === 0) return 0
 
   const runRows = await db

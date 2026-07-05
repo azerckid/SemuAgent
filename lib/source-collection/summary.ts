@@ -5,9 +5,9 @@ import {
   client,
   requestItemValidation,
   requestItemValidationFile,
+  sourceBatch,
   tenant,
   uploadFile,
-  uploadSession,
 } from '@/lib/db/schema'
 import { resolveUploadedFileDisplay } from '@/lib/upload/file-display'
 import { fromISO } from '@/lib/time'
@@ -457,48 +457,56 @@ export async function loadSourceCollectionSummary({
     }
   }
 
-  const scopedSession = and(
-    eq(uploadSession.tenantId, tenantId),
-    eq(uploadSession.clientId, businessEntity.id),
-    eq(uploadSession.source, 'staff_direct'),
-    isNull(uploadSession.deletedAt),
-    gte(uploadSession.accountingPeriod, period.startMonth),
-    lte(uploadSession.accountingPeriod, period.endMonth),
-  )
+  const scopedSessionRows = await db
+    .select({ id: sourceBatch.legacyUploadSessionId })
+    .from(sourceBatch)
+    .where(and(
+      eq(sourceBatch.tenantId, tenantId),
+      eq(sourceBatch.clientId, businessEntity.id),
+      eq(sourceBatch.sourceKind, 'staff_direct'),
+      isNull(sourceBatch.deletedAt),
+      gte(sourceBatch.accountingPeriod, period.startMonth),
+      lte(sourceBatch.accountingPeriod, period.endMonth),
+    ))
+  const scopedSessionIds = scopedSessionRows
+    .map((row) => row.id)
+    .filter((id): id is string => id !== null)
 
-  const [validationRows, fileRows] = await Promise.all([
-    db
-      .select({
-        id: requestItemValidation.id,
-        itemName: requestItemValidation.itemName,
-        itemGroup: requestItemValidation.itemGroup,
-        validationStatus: requestItemValidation.validationStatus,
-        requestedAction: requestItemValidation.requestedAction,
-      })
-      .from(requestItemValidation)
-      .innerJoin(uploadSession, and(eq(requestItemValidation.uploadSessionId, uploadSession.id), scopedSession))
-      .where(and(
-        eq(requestItemValidation.tenantId, tenantId),
-        ne(requestItemValidation.reviewStatus, 'excluded'),
-      )),
-    db
-      .select({
-        id: uploadFile.id,
-        uploadSessionId: uploadFile.uploadSessionId,
-        fileType: uploadFile.fileType,
-        fileSize: uploadFile.fileSize,
-        status: uploadFile.status,
-        passwordStatus: uploadFile.passwordStatus,
-        uploadedAt: uploadFile.uploadedAt,
-      })
-      .from(uploadFile)
-      .innerJoin(uploadSession, and(eq(uploadFile.uploadSessionId, uploadSession.id), scopedSession))
-      .where(and(
-        eq(uploadFile.tenantId, tenantId),
-        ne(uploadFile.staffReviewStatus, 'excluded'),
-      ))
-      .orderBy(desc(uploadFile.uploadedAt)),
-  ])
+  const [validationRows, fileRows] = scopedSessionIds.length === 0
+    ? [[], []]
+    : await Promise.all([
+      db
+        .select({
+          id: requestItemValidation.id,
+          itemName: requestItemValidation.itemName,
+          itemGroup: requestItemValidation.itemGroup,
+          validationStatus: requestItemValidation.validationStatus,
+          requestedAction: requestItemValidation.requestedAction,
+        })
+        .from(requestItemValidation)
+        .where(and(
+          eq(requestItemValidation.tenantId, tenantId),
+          inArray(requestItemValidation.uploadSessionId, scopedSessionIds),
+          ne(requestItemValidation.reviewStatus, 'excluded'),
+        )),
+      db
+        .select({
+          id: uploadFile.id,
+          uploadSessionId: uploadFile.uploadSessionId,
+          fileType: uploadFile.fileType,
+          fileSize: uploadFile.fileSize,
+          status: uploadFile.status,
+          passwordStatus: uploadFile.passwordStatus,
+          uploadedAt: uploadFile.uploadedAt,
+        })
+        .from(uploadFile)
+        .where(and(
+          eq(uploadFile.tenantId, tenantId),
+          inArray(uploadFile.uploadSessionId, scopedSessionIds),
+          ne(uploadFile.staffReviewStatus, 'excluded'),
+        ))
+        .orderBy(desc(uploadFile.uploadedAt)),
+    ])
 
   // 파일별 자료유형은 request_item_validation_file(uploadFileId ↔ validationId)을 통해
   // request_item_validation.itemGroup과 연결한다. 승인 Preview의 "수집 상태 표"가

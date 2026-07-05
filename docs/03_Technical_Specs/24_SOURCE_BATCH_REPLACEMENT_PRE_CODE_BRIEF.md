@@ -1,16 +1,16 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-05 23:28 KST
+> Last Updated: 2026-07-06 01:00 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 3a 완료 — Source batch schema/backfill/dual-write
+현재: JC-031 Slice 3b 완료 — Read model이 source_batch 우선 사용으로 전환
 Gate: 통과
-완료: Slice 1~2c, dev DB 0060·0061 적용, Slice 3a source_batch 도입
-다음: Slice 3b read switch → Slice 3c downstream FK migration
-필요 확인: 3b read model별 source_batch 우선/fallback 전략
+완료: Slice 1~2c, dev DB 0060·0061 적용, Slice 3a source_batch 도입, Slice 3b read switch(5개 우선순위 read model)
+다음: Slice 3c downstream FK migration
+필요 확인: downstream 테이블별 source_batch_id 추가 순서, mergeIncludedAttributionIntoLedger(쓰기 경로) 전환 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -118,10 +118,17 @@ Rules:
 - 화면 숫자와 blocker가 서로 다른 lineage source를 쓰지 않게 loader 단위로 통일한다.
 - mutation은 3b에서 최소화한다. read switch와 write switch를 섞지 않는다.
 
-Done for 3b:
+Done for 3b (완료, 2026-07-06):
 
-- 신고 준비 허브/자료수집/기장검토/사업장현황신고/급여 관련 read model이 기존 테스트와 신규 source_batch 테스트를 통과한다.
-- `upload_session` fallback allowlist가 문서화된다.
+- [x] 신규 공유 모듈 `lib/source-batch/scope.ts` 도입: `listActiveSourceBatchSessions`(tenant/client 범위 staff_direct source_batch 전체를 legacy_upload_session_id로 브릿지), `resolveActiveSourceBatchSessionIds`(단일 기간 겹침 편의 함수), `sessionPeriodOverlapsCompanyPeriod`/`SessionPeriodInput`(bookkeeping-review에서 이전, 재수출로 기존 import 경로 유지).
+- [x] 5개 우선순위 read model 중 4개 전환: `source-collection/summary.ts`, `bookkeeping-review/summary.ts`(`loadBookkeepingReviewSummary`+`loadBookkeepingReviewPendingCount`), `fiscal-year-ledger.ts`(`getOrCreateFiscalYearLedgerSummary`만 — 아래 예외 참고), `fiscal-year-ledger-accepted-materials.ts`(fallback 경로), `business-status-report/summary.ts`.
+- [x] `source-collection/summary.ts`는 다른 4곳과 기간 필터링 방식이 달라(overlap 검사가 아니라 `accountingPeriod` gte/lte range) 공유 헬퍼 대신 동일 필터를 `source_batch` 기준으로 재구현 — 동작 변경 없이 테이블 소스만 전환.
+- [x] **기존 불일치 수정(사용자 승인)**: `fiscal-year-ledger.ts`·`fiscal-year-ledger-accepted-materials.ts`의 세션 조회 2곳은 원래 `source='staff_direct'` 필터가 빠져 있었다(나머지 3곳과 불일치). 이번 전환에서 다른 3곳과 동일하게 `sourceKind='staff_direct'` 필터를 통일 적용했다.
+- [x] **범위 제외**: `mergeIncludedAttributionIntoLedger`(fiscal-year-ledger.ts)는 세션 id를 외부 파라미터로 받는 쓰기 경로라 "read switch와 write switch를 섞지 않는다" 원칙에 따라 이번 slice에서 제외하고 `upload_session` 직접 조회를 유지했다.
+- [x] payroll: 조사 결과 순수 source-lineage 목적의 `upload_session` 조회가 없음(전부 `requestKind`/`requestEventId` 같은 포털 전용 필드 또는 전체 row 소비) — 전환 대상 없음, 그대로 유지.
+- [x] downstream 테이블(`bookkeepingClassificationRun` 등)은 여전히 `uploadSessionId` 컬럼 기준— `source_batch.legacyUploadSessionId`로 세션 id를 뽑아 기존 `inArray` 조회를 그대로 재사용. downstream 테이블 자체에 `source_batch_id`를 추가하는 건 Slice 3c 범위.
+- [x] 기존 테스트 갱신(정적 소스 스캔 → 새 코드 형태로 문구 수정) + 신규 `lib/source-batch/scope.test.ts`(tenant 격리·sourceKind 필터·soft-delete 제외·legacy_upload_session_id 브릿지·기간 겹침 검증) + `fiscal-year-ledger-classification-view.test.ts`/`fiscal-year-ledger-journal-view.test.ts` 픽스처에 `source_batch` 테이블 추가. 전체 206파일 1362건 통과.
+- [x] **알려진 gap**: `getOrCreateFiscalYearLedgerSummary`(fiscal-year-ledger.ts) 자체의 DB 동작 테스트는 이번 변경 전부터 전혀 없었고, 이번 slice에서도 새로 작성하지 않았다(월별 버킷팅·자재귀속 병합까지 포함한 포괄적 테스트는 이 slice의 범위를 넘어서는 별도 작업). 필드 매핑은 코드 직접 대조로 검증했다.
 
 ### Slice 3c — Downstream FK Migration
 
