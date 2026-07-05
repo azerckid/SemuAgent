@@ -623,14 +623,14 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 라우트 영향 — [Audit §3](../03_Technical_Specs/20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md): direct-upload은 유지, `/upload/[token]`·sessions·emails·request-events·mail-console은 은퇴 후보로 분리.
   - [x] DB 영향 — [Audit §4](../03_Technical_Specs/20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md): `upload_session`은 현행 source lineage FK라 즉시 삭제 금지, source batch 대체 후 은퇴.
   - [x] 메일 영향 — [Audit §5](../03_Technical_Specs/20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md): 현행 internal_reminder는 유지, `outbound_email` 기반 고객 요청메일은 은퇴 후보.
-  - [ ] 업로드 포털 영향 — `/upload/[token]` 외부 포털의 v1 제외 여부 최종 확정(권장: v1 제외 후 quarantine, [Audit §7](../03_Technical_Specs/20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)).
-  - [ ] 테스트 영향 — 첫 삭제 slice 확정 후 해당 테스트 삭제/이관 계획 수립.
+  - [x] 업로드 포털 영향 — `/upload/[token]` 외부 포털 v1 제외 승인(2026-07-05). Slice 1 quarantine 구현 완료: `app/upload/[token]/layout.tsx` redirect 추가(JC-004와 동일 패턴), 컴포넌트·`/api/upload/*`는 미삭제(`/api/upload/submit`·`/api/upload`가 direct-upload와 공유되는 것을 확인, 삭제 대상에서 제외).
+  - [ ] 테스트 영향 — 다음 삭제 slice(컴포넌트·API 분리) 확정 후 해당 테스트 삭제/이관 계획 수립.
   - [x] 단계별 삭제 계획 수립 — [Audit §6](../03_Technical_Specs/20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md): Route Quarantine → Mail Retirement → Source Batch Replacement → Schema Retirement.
 - Acceptance Criteria:
-  - [ ] 레거시 서브시스템이 단계적으로 제거되며 각 단계에서 tsc/lint/test가 통과한다
-  - [ ] v1 현행 기능(자료수집·기장·부가세·급여·신고지원·직원명부·리마인드·신고준비)에 영향이 없다
-  - [ ] `clients`(사업장)·`billing`·jaryo-admin 등 유지 대상은 보존된다
-- Document Sync Check: 2026-07-05 영향 감사 완료. 선행: 고립된 레거시 cron 라우트 4개 삭제 완료. 결론: `upload_session`은 현행 source lineage FK라 즉시 삭제 금지, 외부 포털/고객 요청메일 표면부터 단계적으로 격리. 남은 결정: `/upload/[token]` 외부 포털 v1 제외 승인 후 첫 삭제 slice 착수.
+  - [x] 레거시 서브시스템이 단계적으로 제거되며 각 단계에서 tsc/lint/test가 통과한다 (Slice 1: 208파일 1388건 통과, tsc/eslint/build 클린)
+  - [x] v1 현행 기능(자료수집·기장·부가세·급여·신고지원·직원명부·리마인드·신고준비)에 영향이 없다 (direct-upload 31건 테스트 재확인, `/api/upload/*` 미변경)
+  - [ ] `clients`(사업장)·`billing`·jaryo-admin 등 유지 대상은 보존된다 (Slice 3~4에서 최종 확인)
+- Document Sync Check: 2026-07-05 영향 감사 완료 + Slice 1(Route Quarantine) 구현 완료. `upload_session`은 현행 source lineage FK라 즉시 삭제 금지, 외부 포털/고객 요청메일 표면부터 단계적으로 격리. 구현: `app/upload/[token]/layout.tsx`(redirect, JC-004 패턴 재사용). `/api/upload/submit`·`/api/upload`는 direct-upload와 공유돼 삭제하지 않음. 컴포넌트(`upload-portal.tsx` 등)는 다음 slice에서 정리. 다음: Slice 2(메일 은퇴) 또는 컴포넌트 정리.
 
 ### JC-032 · 사업자 유형 전용 필드 — 신고 준비 dimming 실데이터 연결 (우선순위 높음 · 저위험)
 
