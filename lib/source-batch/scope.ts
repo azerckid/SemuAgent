@@ -25,6 +25,11 @@ export function internalSourceBatchReadKindCondition() {
   return inArray(sourceBatch.sourceKind, [...INTERNAL_SOURCE_BATCH_READ_KINDS])
 }
 
+// Slice 3a dual-write/backfill과 동일한 deterministic id. 신규 downstream dual-write에 사용한다.
+export function sourceBatchIdForLegacyUploadSession(uploadSessionId: string) {
+  return `source_batch_${uploadSessionId}`
+}
+
 export type SessionPeriodInput = {
   accountingPeriod: string
   bookkeepingPeriodStart: string | null

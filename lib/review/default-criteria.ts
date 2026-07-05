@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { requestItemValidation } from '@/lib/db/schema'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 import { now, toDBString } from '@/lib/time'
 import {
   defaultCriteriaForWorkType,
@@ -32,6 +33,7 @@ export async function seedGeneralDefaultCriteria(params: {
       id: randomUUID(),
       tenantId: params.tenantId,
       uploadSessionId: params.uploadSessionId,
+      sourceBatchId: sourceBatchIdForLegacyUploadSession(params.uploadSessionId),
       requestEventId: params.requestEventId,
       itemName: criterion.itemName,
       itemGroup: criterion.itemGroup,

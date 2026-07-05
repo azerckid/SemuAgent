@@ -174,7 +174,7 @@ Non-goals before done:
 
 Type: 기반 정리.
 
-Current state: Slice 1 through Slice 3b complete. Slice 3 Pre-Code Brief is fixed in [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md). Slice 3c-0 has fixed the downstream FK migration strategy; the remaining implementation order is fixed to 3c-1 through 3c-5 unless a docs PR updates this contract first.
+Current state: Slice 1 through Slice 3c-1 complete. Slice 3 Pre-Code Brief is fixed in [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md). Slice 3c-0 has fixed the downstream FK migration strategy; Slice 3c-2 is in progress unless a docs PR updates this contract first.
 
 Remaining slices:
 
@@ -187,6 +187,7 @@ Remaining slices:
    - **3a complete:** `source_batch` table, `upload_file.source_batch_id`, existing data backfill, and direct-upload dual-write are implemented.
    - **3b complete:** priority read models use `source_batch` scoping first while legacy downstream tables still bridge through `legacy_upload_session_id`.
    - **3c-0 complete:** downstream FK migration strategy is fixed: 3c-1 company-home read switch, 3c-2 source collection validation additive FK, 3c-3 bookkeeping additive FK, 3c-4 payroll lineage decision, 3c-5 adaptive structuring allowlist/migration.
+   - **3c-1 complete:** `company-home` read switch to `source_batch` scoping; `INTERNAL_SOURCE_BATCH_READ_KINDS` includes `sample_data` for first-run sample parity.
    - Migrate `upload_file` and downstream bookkeeping/payroll/review references away from legacy `upload_session` where they only need source lineage.
    - Preserve direct-upload behavior and historical traceability.
    - Execute in the fixed order from Brief 24: **3a schema/backfill/dual-write -> 3b read model switch -> 3c-0 migration strategy -> 3c-1..3c-5 downstream FK migration**.
