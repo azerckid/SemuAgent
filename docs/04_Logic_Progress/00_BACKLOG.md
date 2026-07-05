@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-05 21:11
+> Last Updated: 2026-07-05 21:34
 
 ## Status Legend
 
@@ -43,7 +43,7 @@
 | JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
-| JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 착수 전 영향 감사 필수.** JARYO-GIWA 시절의 대형 레거시 서브시스템을 단계적으로 은퇴한다. JC-004에서 라우트 redirect 차단은 됐으나 스키마·도메인 코드가 살아있고 상호 참조가 많다(uploadSession·outbound_email이 100개 넘는 파일에 광범위 참조, 정확 수치는 검색 범위·시점에 따라 변동). chore가 아니라 별도 에픽으로, 착수 전 라우트·DB·메일·업로드 포털·테스트 영향 범위를 정밀 감사하고 단계별 삭제 계획을 세운다. 고립된 4개 레거시 cron 라우트 삭제는 이 에픽과 별개로 선행 완료(chore/remove-legacy-cron-routes). |
+| JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 완료선 고정 필요.** Slice 1~2b-5는 완료됐고, 남은 완료선은 [Open Backlog Completion Contracts](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)에 고정한다: transaction-purpose 내부 작업/FK 결정 → source batch 이관 → schema retirement. 새 slice는 completion contract 업데이트 없이는 추가하지 않는다. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
 ## Implementation Rule
@@ -442,6 +442,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — MVP는 자동제출 없음(Non-Scope), 최종 목표는 사용자 승인 기반 홈택스 자동제출
 - Related Domain: [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) — 현행 신고지원(JC-013)은 홈택스 입력 가이드까지의 중간 단계
 - Related Research: [JC-023 Hometax Auto-submit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 2026-07-04 조사 브리프(파일 규격·공식 API·법적 경계·인증 자동화·실무 SW 제출 흐름 통합)
+- Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-023](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 자동제출 구현 착수 게이트와 done 조건
 - Related HTML Preview: N/A - 로드맵/전략 항목. 구현 착수 시 별도 UI·technical brief 필요.
 - Prototype Review / 승인: N/A - MVP 밖 전략 방향. 구현 전 조사·설계·법무/보안 검토 선행.
 - Implementation Preconditions (조사 과제):
@@ -493,6 +494,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related Domain: 기장검토(JC-010) output · 신고지원(JC-013). 법적 경계는 [JC-023 Research §2.3](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md)(세무사법).
+- Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-025](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 종소세 v1 범위·법무 게이트·done 조건
 - Related HTML Preview: N/A.
 - Implementation Preconditions:
   - [ ] 종소세 신고서 계산 로직·필요 데이터(기장 output) 매핑
@@ -508,6 +510,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related Domain: 기장검토(JC-010) output. 법적 경계는 [JC-023 Research §2.3](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
+- Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-026](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 법인세 법무 게이트·defer/제휴/제한 구현 완료선
 - Related HTML Preview: N/A.
 - Implementation Preconditions:
   - [ ] 법인세 신고·세무조정계산서 범위 정의 및 복잡도 평가
@@ -552,6 +555,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related Domain: 기장검토(JC-010)·자료수집(JC-009) 데이터. 부가세 비대상 면세사업자용.
+- Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-028](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 면세 개인사업자 범위·VAT 분기·done 조건
 - Related HTML Preview: N/A.
 - Implementation Preconditions:
   - [ ] 사업장현황신고 대상(면세사업자)·서식·수입금액/매입 자료 구성 확인
@@ -592,6 +596,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 3단계 다리(입력 가이드 → 전자신고 파일 생성·검증 → 사용자 승인 자동제출)의 중간 단계. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 확정 데이터 준비→handoff 경계.
 - Related Domain: 신고지원(JC-013) 확정 산출물 · 부가세(JC-011)·급여/원천세(JC-012) read model. 자동제출 후속은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
 - Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상 후보·공식 자료 확인·차단 조건(최신 파일 레이아웃, 직원 식별정보 정책)을 고정.
+- Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-030](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 전자신고 파일 생성·검증의 착수 게이트와 done 조건
 - Related Research: [JC-023 Hometax Auto-submit Research §2.1·§2.5](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 세목별 전자신고 파일 규격·파일변환신고 관문·적합성 검정. JC-030은 이 리서치의 "파일 생성·파일변환신고까지"의 실현가능 구간을 독립 기능으로 승격한 것.
 - Related UI Docs: N/A - 착수 시 신고지원 화면 확장(파일 다운로드·검증 결과)으로 정의. UI-First Gate 대상.
 - Related HTML Preview: N/A - 착수 시 신고지원/신고 준비 Preview에 파일 생성·검증 흐름 추가.
@@ -617,6 +622,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline — JARYO-GIWA Relationship](../01_Concept_Design/01_PRODUCT_BASELINE.md) — GIWA 재사용 자산과 회사 self-use 경계
 - Related Domain: `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인. sessions·`/upload/[token]` 포털·emails·request-events·mail-console·일부 대시보드(clients·calendar·emails) 전반에 얽힘.
 - Related Technical Docs: [Legacy Upload/Email Retirement Audit](../03_Technical_Specs/20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md) — route/DB/mail 영향 감사와 단계별 은퇴 계획. `upload_session` 즉시 삭제 금지, 외부 포털/메일 요청 흐름부터 격리. [Legacy Mail Side-effect Audit](../03_Technical_Specs/21_LEGACY_MAIL_SIDE_EFFECT_AUDIT.md) — Slice 2b 보충요청 초안 side effect·transaction-purpose FK 감사.
+- Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-031](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 남은 slice를 2c·3·4로 고정하고 최종 schema retirement done 조건 정의
 - Related HTML Preview: N/A - 코드/데이터 은퇴 에픽. 사용자 화면 변경은 이미 JC-004 redirect 차단으로 처리됨.
 - Prototype Review / 승인: N/A - 내부 정리 에픽.
 - Implementation Preconditions (착수 전 영향 감사 필수):

@@ -1,6 +1,6 @@
 # Legacy Mail Side-effect Audit
 > Created: 2026-07-05 16:39
-> Last Updated: 2026-07-05 20:55
+> Last Updated: 2026-07-05 21:34
 
 ## 0. Flow Status
 
@@ -9,8 +9,8 @@
 현재: JC-031 Slice 2b-5 완료 — transaction-purpose send dead-code 제거
 Gate: 통과
 완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1 보충요청 초안 생성 side effect 제거, Slice 2b-2 transaction-purpose send quarantine, Slice 2b-3a hidden reviews approval queue read 제거, Slice 2b-3b dashboard/emails mail-console read 제거, Slice 2b-3c calendar/client outbound-email read 제거, Slice 2b-3d payroll event dead-loader outbound-email read 제거, Slice 2b-3e client events detail/new dead UI 제거, Slice 2b-4 stale missing_request draft cleanup side-effect 제거, Slice 2b-5 transaction-purpose send dead-code 제거
-다음: transaction-purpose 내부 작업 재설계 또는 remaining outbound_email schema/service retirement gate
-필요 확인: transaction-purpose 확인 요청을 self-use 내부 작업으로 재설계할지 여부(후속)
+다음: Slice 2c transaction-purpose 내부 작업/FK 결정 → Slice 3 source batch replacement → Slice 4 schema retirement
+필요 확인: transaction-purpose 확인 요청을 self-use 내부 작업으로 유지할지, 다른 검토 모델로 흡수할지, 제거할지 결정
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 
@@ -120,6 +120,8 @@ Slice 2b에서 분리한 위험은 두 종류였다.
 6. **Slice 4 준비 — Schema retirement gate**
    - `outbound_email` FK 제거 migration은 source lineage 이관 및 transaction-purpose 재설계 후에만 수행
 
+JC-031의 최종 done 조건과 남은 slice 고정 규칙은 [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)에 따른다. 새 legacy mail 발견 사항은 Slice 2c·3·4 중 하나로 분류하거나 completion contract를 먼저 갱신한다.
+
 ## 7. Verification Plan
 
 각 코드 slice마다 다음을 확인한다.
@@ -136,4 +138,5 @@ Slice 2b에서 분리한 위험은 두 종류였다.
 - [Legacy Upload/Email Retirement Audit](./20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)
 - [DB Schema](./03_DB_SCHEMA.md)
 - [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
+- [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
 - [Backlog JC-031](../04_Logic_Progress/00_BACKLOG.md)

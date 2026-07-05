@@ -1,0 +1,220 @@
+# Open Backlog Completion Contracts
+> Created: 2026-07-05 21:34
+> Last Updated: 2026-07-05 21:34
+
+## 0. Purpose
+
+This document fixes the finish line for open SemuAgent backlog items. It exists because several items describe direction or cleanup work, but do not make it obvious when the item can safely move to `done`.
+
+Rule: an open backlog item may not start implementation unless its completion contract below is either already satisfied or updated in the same docs PR before implementation.
+
+## 1. Work Categories
+
+| Category | Meaning | Items |
+|---|---|---|
+| 신고 준비 기능 | Prepares reviewable data for the user to file directly | JC-025, JC-026, JC-028 |
+| 제출 준비물 생성 | Produces a file or artifact the user can take to Hometax/Wetax | JC-030 |
+| 제출 자동화 | Attempts submission after explicit user approval | JC-023 |
+| 기반 정리 | Removes copied GIWA assumptions or legacy surfaces that confuse SemuAgent | JC-031 |
+
+JC-031 is not a 신고 준비 feature. It is product-foundation cleanup so the 신고 준비 product no longer carries accounting-firm/customer-request assumptions.
+
+## 2. Global Done Rules
+
+Every item can move to `done` only when all of the following are true:
+
+1. Scope is fixed in the backlog and, when user-visible, through UI-First Gate.
+2. A Pre-Code Brief exists for implementation work, unless the item is explicitly docs-only or blocked by an external gate.
+3. Responsibility boundary is explicit: SemuAgent prepares data or files; final filing/payment remains user action unless JC-023 is separately approved.
+4. No Hometax/certificate/bank/card credentials are stored.
+5. Tests and docs are updated for the implemented scope.
+6. Backlog status, acceptance checks, and Document Sync Check match the actual code state.
+
+## 3. Item Contracts
+
+### JC-023 — 사용자 승인 기반 홈택스 자동제출
+
+Type: 제출 자동화. MVP 밖.
+
+Current gate: blocked by external policy/legal checks.
+
+May start implementation only after:
+
+- 국세청 126 or official channel confirms whether a submission API, file-submission channel, or other approved integration path is available for the target tax type.
+- 적합성 검정 and software/file-submission qualification requirements are known.
+- Legal review confirms the flow does not become unlicensed tax agency/representation.
+- Security review confirms user authentication and approval can happen without storing Hometax passwords, certificates, or raw credentials.
+- Product copy is approved to avoid `대행`, `대리`, `자동 환급`, or similar risky claims.
+
+Done means:
+
+- A user sees the exact filing payload and explicitly approves submission.
+- Submission runs only under the user's authority and approved authentication flow.
+- Raw credentials are never stored.
+- Every submission attempt, success, failure, receipt retrieval, and user approval is audit-logged.
+- Receipt or failure evidence is stored in filing support.
+- The feature has tests for approval gating, idempotency, credential non-storage, tenant isolation, and receipt/failure handling.
+
+Non-goals before done:
+
+- Scraping or bypassing Hometax protections.
+- Silent or scheduled submission without user approval.
+- Tax representative positioning.
+
+### JC-025 — 종합소득세 신고 지원
+
+Type: 신고 준비 기능.
+
+Current gate: legal and scope gate not complete.
+
+May start implementation only after:
+
+- v1 target is narrowed to specific self-filing cases, such as simple sole-proprietor business income using existing bookkeeping output.
+- The excluded cases are explicit: 세무조정, complex deductions, multi-income edge cases, and anything that requires professional tax judgment.
+- Legal review confirms the line between calculation/preparation assistance and tax document preparation by an unlicensed agent.
+- UI-First Gate defines the review screen and user confirmation copy.
+- Pre-Code Brief maps bookkeeping output to the exact preparation fields.
+
+Done means:
+
+- The user can review income, expense, deductible/non-deductible grouping, and filing-preparation checks for the approved v1 case.
+- The screen clearly states it is self-filing preparation, not tax agency work.
+- The app does not auto-submit or claim a final tax judgment.
+- Ambiguous or unsupported cases are blocked or marked as requiring expert review.
+- Tests cover supported/unsupported case separation, tenant isolation, and calculation traceability.
+
+Non-goals before done:
+
+- Full comprehensive income tax coverage.
+- Automatic 세무조정 or professional judgment replacement.
+- Filing submission.
+
+### JC-026 — 법인세 신고 지원
+
+Type: 신고 준비 기능 with high legal risk.
+
+Current gate: legal gate not complete.
+
+May start implementation only after:
+
+- Legal review decides one of three paths: defer, licensed-tax-professional partnership, or narrow internal-preparation checklist only.
+- If implemented without a licensed professional flow, the v1 scope excludes tax adjustment statement preparation.
+- Product copy is reviewed to avoid implying SemuAgent prepares corporate tax returns as a tax agent.
+- UI-First Gate and Pre-Code Brief are approved after the legal decision.
+
+Done means, if implemented:
+
+- The approved legal path is documented.
+- The feature only supports the approved scope: internal preparation/checklist, data package, or licensed-professional handoff.
+- 세무조정계산서 preparation is either excluded or handled through an explicitly licensed workflow.
+- The user sees responsibility boundaries before using the workflow.
+- Tests cover scope gates and unsupported-case blocking.
+
+Done may also mean explicit deferral:
+
+- If legal review says the risk is too high for v1, JC-026 can be closed as deferred only after the backlog records the deferral reason and replacement handoff path.
+
+### JC-028 — 사업장현황신고 지원
+
+Type: 신고 준비 기능.
+
+Current gate: scope details not fixed.
+
+May start implementation only after:
+
+- 대상 is fixed to exempt individual businesses only.
+- Required report fields are mapped from source collection/bookkeeping data.
+- The relationship with VAT is explicit: VAT-liable businesses do not use this workflow.
+- UI-First Gate and Pre-Code Brief are approved.
+
+Done means:
+
+- Exempt individual businesses can review revenue, purchase/source data, missing items, and a business-status-report preparation summary.
+- Non-exempt or corporation cases are hidden, dimmed, or blocked with a clear reason.
+- The app does not submit the report automatically.
+- The handoff to Hometax/direct filing is clear.
+- Tests cover exempt/non-exempt branching and data aggregation.
+
+Non-goals before done:
+
+- Full Hometax file generation.
+- Automatic submission.
+- Corporate or VAT-liable business handling in this workflow.
+
+### JC-030 — 전자신고 파일 생성·검증
+
+Type: 제출 준비물 생성.
+
+Current gate: scope gate exists; implementation blocked by official file spec and PII policy.
+
+May start implementation only after:
+
+- The latest official file layout for the selected tax type is obtained and linked.
+- PII policy is decided. For wage-related files, the default safe path is server non-storage one-time input unless a separate encrypted-storage design is approved.
+- The target tax type is fixed for v1. Current first candidate is 근로소득 간이지급명세서.
+- Validation rules are defined from the official layout.
+- UI-First Gate shows file-generation status, validation errors, and responsibility boundary.
+- Pre-Code Brief maps SemuAgent's confirmed data to file fields.
+
+Done means:
+
+- For at least one approved tax type, SemuAgent generates a file candidate from confirmed preparation data.
+- The file format follows the official layout and has deterministic formatting tests.
+- The app validates required fields, totals, period, and format before download.
+- The user downloads and directly uploads/submits through Hometax; the app does not log in or submit.
+- The UI avoids claims such as `국세청 검증 완료` or `제출 보장` unless actually certified.
+- Tests include golden-file output, validation failures, PII non-persistence, and tenant isolation.
+
+Non-goals before done:
+
+- User-approved auto-submit. That remains JC-023.
+- Any file type without an official current layout.
+
+### JC-031 — 레거시 GIWA upload/email 서브시스템 은퇴
+
+Type: 기반 정리.
+
+Current state: Slice 1 through Slice 2b-5 complete. The remaining work is fixed to the slices below unless a docs PR updates this contract first.
+
+Remaining slices:
+
+1. **Slice 2c — Transaction-purpose internal task/FK decision**
+   - Decide whether `transaction_purpose_request` remains as an internal bookkeeping task, is absorbed into another review model, or is removed.
+   - Remove or replace `sent_email_id -> outbound_email.id`.
+   - Keep classification answer/application behavior only if it is still used by SemuAgent self-use flows.
+2. **Slice 3 — Source batch replacement**
+   - Introduce or designate an internal source-lineage model, such as `source_batch`.
+   - Migrate `upload_file` and downstream bookkeeping/payroll/review references away from legacy `upload_session` where they only need source lineage.
+   - Preserve direct-upload behavior and historical traceability.
+3. **Slice 4 — Schema retirement**
+   - Remove or quarantine remaining `outbound_email`, request-event, mail-console, and legacy upload-session schema pieces after FK migration.
+   - Keep only explicitly approved compatibility surfaces, if any, and document why they remain.
+
+Done means:
+
+- No runtime route, API, service, UI, or side effect creates or depends on GIWA-style external customer request email.
+- `/upload/[token]` and portal-only APIs remain quarantined or deleted, while direct-upload shared APIs remain working.
+- `outbound_email` is absent from runtime code except approved migration/history/documentation references.
+- `upload_session` no longer acts as the active source-lineage model for SemuAgent v1, or the table has been formally renamed/reframed with legacy-only columns removed.
+- `transaction_purpose_request.sent_email_id` no longer depends on `outbound_email`.
+- Direct-upload, source collection, bookkeeping review, payroll, VAT, filing support, reminders, filing preparation, clients, billing, and jaryo-admin still pass their tests and smoke checks.
+- `rg` checks for `outbound_email`, `outboundEmail`, `upload_session`, and `uploadSession` are documented with an allowlist.
+- Final schema migration and DB schema docs match the code.
+
+Non-goals before done:
+
+- Breaking direct-upload or source traceability.
+- Removing work-email or internal reminder domains.
+- One-shot deletion of all historical data without retention policy.
+
+## 4. Process Rule For New Discoveries
+
+If a later audit finds another legacy surface, it must be classified into one of the existing JC-031 remaining slices. If it does not fit, the completion contract must be updated first. New slices should not be added casually; otherwise JC-031 will not have a stable finish line.
+
+## 5. Related Documents
+
+- [Backlog](../04_Logic_Progress/00_BACKLOG.md)
+- [JC-023 Hometax Auto-submit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md)
+- [E-Filing File Generation Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md)
+- [Legacy Upload/Email Retirement Audit](./20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)
+- [Legacy Mail Side-effect Audit](./21_LEGACY_MAIL_SIDE_EFFECT_AUDIT.md)
