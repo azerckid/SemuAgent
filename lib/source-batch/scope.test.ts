@@ -13,7 +13,7 @@ vi.mock('@/lib/db', () => ({
   },
 }))
 
-const { listActiveSourceBatchSessions, resolveActiveSourceBatchSessionIds } = await import('./scope')
+const { listActiveSourceBatchSessions, resolveActiveSourceBatchSessionIds, sourceBatchIdForLegacyUploadSession } = await import('./scope')
 
 const TENANT_A = 'tenant-a'
 const TENANT_B = 'tenant-b'
@@ -121,6 +121,12 @@ describe('listActiveSourceBatchSessions', () => {
     const rows = await listActiveSourceBatchSessions({ tenantId: TENANT_A, clientId: CLIENT_A })
 
     expect(rows.map((row) => row.id)).toEqual(['session-bridged'])
+  })
+})
+
+describe('sourceBatchIdForLegacyUploadSession', () => {
+  it('uses the Slice 3a deterministic id format for dual-write (JC-031 3c-2)', () => {
+    expect(sourceBatchIdForLegacyUploadSession('session-abc')).toBe('source_batch_session-abc')
   })
 })
 

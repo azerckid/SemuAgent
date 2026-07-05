@@ -16,6 +16,7 @@ import {
   inferGeneralDefaultCriteriaWorkType,
   mergeGeneralDefaultCriteriaRows,
 } from '@/lib/review/default-criteria'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 import { now, toDBString } from '@/lib/time'
 import {
   sessionEvaluationSchema,
@@ -381,6 +382,7 @@ export async function evaluateSessionAgainstCriteria(
           id: validationId,
           tenantId,
           uploadSessionId: sessionId,
+          sourceBatchId: sourceBatchIdForLegacyUploadSession(sessionId),
           requestEventId,
           itemName: criterion.criterion_text,
           itemGroup: defaultCriterion?.itemGroup ?? null,

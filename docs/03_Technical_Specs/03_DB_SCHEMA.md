@@ -102,7 +102,7 @@ tenant (로그인 주체 = 회사/대표)
 |:---|:---|:---|
 | 공통/조직 | `tenant`, `staff`, auth(`user`/`session`/`account`/`organization`/`member`/`invitation`) | 재사용 |
 | 사업장 | `business_entity`(←`client`), `client_document`(←사업장 문서), `client_checklist`·`checklist_template`·`checklist_item`(수집 항목 정의) | 재정의 |
-| 자료수집 | `source_batch`(JC-031 Slice 3a 내부 원천 batch), `upload_session`(Slice 4 전 compatibility), `upload_file`, `upload_item_declaration`, `request_item_validation`·`request_item_validation_file`(수집 검증) | 재사용 + source lineage 분리 |
+| 자료수집 | `source_batch`(JC-031 Slice 3a 내부 원천 batch), `upload_session`(Slice 4 전 compatibility), `upload_file`, `upload_item_declaration`, `request_item_validation`·`request_item_validation_file`(수집 검증; JC-031 Slice 3c-2부터 nullable `source_batch_id`) | 재사용 + source lineage 분리 |
 | 기장검토 | `bookkeeping_material_attribution`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_transaction_purpose_request(_row)`, `bookkeeping_journal_entry_run/row/voucher/voucher_line`, `bookkeeping_fiscal_year_ledger`, `bookkeeping_ledger_month`, `analysis_run`, `material_match` | 재사용 |
 | 급여 | `payroll_excel_template`, `client_payroll_rule_profile(_source)`, `payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`, `payroll_excel_draft` + 아래 4.2 신규 | 재사용 + 신규 필요 |
 | 부가세 | (기존 전용 테이블 없음 — 아래 4.1 신규) | 신규 필요 |

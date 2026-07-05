@@ -774,6 +774,7 @@ export const requestItemValidation = sqliteTable('request_item_validation', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   requestEventId: text('request_event_id').references(() => clientRequestEvent.id),
   itemName: text('item_name').notNull(),
   itemGroup: text('item_group'),                  // bank_statement, sales, purchase, payroll, ...
@@ -801,6 +802,7 @@ export const requestItemValidation = sqliteTable('request_item_validation', {
   updatedAt: text('updated_at').notNull(),
 }, (t) => ({
   tenantSessionIdx: index('riv_tenant_session_idx').on(t.tenantId, t.uploadSessionId),
+  tenantSourceBatchIdx: index('riv_tenant_source_batch_idx').on(t.tenantId, t.sourceBatchId),
 }))
 
 // ---------------------------------------------------------------------------
@@ -833,6 +835,7 @@ export const uploadItemDeclaration = sqliteTable('upload_item_declaration', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   checklistItemId: text('checklist_item_id').notNull().references(() => checklistItem.id),
   declaration: text('declaration', { enum: ['none', 'later'] }).notNull(),
   note: text('note'),
@@ -843,6 +846,7 @@ export const uploadItemDeclaration = sqliteTable('upload_item_declaration', {
   tenantSessionItemUidx: uniqueIndex('uid_tenant_session_item_uidx')
     .on(t.tenantId, t.uploadSessionId, t.checklistItemId),
   tenantSessionIdx: index('uid_tenant_session_idx').on(t.tenantId, t.uploadSessionId),
+  tenantSourceBatchIdx: index('uid_tenant_source_batch_idx').on(t.tenantId, t.sourceBatchId),
 }))
 
 // ---------------------------------------------------------------------------

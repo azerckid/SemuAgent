@@ -110,13 +110,14 @@ function addRef(refs: SampleRefPlan[], entityTable: string, entityId: string, de
   refs.push({ entityTable, entityId, deleteOrder })
 }
 
-function buildSampleValidationRows(params: SeedParams, sessionId: string) {
+function buildSampleValidationRows(params: SeedParams, sessionId: string, sourceBatchId: string) {
   const rows: Array<typeof requestItemValidation.$inferInsert> = []
   const push = (suffix: string, itemGroup: string, validationStatus: 'satisfied' | 'missing' | 'uncertain', itemName: string, requestedAction: string | null = null) => {
     rows.push({
       id: firstRunSampleId(params.tenantId, `riv_${suffix}`),
       tenantId: params.tenantId,
       uploadSessionId: sessionId,
+      sourceBatchId,
       requestEventId: null,
       itemName,
       itemGroup,
@@ -479,7 +480,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     },
   ]
 
-  const validationRows = buildSampleValidationRows(params, sessionId)
+  const validationRows = buildSampleValidationRows(params, sessionId, sourceBatchId)
   const uploadFiles = buildSampleUploadFiles(params, sessionId, sourceBatchId)
   const validationFileLinks = buildValidationFileLinks(params, validationRows, uploadFiles)
   const bookkeepingRows = buildSampleBookkeepingRows(params, sessionId, runId)

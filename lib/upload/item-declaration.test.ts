@@ -22,6 +22,7 @@ beforeAll(async () => {
       id text PRIMARY KEY,
       tenant_id text NOT NULL,
       upload_session_id text NOT NULL,
+      source_batch_id text,
       checklist_item_id text NOT NULL,
       declaration text NOT NULL,
       note text,
