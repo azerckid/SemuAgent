@@ -11,21 +11,7 @@ vi.hoisted(() => {
   process.env.BETTER_AUTH_SECRET = '12345678901234567890123456789012'
   process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
   process.env.PUBLIC_UPLOAD_BASE_URL = 'https://company.jaaryo.online'
-  process.env.RESEND_API_KEY = 'test-resend-key'
-  process.env.EMAIL_FROM = 'JARYO <noreply@example.test>'
 })
-
-const resendSendMock = vi.hoisted(() => vi.fn())
-
-vi.mock('resend', () => ({
-  Resend: vi.fn(function Resend() {
-    return {
-      emails: {
-        send: resendSendMock,
-      },
-    }
-  }),
-}))
 
 import { createClient, type Client } from '@libsql/client'
 import { drizzle } from 'drizzle-orm/libsql'
@@ -34,11 +20,9 @@ import * as appSchema from '@/lib/db/schema'
 import {
   bookkeepingTransactionPurposeRequest,
   bookkeepingTransactionPurposeRequestRow,
-  outboundEmail,
 } from '@/lib/db/schema'
 import {
   createPurposeRequestDraft,
-  sendPurposeRequest,
   updatePurposeRequestDraft,
 } from './transaction-purpose-service'
 
@@ -180,26 +164,6 @@ beforeAll(async () => {
       updated_at text NOT NULL
     )
   `)
-  await client.execute(`
-    CREATE TABLE outbound_email (
-      id text PRIMARY KEY,
-      upload_session_id text,
-      tenant_id text NOT NULL,
-      type text NOT NULL,
-      status text NOT NULL,
-      to_email text,
-      cc_email text,
-      subject text,
-      body text,
-      applied_analysis_notes text,
-      criteria_summary text,
-      request_event_id text,
-      request_template_id text,
-      approved_by_staff_id text,
-      sent_at text,
-      created_at text NOT NULL
-    )
-  `)
 })
 
 afterAll(() => {
@@ -224,9 +188,6 @@ async function seedClassificationRow(id: string, status: string) {
 }
 
 beforeEach(async () => {
-  resendSendMock.mockReset()
-  resendSendMock.mockResolvedValue({ data: { id: 'resend-email-1' }, error: null })
-  await client.execute('DELETE FROM outbound_email')
   await client.execute('DELETE FROM bookkeeping_transaction_purpose_request_row')
   await client.execute('DELETE FROM bookkeeping_transaction_purpose_request')
   await client.execute('DELETE FROM bookkeeping_transaction_classification')
@@ -411,70 +372,5 @@ describe('updatePurposeRequestDraft', () => {
       .from(bookkeepingTransactionPurposeRequest)
       .where(eq(bookkeepingTransactionPurposeRequest.id, id))
     expect(row.status).toBe('cancelled')
-  })
-})
-
-describe('sendPurposeRequest', () => {
-  async function createDraft() {
-    const r = await createPurposeRequestDraft({
-      sessionId: SESSION_GENERAL,
-      tenantId: TENANT,
-      staffRecord,
-      input: { selectedClassificationRowIds: [ROW_NEEDS_DECISION] },
-    })
-    if (!r.ok) throw new Error('create failed in fixture')
-    return r.id
-  }
-
-  it('row 0건(PATCH removeRowIds로 모두 제거)은 발송을 거부한다(P2)', async () => {
-    const id = await createDraft()
-    const rows = await testDb
-      .select({ id: bookkeepingTransactionPurposeRequestRow.id })
-      .from(bookkeepingTransactionPurposeRequestRow)
-      .where(eq(bookkeepingTransactionPurposeRequestRow.purposeRequestId, id))
-    expect(rows.length).toBe(1)
-
-    const removed = await updatePurposeRequestDraft({
-      requestId: id,
-      tenantId: TENANT,
-      staffRecord,
-      input: { removeRowIds: rows.map((r) => r.id) },
-    })
-    expect(removed.ok).toBe(true)
-
-    const result = await sendPurposeRequest({ requestId: id, tenantId: TENANT, staffRecord })
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.status).toBe(400)
-    expect(result.error).toContain('확인할 거래')
-  })
-
-  it('발송 스냅샷과 메일 본문에 거래 상세를 길게 넣지 않는다', async () => {
-    const id = await createDraft()
-
-    const result = await sendPurposeRequest({ requestId: id, tenantId: TENANT, staffRecord })
-    expect(result.ok).toBe(true)
-    expect(resendSendMock).toHaveBeenCalledTimes(1)
-
-    const [sendArgs] = resendSendMock.mock.calls[0]
-    expect(sendArgs).toMatchObject({
-      to: 'qa@example.com',
-    })
-    expect(sendArgs.text).toContain(`purposeRequest=${encodeURIComponent(id)}`)
-    expect(sendArgs.text).not.toContain('카페골목')
-    expect(sendArgs.text).not.toContain('커피 구매')
-    expect(sendArgs.text).not.toContain('15000')
-
-    const [emailRow] = await testDb
-      .select()
-      .from(outboundEmail)
-      .where(eq(outboundEmail.id, result.ok ? result.outboundEmailId : 'never'))
-    expect(emailRow.status).toBe('sent')
-    expect(emailRow.appliedAnalysisNotes).toContain(`transaction-purpose-request:${id}`)
-    expect(emailRow.appliedAnalysisNotes).toContain('rows:1')
-    expect(emailRow.appliedAnalysisNotes).toContain(`session:${SESSION_GENERAL}`)
-    expect(emailRow.appliedAnalysisNotes).not.toContain('카페골목')
-    expect(emailRow.appliedAnalysisNotes).not.toContain('커피 구매')
-    expect(emailRow.appliedAnalysisNotes).not.toContain('15000')
   })
 })

@@ -1,20 +1,16 @@
 import { randomUUID } from 'crypto'
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { z } from 'zod'
-import { Resend } from 'resend'
 import { db } from '@/lib/db'
 import {
   bookkeepingTransactionClassification,
   bookkeepingTransactionPurposeRequest,
   bookkeepingTransactionPurposeRequestRow,
   client,
-  outboundEmail,
   staff,
   tenant,
   uploadSession,
 } from '@/lib/db/schema'
-import { getTenantEmailFrom } from '@/lib/email/from'
-import { requireEmailEnv } from '@/lib/env'
 import { resolveStoredUploadUrl } from '@/lib/upload/resolve-upload-url'
 import { fromISO, now, toDBString } from '@/lib/time'
 import {
@@ -24,7 +20,6 @@ import {
 import { getSessionForStaff, type StaffRecord } from './classification-service'
 import {
   buildDefaultPurposeBodyTemplate,
-  resolvePurposeTemplate,
   type PurposeTemplateContext,
 } from './transaction-purpose-template'
 
@@ -302,9 +297,6 @@ export async function updatePurposeRequestDraft(params: {
   return { ok: true, id: requestId, status: 'draft' }
 }
 
-// 발송 불가 세션 상태 — 토큰이 무효화된 상태. (completed는 토큰 유효 → 허용)
-const SEND_BLOCKED_SESSION_STATUSES = ['expired', 'revoked'] as const
-
 type DraftRow = typeof bookkeepingTransactionPurposeRequestRow.$inferSelect
 type DraftRequest = typeof bookkeepingTransactionPurposeRequest.$inferSelect
 
@@ -402,166 +394,4 @@ export async function getPurposeRequestDraft(params: {
       dueAt: request.dueAt,
     },
   }
-}
-
-// draft 발송. send 버튼 = 담당자 최종 승인+발송(spec §6.3).
-export async function sendPurposeRequest(params: {
-  requestId: string
-  tenantId: string
-  staffRecord: StaffRecord
-}): Promise<ServiceResult<{ id: string; status: 'sent'; outboundEmailId: string }>> {
-  const { requestId, tenantId, staffRecord } = params
-
-  const [request] = await db
-    .select()
-    .from(bookkeepingTransactionPurposeRequest)
-    .where(
-      and(
-        eq(bookkeepingTransactionPurposeRequest.id, requestId),
-        eq(bookkeepingTransactionPurposeRequest.tenantId, tenantId),
-      ),
-    )
-    .limit(1)
-  if (!request) {
-    return { ok: false, status: 404, error: '확인 요청을 찾을 수 없습니다.' }
-  }
-  if (request.status !== 'draft') {
-    return { ok: false, status: 409, error: '이미 발송되었거나 종료된 요청입니다.' }
-  }
-  if (staffRecord.role === 'STAFF' && request.createdByStaffId !== staffRecord.id) {
-    return { ok: false, status: 403, error: '이 요청을 발송할 권한이 없습니다.' }
-  }
-
-  // 세션 적격성 재검증 — 토큰 무효화 상태면 링크가 동작하지 않아 발송 차단.
-  const [sessionRow] = await db
-    .select({ uploadUrl: uploadSession.uploadUrl, status: uploadSession.status })
-    .from(uploadSession)
-    .where(
-      and(
-        eq(uploadSession.id, request.uploadSessionId),
-        eq(uploadSession.tenantId, tenantId),
-        isNull(uploadSession.deletedAt),
-      ),
-    )
-    .limit(1)
-  if (!sessionRow) {
-    return { ok: false, status: 409, error: '세션이 만료되어 발송할 수 없습니다.' }
-  }
-  if (SEND_BLOCKED_SESSION_STATUSES.includes(sessionRow.status as (typeof SEND_BLOCKED_SESSION_STATUSES)[number])) {
-    return { ok: false, status: 409, error: '업로드 링크가 만료/취소되어 발송할 수 없습니다.' }
-  }
-  const resolvedUploadUrl = resolveStoredUploadUrl(sessionRow.uploadUrl)
-  if (!resolvedUploadUrl) {
-    return { ok: false, status: 409, error: '업로드 링크를 찾을 수 없어 발송할 수 없습니다.' }
-  }
-
-  if (!request.subjectSnapshot.trim() || !request.bodySnapshot.trim()) {
-    return { ok: false, status: 400, error: '제목과 본문을 입력한 뒤 발송해 주세요.' }
-  }
-
-  const [[clientRow], [tenantRow], [staffRow], [countRow]] = await Promise.all([
-    db
-      .select({ name: client.name, email: client.email })
-      .from(client)
-      .where(and(eq(client.id, request.clientId), eq(client.tenantId, tenantId)))
-      .limit(1),
-    db.select({ name: tenant.name }).from(tenant).where(eq(tenant.id, tenantId)).limit(1),
-    db.select({ name: staff.name }).from(staff).where(eq(staff.id, staffRecord.id)).limit(1),
-    db
-      .select({ n: sql`count(*)` })
-      .from(bookkeepingTransactionPurposeRequestRow)
-      .where(
-        and(
-          eq(bookkeepingTransactionPurposeRequestRow.purposeRequestId, requestId),
-          eq(bookkeepingTransactionPurposeRequestRow.tenantId, tenantId),
-        ),
-      ),
-  ])
-
-  const clientEmail = clientRow?.email?.trim()
-  if (!clientEmail) {
-    return { ok: false, status: 400, error: '고객사 수신 메일이 없어 발송할 수 없습니다.' }
-  }
-
-  // P2 가드: row 0건 발송 차단. PATCH removeRowIds로 모든 row를 지운 draft는 발송 금지.
-  const rowCount = Number(countRow?.n ?? 0)
-  if (rowCount === 0) {
-    return { ok: false, status: 400, error: '고객에게 확인할 거래가 없습니다. 확인 요청에 거래를 추가해 주세요.' }
-  }
-
-  const uploadLink = `${resolvedUploadUrl}?purposeRequest=${encodeURIComponent(requestId)}`
-  const ctx: PurposeTemplateContext = {
-    clientName: clientRow?.name ?? '고객사',
-    tenantName: tenantRow?.name ?? '',
-    staffName: staffRow?.name ?? '',
-    uploadLink,
-    dueAt: request.dueAt,
-  }
-  const finalSubject = resolvePurposeTemplate(request.subjectSnapshot, ctx)
-  const finalBody = resolvePurposeTemplate(request.bodySnapshot, ctx)
-
-  // 발송 시점 기준 스냅샷(outbound_email.applied_analysis_notes). 거래 상세는 제외.
-  const appliedNotes = `transaction-purpose-request:${requestId} rows:${rowCount} session:${request.uploadSessionId}`
-
-  const emailEnv = requireEmailEnv()
-  const resend = new Resend(emailEnv.RESEND_API_KEY)
-  const emailFrom = await getTenantEmailFrom(tenantId, emailEnv.EMAIL_FROM)
-
-  let sent = false
-  try {
-    const result = await resend.emails.send({
-      from: emailFrom,
-      to: clientEmail,
-      subject: finalSubject,
-      text: finalBody,
-    })
-    if (result.error || !result.data) {
-      throw new Error(result.error?.message ?? 'Resend send failed')
-    }
-    sent = true
-  } catch (err) {
-    console.error('[sendPurposeRequest] Resend 발송 실패', err)
-  }
-
-  const ts = toDBString(now())
-  const outboundEmailId = randomUUID()
-
-  await db.transaction(async (tx) => {
-    await tx.insert(outboundEmail).values({
-      id: outboundEmailId,
-      uploadSessionId: request.uploadSessionId,
-      tenantId,
-      type: 'transaction_purpose_request',
-      status: sent ? 'sent' : 'failed',
-      toEmail: clientEmail,
-      ccEmail: null,
-      subject: finalSubject,
-      body: finalBody,
-      appliedAnalysisNotes: appliedNotes,
-      approvedByStaffId: staffRecord.id,
-      sentAt: sent ? ts : null,
-      createdAt: ts,
-    })
-
-    if (sent) {
-      // 발송된 제목/본문(링크 치환 완료)으로 스냅샷 갱신(spec §4.1 sent snapshot).
-      await tx
-        .update(bookkeepingTransactionPurposeRequest)
-        .set({
-          status: 'sent',
-          subjectSnapshot: finalSubject,
-          bodySnapshot: finalBody,
-          sentEmailId: outboundEmailId,
-          sentByStaffId: staffRecord.id,
-          sentAt: ts,
-          updatedAt: ts,
-        })
-        .where(eq(bookkeepingTransactionPurposeRequest.id, requestId))
-    }
-  })
-
-  if (!sent) {
-    return { ok: false, status: 502, error: '이메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.' }
-  }
-  return { ok: true, id: requestId, status: 'sent', outboundEmailId }
 }
