@@ -19,6 +19,7 @@ import {
   requestItemValidationFile,
   sampleDataset,
   sampleEntityRef,
+  sourceBatch,
   uploadFile,
   uploadSession,
   vatDeductionReview,
@@ -41,6 +42,7 @@ export const FIRST_RUN_SAMPLE_DELETE_TABLES = [
   'payroll_extraction_batch',
   'upload_file',
   'request_item_validation',
+  'source_batch',
   'upload_session',
   'filing_item',
   'vat_period_summary',
@@ -112,6 +114,9 @@ async function deleteWhitelistedRow(tx: Parameters<Parameters<typeof db.transact
       return true
     case 'request_item_validation':
       await tx.delete(requestItemValidation).where(and(eq(requestItemValidation.tenantId, tenantId), eq(requestItemValidation.id, ref.entityId)))
+      return true
+    case 'source_batch':
+      await tx.delete(sourceBatch).where(and(eq(sourceBatch.tenantId, tenantId), eq(sourceBatch.id, ref.entityId)))
       return true
     case 'upload_session':
       await tx.delete(uploadSession).where(and(eq(uploadSession.tenantId, tenantId), eq(uploadSession.id, ref.entityId)))
