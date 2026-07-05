@@ -404,13 +404,13 @@ describe('source collection loader boundaries', () => {
     }
   })
 
-  it('only aggregates staff_direct sourced sessions (S-22)', () => {
-    expect(source).toContain("eq(uploadSession.source, 'staff_direct')")
+  it('only aggregates staff_direct sourced sessions via source_batch (S-22, JC-031 3b)', () => {
+    expect(source).toContain("eq(sourceBatch.sourceKind, 'staff_direct')")
   })
 
-  it('filters sessions by the selected accounting period (S-10, S-82)', () => {
-    expect(source).toContain('gte(uploadSession.accountingPeriod, period.startMonth)')
-    expect(source).toContain('lte(uploadSession.accountingPeriod, period.endMonth)')
+  it('filters sessions by the selected accounting period via source_batch (S-10, S-82, JC-031 3b)', () => {
+    expect(source).toContain('gte(sourceBatch.accountingPeriod, period.startMonth)')
+    expect(source).toContain('lte(sourceBatch.accountingPeriod, period.endMonth)')
   })
 
   it('derives per-file sourceType via request_item_validation_file instead of always unknown (P2)', () => {

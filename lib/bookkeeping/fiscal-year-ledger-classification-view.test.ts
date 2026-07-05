@@ -25,6 +25,21 @@ beforeAll(async () => {
     )
   `)
   await client.execute(`
+    CREATE TABLE source_batch (
+      id text PRIMARY KEY,
+      tenant_id text NOT NULL,
+      client_id text NOT NULL,
+      source_kind text NOT NULL DEFAULT 'staff_direct',
+      accounting_period text NOT NULL,
+      bookkeeping_period_type text,
+      bookkeeping_period_start text,
+      bookkeeping_period_end text,
+      legacy_upload_session_id text,
+      deleted_at text,
+      created_at text NOT NULL DEFAULT ''
+    )
+  `)
+  await client.execute(`
     CREATE TABLE bookkeeping_material_attribution (
       id text PRIMARY KEY,
       tenant_id text NOT NULL,
@@ -123,6 +138,7 @@ beforeEach(async () => {
   await client.execute(`DELETE FROM bookkeeping_classification_run`)
   await client.execute(`DELETE FROM bookkeeping_material_attribution`)
   await client.execute(`DELETE FROM upload_session`)
+  await client.execute(`DELETE FROM source_batch`)
   await client.execute(`DELETE FROM bookkeeping_ledger_material_link`)
   await client.execute(`DELETE FROM bookkeeping_fiscal_year_ledger`)
 })

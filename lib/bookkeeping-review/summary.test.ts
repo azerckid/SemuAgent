@@ -247,11 +247,10 @@ describe('bookkeeping review loader boundaries', () => {
     expect(source).toContain('uploadSessionId: bookkeepingTransactionClassification.uploadSessionId')
   })
 
-  it('filters by staff_direct source and bookkeeping period snapshot overlap (S-10)', () => {
-    expect(source).toContain('sessionPeriodOverlapsCompanyPeriod(session, period)')
-    expect(source).toContain('bookkeepingPeriodStart: uploadSession.bookkeepingPeriodStart')
-    expect(source).toContain('bookkeepingPeriodEnd: uploadSession.bookkeepingPeriodEnd')
-    expect(source).toContain("eq(uploadSession.source, 'staff_direct')")
+  it('delegates staff_direct/period scoping to the shared source_batch resolver (S-10, JC-031 3b)', () => {
+    expect(source).toContain('resolveActiveSourceBatchSessionIds({')
+    expect(source).not.toContain('from(uploadSession)')
+    expect(source).not.toContain("eq(uploadSession.source, 'staff_direct')")
   })
 
   it('uses only latest completed classification runs', () => {

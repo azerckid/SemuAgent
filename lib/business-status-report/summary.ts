@@ -1,10 +1,8 @@
-import { and, desc, eq, inArray, isNull, ne } from 'drizzle-orm'
+import { and, desc, eq, inArray, ne } from 'drizzle-orm'
 import type { DateTime } from 'luxon'
-import {
-  pickLatestCompletedRunIdsBySession,
-  sessionPeriodOverlapsCompanyPeriod,
-} from '@/lib/bookkeeping-review/summary'
-import { client, bookkeepingClassificationRun, bookkeepingTransactionClassification, tenant, uploadSession } from '@/lib/db/schema'
+import { pickLatestCompletedRunIdsBySession } from '@/lib/bookkeeping-review/summary'
+import { client, bookkeepingClassificationRun, bookkeepingTransactionClassification, tenant } from '@/lib/db/schema'
+import { resolveActiveSourceBatchSessionIds } from '@/lib/source-batch/scope'
 import { loadSourceCollectionSummary } from '@/lib/source-collection/summary'
 import { now } from '@/lib/time'
 import type { TaxEntityType } from '@/lib/validations/business-entity'
@@ -264,24 +262,11 @@ async function loadBusinessStatusAnnualSourceIssueCounts(params: {
 async function loadBusinessStatusRows(params: { tenantId: string; clientId: string; fiscalYear: number }) {
   const { db } = await import('@/lib/db')
   const period = { startMonth: `${params.fiscalYear}-01`, endMonth: `${params.fiscalYear}-12` }
-  const sessionRows = await db
-    .select({
-      id: uploadSession.id,
-      accountingPeriod: uploadSession.accountingPeriod,
-      bookkeepingPeriodStart: uploadSession.bookkeepingPeriodStart,
-      bookkeepingPeriodEnd: uploadSession.bookkeepingPeriodEnd,
-    })
-    .from(uploadSession)
-    .where(and(
-      eq(uploadSession.tenantId, params.tenantId),
-      eq(uploadSession.clientId, params.clientId),
-      eq(uploadSession.source, 'staff_direct'),
-      isNull(uploadSession.deletedAt),
-    ))
-
-  const sessionIds = sessionRows
-    .filter((session) => sessionPeriodOverlapsCompanyPeriod(session, period))
-    .map((session) => session.id)
+  const sessionIds = await resolveActiveSourceBatchSessionIds({
+    tenantId: params.tenantId,
+    clientId: params.clientId,
+    period,
+  })
   if (sessionIds.length === 0) return []
 
   const runRows = await db
