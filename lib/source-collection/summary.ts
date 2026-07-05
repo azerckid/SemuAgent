@@ -10,6 +10,7 @@ import {
   uploadFile,
 } from '@/lib/db/schema'
 import { resolveUploadedFileDisplay } from '@/lib/upload/file-display'
+import { internalSourceBatchReadKindCondition } from '@/lib/source-batch/scope'
 import { fromISO } from '@/lib/time'
 
 export type SourceCollectionFileStatus =
@@ -463,7 +464,7 @@ export async function loadSourceCollectionSummary({
     .where(and(
       eq(sourceBatch.tenantId, tenantId),
       eq(sourceBatch.clientId, businessEntity.id),
-      eq(sourceBatch.sourceKind, 'staff_direct'),
+      internalSourceBatchReadKindCondition(),
       isNull(sourceBatch.deletedAt),
       gte(sourceBatch.accountingPeriod, period.startMonth),
       lte(sourceBatch.accountingPeriod, period.endMonth),

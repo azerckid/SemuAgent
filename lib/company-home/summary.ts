@@ -10,6 +10,7 @@ import {
   tenant,
   uploadFile,
 } from '@/lib/db/schema'
+import { internalSourceBatchReadKindCondition } from '@/lib/source-batch/scope'
 import { DateTime as LuxonDateTime, fromISO, now } from '@/lib/time'
 
 export type CompanyHomePeriodKey =
@@ -553,7 +554,7 @@ export async function loadCompanyHomeSummary({
   const scopedSourceBatch = and(
     eq(sourceBatch.tenantId, tenantId),
     eq(sourceBatch.clientId, businessEntity.id),
-    eq(sourceBatch.sourceKind, 'staff_direct'),
+    internalSourceBatchReadKindCondition(),
     isNull(sourceBatch.deletedAt),
     gte(sourceBatch.accountingPeriod, period.startMonth),
     lte(sourceBatch.accountingPeriod, period.endMonth),

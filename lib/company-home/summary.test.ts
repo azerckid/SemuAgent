@@ -185,8 +185,8 @@ describe('company home loader boundaries', () => {
     expect(source).not.toContain('.delete(')
   })
 
-  it('scopes staff_direct sessions via source_batch for JC-031 Slice 3c-1', () => {
-    expect(source).toContain("eq(sourceBatch.sourceKind, 'staff_direct')")
+  it('scopes internal read sessions via source_batch for JC-031 Slice 3c-1', () => {
+    expect(source).toContain('internalSourceBatchReadKindCondition()')
     expect(source).toContain('eq(requestItemValidation.uploadSessionId, sourceBatch.legacyUploadSessionId)')
     expect(source).not.toContain('from(uploadSession)')
     expect(source).not.toContain("eq(uploadSession.source, 'staff_direct')")

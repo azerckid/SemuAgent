@@ -404,8 +404,8 @@ describe('source collection loader boundaries', () => {
     }
   })
 
-  it('only aggregates staff_direct sourced sessions via source_batch (S-22, JC-031 3b)', () => {
-    expect(source).toContain("eq(sourceBatch.sourceKind, 'staff_direct')")
+  it('only aggregates internal read scope source batches via source_batch (S-22, JC-031 3c-1)', () => {
+    expect(source).toContain('internalSourceBatchReadKindCondition()')
   })
 
   it('filters sessions by the selected accounting period via source_batch (S-10, S-82, JC-031 3b)', () => {
