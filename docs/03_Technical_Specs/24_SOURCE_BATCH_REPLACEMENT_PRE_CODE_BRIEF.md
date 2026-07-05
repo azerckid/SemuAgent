@@ -6,11 +6,11 @@
 
 ```text
 [Flow]
-현재: JC-031 Slice 3 — Source batch replacement
-Gate: Pre-Code Brief
-완료: Slice 1~2c, dev DB 0060 적용, prod DB는 팀 리드 적용
-다음: Slice 3a schema/backfill/dual-write → Slice 3b read switch → Slice 3c downstream FK migration
-필요 확인: source_batch 모델, upload_session 호환 기간, runtime read 전환 순서
+현재: JC-031 Slice 3a 완료 — Source batch schema/backfill/dual-write
+Gate: 통과
+완료: Slice 1~2c, dev DB 0060·0061 적용, Slice 3a source_batch 도입
+다음: Slice 3b read switch → Slice 3c downstream FK migration
+필요 확인: 3b read model별 source_batch 우선/fallback 전략
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -25,7 +25,7 @@ Slice 1~2c는 레거시 포털/메일 책임을 차단·삭제했다. Slice 3는
 
 ## 2. Current Findings
 
-`source_batch` 독립 테이블은 아직 없다. 현재 발견된 `source_batch_id`는 `payroll_employee_line.source_batch_id -> payroll_extraction_batch.id`로, 범용 source lineage 모델이 아니다.
+브리프 작성 시점에는 `source_batch` 독립 테이블이 없었다. Slice 3a에서 범용 `source_batch` 테이블을 도입했다. 기존에 발견된 `source_batch_id`는 `payroll_employee_line.source_batch_id -> payroll_extraction_batch.id`로, 범용 source lineage 모델이 아니므로 3c에서 별도 정리 대상이다.
 
 `upload_session`은 다음 필드를 함께 보유한다.
 
@@ -94,10 +94,10 @@ Changes:
 
 Done for 3a:
 
-- 모든 기존 `upload_file` row가 `source_batch_id`를 갖는다.
-- 신규 direct-upload로 생성되는 파일도 `source_batch_id`를 갖는다.
-- 기존 source collection 화면과 API는 동작이 변하지 않는다.
-- migration은 Turso에서 실제 적용 가능한 SQL이어야 하며, FK/인덱스 보존 검증을 포함한다.
+- [x] 모든 기존 `upload_file` row가 `source_batch_id`를 갖는다(dev DB 0061 검증: 4/4 linked).
+- [x] 신규 direct-upload로 생성되는 파일도 `source_batch_id`를 갖는다(`createDirectUploadSession` dual-write + upload callback 저장).
+- [x] 기존 source collection 화면과 API는 동작이 변하지 않는다(`upload_session` compatibility 유지).
+- [x] migration은 Turso에서 실제 적용 가능한 SQL이어야 하며, FK/인덱스 보존 검증을 포함한다(dev DB `foreign_key_check` 0).
 
 ### Slice 3b — Read Model Switch
 

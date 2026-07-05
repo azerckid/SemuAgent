@@ -486,6 +486,43 @@ export const uploadSession = sqliteTable('upload_session', {
 })
 
 // ---------------------------------------------------------------------------
+// source_batch
+// SemuAgent 내부 source lineage 모델. JC-031 Slice 3a에서는 upload_session과
+// dual-write/backfill로 병행하고, Slice 4 전까지 upload_session compatibility를 유지한다.
+// ---------------------------------------------------------------------------
+export const sourceBatch = sqliteTable('source_batch', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenant.id),
+  clientId: text('client_id')
+    .notNull()
+    .references(() => client.id),
+  createdByStaffId: text('created_by_staff_id')
+    .notNull()
+    .references(() => staff.id),
+  sourceKind: text('source_kind', {
+    enum: ['staff_direct', 'customer_upload', 'legacy_upload_session', 'sample_data'],
+  })
+    .notNull()
+    .default('staff_direct'),
+  accountingPeriod: text('accounting_period').notNull(),
+  bookkeepingPeriodType: text('bookkeeping_period_type', { enum: ['monthly', 'quarterly', 'yearly'] }),
+  bookkeepingPeriodStart: text('bookkeeping_period_start'),
+  bookkeepingPeriodEnd: text('bookkeeping_period_end'),
+  displayLabel: text('display_label'),
+  legacyUploadSessionId: text('legacy_upload_session_id').references(() => uploadSession.id),
+  deletedAt: text('deleted_at'),
+  deletedByStaffId: text('deleted_by_staff_id').references(() => staff.id),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (table) => [
+  uniqueIndex('source_batch_legacy_upload_session_uidx').on(table.legacyUploadSessionId),
+  index('source_batch_tenant_client_period_idx').on(table.tenantId, table.clientId, table.accountingPeriod),
+  index('source_batch_tenant_created_idx').on(table.tenantId, table.createdAt),
+])
+
+// ---------------------------------------------------------------------------
 // upload_file
 // ---------------------------------------------------------------------------
 export const uploadFile = sqliteTable('upload_file', {
@@ -493,6 +530,7 @@ export const uploadFile = sqliteTable('upload_file', {
   uploadSessionId: text('upload_session_id')
     .notNull()
     .references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   // tenant_id 비정규화 — 조회 효율
   tenantId: text('tenant_id')
     .notNull()
@@ -530,7 +568,9 @@ export const uploadFile = sqliteTable('upload_file', {
   staffReviewNote: text('staff_review_note'),
   staffReviewedByStaffId: text('staff_reviewed_by_staff_id').references(() => staff.id),
   staffReviewedAt: text('staff_reviewed_at'),
-})
+}, (table) => [
+  index('upload_file_source_batch_idx').on(table.tenantId, table.sourceBatchId),
+])
 
 // ---------------------------------------------------------------------------
 // bookkeeping_material_attribution

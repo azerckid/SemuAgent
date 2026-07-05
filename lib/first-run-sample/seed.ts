@@ -22,6 +22,7 @@ import {
   requestItemValidationFile,
   sampleDataset,
   sampleEntityRef,
+  sourceBatch,
   staff,
   uploadFile,
   uploadSession,
@@ -148,11 +149,12 @@ function buildSampleValidationRows(params: SeedParams, sessionId: string) {
   return rows
 }
 
-function buildSampleUploadFiles(params: SeedParams, sessionId: string) {
+function buildSampleUploadFiles(params: SeedParams, sessionId: string, sourceBatchId: string) {
   const rows: Array<typeof uploadFile.$inferInsert> = [
     {
       id: firstRunSampleId(params.tenantId, 'file_tax_invoice'),
       uploadSessionId: sessionId,
+      sourceBatchId,
       tenantId: params.tenantId,
       originalFilename: 'sample-tax-invoice.pdf',
       storageKey: 'sample://first-run/tax-invoice',
@@ -167,6 +169,7 @@ function buildSampleUploadFiles(params: SeedParams, sessionId: string) {
     {
       id: firstRunSampleId(params.tenantId, 'file_bank'),
       uploadSessionId: sessionId,
+      sourceBatchId,
       tenantId: params.tenantId,
       originalFilename: 'sample-bank.xlsx',
       storageKey: 'sample://first-run/bank-statement',
@@ -181,6 +184,7 @@ function buildSampleUploadFiles(params: SeedParams, sessionId: string) {
     {
       id: firstRunSampleId(params.tenantId, 'file_receipts_pending'),
       uploadSessionId: sessionId,
+      sourceBatchId,
       tenantId: params.tenantId,
       originalFilename: 'sample-receipts.zip',
       storageKey: 'sample://first-run/receipts-pending',
@@ -377,6 +381,8 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
   const refs: SampleRefPlan[] = []
   const sessionId = firstRunSampleId(params.tenantId, 'upload_session_2026h1')
   const payrollSessionId = firstRunSampleId(params.tenantId, 'payroll_session_202606')
+  const sourceBatchId = firstRunSampleId(params.tenantId, 'source_batch_2026h1')
+  const payrollSourceBatchId = firstRunSampleId(params.tenantId, 'source_batch_payroll_202606')
   const runId = firstRunSampleId(params.tenantId, 'bookkeeping_run_2026h1')
   const journalRunId = firstRunSampleId(params.tenantId, 'journal_run_2026h1')
   const firstPendingTxId = firstRunSampleId(params.tenantId, 'bk_tx_325')
@@ -440,8 +446,41 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     },
   ]
 
+  const sourceBatches: Array<typeof sourceBatch.$inferInsert> = [
+    {
+      id: sourceBatchId,
+      tenantId: params.tenantId,
+      clientId: params.clientId,
+      createdByStaffId: params.staffId,
+      sourceKind: 'sample_data',
+      accountingPeriod: '2026-06',
+      bookkeepingPeriodType: 'monthly',
+      bookkeepingPeriodStart: '2026-01',
+      bookkeepingPeriodEnd: '2026-06',
+      displayLabel: '2026년 부가세 1기 샘플 자료수집',
+      legacyUploadSessionId: sessionId,
+      createdAt: params.timestamp,
+      updatedAt: params.timestamp,
+    },
+    {
+      id: payrollSourceBatchId,
+      tenantId: params.tenantId,
+      clientId: params.clientId,
+      createdByStaffId: params.staffId,
+      sourceKind: 'sample_data',
+      accountingPeriod: '2026-06',
+      bookkeepingPeriodType: 'monthly',
+      bookkeepingPeriodStart: '2026-06',
+      bookkeepingPeriodEnd: '2026-06',
+      displayLabel: '2026년 6월 급여 샘플',
+      legacyUploadSessionId: payrollSessionId,
+      createdAt: params.timestamp,
+      updatedAt: params.timestamp,
+    },
+  ]
+
   const validationRows = buildSampleValidationRows(params, sessionId)
-  const uploadFiles = buildSampleUploadFiles(params, sessionId)
+  const uploadFiles = buildSampleUploadFiles(params, sessionId, sourceBatchId)
   const validationFileLinks = buildValidationFileLinks(params, validationRows, uploadFiles)
   const bookkeepingRows = buildSampleBookkeepingRows(params, sessionId, runId)
   const payrollLines = buildSamplePayrollLines(params, payrollSummaryId)
@@ -775,6 +814,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
 
   const groups = [
     ['upload_session', uploadSessions, 600],
+    ['source_batch', sourceBatches, 650],
     ['upload_file', uploadFiles, 700],
     ['request_item_validation', validationRows, 650],
     ['request_item_validation_file', validationFileLinks, 950],
@@ -803,6 +843,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
   return {
     clientRow,
     uploadSessions,
+    sourceBatches,
     uploadFiles,
     validationRows,
     validationFileLinks,
@@ -938,6 +979,7 @@ export async function ensureFirstRunSampleDataset({
       }
 
       await tx.insert(uploadSession).values(plan.uploadSessions)
+      await tx.insert(sourceBatch).values(plan.sourceBatches)
       await tx.insert(uploadFile).values(plan.uploadFiles)
       await tx.insert(requestItemValidation).values(plan.validationRows)
       await tx.insert(requestItemValidationFile).values(plan.validationFileLinks)

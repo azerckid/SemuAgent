@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { Resend } from 'resend'
 import { and, eq, isNotNull, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
-import { outboundEmail, uploadSession } from '@/lib/db/schema'
+import { outboundEmail, sourceBatch, uploadSession } from '@/lib/db/schema'
 import {
   buildRequestEmailHtml,
   buildSenderFooterText,
@@ -62,6 +62,7 @@ export type CreateSessionInput = {
 export type CreateSessionResult = {
   sessionId: string
   uploadUrl: string
+  sourceBatchId?: string
 }
 
 export type CreateDirectUploadSessionInput = {
@@ -320,6 +321,7 @@ export async function createDirectUploadSession(
     seedDefaultCriteria = true,
   } = input
   const sessionId = randomUUID()
+  const sourceBatchId = `source_batch_${sessionId}`
   const dbClient = input.dbClient ?? db
   const rawToken = generateRawToken()
   const tokenHash = hashToken(rawToken)
@@ -345,6 +347,8 @@ export async function createDirectUploadSession(
   ].filter(Boolean).join('\n\n')
   const sessionDisplayLabel = normalizeSessionDisplayLabel(displayLabel)
 
+  const createdAt = toDBString(now())
+
   await dbClient.insert(uploadSession).values({
     id: sessionId,
     tenantId,
@@ -366,7 +370,23 @@ export async function createDirectUploadSession(
     requestKind,
     source: 'staff_direct',
     staffDirectLabel: sessionDisplayLabel,
-    createdAt: toDBString(now()),
+    createdAt,
+  })
+
+  await dbClient.insert(sourceBatch).values({
+    id: sourceBatchId,
+    tenantId,
+    clientId,
+    createdByStaffId: staffId,
+    sourceKind: 'staff_direct',
+    accountingPeriod,
+    ...periodRangeSnapshot,
+    displayLabel: sessionDisplayLabel,
+    legacyUploadSessionId: sessionId,
+    deletedAt: null,
+    deletedByStaffId: null,
+    createdAt,
+    updatedAt: createdAt,
   })
 
   if (seedDefaultCriteria && requestKind === 'general' && workType) {
@@ -379,7 +399,7 @@ export async function createDirectUploadSession(
     })
   }
 
-  return { sessionId, uploadUrl }
+  return { sessionId, uploadUrl, sourceBatchId }
 }
 
 /**
