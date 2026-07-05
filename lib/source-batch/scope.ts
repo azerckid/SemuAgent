@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { inferBookkeepingPeriodRange } from '@/lib/bookkeeping/period-range'
 import type { CompanyHomePeriod } from '@/lib/company-home/summary'
 import { sourceBatch } from '@/lib/db/schema'
@@ -12,6 +12,18 @@ import { sourceBatch } from '@/lib/db/schema'
 // 기준)의 inArray 조회를 그대로 재사용한다 — downstream 테이블 자체에
 // source_batch_id를 붙이는 건 Slice 3c 범위다.
 // ---------------------------------------------------------------------------
+
+// SemuAgent 내부 업무 read model이 집계할 source_batch.source_kind.
+// staff_direct는 실제 담당자 직접 업로드, sample_data는 first-run 샘플(스키마상
+// 구분은 유지하되 화면에서는 내부 업무 데이터처럼 보여야 한다).
+// customer_upload·legacy_upload_session은 GIWA 레거시 lineage로 제외한다.
+export const INTERNAL_SOURCE_BATCH_READ_KINDS = ['staff_direct', 'sample_data'] as const
+
+export type InternalSourceBatchReadKind = (typeof INTERNAL_SOURCE_BATCH_READ_KINDS)[number]
+
+export function internalSourceBatchReadKindCondition() {
+  return inArray(sourceBatch.sourceKind, [...INTERNAL_SOURCE_BATCH_READ_KINDS])
+}
 
 export type SessionPeriodInput = {
   accountingPeriod: string
@@ -49,9 +61,8 @@ export type SourceBatchSessionRow = {
   createdAt: string
 }
 
-// tenant/client 범위의 staff_direct source_batch 전체를 legacy upload_session
-// id로 브릿지해 반환한다. 기간 필터는 호출부가 필요에 맞게(단일 기간 겹침
-// 검사 또는 회계연도 전체 월별 버킷팅) 직접 수행한다.
+// tenant/client 범위의 내부 업무 source_batch(staff_direct·sample_data) 전체를
+// legacy upload_session id로 브릿지해 반환한다. 기간 필터는 호출부가 필요에 맞게
 export async function listActiveSourceBatchSessions(params: {
   tenantId: string
   clientId: string
@@ -70,7 +81,7 @@ export async function listActiveSourceBatchSessions(params: {
     .where(and(
       eq(sourceBatch.tenantId, params.tenantId),
       eq(sourceBatch.clientId, params.clientId),
-      eq(sourceBatch.sourceKind, 'staff_direct'),
+      internalSourceBatchReadKindCondition(),
       isNull(sourceBatch.deletedAt),
     ))
 

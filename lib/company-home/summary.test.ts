@@ -184,4 +184,16 @@ describe('company home loader boundaries', () => {
     expect(source).not.toContain('.update(')
     expect(source).not.toContain('.delete(')
   })
+
+  it('scopes internal read sessions via source_batch for JC-031 Slice 3c-1', () => {
+    expect(source).toContain('internalSourceBatchReadKindCondition()')
+    expect(source).toContain('eq(requestItemValidation.uploadSessionId, sourceBatch.legacyUploadSessionId)')
+    expect(source).not.toContain('from(uploadSession)')
+    expect(source).not.toContain("eq(uploadSession.source, 'staff_direct')")
+  })
+
+  it('filters source_batch rows by the selected accounting period', () => {
+    expect(source).toContain('gte(sourceBatch.accountingPeriod, period.startMonth)')
+    expect(source).toContain('lte(sourceBatch.accountingPeriod, period.endMonth)')
+  })
 })

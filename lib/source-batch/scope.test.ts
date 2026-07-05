@@ -94,15 +94,15 @@ describe('listActiveSourceBatchSessions', () => {
     expect(rows.map((row) => row.id)).toEqual(['session-a1'])
   })
 
-  it('only returns staff_direct source_kind rows (JC-031 3b)', async () => {
+  it('returns internal read scope source_kind rows including sample_data (JC-031 3c-1)', async () => {
     await seedBatch({ id: 'direct', sourceKind: 'staff_direct', legacyUploadSessionId: 'session-direct' })
+    await seedBatch({ id: 'sample', sourceKind: 'sample_data', legacyUploadSessionId: 'session-sample' })
     await seedBatch({ id: 'customer', sourceKind: 'customer_upload', legacyUploadSessionId: 'session-customer' })
     await seedBatch({ id: 'legacy', sourceKind: 'legacy_upload_session', legacyUploadSessionId: 'session-legacy' })
-    await seedBatch({ id: 'sample', sourceKind: 'sample_data', legacyUploadSessionId: 'session-sample' })
 
     const rows = await listActiveSourceBatchSessions({ tenantId: TENANT_A, clientId: CLIENT_A })
 
-    expect(rows.map((row) => row.id)).toEqual(['session-direct'])
+    expect(rows.map((row) => row.id).sort()).toEqual(['session-direct', 'session-sample'])
   })
 
   it('excludes soft-deleted source_batch rows (JC-031 3b)', async () => {
