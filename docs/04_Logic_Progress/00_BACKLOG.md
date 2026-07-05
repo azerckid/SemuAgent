@@ -554,16 +554,20 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-028 · 사업장현황신고 지원 (면세 개인사업자) — (우선순위 중 · 저위험)
 
 - Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related UI Docs: [Screen Flow 4k](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.13](../02_UI_Screens/01_UI_DESIGN.md) — 사업장현황신고 화면 흐름·컴포넌트(UI-First Gate Preview 작성 2026-07-05).
 - Related Domain: 기장검토(JC-010)·자료수집(JC-009) 데이터. 부가세 비대상 면세사업자용.
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-028](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 면세 개인사업자 범위·VAT 분기·done 조건
-- Related HTML Preview: N/A.
+- Related HTML Preview: [11_business_status_report.html](../02_UI_Screens/previews/11_business_status_report.html) — 면세 개인사업자 사업장현황신고 준비 전용 화면.
+- Prototype Review / 승인: UI Preview 작성 완료(2026-07-05) — 사용자 브라우저 검토/승인 대기. 과세사업자·법인은 해당 없음으로 분기하고, 자료수집·기장검토에서 수입금액/매입·경비 자료를 읽는 read-only 화면으로 설계.
 - Implementation Preconditions:
-  - [ ] 사업장현황신고 대상(면세사업자)·서식·수입금액/매입 자료 구성 확인
-  - [ ] 부가세 대상/면세 분기 로직(기존 부가세 워크스페이스와 구분)
+  - [x] 대상 확정 — 면세 개인사업자 한정, 과세사업자·법인은 해당 없음 처리
+  - [x] 1차 자료 구성 확정 — 수입금액, 매입/경비 자료, 누락/미확정 거래, 사업자 유형 분기
+  - [x] UI-First Gate Preview 작성 — [11_business_status_report.html](../02_UI_Screens/previews/11_business_status_report.html)
+  - [ ] Pre-Code Brief 작성 — 구현 전 read model 계약·분기 규칙·검증 기준 확정
 - Acceptance Criteria:
   - [ ] 면세 개인사업자가 사업장현황신고 자료를 준비·검토·제출 보조 받는다
   - [ ] 제출은 사용자 승인 기반(JC-023)
-- Document Sync Check: 2026-07-04 등록. 회사 본인 업무 저위험.
+- Document Sync Check: 2026-07-05 UI Preview 작성 및 Screen Flow/UI Design 연결. 구현 미착수. 다음 단계는 사용자 Preview 승인 후 Pre-Code Brief 작성.
 
 ### JC-029 · 신고 준비 현황 허브 — 신고 데이터 준비 파이프라인 가시화 (우선순위 높음 · JC-024 선행)
 

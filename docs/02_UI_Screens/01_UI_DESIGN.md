@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-04 17:13
+> Last Updated: 2026-07-05 22:10
 
 ## 1. 디자인 방향
 
@@ -187,7 +187,7 @@
 | Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·handoff 상태를 요약 | 진행률 + blocker 카운트 |
 | Next Action List | 신고 전 처리해야 할 blocker와 해당 워크스페이스 CTA | danger/warn/ok dot + 라우팅 |
 | Common Foundation Cards | 자료수집 -> 기장검토 공통 기반의 입력·산출 상태 | 누락/검토대기/원장 준비 상태칩 |
-| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세 병렬 트랙 | 입력/산출/handoff 3단 계약 + 상태칩 |
+| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/handoff 3단 계약 + 상태칩 |
 | Schedule Strip | 다가오는 마감·D-day | 일정은 보조 정보, 중심 프레임 아님 |
 | Responsibility Boundary | 직접 신고·자동제출 제외 경계 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
@@ -233,7 +233,28 @@
 - 신고지원(JC-013)의 `splitWithholdingTax` 근사치를 이 화면과 같은 실제값으로 교체(정합성 수정, 구현 시 함께 진행).
 - 단일 스크롤·직원 중심 표. mutation 없음. 상태칩·State Card·Table 골격은 공통(DRY).
 
-### 4.13 First-run Sample Data (JC-019)
+### 4.13 사업장현황신고 (11_business_status_report.html, JC-028)
+
+신고 준비 허브(4.10)의 "사업장현황신고" 트랙 "검토 화면"으로 진입하는 전용 화면. 면세 개인사업자가 부가세 신고 대신 홈택스 사업장현황신고에 넣을 수입금액·자료 상태를 확인하는 **read-only** 화면이다.
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Prep Hero | 면세 개인 대상 여부·준비율·확인 필요·신고 준비 요약 | 진행률 + 카운트 |
+| Eligibility Notice | `tax_exempt` 개인만 대상, 과세사업자/법인은 해당 없음 | plan 톤 안내 박스 |
+| Next Action List | 자료 누락·계정분류 확인 blocker + 자료수집/기장검토 CTA | danger/warn/ok dot + 라우팅 |
+| Summary Cards | 수입금액·매입/경비·미확정 거래·누락 자료 요약 | 숫자 카드 + 상태칩 |
+| Revenue Table | 수입금액 분류별 금액·상태 + 합계 행 | 준비완료/확인필요 상태칩 |
+| Source Material Table | 매입·경비 자료 유형별 합계·누락 상태 + 합계 행 | 준비완료/누락 상태칩 |
+| Hometax Handoff Table | 홈택스 입력 전 확인할 항목·상태·담당 화면 | 준비완료/확인필요 상태칩 |
+| Responsibility Boundary | 홈택스 제출·전자신고 파일(JC-030)·자동제출(JC-023) 제외 | accent 안내 박스 |
+| State Card | 로딩/빈/오류/권한 없음/해당 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
+
+- v1은 **면세 개인사업자만**. 부가세 대상 과세사업자와 법인은 해당 없음으로 표시하거나 차단한다.
+- 화면 언어는 "신고 준비 데이터"로 통일한다. 홈택스 제출 보장·대리 신고 뉘앙스는 쓰지 않는다.
+- 수입금액·매입/경비는 자료수집·기장검토의 확정 거래 데이터를 읽어 집계한다. 신규 세액 계산 엔진과 신규 DB는 JC-028 Preview 범위 밖이다.
+- mutation 없음. 확인 필요는 기존 업무 화면(자료수집·기장검토)으로 라우팅한다. 상태칩·State Card·Table 골격은 공통(DRY).
+
+### 4.14 First-run Sample Data (JC-019)
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
@@ -298,6 +319,7 @@
 - Preview (신고 준비): [08_filing_preparation.html](./previews/08_filing_preparation.html)
 - Preview (지급명세서·연말정산): [09_payment_year_end.html](./previews/09_payment_year_end.html)
 - Preview (지방소득세): [10_local_income_tax.html](./previews/10_local_income_tax.html)
+- Preview (사업장현황신고): [11_business_status_report.html](./previews/11_business_status_report.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
