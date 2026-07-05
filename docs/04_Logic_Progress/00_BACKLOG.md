@@ -40,7 +40,7 @@
 | JC-025 | todo | 종합소득세 신고 지원 (개인사업자, self-filing 보조) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 주의.** 개인사업자 종합소득세(5월) 신고서 계산·초안·검증을 self-filing 보조로 제공한다. 기장검토(JC-010) output을 사용한다. ⚠️ 세무조정이 개입하면 세무사법 제2조("세무서류 작성")에 저촉 소지가 있어, "계산·초안·사용자 최종 확인" 수준으로 한정하고 세무조정계산서 자동작성은 신중히 다룬다. 착수 전 법무 검토 게이트. |
 | JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
 | JC-027 | done | 지방소득세 연동 지원 (원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙) | `lib/local-income-tax`, `app/(dashboard)/dashboard/filing-preparation/local-income-tax`, `lib/filing-support`, `lib/filing-preparation` | **구현 완료(2026-07-05).** "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 이후. 급여에 이미 실제 기록된 `payrollEmployeeLine.localIncomeTaxKrw`를 집계하는 read-only 전용 화면을 추가하고, 신고 준비 허브(JC-029)의 `local_income` 트랙을 roadmap→live 전환했다. **데이터 정합성 수정 포함**: 신고지원(JC-013)이 `withholdingTaxKrw`를 10%/11로 근사 분리하던 방식을 제거하고, JC-027과 동일한 확정 라인 실제 `incomeTaxKrw`·`localIncomeTaxKrw` 합계로 교체했다. `needs_review` 라인은 확인 필요·blocker에는 포함하지만 Hero/표 합계/신고지원 입력값에는 포함하지 않는다. 위택스 자동제출·신규 세액 계산 엔진은 범위 밖. |
-| JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
+| JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/business-status-report`, `app/(dashboard)/dashboard/filing-preparation/business-status-report`, `lib/filing-preparation` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. UI-First Gate와 Pre-Code Brief 완료(2026-07-05). 구현 범위는 read-only 집계 화면 + 허브 `business_status` 트랙 live 전환. 홈택스 제출·전자신고 파일·자동제출은 범위 밖. |
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 완료선 고정 필요.** Slice 1~2b-5는 완료됐고, 남은 완료선은 [Open Backlog Completion Contracts](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)에 고정한다: transaction-purpose 내부 작업/FK 결정 → source batch 이관 → schema retirement. 새 slice는 completion contract 업데이트 없이는 추가하지 않는다. |
@@ -555,19 +555,20 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [Screen Flow 4k](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.13](../02_UI_Screens/01_UI_DESIGN.md) — 사업장현황신고 화면 흐름·컴포넌트(UI-First Gate Preview 작성 2026-07-05).
+- Related Technical Docs: [Business Status Report Pre-Code Brief](../03_Technical_Specs/23_BUSINESS_STATUS_REPORT_PRE_CODE_BRIEF.md) — 대상 분기·기장 집계·허브 트랙 live 전환 계약.
 - Related Domain: 기장검토(JC-010)·자료수집(JC-009) 데이터. 부가세 비대상 면세사업자용.
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-028](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 면세 개인사업자 범위·VAT 분기·done 조건
 - Related HTML Preview: [11_business_status_report.html](../02_UI_Screens/previews/11_business_status_report.html) — 면세 개인사업자 사업장현황신고 준비 전용 화면.
-- Prototype Review / 승인: UI Preview 작성 완료(2026-07-05) — 사용자 브라우저 검토/승인 대기. 과세사업자·법인은 해당 없음으로 분기하고, 자료수집·기장검토에서 수입금액/매입·경비 자료를 읽는 read-only 화면으로 설계.
+- Prototype Review / 승인: 2026-07-05 사용자 승인. 과세사업자·법인은 해당 없음으로 분기하고, 자료수집·기장검토에서 수입금액/매입·경비 자료를 읽는 read-only 화면으로 설계.
 - Implementation Preconditions:
   - [x] 대상 확정 — 면세 개인사업자 한정, 과세사업자·법인은 해당 없음 처리
   - [x] 1차 자료 구성 확정 — 수입금액, 매입/경비 자료, 누락/미확정 거래, 사업자 유형 분기
   - [x] UI-First Gate Preview 작성 — [11_business_status_report.html](../02_UI_Screens/previews/11_business_status_report.html)
-  - [ ] Pre-Code Brief 작성 — 구현 전 read model 계약·분기 규칙·검증 기준 확정
+  - [x] Pre-Code Brief 작성 — [23_BUSINESS_STATUS_REPORT_PRE_CODE_BRIEF.md](../03_Technical_Specs/23_BUSINESS_STATUS_REPORT_PRE_CODE_BRIEF.md)
 - Acceptance Criteria:
   - [ ] 면세 개인사업자가 사업장현황신고 자료를 준비·검토·제출 보조 받는다
   - [ ] 제출은 사용자 승인 기반(JC-023)
-- Document Sync Check: 2026-07-05 UI Preview 작성 및 Screen Flow/UI Design 연결. 구현 미착수. 다음 단계는 사용자 Preview 승인 후 Pre-Code Brief 작성.
+- Document Sync Check: 2026-07-05 UI-First Gate 승인 + Pre-Code Brief 작성. 구현 미착수. 다음 단계는 read-only 집계 화면 구현과 허브 `business_status` 트랙 live 전환.
 
 ### JC-029 · 신고 준비 현황 허브 — 신고 데이터 준비 파이프라인 가시화 (우선순위 높음 · JC-024 선행)
 

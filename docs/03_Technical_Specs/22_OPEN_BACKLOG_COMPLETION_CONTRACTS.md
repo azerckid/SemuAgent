@@ -118,7 +118,7 @@ Done may also mean explicit deferral:
 
 Type: 신고 준비 기능.
 
-Current gate: scope details not fixed.
+Current gate: UI-First Gate approved and Pre-Code Brief complete; implementation may start after PR review/merge.
 
 May start implementation only after:
 
