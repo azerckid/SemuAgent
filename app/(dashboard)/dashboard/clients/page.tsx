@@ -8,7 +8,6 @@ import {
   clientCcGroup,
   clientChecklist,
   clientRequestEvent,
-  outboundEmail,
   payrollExcelDraft,
   payrollExtractionRow,
   requestItemValidation,
@@ -85,13 +84,6 @@ type FileSignalRow = {
 type ValidationSignalRow = {
   clientId: string
   validationStatus: string
-}
-
-type EmailSignalRow = {
-  clientId: string
-  type: string
-  status: string
-  createdAt: string
 }
 
 type CcGroupRow = {
@@ -280,23 +272,13 @@ function deriveReviewStatus({
   latestEvent,
   latestSession,
   validations,
-  emails,
   files,
 }: {
   latestEvent?: EventRow
   latestSession?: SessionRow
   validations: ValidationSignalRow[]
-  emails: EmailSignalRow[]
   files: FileSignalRow[]
 }): ClientStatusBadge {
-  if (emails.some((email) => email.status === 'failed')) {
-    return statusBadge('발송 실패', '메일 화면에서 실패 사유를 확인하세요.', 'destructive')
-  }
-
-  if (emails.some((email) => email.type === 'missing_request' && email.status === 'draft')) {
-    return statusBadge('승인 대기', '보충 요청 초안이 담당자 승인을 기다립니다.', 'warning')
-  }
-
   if (validations.length > 0) {
     return statusBadge('검토필요', `${validations.length}개 요청자료 항목 확인 필요`, 'warning')
   }
@@ -439,7 +421,6 @@ export default async function ClientsPage({
     sessions,
     files,
     validations,
-    emailSignals,
     ccGroups,
     payrollRows,
     payrollDrafts,
@@ -527,31 +508,6 @@ export default async function ClientsPage({
     clientIds.length > 0
       ? db
         .select({
-          clientId: uploadSession.clientId,
-          type: outboundEmail.type,
-          status: outboundEmail.status,
-          createdAt: outboundEmail.createdAt,
-        })
-        .from(outboundEmail)
-        .innerJoin(uploadSession, and(eq(outboundEmail.uploadSessionId, uploadSession.id), eq(uploadSession.tenantId, tenantId)))
-        .innerJoin(client, and(eq(uploadSession.clientId, client.id), eq(client.tenantId, tenantId)))
-        .where(
-          and(
-            eq(outboundEmail.tenantId, tenantId),
-            inArray(uploadSession.clientId, clientIds),
-            isNull(uploadSession.deletedAt),
-            or(
-              eq(outboundEmail.status, 'failed'),
-              and(eq(outboundEmail.type, 'missing_request'), eq(outboundEmail.status, 'draft')),
-            ),
-          ),
-        )
-        .orderBy(desc(outboundEmail.createdAt))
-      : [],
-
-    clientIds.length > 0
-      ? db
-        .select({
           clientId: clientCcGroup.clientId,
           purpose: clientCcGroup.purpose,
           emails: clientCcGroup.emails,
@@ -594,7 +550,6 @@ export default async function ClientsPage({
   const latestSessionByClient = firstByClientId<SessionRow>(sessions)
   const latestFileByClient = firstByClientId<FileSignalRow>(files)
   const validationsByClient = groupByClientId<ValidationSignalRow>(validations)
-  const emailsByClient = groupByClientId<EmailSignalRow>(emailSignals)
   const filesByClient = groupByClientId<FileSignalRow>(files)
   const ccByClient = groupByClientId<CcGroupRow>(ccGroups)
   const payrollEventsByClient = firstByClientId<EventRow>(requestEvents.filter((event) => event.requestKind === 'payroll'))
@@ -627,7 +582,6 @@ export default async function ClientsPage({
         latestEvent,
         latestSession,
         validations: validationsByClient.get(clientRow.id) ?? [],
-        emails: emailsByClient.get(clientRow.id) ?? [],
         files: filesByClient.get(clientRow.id) ?? [],
       }),
       payroll: payrollStatus,
