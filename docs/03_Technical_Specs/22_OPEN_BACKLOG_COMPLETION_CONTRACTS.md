@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-05 21:34
+> Last Updated: 2026-07-05 22:32
 
 ## 0. Purpose
 
@@ -118,7 +118,7 @@ Done may also mean explicit deferral:
 
 Type: 신고 준비 기능.
 
-Current gate: UI-First Gate approved and Pre-Code Brief complete; implementation may start after PR review/merge.
+Current gate: done — read-only 사업장현황신고 준비 화면과 허브 `business_status` live 트랙 구현 완료(2026-07-05).
 
 May start implementation only after:
 

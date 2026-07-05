@@ -1,6 +1,6 @@
 # SemuAgent Screen Flow
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-05 22:10
+> Last Updated: 2026-07-05 22:32
 
 ## 1. 범위
 
@@ -13,10 +13,10 @@
 6. **신고지원(Filing Support)** — 승인 완료(2026-07-01)
 7. **직원 명부(Employee Directory)** — 구현 완료(2026-07-02, 운영 보조 화면·JC-015)
 8. **리마인드(Internal Reminder)** — 구현 완료(2026-07-02, 운영 보조 화면·JC-016)
-9. **신고 준비(Filing Preparation)** — UI Preview 작성(2026-07-04, JC-029·신고 데이터 준비 파이프라인 현황 허브)
-10. **지급명세서·연말정산(Payment Statement · Year-end)** — UI Preview 승인(2026-07-05, JC-024·신고 준비 허브 트랙 live 전용 검토 화면)
-11. **지방소득세(Local Income Tax)** — UI Preview 승인(2026-07-05, JC-027·원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙 live 전환)
-12. **사업장현황신고(Business Status Report)** — UI Preview 작성(2026-07-05, JC-028·면세 개인사업자 한정 신고 준비 화면)
+9. **신고 준비(Filing Preparation)** — 구현 완료(2026-07-05, JC-029·신고 데이터 준비 파이프라인 현황 허브)
+10. **지급명세서·연말정산(Payment Statement · Year-end)** — 구현 완료(2026-07-05, JC-024·신고 준비 허브 트랙 live 전용 검토 화면)
+11. **지방소득세(Local Income Tax)** — 구현 완료(2026-07-05, JC-027·원천세 특별징수분 한정, 신고 준비 허브 트랙 live 전환)
+12. **사업장현황신고(Business Status Report)** — 구현 완료(2026-07-05, JC-028·면세 개인사업자 한정 신고 준비 화면)
 
 6개 워크스페이스 전체 프리뷰 승인 완료(6/6 UI 확정, 2026-07-01). 직원 명부는 급여·4대보험 매칭·내부 리마인드의 기준 마스터로, UI Preview 승인(2026-07-02) 후 `/dashboard/employees` 구현 완료. 리마인드는 담당자 본인·내부 staff에게 신고 준비 일정·확인 필요 상태를 알리는 자가 알림으로, UI Preview 승인(2026-07-02) 후 `/dashboard/reminders` 구현 완료.
 
