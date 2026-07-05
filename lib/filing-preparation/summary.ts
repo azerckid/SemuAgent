@@ -7,6 +7,7 @@ import {
   type InternalReminderAttention,
   type InternalReminderDomain,
 } from '@/lib/internal-reminders/summary'
+import { loadLocalIncomeTaxAttentionCount } from '@/lib/local-income-tax/summary'
 import { loadPaymentStatementAttentionCount } from '@/lib/payment-statements/summary'
 import { expandTaxSchedulesForMonth } from '@/lib/tax-calendar'
 import { now } from '@/lib/time'
@@ -207,15 +208,16 @@ export async function loadFilingPreparationSummary({
     }
   }
 
-  const [attentions, vat, paymentStatement] = await Promise.all([
+  const [attentions, vat, paymentStatement, localIncomeTax] = await Promise.all([
     loadInternalReminderAttentionItems({ tenantId, periodKey, today }),
     loadVatSummary({ tenantId, periodKey, today }),
     loadPaymentStatementAttentionCount(tenantId),
+    loadLocalIncomeTaxAttentionCount(tenantId),
   ])
 
   const blockers = buildFilingPreparationBlockers(attentions)
   const readinessPercent = buildFilingPreparationReadiness(attentions)
-  const tracks = buildTracks(attentions, vat.taxSummary, businessType, paymentStatement)
+  const tracks = buildTracks(attentions, vat.taxSummary, businessType, paymentStatement, localIncomeTax)
   const handoffReadyCount = tracks.filter(
     (track) => track.status === 'live' && track.applicable && track.chipTone === 'ok',
   ).length
@@ -270,6 +272,7 @@ export function buildTracks(
   vatTax: { outputTaxKrw: number; inputTaxKrw: number; pendingDeductionCount: number },
   type: FilingPrepBusinessType,
   paymentStatement?: { total: number; attention: number },
+  localIncomeTax?: { total: number; attention: number; localIncomeTaxKrw: number },
 ): FilingPrepTrackCard[] {
   const payroll = attentionByDomain(attentions, 'payroll')
 
@@ -334,16 +337,24 @@ export function buildTracks(
     {
       id: 'local_income',
       title: '지방소득세',
-      cycle: '본세 종속 · 원천세/소득세/법인세 연동',
-      chipLabel: 'JC-027',
-      chipTone: 'plan',
-      status: 'roadmap',
+      cycle: '원천세 신고 주기 · 급여 지방소득세 기반',
+      chipLabel: !localIncomeTax
+        ? 'JC-027'
+        : localIncomeTax.attention > 0
+          ? `확인 ${localIncomeTax.attention}명`
+          : localIncomeTax.total > 0 ? '수치 준비' : '대상 없음',
+      chipTone: !localIncomeTax ? 'plan' : localIncomeTax.attention > 0 ? 'warn' : 'ok',
+      status: localIncomeTax ? 'live' : 'roadmap',
       applicable: isTrackApplicable('local_income', type),
       inapplicableReason: inapplicableReasonFor('local_income', type),
-      input: '확정 본세 · 원천세 · 사업장/지자체 정보',
-      output: '안분 · 세액 · 지방세 신고 수치',
+      input: '급여대장 · 소득세(국세) · 지방소득세 특별징수 기록',
+      output: localIncomeTax
+        ? `지방소득세 ${formatKrw(localIncomeTax.localIncomeTaxKrw)}`
+        : '원천세 특별징수분 지방소득세 준비 데이터',
       handoffLabel: 'handoff: 위택스/지방세 직접 신고 수치',
-      href: null,
+      href: localIncomeTax && isTrackApplicable('local_income', type)
+        ? '/dashboard/filing-preparation/local-income-tax'
+        : null,
     },
   ]
 }

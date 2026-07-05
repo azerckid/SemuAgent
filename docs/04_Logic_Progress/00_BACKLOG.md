@@ -39,7 +39,7 @@
 | JC-024 | todo | 연말정산·지급명세서 지원 (급여/원천 확장) | `lib/payroll-workspace`, `lib/filing-support`, 급여·원천세 데이터 | **우선순위: 높음 · 법적 리스크: 낮음.** 회사(원천징수의무자)가 연말정산 결과와 지급명세서(근로·사업소득)를 준비·제출 보조한다. 이미 급여(JC-012)·원천세(신고지원 JC-013)·직원명부(JC-015) 데이터가 있어 자연스러운 확장이며, 회사 본인 업무라 세무대리 리스크가 낮다. 매년 반복 신고. 자동 제출은 JC-023 원칙(사용자 최종 승인) 준수. |
 | JC-025 | todo | 종합소득세 신고 지원 (개인사업자, self-filing 보조) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 주의.** 개인사업자 종합소득세(5월) 신고서 계산·초안·검증을 self-filing 보조로 제공한다. 기장검토(JC-010) output을 사용한다. ⚠️ 세무조정이 개입하면 세무사법 제2조("세무서류 작성")에 저촉 소지가 있어, "계산·초안·사용자 최종 확인" 수준으로 한정하고 세무조정계산서 자동작성은 신중히 다룬다. 착수 전 법무 검토 게이트. |
 | JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
-| JC-027 | todo | 지방소득세 연동 지원 (원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙) | `lib/local-income-tax`(신규), `lib/payroll-workspace`, `lib/filing-support`, `lib/filing-preparation` | **v1 스코프 확정(2026-07-05) · 우선순위: 높음(허브 마지막 roadmap 트랙) · 법적 리스크: 낮음.** "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 이후. 급여에 이미 실제 기록된 `payrollEmployeeLine.localIncomeTaxKrw`를 반기/월 단위로 집계하는 read-only 전용 화면. 신고 준비 허브(JC-029)의 `local_income` 트랙을 roadmap→live 전환(허브의 마지막 roadmap 트랙 완성). **데이터 정합성 수정 포함**: 신고지원(JC-013)이 `splitWithholdingTax()`(10%/11 파생 근사치)로 지방소득세를 계산·표시하던 것을, JC-027과 동일한 실제 `localIncomeTaxKrw` 합계로 교체해 두 화면이 같은 숫자를 보이게 한다. 위택스 자동제출·신규 세액 계산 엔진은 범위 밖. |
+| JC-027 | done | 지방소득세 연동 지원 (원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙) | `lib/local-income-tax`, `app/(dashboard)/dashboard/filing-preparation/local-income-tax`, `lib/filing-support`, `lib/filing-preparation` | **구현 완료(2026-07-05).** "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 이후. 급여에 이미 실제 기록된 `payrollEmployeeLine.localIncomeTaxKrw`를 집계하는 read-only 전용 화면을 추가하고, 신고 준비 허브(JC-029)의 `local_income` 트랙을 roadmap→live 전환했다. **데이터 정합성 수정 포함**: 신고지원(JC-013)이 `withholdingTaxKrw`를 10%/11로 근사 분리하던 방식을 제거하고, JC-027과 동일한 확정 라인 실제 `incomeTaxKrw`·`localIncomeTaxKrw` 합계로 교체했다. `needs_review` 라인은 확인 필요·blocker에는 포함하지만 Hero/표 합계/신고지원 입력값에는 포함하지 않는다. 위택스 자동제출·신규 세액 계산 엔진은 범위 밖. |
 | JC-028 | todo | 사업장현황신고 지원 (면세 개인사업자) | `lib/bookkeeping`, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 낮음.** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고를 준비·제출 보조한다. 수입금액·매입 자료를 기장/자료수집 데이터로 구성. 회사 본인 업무라 저위험. self-filing 보조(JC-023 원칙). |
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
@@ -471,7 +471,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - **연말정산**: **데이터 준비·검토까지**. 직원별 연간 지급·기납부 원천세 집계·누락 검토. **정산액(결정세액·환급/추징) 계산은 제외**(후속). 소득·세액공제 자동계산 미포함.
   - **JC-030 경계**: JC-024는 **신고 준비 데이터셋·검토 상태**까지. **전자신고 파일 생성은 JC-030**(JC-024에 넣지 않음).
   - **허브 live 범위**: 신고 준비 허브 트랙 live 전환 **+ 전용 검토 화면**(지급명세서/연말정산 준비·누락 검토).
-  - 재사용: 급여 `PayrollDocumentPreview.withholding_statement`, 신고지원 `withholding` 항목·`splitWithholdingTax`, 직원 명부.
+  - 재사용: 급여 `PayrollDocumentPreview.withholding_statement`, 신고지원 `withholding` 항목, 직원 명부. 지방소득세 분리 근사 로직은 JC-027에서 확정 라인 실제값 집계로 교체됨.
 - Implementation Preconditions:
   - [x] v1 스코프 확정 (2026-07-05) — 간이지급명세서(근로) 우선 · 연말정산 데이터·검토까지 · JC-030 경계 · 트랙 live+검토 화면
   - [x] 간이지급명세서(근로소득) 반기 집계 read model 매핑 확정 — 지급총액=ΣgrossPay, 원천징수세액=ΣincomeTax(근로소득세), 준비상태 판정([Brief §4](../03_Technical_Specs/16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md))
@@ -522,11 +522,11 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-027 · 지방소득세 연동 지원 — 원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙 (우선순위 높음 · 저위험)
 
 - Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
-- Related Domain: 급여(JC-012, `payrollEmployeeLine.localIncomeTaxKrw`), 신고지원(JC-013, `splitWithholdingTax` 정합성 수정 대상), 신고 준비 허브(JC-029, `local_income` 트랙)
+- Related Domain: 급여(JC-012, `payrollEmployeeLine.localIncomeTaxKrw`), 신고지원(JC-013, 원천세 입력 가이드 정합성 수정), 신고 준비 허브(JC-029, `local_income` 트랙)
 - Related UI Docs: [Screen Flow 4j](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.12](../02_UI_Screens/01_UI_DESIGN.md) — 지방소득세 화면 흐름·컴포넌트(UI-First Gate 승인 2026-07-05).
 - Related HTML Preview: [10_local_income_tax.html](../02_UI_Screens/previews/10_local_income_tax.html) — 지방소득세 준비 전용 화면(JC-024 `09_payment_year_end.html`과 유사한 read-only 집계 패턴 재사용).
 - Related Technical Docs: [Local Income Tax Pre-Code Brief](../03_Technical_Specs/18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md) — 확정 라인 실제값 집계 계약·splitWithholdingTax 교체 계약·허브 트랙 live 전환 계약.
-- Related QA Docs: N/A - 착수 시 신설.
+- Related QA Docs: N/A - 별도 QA 문서 없이 단위 테스트·build로 검증.
 - Prototype Review / 승인: 2026-07-05 브라우저 검토 승인. 문구 2건 반영(귀속기간/원천세 신고 주기 기준 표현, 소득세(국세)/지방소득세(특별징수) 컬럼 분리).
 - **v1 Scope 확정 (2026-07-05):**
   - **대상**: "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 완료 이후 별도.
@@ -539,14 +539,14 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] UI-First Gate: 지방소득세 준비 화면 HTML Preview 작성·사용자 승인 — [10_local_income_tax.html](../02_UI_Screens/previews/10_local_income_tax.html), 2026-07-05 승인
   - [x] Pre-Code Brief 작성 — [18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md](../03_Technical_Specs/18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md)
 - Acceptance Criteria:
-  - [ ] 원천세 특별징수분 지방소득세가 직원별/기간별로 집계·표시된다(확정 라인의 실제 `localIncomeTaxKrw` 합계, 파생 계산 아님)
-  - [ ] `needs_review` 라인은 대상 인원·확인 필요·blocker에는 포함되지만 Hero/표 합계/신고지원 입력값에는 포함되지 않는다
-  - [ ] 신고 준비 허브의 `local_income` 트랙이 roadmap→live로 전환되고 입력·산출·handoff로 읽힌다
-  - [ ] 신고지원(JC-013)의 지방소득세 표시가 `splitWithholdingTax` 근사치 대신 확정 라인 실제 합계를 사용하도록 교체된다(정합성)
-  - [ ] 종합소득세분·법인세분 지방소득세는 이번 범위에 포함하지 않는다
-  - [ ] 위택스 자동 제출·신규 세액 계산 엔진은 포함하지 않는다
-  - [ ] 화면은 read-only이며 mutation을 수행하지 않는다
-- Document Sync Check: 2026-07-04 등록 · 2026-07-05 v1 스코프 확정 + UI-First Gate 승인 + Pre-Code Brief 작성(18) + 리뷰 반영(`needs_review` 합계 제외 계약). Context Lock 전제 충족. 구현 착수 준비 완료.
+  - [x] 원천세 특별징수분 지방소득세가 직원별/기간별로 집계·표시된다(확정 라인의 실제 `localIncomeTaxKrw` 합계, 파생 계산 아님)
+  - [x] `needs_review` 라인은 대상 인원·확인 필요·blocker에는 포함되지만 Hero/표 합계/신고지원 입력값에는 포함되지 않는다
+  - [x] 신고 준비 허브의 `local_income` 트랙이 roadmap→live로 전환되고 입력·산출·handoff로 읽힌다
+  - [x] 신고지원(JC-013)의 지방소득세 표시가 근사치 대신 확정 라인 실제 합계를 사용하도록 교체된다(정합성)
+  - [x] 종합소득세분·법인세분 지방소득세는 이번 범위에 포함하지 않는다
+  - [x] 위택스 자동 제출·신규 세액 계산 엔진은 포함하지 않는다
+  - [x] 화면은 read-only이며 mutation을 수행하지 않는다
+- Document Sync Check: 2026-07-04 등록 · 2026-07-05 v1 스코프 확정 + UI-First Gate 승인 + Pre-Code Brief 작성(18) + 리뷰 반영(`needs_review` 합계 제외 계약) + 구현 완료. 구현 파일: `lib/local-income-tax/summary.ts`, `lib/local-income-tax/summary.test.ts`, `app/(dashboard)/dashboard/filing-preparation/local-income-tax/*`, `lib/filing-support/summary.ts`, `lib/filing-preparation/summary.ts`. 검증: 영향 테스트 28건, 전체 테스트 208파일 1387건, tsc, eslint(기존 경고만), next build 통과. 신규 DB/마이그레이션 없음.
 
 ### JC-028 · 사업장현황신고 지원 (면세 개인사업자) — (우선순위 중 · 저위험)
 

@@ -68,6 +68,26 @@ describe('buildTracks', () => {
     expect(live.chipLabel).toBe('확인 2명')
     expect(live.chipTone).toBe('warn')
   })
+
+  it('local_income track: roadmap without count, live with count (JC-027)', () => {
+    const noCount = buildTracks(attentions(), { outputTaxKrw: 0, inputTaxKrw: 0, pendingDeductionCount: 0 }, 'individual')
+      .find((t) => t.id === 'local_income')!
+    expect(noCount.status).toBe('roadmap')
+    expect(noCount.href).toBeNull()
+
+    const live = buildTracks(
+      attentions(),
+      { outputTaxKrw: 0, inputTaxKrw: 0, pendingDeductionCount: 0 },
+      'individual',
+      { total: 5, attention: 0 },
+      { total: 5, attention: 1, localIncomeTaxKrw: 83_000 },
+    ).find((t) => t.id === 'local_income')!
+    expect(live.status).toBe('live')
+    expect(live.href).toBe('/dashboard/filing-preparation/local-income-tax')
+    expect(live.chipLabel).toBe('확인 1명')
+    expect(live.chipTone).toBe('warn')
+    expect(live.output).toContain('83,000')
+  })
 })
 
 describe('isTrackApplicable / inapplicableReasonFor', () => {

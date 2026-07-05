@@ -9,7 +9,6 @@ import {
   buildFilingChecklist,
   buildFilingItemId,
   formatKrw,
-  splitWithholdingTax,
   type FilingSupportItem,
 } from './summary'
 
@@ -30,6 +29,8 @@ const payrollSource = {
   employeeCount: 12,
   grossPayKrw: 42_600_000,
   withholdingTaxKrw: 2_100_000,
+  incomeTaxKrw: 1_910_000,
+  localIncomeTaxKrw: 190_000,
   socialInsuranceKrw: 3_740_000,
   noticeImportStatus: 'partial',
   closeStatus: 'closed',
@@ -178,18 +179,14 @@ describe('filing support item derivation', () => {
 })
 
 describe('filing input guide', () => {
-  it('derives Hometax input values from payroll summary without DB mutation (S-30~34)', () => {
+  it('uses actual payroll income/local tax values without 10/11 approximation (S-30~34)', () => {
     const [, withholdingItem] = buildPreviewItems()
     const guide = buildFilingInputGuide({
       period,
-      payroll: payrollSource,
+      payroll: { ...payrollSource, withholdingTaxKrw: 9_999_999 },
       withholdingItem,
     })
 
-    expect(splitWithholdingTax(2_100_000)).toEqual({
-      incomeTaxKrw: 1_910_000,
-      localIncomeTaxKrw: 190_000,
-    })
     expect(guide.description).toContain('자동 제출 아님')
     expect(guide.copyPayload).toContain('간이세액 대상: 12명')
     expect(guide.copyPayload).toContain('총지급액: 42,600,000원')

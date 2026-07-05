@@ -10,6 +10,7 @@ import {
   tenant,
   vatPeriodSummary,
 } from '@/lib/db/schema'
+import { buildLocalIncomeTaxTotals, loadLocalIncomeTaxLines } from '@/lib/local-income-tax/summary'
 
 export type FilingItemType = 'vat' | 'withholding' | 'social_insurance'
 export type FilingPackageStatus = 'locked' | 'ready' | 'generated' | 'submitted'
@@ -113,6 +114,8 @@ type PayrollFilingSource = {
   employeeCount: number
   grossPayKrw: number
   withholdingTaxKrw: number
+  incomeTaxKrw: number
+  localIncomeTaxKrw: number
   socialInsuranceKrw: number
   noticeImportStatus: 'missing' | 'partial' | 'matched'
   closeStatus: 'open' | 'blocked' | 'closed'
@@ -228,14 +231,6 @@ export function buildFilingPeriod(period: CompanyHomePeriod): FilingPeriod {
 
 export function formatKrw(value: number) {
   return `${value.toLocaleString('ko-KR')}원`
-}
-
-export function splitWithholdingTax(totalKrw: number) {
-  const localIncomeTaxKrw = Math.floor((totalKrw / 11) / 1_000) * 1_000
-  return {
-    incomeTaxKrw: totalKrw - localIncomeTaxKrw,
-    localIncomeTaxKrw,
-  }
 }
 
 function isReadyDocument(status: PayrollFilingSource['withholdingStatementStatus']) {
@@ -387,8 +382,8 @@ export function buildFilingInputGuide(params: {
 }): FilingInputGuide {
   const employeeCount = params.payroll?.employeeCount ?? 0
   const grossPayKrw = params.payroll?.grossPayKrw ?? 0
-  const withholdingTaxKrw = params.payroll?.withholdingTaxKrw ?? 0
-  const { incomeTaxKrw, localIncomeTaxKrw } = splitWithholdingTax(withholdingTaxKrw)
+  const incomeTaxKrw = params.payroll?.incomeTaxKrw ?? 0
+  const localIncomeTaxKrw = params.payroll?.localIncomeTaxKrw ?? 0
   const copyPayload = [
     `${params.period.payrollLabel} 원천세 신고 입력값`,
     `간이세액 대상: ${employeeCount.toLocaleString('ko-KR')}명`,
@@ -717,7 +712,26 @@ export async function loadFilingSupportSummary({
   ])
 
   const vat = vatRows[0] ?? null
-  const payroll = payrollRows[0] ?? null
+  const payrollBase = payrollRows[0] ?? null
+  const localIncomeTaxTotals = payrollBase
+    ? buildLocalIncomeTaxTotals(await loadLocalIncomeTaxLines({
+        tenantId,
+        clientId: businessEntity.id,
+        periodSummaryId: payrollBase.id,
+      }))
+    : null
+  const payroll: PayrollFilingSource | null = payrollBase
+    ? {
+        ...payrollBase,
+        employeeCount: localIncomeTaxTotals?.readyEmployees ?? 0,
+        grossPayKrw: localIncomeTaxTotals?.grossPayKrw ?? 0,
+        incomeTaxKrw: localIncomeTaxTotals?.incomeTaxKrw ?? 0,
+        localIncomeTaxKrw: localIncomeTaxTotals?.localIncomeTaxKrw ?? 0,
+        withholdingTaxKrw: localIncomeTaxTotals
+          ? localIncomeTaxTotals.incomeTaxKrw + localIncomeTaxTotals.localIncomeTaxKrw
+          : 0,
+      }
+    : null
   const items = buildFilingItems({
     tenantId,
     clientId: businessEntity.id,
