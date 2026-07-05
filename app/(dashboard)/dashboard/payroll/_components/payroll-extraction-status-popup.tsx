@@ -2,12 +2,14 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { PayrollAdaptiveStructuringEligibility } from '@/lib/payroll/adaptive-structuring-eligibility'
-import type { PayrollRow } from '@/lib/payroll/load-payroll-summary-by-event-id'
+import type { payrollExtractionRow } from '@/lib/db/schema'
 import type { PayrollDisplayStatus } from '@/lib/payroll/payroll-status'
 import { cn } from '@/lib/utils'
 import { PayrollAdaptiveStructuringButton } from './payroll-adaptive-structuring-button'
 import { StatusModal } from '@/app/(dashboard)/dashboard/_components/status-modal'
 import { RerunPayrollExtractionButton } from './rerun-payroll-extraction-button'
+
+type PayrollRow = typeof payrollExtractionRow.$inferSelect
 
 const EARNING_FIELD_KEYS = [
   'baseSalary',

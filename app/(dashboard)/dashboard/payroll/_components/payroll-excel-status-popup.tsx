@@ -2,13 +2,15 @@
 
 import { Download } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
-import type { PayrollDraftRow } from '@/lib/payroll/load-payroll-summary-by-event-id'
+import type { payrollExcelDraft } from '@/lib/db/schema'
 import type { PayrollResultExcelDownloadState } from '@/lib/sessions/payroll-source-download'
 import { formatDateTimeLong } from '@/lib/client-format'
 import type { PayrollDisplayStatus } from '@/lib/payroll/payroll-status'
 import { cn } from '@/lib/utils'
 import { GeneratePayrollDraftButton } from './generate-payroll-draft-button'
 import { StatusModal } from '@/app/(dashboard)/dashboard/_components/status-modal'
+
+type PayrollDraftRow = typeof payrollExcelDraft.$inferSelect
 
 export function PayrollExcelStatusPopup({
   status,
