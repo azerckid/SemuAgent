@@ -6,9 +6,9 @@ import {
   payrollExcelDraft,
   payrollExtractionRow,
   requestItemValidation,
+  sourceBatch,
   tenant,
   uploadFile,
-  uploadSession,
 } from '@/lib/db/schema'
 import { DateTime as LuxonDateTime, fromISO, now } from '@/lib/time'
 
@@ -550,12 +550,13 @@ export async function loadCompanyHomeSummary({
     }
   }
 
-  const scopedSession = and(
-    eq(uploadSession.tenantId, tenantId),
-    eq(uploadSession.clientId, businessEntity.id),
-    isNull(uploadSession.deletedAt),
-    gte(uploadSession.accountingPeriod, period.startMonth),
-    lte(uploadSession.accountingPeriod, period.endMonth),
+  const scopedSourceBatch = and(
+    eq(sourceBatch.tenantId, tenantId),
+    eq(sourceBatch.clientId, businessEntity.id),
+    eq(sourceBatch.sourceKind, 'staff_direct'),
+    isNull(sourceBatch.deletedAt),
+    gte(sourceBatch.accountingPeriod, period.startMonth),
+    lte(sourceBatch.accountingPeriod, period.endMonth),
   )
 
   const [
@@ -572,7 +573,10 @@ export async function loadCompanyHomeSummary({
     db
       .select({ value: sql<number>`count(*)` })
       .from(requestItemValidation)
-      .innerJoin(uploadSession, and(eq(requestItemValidation.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(requestItemValidation.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(and(
         eq(requestItemValidation.tenantId, tenantId),
         inArray(requestItemValidation.validationStatus, MATERIAL_ISSUE_STATUSES),
@@ -581,7 +585,10 @@ export async function loadCompanyHomeSummary({
     db
       .select({ value: sql<number>`count(*)` })
       .from(requestItemValidation)
-      .innerJoin(uploadSession, and(eq(requestItemValidation.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(requestItemValidation.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(and(
         eq(requestItemValidation.tenantId, tenantId),
         ne(requestItemValidation.reviewStatus, 'excluded'),
@@ -589,16 +596,21 @@ export async function loadCompanyHomeSummary({
     db
       .select({ value: sql<number>`count(*)` })
       .from(uploadFile)
-      .innerJoin(uploadSession, and(eq(uploadFile.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(uploadFile.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(and(
         eq(uploadFile.tenantId, tenantId),
-        eq(uploadSession.source, 'staff_direct'),
         ne(uploadFile.staffReviewStatus, 'excluded'),
       )),
     db
       .select({ value: sql<number>`count(*)` })
       .from(bookkeepingTransactionClassification)
-      .innerJoin(uploadSession, and(eq(bookkeepingTransactionClassification.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(bookkeepingTransactionClassification.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(and(
         eq(bookkeepingTransactionClassification.tenantId, tenantId),
         inArray(bookkeepingTransactionClassification.status, BOOKKEEPING_ISSUE_STATUSES),
@@ -606,7 +618,10 @@ export async function loadCompanyHomeSummary({
     db
       .select({ value: sql<number>`count(*)` })
       .from(bookkeepingTransactionClassification)
-      .innerJoin(uploadSession, and(eq(bookkeepingTransactionClassification.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(bookkeepingTransactionClassification.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(and(
         eq(bookkeepingTransactionClassification.tenantId, tenantId),
         ne(bookkeepingTransactionClassification.status, 'excluded'),
@@ -614,7 +629,10 @@ export async function loadCompanyHomeSummary({
     db
       .select({ value: sql<number>`count(*)` })
       .from(payrollExtractionRow)
-      .innerJoin(uploadSession, and(eq(payrollExtractionRow.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(payrollExtractionRow.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(and(
         eq(payrollExtractionRow.tenantId, tenantId),
         eq(payrollExtractionRow.aiVerdict, 'fail'),
@@ -625,7 +643,10 @@ export async function loadCompanyHomeSummary({
     db
       .select({ value: sql<number>`count(*)` })
       .from(payrollExcelDraft)
-      .innerJoin(uploadSession, and(eq(payrollExcelDraft.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(payrollExcelDraft.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(eq(payrollExcelDraft.tenantId, tenantId)),
     db
       .select({
@@ -633,13 +654,15 @@ export async function loadCompanyHomeSummary({
         status: uploadFile.status,
         fileType: uploadFile.fileType,
         uploadedAt: uploadFile.uploadedAt,
-        accountingPeriod: uploadSession.accountingPeriod,
+        accountingPeriod: sourceBatch.accountingPeriod,
       })
       .from(uploadFile)
-      .innerJoin(uploadSession, and(eq(uploadFile.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(uploadFile.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(and(
         eq(uploadFile.tenantId, tenantId),
-        eq(uploadSession.source, 'staff_direct'),
         ne(uploadFile.staffReviewStatus, 'excluded'),
       ))
       .orderBy(desc(uploadFile.uploadedAt))
@@ -649,10 +672,13 @@ export async function loadCompanyHomeSummary({
         id: payrollExcelDraft.id,
         status: payrollExcelDraft.status,
         generatedAt: payrollExcelDraft.generatedAt,
-        accountingPeriod: uploadSession.accountingPeriod,
+        accountingPeriod: sourceBatch.accountingPeriod,
       })
       .from(payrollExcelDraft)
-      .innerJoin(uploadSession, and(eq(payrollExcelDraft.uploadSessionId, uploadSession.id), scopedSession))
+      .innerJoin(sourceBatch, and(
+        eq(payrollExcelDraft.uploadSessionId, sourceBatch.legacyUploadSessionId),
+        scopedSourceBatch,
+      ))
       .where(eq(payrollExcelDraft.tenantId, tenantId))
       .orderBy(desc(payrollExcelDraft.generatedAt))
       .limit(2),
