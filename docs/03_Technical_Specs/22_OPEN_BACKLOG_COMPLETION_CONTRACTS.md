@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-05 22:55
+> Last Updated: 2026-07-05 23:28
 
 ## 0. Purpose
 
@@ -174,7 +174,7 @@ Non-goals before done:
 
 Type: 기반 정리.
 
-Current state: Slice 1 through Slice 2c complete. The remaining work is fixed to the slices below unless a docs PR updates this contract first.
+Current state: Slice 1 through Slice 2c complete. Slice 3 Pre-Code Brief is fixed in [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md). The remaining work is fixed to the slices below unless a docs PR updates this contract first.
 
 Remaining slices:
 
@@ -186,6 +186,8 @@ Remaining slices:
    - Introduce or designate an internal source-lineage model, such as `source_batch`.
    - Migrate `upload_file` and downstream bookkeeping/payroll/review references away from legacy `upload_session` where they only need source lineage.
    - Preserve direct-upload behavior and historical traceability.
+   - Execute in the fixed order from Brief 24: **3a schema/backfill/dual-write -> 3b read model switch -> 3c downstream FK migration**.
+   - `upload_session` deletion is not part of Slice 3; it remains a compatibility surface until Slice 4.
 3. **Slice 4 — Schema retirement**
    - Remove or quarantine remaining `outbound_email`, request-event, mail-console, and legacy upload-session schema pieces after FK migration.
    - Keep only explicitly approved compatibility surfaces, if any, and document why they remain.

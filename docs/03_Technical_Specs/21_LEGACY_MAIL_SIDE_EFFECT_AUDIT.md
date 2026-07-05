@@ -1,16 +1,16 @@
 # Legacy Mail Side-effect Audit
 > Created: 2026-07-05 16:39
-> Last Updated: 2026-07-05 22:55
+> Last Updated: 2026-07-05 23:28
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 2c 완료 — transaction-purpose 내부 작업/FK 결정 및 sent_email_id 제거
-Gate: 통과
+현재: JC-031 Slice 3 — source batch replacement Pre-Code Brief 완료
+Gate: Pre-Code 통과, 구현 전
 완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리
-다음: Slice 3 source batch replacement → Slice 4 schema retirement
-필요 확인: source_batch 모델 설계, upload_session lineage 이관 범위
+다음: Slice 3a schema/backfill/dual-write → Slice 3b read switch → Slice 3c downstream FK migration → Slice 4 schema retirement
+필요 확인: 3a migration SQL, dev/prod DB 적용 순서, direct-upload compatibility smoke
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 
@@ -126,7 +126,7 @@ Slice 2b에서 분리한 위험은 두 종류였다.
 7. **Slice 4 준비 — Schema retirement gate**
    - `outbound_email` FK 제거 migration은 source lineage 이관 및 transaction-purpose 재설계 후에만 수행
 
-JC-031의 최종 done 조건과 남은 slice 고정 규칙은 [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)에 따른다. 새 legacy mail 발견 사항은 Slice 2c·3·4 중 하나로 분류하거나 completion contract를 먼저 갱신한다.
+JC-031의 최종 done 조건과 남은 slice 고정 규칙은 [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)에 따른다. Slice 3의 구현 순서와 데이터 계약은 [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md)에 고정한다. 새 legacy mail 발견 사항은 Slice 2c·3·4 중 하나로 분류하거나 completion contract를 먼저 갱신한다.
 
 ### Slice 2c Acceptance
 
