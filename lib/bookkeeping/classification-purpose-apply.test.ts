@@ -142,7 +142,6 @@ beforeAll(async () => {
       subject_snapshot text NOT NULL,
       body_snapshot text NOT NULL,
       due_at text,
-      sent_email_id text,
       created_by_staff_id text NOT NULL,
       sent_by_staff_id text,
       sent_at text,

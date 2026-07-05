@@ -1,16 +1,16 @@
 # Legacy Mail Side-effect Audit
 > Created: 2026-07-05 16:39
-> Last Updated: 2026-07-05 21:34
+> Last Updated: 2026-07-05 22:55
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 2b-5 완료 — transaction-purpose send dead-code 제거
+현재: JC-031 Slice 2c 완료 — transaction-purpose 내부 작업/FK 결정 및 sent_email_id 제거
 Gate: 통과
-완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1 보충요청 초안 생성 side effect 제거, Slice 2b-2 transaction-purpose send quarantine, Slice 2b-3a hidden reviews approval queue read 제거, Slice 2b-3b dashboard/emails mail-console read 제거, Slice 2b-3c calendar/client outbound-email read 제거, Slice 2b-3d payroll event dead-loader outbound-email read 제거, Slice 2b-3e client events detail/new dead UI 제거, Slice 2b-4 stale missing_request draft cleanup side-effect 제거, Slice 2b-5 transaction-purpose send dead-code 제거
-다음: Slice 2c transaction-purpose 내부 작업/FK 결정 → Slice 3 source batch replacement → Slice 4 schema retirement
-필요 확인: transaction-purpose 확인 요청을 self-use 내부 작업으로 유지할지, 다른 검토 모델로 흡수할지, 제거할지 결정
+완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리
+다음: Slice 3 source batch replacement → Slice 4 schema retirement
+필요 확인: source_batch 모델 설계, upload_session lineage 이관 범위
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 
@@ -64,8 +64,8 @@ Slice 2b에서 분리한 위험은 두 종류였다.
 | `app/api/sessions/[id]/transaction-purpose-requests/route.ts` | draft 생성. 발송 아님 | 없음 | send 차단 전까지는 낮은 위험. 다만 `/dashboard/sessions` 하위 UI가 redirect라 v1 핵심 경로 아님 |
 | `app/api/transaction-purpose-requests/[id]/route.ts` | draft 조회/수정 | 없음 | send 차단 뒤 dead-code 정리 후보 |
 | `app/api/transaction-purpose-requests/[id]/send/route.ts` | 410 Gone | 없음 | **Slice 2b-2 완료.** 담당자 승인 발송 경로 차단 |
-| `lib/bookkeeping/transaction-purpose-service.ts` | draft 생성/수정/조회 서비스 | 없음 | **Slice 2b-5 완료.** `sendPurposeRequest` 함수와 전용 테스트 제거. `outbound_email` insert 경로 없음 |
-| `bookkeeping_transaction_purpose_request.sent_email_id` | `outbound_email.id` FK | schema-level FK | Slice 4 전에는 삭제 금지. self-use 내부 작업 모델로 재설계 후 FK 제거 |
+| `lib/bookkeeping/transaction-purpose-service.ts` | **Slice 2c 완료.** 파일 삭제. draft 생성/조회/수정 런타임 없음 | 없음 | classification answer attach/apply만 유지 |
+| `bookkeeping_transaction_purpose_request.sent_email_id` | ~~`outbound_email.id` FK~~ | **Slice 2c 완료.** 컬럼 제거(migration 0060) |
 | `app/api/upload/purpose-request*` | Slice 1b에서 410 차단 | 고객 답변 포털 차단됨 | public answer 경로는 이미 닫힘 |
 
 ### Slice 2b-2 Acceptance
@@ -117,10 +117,24 @@ Slice 2b에서 분리한 위험은 두 종류였다.
    - `lib/bookkeeping/transaction-purpose-service.ts`에서 런타임 호출처 없는 `sendPurposeRequest` 제거
    - send 전용 Resend mock/outbound_email fixture/test 제거
    - draft 생성·수정·조회, public answer/apply, `sent_email_id` schema는 유지
-6. **Slice 4 준비 — Schema retirement gate**
+6. **Slice 2c — Transaction-purpose internal task/FK decision (완료, 2026-07-05)**
+   - **결정:** `bookkeeping_transaction_purpose_request` 테이블은 **과거 용도 확인 기록 + 분류 확정 연동**으로 유지한다. 신규 고객 메일 draft/발송/포털 답변 워크플로는 SemuAgent v1에서 제거한다.
+   - `sent_email_id -> outbound_email.id` FK 컬럼을 migration `0060`으로 제거한다.
+   - `POST /api/sessions/[id]/transaction-purpose-requests`, `GET/PATCH /api/transaction-purpose-requests/[id]`를 410 처리한다(발송 route는 2b-2에서 이미 410).
+   - `transaction-purpose-service`, `transaction-purpose-public-service`, `transaction-purpose-template` 및 전용 UI/dead-code를 삭제한다.
+   - **유지:** `attachPurposeAnswersToClassificationRows`, `classification-service`의 `purposeRequestRowId` 확정 연동, 기존 row/answer 데이터.
+7. **Slice 4 준비 — Schema retirement gate**
    - `outbound_email` FK 제거 migration은 source lineage 이관 및 transaction-purpose 재설계 후에만 수행
 
 JC-031의 최종 done 조건과 남은 slice 고정 규칙은 [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)에 따른다. 새 legacy mail 발견 사항은 Slice 2c·3·4 중 하나로 분류하거나 completion contract를 먼저 갱신한다.
+
+### Slice 2c Acceptance
+
+- [x] `bookkeeping_transaction_purpose_request.sent_email_id` 컬럼/FK가 제거되었다.
+- [x] purpose request draft 생성·조회·수정 API가 410 Gone을 반환한다.
+- [x] `outbound_email` insert를 수행하는 transaction-purpose 런타임 코드가 없다.
+- [x] 분류 답변 attach/apply 경로(`transaction-purpose-classification-answers`, `classification-service`)는 유지된다.
+- [x] tsc/lint/test가 통과한다.
 
 ## 7. Verification Plan
 

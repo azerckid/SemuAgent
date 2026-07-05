@@ -875,10 +875,8 @@ export const bookkeepingTransactionClassification = sqliteTable('bookkeeping_tra
 
 // ---------------------------------------------------------------------------
 // bookkeeping_transaction_purpose_request
-// 계정항목 정리 중 확정이 어려운 거래를 고객에게 "거래 용도 확인"으로
-// 묻는 요청 batch. 보충요청(missing_request)과는 다른 outbound email type.
-// 고객 답변은 최종 회계처리가 아니라 담당자 판단 근거로 저장된다.
-// (docs/03_Technical_Specs/40_TRANSACTION_PURPOSE_CONFIRMATION_SPEC.md §4.1)
+// 기장검토 중 거래 용도 확인 기록(과거 GIWA 고객 메일 흐름 포함). JC-031 Slice 2c 이후
+// 신규 고객 메일 draft/발송 없음. 분류 확정 시 purpose row 연동(classification-service)만 유지.
 // ---------------------------------------------------------------------------
 export const bookkeepingTransactionPurposeRequest = sqliteTable('bookkeeping_transaction_purpose_request', {
   id: text('id').primaryKey(),
@@ -893,7 +891,6 @@ export const bookkeepingTransactionPurposeRequest = sqliteTable('bookkeeping_tra
   subjectSnapshot: text('subject_snapshot').notNull(),
   bodySnapshot: text('body_snapshot').notNull(),
   dueAt: text('due_at'),
-  sentEmailId: text('sent_email_id').references(() => outboundEmail.id),
   createdByStaffId: text('created_by_staff_id').notNull().references(() => staff.id),
   sentByStaffId: text('sent_by_staff_id').references(() => staff.id),
   sentAt: text('sent_at'),

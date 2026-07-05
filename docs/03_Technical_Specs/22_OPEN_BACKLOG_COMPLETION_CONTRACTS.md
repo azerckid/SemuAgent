@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-05 22:32
+> Last Updated: 2026-07-05 22:55
 
 ## 0. Purpose
 
@@ -174,14 +174,14 @@ Non-goals before done:
 
 Type: 기반 정리.
 
-Current state: Slice 1 through Slice 2b-5 complete. The remaining work is fixed to the slices below unless a docs PR updates this contract first.
+Current state: Slice 1 through Slice 2c complete. The remaining work is fixed to the slices below unless a docs PR updates this contract first.
 
 Remaining slices:
 
-1. **Slice 2c — Transaction-purpose internal task/FK decision**
-   - Decide whether `transaction_purpose_request` remains as an internal bookkeeping task, is absorbed into another review model, or is removed.
-   - Remove or replace `sent_email_id -> outbound_email.id`.
-   - Keep classification answer/application behavior only if it is still used by SemuAgent self-use flows.
+1. ~~**Slice 2c — Transaction-purpose internal task/FK decision**~~ **완료(2026-07-05)**
+   - `transaction_purpose_request`는 과거 용도 확인 기록 + 분류 확정 연동으로 유지. 신규 고객 메일 워크플로는 제거.
+   - `sent_email_id -> outbound_email.id` 제거(migration 0060).
+   - draft/create/read/update API 410, dead service/UI 삭제. classification answer/application 유지.
 2. **Slice 3 — Source batch replacement**
    - Introduce or designate an internal source-lineage model, such as `source_batch`.
    - Migrate `upload_file` and downstream bookkeeping/payroll/review references away from legacy `upload_session` where they only need source lineage.

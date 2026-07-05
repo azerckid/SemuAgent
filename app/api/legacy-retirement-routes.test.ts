@@ -8,7 +8,9 @@ import { DELETE as deleteRequestSchedule, PATCH as patchRequestSchedule } from '
 import { PATCH as patchRequestTemplate } from './request-templates/[id]/route'
 import { POST as postSessionCompletion } from './sessions/[id]/completion/route'
 import { POST as postSessionDraft } from './sessions/draft/route'
+import { POST as postSessionTransactionPurposeRequests } from './sessions/[id]/transaction-purpose-requests/route'
 import { POST as postTransactionPurposeRequestSend } from './transaction-purpose-requests/[id]/send/route'
+import { GET as getTransactionPurposeRequest, PATCH as patchTransactionPurposeRequest } from './transaction-purpose-requests/[id]/route'
 
 const retiredRoutes = [
   ['POST /api/request-events', postRequestEvent],
@@ -20,6 +22,9 @@ const retiredRoutes = [
   ['PATCH /api/request-schedules/[id]', patchRequestSchedule],
   ['DELETE /api/request-schedules/[id]', deleteRequestSchedule],
   ['PATCH /api/request-templates/[id]', patchRequestTemplate],
+  ['POST /api/sessions/[id]/transaction-purpose-requests', postSessionTransactionPurposeRequests],
+  ['GET /api/transaction-purpose-requests/[id]', getTransactionPurposeRequest],
+  ['PATCH /api/transaction-purpose-requests/[id]', patchTransactionPurposeRequest],
   ['POST /api/transaction-purpose-requests/[id]/send', postTransactionPurposeRequestSend],
 ] as const
 
