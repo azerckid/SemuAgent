@@ -8,6 +8,7 @@ import { DELETE as deleteRequestSchedule, PATCH as patchRequestSchedule } from '
 import { PATCH as patchRequestTemplate } from './request-templates/[id]/route'
 import { POST as postSessionCompletion } from './sessions/[id]/completion/route'
 import { POST as postSessionDraft } from './sessions/draft/route'
+import { POST as postTransactionPurposeRequestSend } from './transaction-purpose-requests/[id]/send/route'
 
 const retiredRoutes = [
   ['POST /api/request-events', postRequestEvent],
@@ -19,6 +20,7 @@ const retiredRoutes = [
   ['PATCH /api/request-schedules/[id]', patchRequestSchedule],
   ['DELETE /api/request-schedules/[id]', deleteRequestSchedule],
   ['PATCH /api/request-templates/[id]', patchRequestTemplate],
+  ['POST /api/transaction-purpose-requests/[id]/send', postTransactionPurposeRequestSend],
 ] as const
 
 describe('retired legacy request-mail write routes', () => {
