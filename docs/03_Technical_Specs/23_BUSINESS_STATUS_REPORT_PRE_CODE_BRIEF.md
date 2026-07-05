@@ -1,6 +1,6 @@
 # Business Status Report (사업장현황신고) Pre-Code Technical Brief
 > Created: 2026-07-05 21:57
-> Last Updated: 2026-07-05 21:57
+> Last Updated: 2026-07-05 22:45
 
 ## 0. Governing Principle
 
@@ -72,7 +72,7 @@ function resolveBusinessStatusEligibility(
 | `client.taxEntityType` | 면세 개인사업자 대상 여부 판정 |
 | `bookkeepingTransactionClassification` | 확정 거래의 수입금액(`direction='income'`)·매입/경비(`direction='expense'`) 집계 |
 | `bookkeepingClassificationRun` + `uploadSession` | 귀속연도에 겹치는 staff-direct 세션의 최신 completed run 선별(JC-010 패턴 재사용) |
-| `loadSourceCollectionSummary` | 자료 누락·정규화 대기 blocker 표시(자료수집 라우팅) |
+| `loadSourceCollectionSummary` | 자료 누락·정규화 대기 blocker 표시(자료수집 라우팅). 사업장현황신고는 연간 신고이므로 `YYYY-H1` + `YYYY-H2`를 각각 조회해 합산한다. |
 | `vatPeriodSummary.exemptSupplyKrw` | 선택적 보조 비교값. core source가 아니며, 값이 없어도 JC-028 화면을 막지 않는다. |
 
 기장 조회 패턴은 `loadBookkeepingReviewSummary`와 동일하게 한다.
@@ -151,7 +151,7 @@ function buildBusinessStatusExpenseRows(rows: BusinessStatusClassificationRow[])
 | 원인 | 판정 | CTA |
 |:---|:---|:---|
 | 사업자 유형 미지정 | `taxEntityType === null` | 설정 열기 |
-| 자료 누락/정규화 대기 | `loadSourceCollectionSummary().missingItems.length` 또는 `normalizationPendingCount > 0` | 자료수집 열기 |
+| 자료 누락/정규화 대기 | `YYYY-H1` + `YYYY-H2` `loadSourceCollectionSummary()`의 `missingItems.length`와 `normalizationPendingCount` 합산값 > 0 | 자료수집 열기 |
 | 기장 미확정 | classification row `status`가 `suggested`·`needs_decision`·`unclassified` | 기장검토 열기 |
 
 준비율은 저장하지 않는 파생값이다.
@@ -212,16 +212,16 @@ async function loadBusinessStatusReportAttentionCount(params: {
 
 ## 9. Acceptance Criteria
 
-- [ ] 면세 개인사업자(`tax_exempt`)만 사업장현황신고 준비 화면을 사용할 수 있다.
-- [ ] 과세 개인·법인은 해당 없음 상태가 표시되고, 실행 링크는 막힌다.
-- [ ] 사업자 유형 미지정은 설정 화면으로 라우팅되는 확인 필요 상태로 표시된다.
-- [ ] 귀속연도 기준 수입금액이 확정 기장 행(`direction='income'`, `status='confirmed'`)으로 집계된다.
-- [ ] 귀속연도 기준 매입·경비 자료가 확정 기장 행(`direction='expense'`, `status='confirmed'`)으로 집계된다.
-- [ ] 미확정 기장 행·금액 누락·자료 누락/정규화 대기는 확인 필요 blocker로 표시되고 자료수집/기장검토/설정으로 라우팅된다.
-- [ ] 신고 준비 허브에 `business_status` 트랙이 추가되고, 면세 개인사업자일 때 검토 화면으로 링크된다.
-- [ ] 화면은 read-only이며 mutation을 수행하지 않는다.
-- [ ] 홈택스 제출·전자신고 파일 생성·자동제출은 포함하지 않는다.
-- [ ] 대상 분기·집계·blocker·허브 트랙은 순수 함수 단위 테스트로 검증된다.
+- [x] 면세 개인사업자(`tax_exempt`)만 사업장현황신고 준비 화면을 사용할 수 있다.
+- [x] 과세 개인·법인은 해당 없음 상태가 표시되고, 실행 링크는 막힌다.
+- [x] 사업자 유형 미지정은 설정 화면으로 라우팅되는 확인 필요 상태로 표시된다.
+- [x] 귀속연도 기준 수입금액이 확정 기장 행(`direction='income'`, `status='confirmed'`)으로 집계된다.
+- [x] 귀속연도 기준 매입·경비 자료가 확정 기장 행(`direction='expense'`, `status='confirmed'`)으로 집계된다.
+- [x] 미확정 기장 행·금액 누락·자료 누락/정규화 대기는 확인 필요 blocker로 표시되고 자료수집/기장검토/설정으로 라우팅된다.
+- [x] 신고 준비 허브에 `business_status` 트랙이 추가되고, 면세 개인사업자일 때 검토 화면으로 링크된다.
+- [x] 화면은 read-only이며 mutation을 수행하지 않는다.
+- [x] 홈택스 제출·전자신고 파일 생성·자동제출은 포함하지 않는다.
+- [x] 대상 분기·집계·blocker·허브 트랙은 순수 함수 단위 테스트로 검증된다.
 
 ## 10. Component & Library Plan
 

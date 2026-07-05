@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import { describe, expect, it } from 'vitest'
+import { resolveBusinessStatusEligibility } from '@/lib/business-status-report/summary'
 import type { InternalReminderAttention } from '@/lib/internal-reminders/summary'
 import {
   buildFilingPreparationBlockers,
@@ -88,6 +89,33 @@ describe('buildTracks', () => {
     expect(live.chipTone).toBe('warn')
     expect(live.output).toContain('83,000')
   })
+
+  it('business_status track: live for tax-exempt/unknown and blocked for taxable/corporation (JC-028)', () => {
+    const exempt = buildTracks(
+      attentions(),
+      { outputTaxKrw: 0, inputTaxKrw: 0, pendingDeductionCount: 0 },
+      'tax_exempt',
+      { total: 5, attention: 0 },
+      { total: 5, attention: 0, localIncomeTaxKrw: 83_000 },
+      { total: 3, attention: 2, revenueTotalKrw: 48_300_000 },
+    ).find((t) => t.id === 'business_status')!
+    expect(exempt.status).toBe('live')
+    expect(exempt.applicable).toBe(true)
+    expect(exempt.href).toBe('/dashboard/filing-preparation/business-status-report')
+    expect(exempt.chipLabel).toBe('확인 2건')
+    expect(exempt.output).toContain('48,300,000')
+
+    const taxable = buildTracks(attentions(), { outputTaxKrw: 0, inputTaxKrw: 0, pendingDeductionCount: 0 }, 'individual')
+      .find((t) => t.id === 'business_status')!
+    expect(taxable.applicable).toBe(false)
+    expect(taxable.href).toBeNull()
+
+    const unknown = buildTracks(attentions(), { outputTaxKrw: 0, inputTaxKrw: 0, pendingDeductionCount: 0 }, 'unknown')
+      .find((t) => t.id === 'business_status')!
+    expect(unknown.applicable).toBe(true)
+    expect(unknown.chipLabel).toBe('유형 확인')
+    expect(unknown.href).toBe('/dashboard/filing-preparation/business-status-report')
+  })
 })
 
 describe('isTrackApplicable / inapplicableReasonFor', () => {
@@ -104,6 +132,21 @@ describe('isTrackApplicable / inapplicableReasonFor', () => {
       expect(isTrackApplicable('local_income', type)).toBe(true)
       expect(inapplicableReasonFor('vat', type)).toBeNull()
     }
+  })
+
+  it('keeps business_status aligned with the detail-screen eligibility function', () => {
+    const cases = [
+      ['tax_exempt', 'tax_exempt'],
+      ['unknown', null],
+      ['individual', 'individual'],
+      ['corporation', 'corporation'],
+    ] as const
+    for (const [hubType, entityType] of cases) {
+      expect(isTrackApplicable('business_status', hubType)).toBe(
+        resolveBusinessStatusEligibility(entityType).state !== 'not_applicable',
+      )
+    }
+    expect(inapplicableReasonFor('business_status', 'individual')).toContain('대상')
   })
 })
 

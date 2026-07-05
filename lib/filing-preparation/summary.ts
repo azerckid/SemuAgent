@@ -2,6 +2,7 @@ import { asc, eq } from 'drizzle-orm'
 import type { DateTime } from 'luxon'
 import { buildCompanyHomePeriod, type CompanyHomePeriod } from '@/lib/company-home/summary'
 import { client, tenant } from '@/lib/db/schema'
+import { loadBusinessStatusReportAttentionCount, resolveBusinessStatusEligibility } from '@/lib/business-status-report/summary'
 import {
   loadInternalReminderAttentionItems,
   type InternalReminderAttention,
@@ -24,7 +25,7 @@ const DEFAULT_TZ = 'Asia/Seoul'
 export type FilingPrepTone = 'ok' | 'warn' | 'danger' | 'plan' | 'muted'
 // 사업장 taxEntityType(개인/법인/면세) + 미지정(unknown → 흐림 없음).
 export type FilingPrepBusinessType = TaxEntityType | 'unknown'
-export type FilingPrepTrackId = 'withholding' | 'vat' | 'payment_statement' | 'local_income'
+export type FilingPrepTrackId = 'withholding' | 'vat' | 'payment_statement' | 'local_income' | 'business_status'
 export type FilingPrepTrackStatus = 'live' | 'roadmap'
 
 export type FilingPrepBlocker = {
@@ -113,15 +114,21 @@ export function businessTypeLabel(type: FilingPrepBusinessType): string {
 }
 
 // v1: 면세 개인사업자는 부가세 트랙이 해당 없음(사업장현황신고로 대체·JC-028).
-// 그 외 트랙과 unknown 유형은 전부 해당(흐림 없음).
+// 사업장현황신고 트랙은 상세 화면의 eligibility 함수와 같은 판정을 사용한다.
+function businessStatusEligibilityFor(type: FilingPrepBusinessType) {
+  return resolveBusinessStatusEligibility(type === 'unknown' ? null : type)
+}
+
 export function isTrackApplicable(trackId: FilingPrepTrackId, type: FilingPrepBusinessType): boolean {
   if (trackId === 'vat' && type === 'tax_exempt') return false
+  if (trackId === 'business_status') return businessStatusEligibilityFor(type).state !== 'not_applicable'
   return true
 }
 
 export function inapplicableReasonFor(trackId: FilingPrepTrackId, type: FilingPrepBusinessType): string | null {
   if (isTrackApplicable(trackId, type)) return null
   if (trackId === 'vat' && type === 'tax_exempt') return '면세 사업자 · 사업장현황신고로 대체'
+  if (trackId === 'business_status') return '과세/법인 사업자는 사업장현황신고 대상이 아닙니다.'
   return '해당 없음'
 }
 
@@ -208,16 +215,17 @@ export async function loadFilingPreparationSummary({
     }
   }
 
-  const [attentions, vat, paymentStatement, localIncomeTax] = await Promise.all([
+  const [attentions, vat, paymentStatement, localIncomeTax, businessStatus] = await Promise.all([
     loadInternalReminderAttentionItems({ tenantId, periodKey, today }),
     loadVatSummary({ tenantId, periodKey, today }),
     loadPaymentStatementAttentionCount(tenantId),
     loadLocalIncomeTaxAttentionCount(tenantId),
+    loadBusinessStatusReportAttentionCount(tenantId),
   ])
 
   const blockers = buildFilingPreparationBlockers(attentions)
   const readinessPercent = buildFilingPreparationReadiness(attentions)
-  const tracks = buildTracks(attentions, vat.taxSummary, businessType, paymentStatement, localIncomeTax)
+  const tracks = buildTracks(attentions, vat.taxSummary, businessType, paymentStatement, localIncomeTax, businessStatus)
   const handoffReadyCount = tracks.filter(
     (track) => track.status === 'live' && track.applicable && track.chipTone === 'ok',
   ).length
@@ -273,6 +281,7 @@ export function buildTracks(
   type: FilingPrepBusinessType,
   paymentStatement?: { total: number; attention: number },
   localIncomeTax?: { total: number; attention: number; localIncomeTaxKrw: number },
+  businessStatus?: { total: number; attention: number; revenueTotalKrw: number } | null,
 ): FilingPrepTrackCard[] {
   const payroll = attentionByDomain(attentions, 'payroll')
 
@@ -354,6 +363,34 @@ export function buildTracks(
       handoffLabel: 'handoff: 위택스/지방세 직접 신고 수치',
       href: localIncomeTax && isTrackApplicable('local_income', type)
         ? '/dashboard/filing-preparation/local-income-tax'
+        : null,
+    },
+    {
+      id: 'business_status',
+      title: '사업장현황신고',
+      cycle: '면세 개인사업자 · 매년 2월 10일',
+      chipLabel: !isTrackApplicable('business_status', type)
+        ? '해당 없음'
+        : type === 'unknown'
+          ? '유형 확인'
+          : businessStatus?.attention
+            ? `확인 ${businessStatus.attention}건`
+            : businessStatus && businessStatus.total > 0 ? '데이터 준비' : '대상 없음',
+      chipTone: !isTrackApplicable('business_status', type)
+        ? 'muted'
+        : type === 'unknown'
+          ? 'warn'
+          : businessStatus?.attention ? 'warn' : 'ok',
+      status: 'live',
+      applicable: isTrackApplicable('business_status', type),
+      inapplicableReason: inapplicableReasonFor('business_status', type),
+      input: '면세 수입금액 · 매입/경비 자료 · 사업자 유형',
+      output: businessStatus && type === 'tax_exempt'
+        ? `수입금액 ${formatKrw(businessStatus.revenueTotalKrw)} · 누락/미확정 ${businessStatus.attention}건`
+        : '면세 개인사업자 사업장현황신고 준비 데이터',
+      handoffLabel: 'handoff: 홈택스 사업장현황신고 직접 입력',
+      href: isTrackApplicable('business_status', type)
+        ? '/dashboard/filing-preparation/business-status-report'
         : null,
     },
   ]
