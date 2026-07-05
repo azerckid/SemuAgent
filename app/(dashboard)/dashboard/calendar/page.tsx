@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { and, asc, desc, eq, gte, inArray, isNull, lt, or } from 'drizzle-orm'
+import { and, asc, eq, gte, inArray, isNull, lt, or } from 'drizzle-orm'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { requireTenantSession } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
-import { client, clientRequestEvent, outboundEmail, uploadSession } from '@/lib/db/schema'
+import { client, clientRequestEvent, uploadSession } from '@/lib/db/schema'
 import {
   buildTaxCalendarStatusItems,
   groupTaxCalendarStatusItemsByDate,
@@ -58,7 +58,7 @@ const STATUS_LABEL: Record<TaxCalendarOverallStatus, string> = {
   uploaded: '업로드 완료',
   needs_review: '검토 필요',
   completed: '완료',
-  failed: '발송 실패',
+  failed: '실패',
   overdue: '지연',
   closed: '종료',
 }
@@ -189,7 +189,6 @@ export default async function CalendarPage({
     .filter((id): id is string => Boolean(id))
 
   // sessionRows: eventIds를 requestEventId로 가리키는 세션 + eventSessionIds로 직접 참조되는 세션.
-  // emailRows는 sessionRows에서 나온 sessionIds를 사용해야 하므로 sessionRows 후에 순차 실행한다.
   const sessionRows = eventIds.length > 0
     ? await db
       .select({
@@ -209,37 +208,9 @@ export default async function CalendarPage({
       )
     : []
 
-  // sessionRows.id는 eventSessionIds를 포함(superset)하므로 별도 합집합 불필요.
-  const sessionIds = sessionRows.map((session) => session.id)
-
-  const emailRows = eventIds.length > 0
-    ? await db
-      .select({
-        id: outboundEmail.id,
-        requestEventId: outboundEmail.requestEventId,
-        uploadSessionId: outboundEmail.uploadSessionId,
-        type: outboundEmail.type,
-        status: outboundEmail.status,
-        sentAt: outboundEmail.sentAt,
-        createdAt: outboundEmail.createdAt,
-      })
-      .from(outboundEmail)
-      .where(
-        and(
-          eq(outboundEmail.tenantId, tenantId),
-          sessionIds.length > 0
-            ? or(inArray(outboundEmail.requestEventId, eventIds), inArray(outboundEmail.uploadSessionId, sessionIds))
-            : inArray(outboundEmail.requestEventId, eventIds),
-        ),
-      )
-      .orderBy(desc(outboundEmail.createdAt))
-      .limit(500)
-    : []
-
   const statusItems = buildTaxCalendarStatusItems({
     events: eventRows,
     sessions: sessionRows,
-    emails: emailRows,
     today,
   })
   const statusItemsByDate = groupTaxCalendarStatusItemsByDate(statusItems)
@@ -412,7 +383,6 @@ export default async function CalendarPage({
                       <div className="grid gap-1 text-xs text-muted-foreground">
                         <div>업무: <span className="font-medium text-foreground">{item.requestKindLabel}</span></div>
                         <div>요청: <span className="font-medium text-foreground">{item.eventStatus}</span></div>
-                        <div>메일: <span className="font-medium text-foreground">{item.emailLabel}</span></div>
                         <div>업로드: <span className="font-medium text-foreground">{item.uploadLabel}</span></div>
                         <div>다음 액션: <span className="font-medium text-foreground">{item.nextAction}</span></div>
                       </div>

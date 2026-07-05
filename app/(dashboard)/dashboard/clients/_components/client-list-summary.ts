@@ -20,8 +20,6 @@ function toListDetail(signal: ClientStatusBadge): string {
   }
 
   const shortByLabel: Record<string, string> = {
-    '승인 대기': '보충 요청 초안 승인 대기',
-    '발송 실패': '메일 발송 실패 확인 필요',
     '확인 필요': '요청자료 또는 파일 검토 필요',
     '검토필요': '요청자료 또는 파일 검토 필요',
     '미배정': '담당자를 지정해 주세요.',

@@ -19,11 +19,11 @@ describe('deriveListSummaryStatus', () => {
   it('returns 검토필요 for warning or destructive domain signals', () => {
     expect(deriveListSummaryStatus({
       ...baseSignals,
-      review: badge('승인 대기', 'warning', '보충 요청 초안이 담당자 승인을 기다립니다.'),
+      review: badge('검토필요', 'warning', '요청 또는 세션 상태가 검토 필요입니다.'),
     })).toMatchObject({
       label: '검토필요',
       tone: 'warning',
-      detail: '보충 요청 초안이 담당자 승인을 기다립니다.',
+      detail: '요청 또는 세션 상태가 검토 필요입니다.',
     })
 
     expect(deriveListSummaryStatus({
@@ -40,11 +40,11 @@ describe('deriveListSummaryStatus', () => {
     expect(deriveListSummaryStatus({
       ...baseSignals,
       latestRequest: badge('업로드 대기', 'warning', '2026-01 기장 자료 요청 · 자료 · 정기 · 기한 6/23'),
-      review: badge('승인 대기', 'warning', '보충 요청 초안이 담당자 승인을 기다립니다.'),
+      review: badge('검토필요', 'warning', '요청자료 또는 파일 검토 필요'),
     })).toMatchObject({
       label: '검토필요',
       tone: 'warning',
-      detail: '보충 요청 초안이 담당자 승인을 기다립니다.',
+      detail: '요청자료 또는 파일 검토 필요',
     })
   })
 
