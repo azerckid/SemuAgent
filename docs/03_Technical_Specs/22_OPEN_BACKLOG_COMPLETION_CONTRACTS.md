@@ -174,7 +174,7 @@ Non-goals before done:
 
 Type: 기반 정리.
 
-Current state: Slice 1 through Slice 2c complete. Slice 3 Pre-Code Brief is fixed in [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md). The remaining work is fixed to the slices below unless a docs PR updates this contract first.
+Current state: Slice 1 through Slice 3a complete. Slice 3 Pre-Code Brief is fixed in [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md). The remaining work is fixed to the slices below unless a docs PR updates this contract first.
 
 Remaining slices:
 
@@ -184,6 +184,7 @@ Remaining slices:
    - draft/create/read/update API 410, dead service/UI 삭제. classification answer/application 유지.
 2. **Slice 3 — Source batch replacement**
    - Introduce or designate an internal source-lineage model, such as `source_batch`.
+   - **3a complete:** `source_batch` table, `upload_file.source_batch_id`, existing data backfill, and direct-upload dual-write are implemented.
    - Migrate `upload_file` and downstream bookkeeping/payroll/review references away from legacy `upload_session` where they only need source lineage.
    - Preserve direct-upload behavior and historical traceability.
    - Execute in the fixed order from Brief 24: **3a schema/backfill/dual-write -> 3b read model switch -> 3c downstream FK migration**.

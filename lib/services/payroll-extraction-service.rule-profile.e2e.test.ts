@@ -117,6 +117,7 @@ beforeAll(async () => {
     `CREATE TABLE upload_file (
       id text PRIMARY KEY NOT NULL,
       upload_session_id text NOT NULL,
+      source_batch_id text,
       tenant_id text NOT NULL,
       original_filename text NOT NULL,
       storage_key text NOT NULL,

@@ -6,11 +6,11 @@
 
 ```text
 [Flow]
-현재: JC-031 Slice 3 — source batch replacement Pre-Code Brief 완료
-Gate: Pre-Code 통과, 구현 전
-완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리
-다음: Slice 3a schema/backfill/dual-write → Slice 3b read switch → Slice 3c downstream FK migration → Slice 4 schema retirement
-필요 확인: 3a migration SQL, dev/prod DB 적용 순서, direct-upload compatibility smoke
+현재: JC-031 Slice 3a 완료 — source_batch schema/backfill/dual-write
+Gate: 통과
+완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리, Slice 3a source_batch 도입
+다음: Slice 3b read switch → Slice 3c downstream FK migration → Slice 4 schema retirement
+필요 확인: 3b read model별 source_batch 우선/fallback 전략, direct-upload compatibility smoke
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 

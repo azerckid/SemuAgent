@@ -5,7 +5,7 @@ import { and, eq } from 'drizzle-orm'
 import { after } from 'next/server'
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { uploadFile, uploadSession } from '@/lib/db/schema'
+import { sourceBatch, uploadFile, uploadSession } from '@/lib/db/schema'
 import { verifyToken } from '@/lib/session'
 import { now, toDBString } from '@/lib/time'
 import { isMutableUploadSessionStatus, markSessionFilesRevised } from '@/lib/upload-session-revision'
@@ -16,6 +16,7 @@ const tokenPayloadSchema = z.object({
   sessionId: z.string().min(1),
   tenantId: z.string().min(1),
   originalFilename: z.string().min(1).optional(),
+  sourceBatchId: z.string().min(1).nullable().optional(),
 })
 
 const blobResultSchema = z.object({
@@ -97,6 +98,17 @@ export async function POST(req: Request): Promise<Response> {
           }
         }
 
+        const [sourceBatchRow] = await db
+          .select({ id: sourceBatch.id })
+          .from(sourceBatch)
+          .where(
+            and(
+              eq(sourceBatch.legacyUploadSessionId, session.id),
+              eq(sourceBatch.tenantId, session.tenantId),
+            ),
+          )
+          .limit(1)
+
         return {
           allowedContentTypes: ALLOWED_CONTENT_TYPES,
           maximumSizeInBytes: MAX_FILE_SIZE,
@@ -104,6 +116,7 @@ export async function POST(req: Request): Promise<Response> {
             sessionId: session.id,
             tenantId: session.tenantId,
             originalFilename: payload.originalFilename,
+            sourceBatchId: sourceBatchRow?.id ?? null,
           }),
         }
       },
@@ -119,7 +132,7 @@ export async function POST(req: Request): Promise<Response> {
         if (!payloadParsed.success) {
           throw new Error('tokenPayload 형식이 올바르지 않습니다')
         }
-        const { sessionId, tenantId, originalFilename } = payloadParsed.data
+        const { sessionId, tenantId, originalFilename, sourceBatchId } = payloadParsed.data
         const { url, pathname, contentType } = blobParsed.data
 
         const blobContent = await get(url, { access: 'private' })
@@ -135,6 +148,7 @@ export async function POST(req: Request): Promise<Response> {
         await db.insert(uploadFile).values({
           id: fileId,
           uploadSessionId: sessionId,
+          sourceBatchId: sourceBatchId ?? null,
           tenantId,
           originalFilename: originalFilename ?? pathname.split('/').pop() ?? pathname,
           storageKey: url,

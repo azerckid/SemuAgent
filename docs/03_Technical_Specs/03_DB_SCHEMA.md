@@ -49,6 +49,25 @@ tenant (로그인 주체 = 회사/대표)
 - 갱신 경로: `PATCH /api/settings/business-entity`(TENANT_ADMIN)가 테넌트의 최초 등록 사업장을 갱신한다(v1 테넌트당 사업장 1개 전제).
 - 물리 적용: `drizzle/0059_add_client_tax_entity_type.sql`(`ALTER TABLE client ADD COLUMN tax_entity_type text`), 배포 시 `db:push`.
 
+#### 2.1.2 `source_batch` — 내부 자료 원천 batch (JC-031 Slice 3a, migration 0061)
+
+`upload_session`이 갖던 SemuAgent 내부 source lineage 책임을 분리한다. Slice 3 기간에는 `upload_session`을 compatibility table로 유지하고, 새 원천 추적은 `source_batch`를 기준으로 전환한다.
+
+| 컬럼 | 타입 | 제약 | 용도 |
+|---|---|---|---|
+| `id` | `text` | PK | source batch id |
+| `tenant_id`, `client_id`, `created_by_staff_id` | `text` | FK | tenant isolation·사업장·업로드 담당자 |
+| `source_kind` | `text` enum | default `staff_direct` | `staff_direct` · `customer_upload` · `legacy_upload_session` · `sample_data` |
+| `accounting_period`, `bookkeeping_period_type/start/end` | `text` | nullable period range | 기존 `upload_session` 기간 snapshot 승계 |
+| `display_label` | `text` | nullable | 화면 표시명(`staff_direct_label` 승계) |
+| `legacy_upload_session_id` | `text` | nullable unique FK | backfill/compatibility 추적 |
+| `deleted_at`, `deleted_by_staff_id` | `text` | nullable | source collection soft delete |
+| `created_at`, `updated_at` | `text` | not null | audit |
+
+- `upload_file.source_batch_id`는 nullable FK로 시작한다. migration 0061이 기존 `upload_session` row를 `source_batch`로 backfill하고, 기존 `upload_file` row의 `source_batch_id`를 채운다.
+- 신규 direct-upload는 `upload_session` compatibility row와 `source_batch`를 dual-write한다.
+- `upload_session` 삭제·legacy 컬럼 제거는 Slice 4 schema retirement에서만 판단한다. Slice 3a는 비파괴 additive migration이다.
+
 ### 2.2 이메일 요청·수신함 서브시스템 v1 제외
 
 회사가 스스로 자료를 수집하므로, 사무소가 고객사에 자료를 *요청*하는 이메일 흐름은 v1에서 제외한다.
@@ -83,7 +102,7 @@ tenant (로그인 주체 = 회사/대표)
 |:---|:---|:---|
 | 공통/조직 | `tenant`, `staff`, auth(`user`/`session`/`account`/`organization`/`member`/`invitation`) | 재사용 |
 | 사업장 | `business_entity`(←`client`), `client_document`(←사업장 문서), `client_checklist`·`checklist_template`·`checklist_item`(수집 항목 정의) | 재정의 |
-| 자료수집 | `upload_session`, `upload_file`, `upload_item_declaration`, `request_item_validation`·`request_item_validation_file`(수집 검증) | 재사용 |
+| 자료수집 | `source_batch`(JC-031 Slice 3a 내부 원천 batch), `upload_session`(Slice 4 전 compatibility), `upload_file`, `upload_item_declaration`, `request_item_validation`·`request_item_validation_file`(수집 검증) | 재사용 + source lineage 분리 |
 | 기장검토 | `bookkeeping_material_attribution`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_transaction_purpose_request(_row)`, `bookkeeping_journal_entry_run/row/voucher/voucher_line`, `bookkeeping_fiscal_year_ledger`, `bookkeeping_ledger_month`, `analysis_run`, `material_match` | 재사용 |
 | 급여 | `payroll_excel_template`, `client_payroll_rule_profile(_source)`, `payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`, `payroll_excel_draft` + 아래 4.2 신규 | 재사용 + 신규 필요 |
 | 부가세 | (기존 전용 테이블 없음 — 아래 4.1 신규) | 신규 필요 |
