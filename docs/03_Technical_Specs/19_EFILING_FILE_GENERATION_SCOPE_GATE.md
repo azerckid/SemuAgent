@@ -1,16 +1,16 @@
 # E-Filing File Generation Scope Gate
 > Created: 2026-07-05 11:18
-> Last Updated: 2026-07-05 11:18
+> Last Updated: 2026-07-06 23:05 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-030 — Scope / Research Gate
-Gate: 미통과
-완료: Product Baseline 3-step direction, JC-023 research, JC-024/027 신고 준비 데이터 live
-다음: 대상 세목 확정 + 공식 파일 규격 확보 + 민감 식별정보 정책 결정
-필요 확인: 근로소득 간이지급명세서용 식별정보 처리 방식, 홈택스 최신 전자신고 파일 레이아웃
+현재: JC-030 Slice 0b 완료 — PII 정책 확정(서버 미저장 일회성 입력)
+Gate: 부분 통과 (PII 닫힘 · 최신 파일 레이아웃 미확보)
+완료: Product Baseline 3-step direction, JC-023 research, JC-024/027 신고 준비 데이터 live, [PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
+다음: JC-030-0a 간이지급명세서 최신 전자신고/전산매체 규격 입수
+필요 확인: 공식 layout URL·귀속연도·record 정의
 권장 스킬: rules-product -> UI-First Gate -> Pre-Code Technical Brief
 ```
 
@@ -88,15 +88,14 @@ padding, numeric formatting, trailer/checksum 여부, 암호화/압축 요구를
 JC-024에서 주민등록번호는 저장·검증 범위 밖으로 명시했다. 이는 최소 PII 원칙상 올바른
 결정이었지만, 근로소득 지급명세서 파일 생성에는 소득자 식별정보가 필요할 가능성이 높다.
 
-따라서 다음 중 하나를 별도 결정해야 한다.
+**결정(2026-07-06, JC-030 Slice 0b):** [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md) — **옵션 1 서버 미저장 일회성 입력** 채택.
 
-1. **서버 미저장 일회성 입력**: 사용자가 파일 생성 직전에 식별정보를 입력/업로드하고,
-   서버 저장 없이 생성 세션에서만 사용한다.
-2. **암호화 저장 + 명시 동의**: 별도 PII 설계, 암호화, 접근 감사 로그, 삭제/정정 정책을 둔다.
-3. **간이지급명세서 파일 생성을 보류하고 부가세 등 비직원 PII 세목으로 선회**한다.
+- 파일 생성 직전에만 식별정보를 입력받고, **DB·로그·서버 파일 스토리지에 저장하지 않는다.**
+- `employee_profile`에 주민등록번호 컬럼을 **추가하지 않는다.**
+- 생성 파일은 **다운로드 제공 후 서버 미보관**이 v1 기본이다.
+- 옵션 2(암호화 저장)·옵션 3(부가세 선회)은 **채택하지 않는다.**
 
-현재 SemuAgent 원칙상 1번이 가장 안전한 후보이며, 2번은 별도 보안/법무 검토 없이는
-도입하지 않는다.
+구현 시 Zod 검증·tenant 격리·로그 마스킹은 Pre-Code Brief에서 구체화한다.
 
 ### 5.3 적합성 검정·표시 문구
 
@@ -123,7 +122,7 @@ UI-First Gate에서는 신규 독립 화면보다 **신고지원/지급명세서
 Pre-Code Brief는 아래가 확정된 뒤 작성한다.
 
 - [ ] 최신 전자신고 파일 레이아웃의 출처 URL/문서명/귀속연도
-- [ ] 직원 식별정보 처리 방식(서버 미저장/암호화 저장/보류)
+- [x] 직원 식별정보 처리 방식 — **서버 미저장 일회성 입력** ([PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md))
 - [ ] JC-024 데이터셋 → 전자신고 record field mapping
 - [ ] 파일 생성 포맷(encoding, line ending, padding, fixed-width/CSV/XML 여부)
 - [ ] 검증 규칙과 실패 시 UI 문구
@@ -134,5 +133,6 @@ Pre-Code Brief는 아래가 확정된 뒤 작성한다.
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 3단계 다리
 - **Technical_Specs**: [JC-023 Hometax Autosubmit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 파일변환신고·적합성 검정 리서치
+- **Technical_Specs**: [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md) — PII 일회성 입력 정책
 - **Technical_Specs**: [Payment Statement Pre-Code Brief](./16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md) — JC-024 데이터셋·주민번호 제외 경계
 - **Logic_Progress**: [Backlog JC-030](../04_Logic_Progress/00_BACKLOG.md) — 전자신고 파일 생성·검증 Context Lock
