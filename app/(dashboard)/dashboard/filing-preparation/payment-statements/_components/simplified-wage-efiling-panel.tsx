@@ -1,4 +1,5 @@
 import type { SimplifiedWageEfilingSummary } from '@/lib/efiling-simplified-wage/summary'
+import { SimplifiedWageEfilingGenerateForm } from './simplified-wage-efiling-generate-form'
 
 const LIST_TONE: Record<string, string> = {
   ok: 'text-[#16a34a]',
@@ -33,14 +34,6 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
           >
             검증 결과 보기
           </a>
-          <button
-            type="button"
-            disabled
-            title="파일 생성 API는 다음 슬라이스(2a)에서 제공됩니다"
-            className="cursor-not-allowed rounded-lg border border-company-border bg-[#f4f4f5] px-3 py-1.5 text-xs font-semibold text-company-fg-subtle"
-          >
-            파일 생성 준비
-          </button>
         </div>
       </div>
 
@@ -51,8 +44,8 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
       </div>
 
       <div className="grid gap-2 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StepCard step={1} active title="데이터 확인" desc="JC-024 반기 집계·누락 검토" />
-        <StepCard step={2} title="식별정보 입력" desc="요청 동안만 사용 · DB·로그 미저장" />
+        <StepCard step={1} title="데이터 확인" desc="JC-024 반기 집계·누락 검토" />
+        <StepCard step={2} active title="식별정보 입력" desc="요청 동안만 사용 · DB·로그 미저장" />
         <StepCard step={3} title="사전검증" desc="파일변환신고 전 형식·정합성 확인" />
         <StepCard step={4} title="다운로드 · 홈택스 안내" desc="사용자 직접 변환제출" />
       </div>
@@ -97,6 +90,8 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
           </p>
         </div>
       </div>
+
+      <SimplifiedWageEfilingGenerateForm efiling={efiling} />
 
       <div className="border-t border-[#e9e5ff] bg-[#faf5ff] px-[18px] py-3.5 text-[12px] leading-relaxed text-[#4c1d95]">
         <b className="text-[#3b0764]">책임 경계</b>

@@ -174,6 +174,8 @@ describe('buildSimplifiedWageEfilingSummary', () => {
     expect(summary.stats.readyCount).toBe(1)
     expect(summary.stats.attentionCount).toBe(1)
     expect(summary.stats.piiInputCount).toBe(1)
+    expect(summary.readyEmployees).toHaveLength(1)
+    expect(summary.readyEmployees[0]?.employeeName).toBe('KimRep')
     expect(summary.validationItems.some((i) => i.employeeName === 'Lee')).toBe(true)
     expect(summary.validationItems.some((i) => i.ruleId === 'V-08')).toBe(true)
     expect(summary.fileNamePreview).toBe('SC1234567890')

@@ -29,6 +29,7 @@ export type SimplifiedWageEfilingSummary = {
     piiInputCount: number
     totalEmployees: number
   }
+  readyEmployees: Array<{ employeeKey: string; employeeName: string }>
   activeStep: 1
   formatChecks: EfilingFormatCheck[]
   validationItems: EfilingValidationDisplayItem[]
@@ -181,6 +182,9 @@ export function buildSimplifiedWageEfilingSummary(params: {
       piiInputCount,
       totalEmployees: simplified.length,
     },
+    readyEmployees: simplified
+      .filter((r) => r.status === 'ready')
+      .map((r) => ({ employeeKey: r.employeeKey, employeeName: r.employeeName })),
     activeStep: 1,
     formatChecks,
     validationItems,
