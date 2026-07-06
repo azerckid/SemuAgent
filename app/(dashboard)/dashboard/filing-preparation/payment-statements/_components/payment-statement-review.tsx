@@ -1,10 +1,12 @@
 import Link from 'next/link'
+import type { SimplifiedWageEfilingSummary } from '@/lib/efiling-simplified-wage/summary'
 import type {
   PaymentStatementSummary,
   PaymentStatementTone,
   SimplifiedRow,
   YearEndRow,
 } from '@/lib/payment-statements/summary'
+import { SimplifiedWageEfilingPanel } from './simplified-wage-efiling-panel'
 
 const CHIP_TONE: Record<PaymentStatementTone, string> = {
   ok: 'text-[#16a34a] bg-[#f0fdf4] border-[#bbf7d0]',
@@ -42,7 +44,13 @@ export function PaymentStatementEmptyState({ tenantName }: { readonly tenantName
   )
 }
 
-export function PaymentStatementReview({ summary }: { readonly summary: PaymentStatementSummary }) {
+export function PaymentStatementReview({
+  summary,
+  efiling,
+}: {
+  readonly summary: PaymentStatementSummary
+  readonly efiling: SimplifiedWageEfilingSummary | null
+}) {
   const { context, hero, blockers, simplified, yearEnd } = summary
 
   return (
@@ -127,6 +135,16 @@ export function PaymentStatementReview({ summary }: { readonly summary: PaymentS
           </div>
         </section>
 
+        {efiling && (
+          <>
+            <SectionHead
+              title="전자신고 파일 생성 (JC-030)"
+              hint="근로소득 간이지급명세서 · 홈택스 변환제출용 파일 후보"
+            />
+            <SimplifiedWageEfilingPanel efiling={efiling} />
+          </>
+        )}
+
         {/* 연말정산 */}
         <SectionHead title="연말정산 준비·검토" hint="직원별 연간 지급·기납부 원천세 집계 (정산액 계산은 범위 밖)" />
         <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
@@ -152,7 +170,11 @@ export function PaymentStatementReview({ summary }: { readonly summary: PaymentS
 
         {/* 책임 경계 */}
         <section className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-4 text-[12.5px] text-[#1e3a8a]">
-          <b className="text-[#172554]">책임 경계</b> — 홈택스 입력·파일 생성 전에 확인할 <b>신고 준비 데이터</b>를 정리합니다. 정산액 계산, 전자신고 파일 생성, 홈택스 제출은 이번 범위에 포함하지 않습니다. 자동 제출·자격증명 저장은 하지 않습니다.
+          <b className="text-[#172554]">책임 경계</b> — 홈택스 입력·제출 전에 확인할 <b>신고 준비 데이터</b>를 정리합니다. 정산액 계산·연말정산 자동 제출은 이번 범위에 포함하지 않습니다.
+          {efiling
+            ? ' 간이지급명세서 전자신고 파일 생성(JC-030)은 위 패널에서 파일 후보·사전검증까지만 제공하며, 홈택스 업로드·제출은 사용자가 직접 합니다.'
+            : ' 전자신고 파일 생성·홈택스 제출은 이번 범위에 포함하지 않습니다.'}
+          {' '}자동 제출·자격증명 저장은 하지 않습니다.
         </section>
       </div>
     </div>

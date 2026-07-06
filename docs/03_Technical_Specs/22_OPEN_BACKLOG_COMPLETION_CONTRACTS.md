@@ -145,7 +145,7 @@ Non-goals before done:
 
 Type: 제출 준비물 생성.
 
-Current gate: Pre-Code Brief **approved(2026-07-07)**. Slice **1a** plain record builder done. Next: **1b** validation read model + UI panel (no download). Slice **2b** (NTS-CRYPTO) blocked until spec acquired.
+Current gate: Pre-Code Brief **approved(2026-07-07)**. Slice **1a** plain record builder done. Slice **1b** validation read model + UI panel done (no download). Next: **2a** Generate API plain stream. Slice **2b** (NTS-CRYPTO) blocked until spec acquired.
 
 May start implementation only after:
 

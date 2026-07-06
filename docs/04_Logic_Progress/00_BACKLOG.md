@@ -621,7 +621,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 사용자가 파일을 내려받아 **직접** 홈택스에 업로드·제출한다(자동 제출 아님)
   - [ ] 자격증명 저장·자동 로그인·자동 제출은 하지 않는다(JC-023 원칙 유지)
   - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
-- Document Sync Check: 2026-07-07 Slice **1a** — `lib/efiling-simplified-wage/` plain A/B/C 레코드 빌더·V-01~V-11 검증·13건 테스트. Brief 사용자 승인(2026-07-07). Field Mapping(29)·Brief(30) 머지(#123). **다음: 슬라이스 1b**(패널 검증 UI). 슬라이스 2b(NTS-CRYPTO) 착수 금지.
+- Document Sync Check: 2026-07-07 Slice **1b** — `lib/efiling-simplified-wage/summary.ts` 검증 read model · `payment-statements` JC-030 패널(다운로드 없음). Slice **1a** plain 빌더(#124). **다음: 슬라이스 2a**(Generate API). 슬라이스 2b(NTS-CRYPTO) 착수 금지.
 
 ### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
 
