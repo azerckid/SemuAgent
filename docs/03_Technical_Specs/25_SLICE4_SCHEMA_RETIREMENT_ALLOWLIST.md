@@ -98,7 +98,7 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 | 내부 lineage | `tenant_id`, `client_id`, `accounting_period`, `source`, `staff_direct_label` | A/C | `source_batch`가 primary가 된 뒤 4-5. `source`·`staff_direct_label`은 direct-upload/review UI에서 아직 사용 |
 | 토큰/업로드 compatibility | `token_hash`, `upload_url`, `expires_at`, `last_accessed_at` | C/F | 4-2 즉시 제거 금지. `verifyToken`, `/api/upload/*`, direct-upload raw token 표시 흐름이 남아 있음 |
 | request-event/session branch | `request_event_id`, `request_kind` | C/F | payroll/general 분기와 session completion/read surface가 남아 있어 4-2 즉시 제거 금지 |
-| request email snapshot | `request_email_subject`, `request_email_body`, `request_email_cc` | F/C | 4-2a에서 legacy session/request context surface 정리 또는 이관 후에만 제거 후보 |
+| request email snapshot | `request_email_subject`, `request_email_body` | F/C | subject/body는 4-2b-impl 후 DROP 후보; **`request_email_cc`는 4-2c micro(0065)로 제거** |
 | 분석/검토 JSON | `analysis_notes`, `session_evaluation`, `extracted_criteria`, `additional_criteria` | C/G | AI/review context 사용처 이관 확인 후 제거 또는 compatibility 유지 결정 |
 
 ## 5. Runtime File Allowlist (`upload_session`)

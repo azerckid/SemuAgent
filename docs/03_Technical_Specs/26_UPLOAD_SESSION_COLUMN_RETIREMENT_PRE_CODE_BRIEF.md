@@ -1,16 +1,16 @@
 # JC-031 Slice 4-2 Upload Session Column Retirement Pre-Code Brief
 > Created: 2026-07-06 19:26 KST
-> Last Updated: 2026-07-06 21:55 KST
+> Last Updated: 2026-07-06 22:15 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2b 완료 — AI/review criteria context 감사 및 compatibility retain 결정
-Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-1, Slice 4-2-0~4-2b(이번 PR), prod DB migration 0060 적용(2026-07-06)
-다음: Slice 4-2c `upload_session` table rebuild 준비 — 삭제 후보 컬럼 runtime read/write 0 + prod migration plan
-필요 확인: 없음 (4-2c 착수 전 `request_email_cc` 및 criteria read path 제거 여부를 4-2b-impl에서 선택)
+현재: JC-031 Slice 4-2c 진행 중 — upload_session.request_email_cc table rebuild (migration 0065)
+Gate: 통과 (4-2b DROP 후보 확정)
+완료: Slice 1~3c, Slice 4-0~4-2b, prod DB migration 0060 적용(2026-07-06)
+다음: migration 0065 dev/prod 적용 후 Slice 4-2c 마이크로 완료; 이후 subject/body/criteria는 4-2b-impl 또는 read 0 증명 후
+필요 확인: prod DB 0065 적용은 별도 승인·검증(`foreign_key_check`, row count)
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -176,6 +176,17 @@ test ! -e 'app/(dashboard)/dashboard/sessions/new' && test ! -e 'app/api/session
 
 4-2b-impl 없이도 **4-2c는 `request_email_cc`만** 안전하게 제거할 수 있다. 나머지 컬럼은 §5 gate 미충족.
 
+### 2.5 Slice 4-2c Micro — `request_email_cc` DROP (2026-07-06)
+
+| 항목 | 내용 |
+|---|---|
+| migration | `drizzle/0065_drop_upload_session_request_email_cc.sql` |
+| 코드 | `lib/db/schema.ts`에서 `requestEmailCc` 제거, `session-service.ts` null write 제거 |
+| gate | §2.4.5 조건 충족 — runtime read 0, prod non-null 0 |
+| 적용 | dev DB 먼저 → `PRAGMA foreign_key_check`·row count 검증 → prod는 별도 승인 |
+
+**4-2c micro 완료 후에도** `request_email_subject`/`body`·criteria·`analysis_notes`·`session_evaluation` 컬럼은 유지한다.
+
 ## 3. Column Retirement Classification
 
 ### 3.1 Do Not Remove In Slice 4-2
@@ -193,7 +204,7 @@ test ! -e 'app/(dashboard)/dashboard/sessions/new' && test ! -e 'app/api/session
 
 | 후보 | 4-2b 결정 | 4-2c 조건 |
 |---|---|---|
-| `request_email_cc` | **DROP** — 이관 불필요 | runtime read 0 확인 완료(§2.4.5). 첫 rebuild에 포함 가능 |
+| `request_email_cc` | **DROP 완료(4-2c micro)** | migration 0065 | runtime read 0 확인 완료(§2.4.5) |
 | `extracted_criteria`, `additional_criteria` | **retain (read)** — write dead | optional 4-2b-impl로 AI read 제거 후 DROP |
 | `request_email_subject`, `request_email_body` | **retain** — synthetic write + inference read | 4-2b-impl로 `request_kind`/`staff_direct_label` 대체 후 DROP |
 | `analysis_notes`, `session_evaluation` | **retain** — v1 파이프라인 핵심 | 별도 이관 설계 전 DROP 금지 |
@@ -210,7 +221,7 @@ test ! -e 'app/(dashboard)/dashboard/sessions/new' && test ! -e 'app/api/session
 | **4-2a** | `sessions/new` 및 request-email/context residue 결정 | 없음 또는 코드 삭제만 | **완료:** redirect-blocked UI/API 삭제, live `request_email_*` path 문서화 |
 | **4-2b** | AI/review criteria context 이관 vs compatibility 결정 | 없음 (docs-only) | **완료(이번 PR):** §2.4 필드별 live path 감사, retain vs 4-2c DROP 후보 확정 |
 | **4-2b-impl** (optional) | criteria inference·read path 코드 이관 | 없음 | 4-2c 전 subject/body/criteria DROP unblock (필수 아님) |
-| **4-2c** | 실제 `upload_session` table rebuild | rebuild migration | 제거 대상 컬럼 runtime read/write 0, prod row migration plan, dev/prod `foreign_key_check` |
+| **4-2c** | `request_email_cc` 제거(table rebuild) | migration 0065 | **진행(이번 PR):** schema·코드·0065 SQL, dev/prod 적용은 PR 후 |
 
 4-2b가 끝나기 전에는 4-2c를 시작하지 않는다. 4-2b-impl은 선택적이며 gate를 막지 않는다(`request_email_cc` 단독 DROP 가능).
 

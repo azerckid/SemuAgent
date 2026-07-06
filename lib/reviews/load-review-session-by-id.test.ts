@@ -66,7 +66,6 @@ beforeAll(async () => {
       session_evaluation text,
       request_email_subject text,
       request_email_body text,
-      request_email_cc text,
       extracted_criteria text,
       additional_criteria text,
       last_accessed_at text,

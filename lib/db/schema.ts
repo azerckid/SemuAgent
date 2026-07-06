@@ -468,7 +468,6 @@ export const uploadSession = sqliteTable('upload_session', {
   // 향후 AI 선검증의 기준 원문으로 사용한다.
   requestEmailSubject: text('request_email_subject'),
   requestEmailBody: text('request_email_body'),
-  requestEmailCc: text('request_email_cc'),
   // 요청 메일 본문에서 추출한 AI 검토 기준과 담당자가 별도로 추가한 내부 기준.
   extractedCriteria: text('extracted_criteria'),
   additionalCriteria: text('additional_criteria'),

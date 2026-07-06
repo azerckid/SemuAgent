@@ -652,11 +652,12 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] Slice 4-2-0 준비 — [Brief 26](../03_Technical_Specs/26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md): 컬럼별 retirement 분류·table rebuild gate.
   - [x] Slice 4-2a 구현 — `sessions/new`·`SessionCreateForm`·`extract-criteria` API·`direct-send` 삭제. redirect-blocked schedule/template form에서 extract-criteria UI 제거. `request_email_*` live path는 Brief §2.3에 문서화, 4-2b로 이관 검토.
   - [x] Slice 4-2b 감사/결정 — [Brief 26 §2.4](../03_Technical_Specs/26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md): 필드별 `rg` live path, compatibility retain vs 4-2c DROP 후보 확정. docs-only, 스키마/코드 변경 없음.
+  - [ ] Slice 4-2c micro — `request_email_cc` table rebuild(migration 0065). dev/prod 적용·검증은 PR 머지 후.
 - Acceptance Criteria:
   - [x] 레거시 서브시스템이 단계적으로 제거되며 각 단계에서 tsc/lint/test가 통과한다 (Slice 1c: 207파일 1375건 통과, tsc/eslint/build 클린; Slice 2a: 레거시 요청메일 쓰기 API 12개 410 차단, 회귀 테스트 추가; Slice 2b-1: missing_request runtime side effect 제거, 회귀 테스트 추가; Slice 2b-2: transaction-purpose send 410 차단, 회귀 테스트 추가; Slice 2b-3a: hidden reviews 보충요청 메일 read panel 제거; Slice 2b-3b: hidden emails mail-console read surface 제거; Slice 2b-3c: calendar/client outbound_email read 제거; Slice 2b-3d: dead payroll event loader outbound_email read 제거; Slice 2b-3e: redirect-blocked client event detail/new outbound_email read/UI 제거; Slice 2b-4: stale missing_request draft cleanup side-effect 제거; Slice 2b-5: transaction-purpose send dead-code 제거; Slice 2c: `sent_email_id` FK 제거, purpose draft API 410, dead service/UI 삭제, classification answer/apply 유지; Slice 3b: read model 4개 전환, 206파일 1362건 통과)
   - [x] v1 현행 기능(자료수집·기장·부가세·급여·신고지원·직원명부·리마인드·신고준비)에 영향이 없다 (verifyToken·upload 관련 타깃 15건 + 전체 회귀 통과, 공유 API 미변경; Slice 2a에서 direct-upload·work-email·internal reminder 미변경; Slice 3b에서 direct-upload/source-collection 31건 재확인)
   - [ ] `clients`(사업장)·`billing`·jaryo-admin 등 유지 대상은 보존된다 (Slice 3~4에서 최종 확인)
-- Document Sync Check: Slice 4-0~4-2b 완료. 다음: **Slice 4-2c** `upload_session` table rebuild (`request_email_cc` 단독 DROP 가능, 나머지는 optional 4-2b-impl 또는 read 0 증명 후).
+- Document Sync Check: Slice 4-2c micro(`request_email_cc` DROP, migration 0065) PR 진행 중. dev/prod DB 적용은 머지 후 별도 검증.
 
 ### JC-032 · 사업자 유형 전용 필드 — 신고 준비 dimming 실데이터 연결 (우선순위 높음 · 저위험)
 

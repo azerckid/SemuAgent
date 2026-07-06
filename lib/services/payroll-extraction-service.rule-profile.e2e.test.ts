@@ -126,7 +126,6 @@ beforeAll(async () => {
       deleted_by_staff_id text,
       created_at text NOT NULL,
       request_kind text NOT NULL DEFAULT 'general',
-      request_email_cc text,
       source text NOT NULL DEFAULT 'customer_upload',
       bookkeeping_period_type text,
       bookkeeping_period_start text,

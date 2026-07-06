@@ -97,7 +97,6 @@ export async function createDirectUploadSession(
     analysisNotes: analysisNotes ?? null,
     requestEmailSubject,
     requestEmailBody,
-    requestEmailCc: null,
     extractedCriteria: null,
     additionalCriteria: null,
     requestEventId: requestEventId ?? null,
