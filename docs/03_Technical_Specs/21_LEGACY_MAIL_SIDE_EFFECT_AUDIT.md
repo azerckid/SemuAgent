@@ -1,15 +1,15 @@
 # Legacy Mail Side-effect Audit
 > Created: 2026-07-05 16:39
-> Last Updated: 2026-07-06 22:30 KST
+> Last Updated: 2026-07-06 22:50 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2c micro 완료 — request_email_cc DROP (migration 0065 dev+prod)
+현재: JC-031 의도적 보류(paused) — Slice 4-2c micro까지 완료, 에픽 미완료(todo)
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-2c micro, prod DB migration 0060·0065 적용(2026-07-06)
-다음: optional 4-2b-impl 또는 추가 4-2c micro
+완료: Slice 1~3c, Slice 4-0~4-2c micro, prod DB 0060·0065(2026-07-06)
+다음: 재개 시 4-3+ 또는 optional 4-2b-impl — 필수 아님
 필요 확인: 없음
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```

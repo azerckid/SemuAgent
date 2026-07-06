@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-06 21:55
+> Last Updated: 2026-07-06 22:50
 
 ## Status Legend
 
@@ -43,7 +43,7 @@
 | JC-028 | done | 사업장현황신고 지원 (면세 개인사업자) | `lib/business-status-report`, `app/(dashboard)/dashboard/filing-preparation/business-status-report`, `lib/filing-preparation` | **구현 완료(2026-07-05).** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고 준비 데이터를 검토한다. 수입금액·매입/경비 자료는 자료수집·기장검토의 확정 거래 데이터로 구성하며, 신고 준비 허브의 `business_status` 트랙은 roadmap→live 전환 완료. 홈택스 제출·전자신고 파일·자동제출은 범위 밖. |
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
-| JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 완료선 고정 필요.** Slice 1~2b-5는 완료됐고, 남은 완료선은 [Open Backlog Completion Contracts](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)에 고정한다: transaction-purpose 내부 작업/FK 결정 → source batch 이관 → schema retirement. 새 slice는 completion contract 업데이트 없이는 추가하지 않는다. |
+| JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
 ## Implementation Rule
@@ -653,11 +653,12 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] Slice 4-2a 구현 — `sessions/new`·`SessionCreateForm`·`extract-criteria` API·`direct-send` 삭제. redirect-blocked schedule/template form에서 extract-criteria UI 제거. `request_email_*` live path는 Brief §2.3에 문서화, 4-2b로 이관 검토.
   - [x] Slice 4-2b 감사/결정 — [Brief 26 §2.4](../03_Technical_Specs/26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md): 필드별 `rg` live path, compatibility retain vs 4-2c DROP 후보 확정. docs-only, 스키마/코드 변경 없음.
   - [x] Slice 4-2c micro — `request_email_cc` table rebuild(migration 0065). dev(`semuagent-dev`)·prod(`semuagent`) 적용·검증 완료(2026-07-06): 26 cols, 2 rows, `foreign_key_check` 0.
+  - [x] **의도적 보류(2026-07-06)** — 에픽 미완료·backlog `todo` 유지. Slice 4-2c micro를 안전한 소강점으로 확정. 재개 경로: optional 4-2b-impl 또는 Slice 4-3+ ([Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)).
 - Acceptance Criteria:
   - [x] 레거시 서브시스템이 단계적으로 제거되며 각 단계에서 tsc/lint/test가 통과한다 (Slice 1c: 207파일 1375건 통과, tsc/eslint/build 클린; Slice 2a: 레거시 요청메일 쓰기 API 12개 410 차단, 회귀 테스트 추가; Slice 2b-1: missing_request runtime side effect 제거, 회귀 테스트 추가; Slice 2b-2: transaction-purpose send 410 차단, 회귀 테스트 추가; Slice 2b-3a: hidden reviews 보충요청 메일 read panel 제거; Slice 2b-3b: hidden emails mail-console read surface 제거; Slice 2b-3c: calendar/client outbound_email read 제거; Slice 2b-3d: dead payroll event loader outbound_email read 제거; Slice 2b-3e: redirect-blocked client event detail/new outbound_email read/UI 제거; Slice 2b-4: stale missing_request draft cleanup side-effect 제거; Slice 2b-5: transaction-purpose send dead-code 제거; Slice 2c: `sent_email_id` FK 제거, purpose draft API 410, dead service/UI 삭제, classification answer/apply 유지; Slice 3b: read model 4개 전환, 206파일 1362건 통과)
   - [x] v1 현행 기능(자료수집·기장·부가세·급여·신고지원·직원명부·리마인드·신고준비)에 영향이 없다 (verifyToken·upload 관련 타깃 15건 + 전체 회귀 통과, 공유 API 미변경; Slice 2a에서 direct-upload·work-email·internal reminder 미변경; Slice 3b에서 direct-upload/source-collection 31건 재확인)
   - [ ] `clients`(사업장)·`billing`·jaryo-admin 등 유지 대상은 보존된다 (Slice 3~4에서 최종 확인)
-- Document Sync Check: Slice 4-2c micro 완료(코드 PR #116 + DB 0065 dev/prod). 다음: optional 4-2b-impl 또는 추가 컬럼 4-2c micro.
+- Document Sync Check: JC-031 **paused at 4-2c micro**(2026-07-06). 에픽 `todo` 유지, 완료 아님. 제품 backlog 우선 가능.
 
 ### JC-032 · 사업자 유형 전용 필드 — 신고 준비 dimming 실데이터 연결 (우선순위 높음 · 저위험)
 

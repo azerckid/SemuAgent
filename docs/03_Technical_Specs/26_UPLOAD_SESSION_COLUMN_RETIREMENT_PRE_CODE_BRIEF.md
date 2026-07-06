@@ -1,16 +1,16 @@
 # JC-031 Slice 4-2 Upload Session Column Retirement Pre-Code Brief
 > Created: 2026-07-06 19:26 KST
-> Last Updated: 2026-07-06 22:30 KST
+> Last Updated: 2026-07-06 22:50 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2c micro 완료 — upload_session.request_email_cc DROP (migration 0065 dev+prod)
-Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-2c micro(이번), prod DB migration 0060·0065 적용(2026-07-06)
-다음: optional 4-2b-impl 또는 subject/body/criteria runtime read 0 증명 후 추가 4-2c micro
-필요 확인: 없음
+현재: JC-031 의도적 보류(paused) — Slice 4-2c micro까지 완료, 에픽은 미완료(todo 유지)
+Gate: 통과 (v1 direct-upload·AI 파이프라인 정상)
+완료: Slice 1~3c, Slice 4-0~4-2c micro, prod DB migration 0060·0065(2026-07-06)
+다음: 재개 시 optional 4-2b-impl 또는 Slice 4-3+ — 필수 아님, 제품 backlog 우선 가능
+필요 확인: 없음 (재개 전 completion contract §3 JC-031 Paused 확인)
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -193,6 +193,23 @@ test ! -e 'app/(dashboard)/dashboard/sessions/new' && test ! -e 'app/api/session
 | semuagent (prod) | absent | 26 | 2 | 동일 | 0 |
 
 **4-2c micro 완료 후에도** `request_email_subject`/`body`·criteria·`analysis_notes`·`session_evaluation` 컬럼은 유지한다.
+
+### 2.6 Epic Pause (2026-07-06)
+
+JC-031 **에픽 전체는 미완료**다. backlog 상태는 `todo`를 유지하고, **의도적 보류(paused)** 로 둔다.
+
+| 구분 | 내용 |
+|---|---|
+| 완료된 것 | Slice 4-2c **micro** — `request_email_cc` DROP(코드·DB 0065) |
+| 보류 이유 | 남은 `upload_session` 컬럼은 v1 파이프라인에서 **실제 사용 중**; 억지 정리 시 회귀 리스크만 증가 |
+| 에픽 미완료 | Slice 4-3(`outbound_email` 등), 4-4(downstream FK), 4-5(`upload_session` 테이블 은퇴) 미착수 |
+
+**재개 시 우선순위(필수 아님):**
+
+1. **Slice 4-3+** — runtime INSERT 0인 dead schema(`outbound_email`, request-event) 정리
+2. **optional 4-2b-impl** — live inference 이관 후 추가 4-2c micro(subject/body/criteria)
+
+제품 backlog(JC-030 등)를 먼저 진행해도 된다. 재개 전 [Completion Contract §3 JC-031](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) Paused 절을 확인한다.
 
 ## 3. Column Retirement Classification
 
