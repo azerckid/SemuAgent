@@ -600,7 +600,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 3단계 다리(입력 가이드 → 전자신고 파일 생성·검증 → 사용자 승인 자동제출)의 중간 단계. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 확정 데이터 준비→handoff 경계.
 - Related Domain: 신고지원(JC-013) 확정 산출물 · 부가세(JC-011)·급여/원천세(JC-012) read model. 자동제출 후속은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
-- Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상·Gate. [PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md). [Layout Acquisition](../03_Technical_Specs/28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md). [Field Mapping](../03_Technical_Specs/29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md). [Pre-Code Brief](../03_Technical_Specs/30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md) — Slice 1(2026-07-07).
+- Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상·Gate. [PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md). [Layout Acquisition](../03_Technical_Specs/28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md). [Field Mapping](../03_Technical_Specs/29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md). [Pre-Code Brief](../03_Technical_Specs/30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md). [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) — Slice 2b 별도 트랙.
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-030](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 전자신고 파일 생성·검증의 착수 게이트와 done 조건
 - Related Research: [JC-023 Hometax Auto-submit Research §2.1·§2.5](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 세목별 전자신고 파일 규격·파일변환신고 관문·적합성 검정. JC-030은 이 리서치의 "파일 생성·파일변환신고까지"의 실현가능 구간을 독립 기능으로 승격한 것.
 - Related UI Docs: [UI Design §4.11](../02_UI_Screens/01_UI_DESIGN.md) — 지급명세서 화면에 JC-030 파일 생성 패널 확장
@@ -621,7 +621,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 사용자가 파일을 내려받아 **직접** 홈택스에 업로드·제출한다(자동 제출 아님)
   - [ ] 자격증명 저장·자동 로그인·자동 제출은 하지 않는다(JC-023 원칙 유지)
   - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
-- Document Sync Check: 2026-07-07 Slice **2a**·**3** — plain Generate API(#126) · 홈택스 변환제출 deep link·운영 체크리스트(#127). [NTS Crypto Spec Acquisition](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) — fcrypt API 경로 확정·DLL 샘플 입수. **다음: 슬라이스 2b** 라운드트립·아키텍처 결정 후 `encrypt.ts`. v1 plain 다운로드·사전검증·홈택스 안내까지 실사용 가능.
+- Document Sync Check: 2026-07-07 **JC-030 v1 완결** — Slices 1a–2a·3 on main(#126·#127). [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md)(#128) — fcrypt 입수·트랙 분리. **Slice 2b** = 윈도우 microservice 별도 트랙·보류(DLL 실행 검증 선행).
 
 ### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
 

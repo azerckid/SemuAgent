@@ -139,7 +139,7 @@ z.object({
 | **1a** | `build-records` 순수 함수 + V-01~V-11 테스트 | Brief 승인 — **구현 완료(2026-07-07)** `lib/efiling-simplified-wage/` |
 | **1b** | 패널 UI + validation read model (다운로드 없이 검증만) | 1a — **구현 완료(2026-07-07)** `summary.ts` + `payment-statements` 패널 |
 | **2a** | Generate API plain 파일 스트림 + PII 입력 폼 | 1a — **구현 완료(2026-07-07)** generate API·plain 다운로드 |
-| **2b** | fcrypt 암호화 + 비밀번호 입력 | [NTS Crypto Spec](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) 입수·라운드트립 |
+| **2b** | fcrypt 암호화 + 윈도우 microservice | **별도 트랙·보류** — [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) |
 | **3** | 홈택스 업로드 가이드 deep link · 운영 체크리스트 | **구현 완료(2026-07-07)** `hometax-guide.ts` + 패널 안내 |
 
 ## 8. Acceptance Criteria (Implementation)
