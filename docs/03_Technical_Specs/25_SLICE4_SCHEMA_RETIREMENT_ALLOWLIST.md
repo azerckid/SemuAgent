@@ -33,7 +33,7 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 | 패턴 | TS/TSX 파일 수 | SQL migration 파일 수 |
 |---|---:|---:|
 | `upload_session\|uploadSession` | 117 | 29 |
-| `outbound_email\|outboundEmail` | 12 (런타임 5, 테스트 7) | 4 |
+| `outbound_email\|outboundEmail` | 12 (런타임 5, 테스트 7) | 5 |
 
 테스트 파일(`.test.ts`, `.e2e.test.ts`)은 allowlist **T — test/fixture**로 일괄 분류한다. Slice 4에서 런타임을 제거할 때 테스트 fixture를 함께 정리한다.
 
@@ -181,7 +181,7 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 ### I — schema / migration
 
 - `lib/db/schema.ts`
-- `drizzle/0000`~`0064` 중 `upload_session`/`outbound_email` 참조 migration 29+4건
+- `drizzle/0000`~`0064` 중 `upload_session`/`outbound_email` 참조 migration 29+5건
 
 ## 6. `outbound_email` Allowlist
 
