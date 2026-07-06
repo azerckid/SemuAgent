@@ -621,7 +621,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 사용자가 파일을 내려받아 **직접** 홈택스에 업로드·제출한다(자동 제출 아님)
   - [ ] 자격증명 저장·자동 로그인·자동 제출은 하지 않는다(JC-023 원칙 유지)
   - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
-- Document Sync Check: 2026-07-07 Slice **2a**·**3** — plain Generate API(#126) · 홈택스 변환제출 deep link·운영 체크리스트 패널. **차단:** 슬라이스 2b(NTS-CRYPTO, 스펙 확보 전). v1 plain 파일 다운로드·사전검증·홈택스 안내까지 실사용 가능.
+- Document Sync Check: 2026-07-07 Slice **2a**·**3** — plain Generate API(#126) · 홈택스 변환제출 deep link·운영 체크리스트(#127). [NTS Crypto Spec Acquisition](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) — fcrypt API 경로 확정·DLL 샘플 입수. **다음: 슬라이스 2b** 라운드트립·아키텍처 결정 후 `encrypt.ts`. v1 plain 다운로드·사전검증·홈택스 안내까지 실사용 가능.
 
 ### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
 
