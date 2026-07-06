@@ -1,17 +1,17 @@
 # Legacy Upload/Email Retirement Audit
 > Created: 2026-07-05 14:30
-> Last Updated: 2026-07-06 15:35 KST
+> Last Updated: 2026-07-06 19:26 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-1 완료 — legacy mail dead code 제거
-Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-1
-다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
-필요 확인: prod DB migration 0060 적용 여부
-권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
+현재: JC-031 Slice 4-2-0 완료 — upload_session 컬럼 retirement 범위와 차단 조건 고정
+Gate: Pre-Code Brief / docs-only / migration 미착수
+완료: Slice 1~3c, Slice 4-0~4-1, Slice 4-2-0
+다음: Slice 4-2a legacy session/request context surface 정리 결정 및 구현
+필요 확인: prod DB migration 0060 적용 여부, /dashboard/sessions/new 및 request-event snapshot 유지 여부
+권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
 ## 1. Purpose
@@ -160,4 +160,5 @@ Slice 2b-1~2b-5의 상세 완료 상태는 [Legacy Mail Side-effect Audit](./21_
 - **Technical_Specs**: [DB Schema](./03_DB_SCHEMA.md) — `upload_session`, `outbound_email`, 파생 FK 현황
 - **Technical_Specs**: [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — JC-031 최종 done 조건과 남은 slice 고정
 - **Technical_Specs**: [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md) — `upload_session`/`outbound_email` 잔존 참조 분류·table rebuild 전략
+- **Technical_Specs**: [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md) — Slice 4-2 컬럼별 retirement 범위·차단 조건·table rebuild gate
 - **Technical_Specs**: [Legacy Mail Side-effect Audit](./21_LEGACY_MAIL_SIDE_EFFECT_AUDIT.md) — Slice 2b 보충요청 초안 side effect·transaction-purpose FK 감사

@@ -1,16 +1,16 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-06 15:35 KST
+> Last Updated: 2026-07-06 19:26 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-1 완료 — legacy mail dead code 제거
-Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-1
-다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
-필요 확인: prod DB migration 0060 적용 여부
+현재: JC-031 Slice 4-2-0 완료 — upload_session 컬럼 retirement 범위와 차단 조건 고정
+Gate: Pre-Code Brief / docs-only / migration 미착수
+완료: Slice 1~3c, Slice 4-0~4-1, Slice 4-2-0
+다음: Slice 4-2a legacy session/request context surface 정리 결정 및 구현
+필요 확인: prod DB migration 0060 적용 여부, /dashboard/sessions/new 및 request-event snapshot 유지 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -336,3 +336,4 @@ Slice 3 전체 완료 기준:
 - [DB Schema](./03_DB_SCHEMA.md)
 - [Backlog JC-031](../04_Logic_Progress/00_BACKLOG.md)
 - [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md)
+- [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md)

@@ -1,17 +1,17 @@
 # Legacy Mail Side-effect Audit
 > Created: 2026-07-05 16:39
-> Last Updated: 2026-07-06 14:22
+> Last Updated: 2026-07-06 19:26 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-0 완료 — upload_session·outbound_email allowlist 감사
-Gate: 통과
-완료: Slice 1~2c, Slice 3a~3c-5, Slice 4-0 allowlist
-다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
-필요 확인: prod DB migration 0060 적용 여부
-권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
+현재: JC-031 Slice 4-2-0 완료 — upload_session 컬럼 retirement 범위와 차단 조건 고정
+Gate: Pre-Code Brief / docs-only / migration 미착수
+완료: Slice 1~3c, Slice 4-0~4-1, Slice 4-2-0
+다음: Slice 4-2a legacy session/request context surface 정리 결정 및 구현
+필요 확인: prod DB migration 0060 적용 여부, /dashboard/sessions/new 및 request-event snapshot 유지 여부
+권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
 ## 1. Purpose
@@ -153,4 +153,5 @@ JC-031의 최종 done 조건과 남은 slice 고정 규칙은 [Open Backlog Comp
 - [DB Schema](./03_DB_SCHEMA.md)
 - [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
 - [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
+- [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md)
 - [Backlog JC-031](../04_Logic_Progress/00_BACKLOG.md)

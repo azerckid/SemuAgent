@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-05 23:28
+> Last Updated: 2026-07-06 19:26 KST
 
 ## 0. Purpose
 
@@ -174,7 +174,7 @@ Non-goals before done:
 
 Type: 기반 정리.
 
-Current state: Slice 1 through Slice 4-1 documented. Slice 3 downstream FK migration is complete. [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md) classifies remaining `upload_session`/`outbound_email` references and defines 4-1..4-5 sub-slices.
+Current state: Slice 1 through Slice 4-2-0 documented. Slice 3 downstream FK migration is complete. [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md) classifies remaining `upload_session`/`outbound_email` references, and [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md) fixes the Slice 4-2 blockers before any table rebuild.
 
 Remaining slices:
 
@@ -200,7 +200,9 @@ Remaining slices:
 3. **Slice 4 — Schema retirement**
    - **4-0 complete:** allowlist audit in [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md). `upload_session` 116 TS/TSX refs categorized; `outbound_email` runtime INSERT paths none.
    - **4-1 complete:** removed `createSessionAndSend`, `lib/email/missing-request.ts`, `period-gap-missing-request`, `missing-request-targets`, and `lib/validations/session.ts`. `session-service.ts` retains only `createDirectUploadSession`. No DB migration.
-   - **4-2 next:** `upload_session` legacy portal/mail column retirement (table rebuild).
+   - **4-2-0 complete:** [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md) confirms immediate table rebuild is unsafe. `token_hash/upload_url/expires_at/request_kind/request_event_id/request_email_*` and AI/review context columns still have runtime readers or compatibility responsibilities.
+   - **4-2a next:** decide and implement legacy `sessions/new` / request-email context surface cleanup or migration.
+   - **4-2c later:** perform `upload_session` table rebuild only after target columns have runtime read/write 0 and prod migration plan.
    - Remove or quarantine remaining `outbound_email`, request-event, mail-console, and legacy upload-session schema pieces after FK migration.
    - Keep only explicitly approved compatibility surfaces, if any, and document why they remain.
 
@@ -232,3 +234,4 @@ If a later audit finds another legacy surface, it must be classified into one of
 - [E-Filing File Generation Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md)
 - [Legacy Upload/Email Retirement Audit](./20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)
 - [Legacy Mail Side-effect Audit](./21_LEGACY_MAIL_SIDE_EFFECT_AUDIT.md)
+- [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md)

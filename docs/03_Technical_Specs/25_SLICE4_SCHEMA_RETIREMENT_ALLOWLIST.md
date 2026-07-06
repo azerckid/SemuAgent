@@ -1,16 +1,16 @@
 # JC-031 Slice 4 Schema Retirement Allowlist
 > Created: 2026-07-06 15:25 KST
-> Last Updated: 2026-07-06 15:35 KST
+> Last Updated: 2026-07-06 19:26 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-1 완료 — legacy mail dead code 제거(이번 PR)
-Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-1
-다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
-필요 확인: prod DB migration 0060 적용 여부
+현재: JC-031 Slice 4-2-0 완료 — upload_session 컬럼 retirement 범위와 차단 조건 고정
+Gate: Pre-Code Brief / docs-only / migration 미착수
+완료: Slice 1~3c, Slice 4-0~4-1, Slice 4-2-0
+다음: Slice 4-2a legacy session/request context surface 정리 결정 및 구현
+필요 확인: prod DB migration 0060 적용 여부, /dashboard/sessions/new 및 request-event snapshot 유지 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -95,9 +95,11 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 
 | 컬럼 그룹 | 예시 | 카테고리 | retire 시점 |
 |---|---|---|---|
-| 내부 lineage | `tenant_id`, `client_id`, `accounting_period`, `source`, `staff_direct_label` | A | `source_batch`가 primary가 된 뒤 4-5 |
-| 외부 포털/메일 | `token_hash`, `upload_url`, `request_email_*`, `request_event_id`, `request_kind` | **F** | 4-2 column retirement (table rebuild) |
-| 분석/검토 JSON | `analysis_notes`, `session_evaluation`, `extracted_criteria` | C/G | 사용처 이관 확인 후 4-2 또는 유지 |
+| 내부 lineage | `tenant_id`, `client_id`, `accounting_period`, `source`, `staff_direct_label` | A/C | `source_batch`가 primary가 된 뒤 4-5. `source`·`staff_direct_label`은 direct-upload/review UI에서 아직 사용 |
+| 토큰/업로드 compatibility | `token_hash`, `upload_url`, `expires_at`, `last_accessed_at` | C/F | 4-2 즉시 제거 금지. `verifyToken`, `/api/upload/*`, direct-upload raw token 표시 흐름이 남아 있음 |
+| request-event/session branch | `request_event_id`, `request_kind` | C/F | payroll/general 분기와 session completion/read surface가 남아 있어 4-2 즉시 제거 금지 |
+| request email snapshot | `request_email_subject`, `request_email_body`, `request_email_cc` | F/C | 4-2a에서 legacy session/request context surface 정리 또는 이관 후에만 제거 후보 |
+| 분석/검토 JSON | `analysis_notes`, `session_evaluation`, `extracted_criteria`, `additional_criteria` | C/G | AI/review context 사용처 이관 확인 후 제거 또는 compatibility 유지 결정 |
 
 ## 5. Runtime File Allowlist (`upload_session`)
 
@@ -211,14 +213,16 @@ ALTER TABLE <table>_new RENAME TO <table>;
 ### 7.2 권장 순서
 
 ```text
-Phase 1 (4-1)  Dead code 제거 — DB 변경 없음
-Phase 2 (4-2)  upload_session 레거시 컬럼 제거 (portal/mail 필드) — upload_session table rebuild
-Phase 3 (4-3)  outbound_email·request-event 계열 table drop (runtime 0 확인 후)
-Phase 4 (4-4)  Downstream upload_session_id 제거 — §4.1 leaf → root 순
-               권장: journal row/voucher → run → classification → material/link
-               → validation/declaration → payroll extraction → upload_file
-Phase 5 (4-5)  upload_session table retirement 또는 compatibility view
-               adaptive_structure_* · audit_proof retention 정책 반영
+Phase 1 (4-1)    Dead code 제거 — DB 변경 없음
+Phase 2 (4-2-0)  upload_session 컬럼 retirement brief — DB 변경 없음
+Phase 3 (4-2a/b) legacy session/request context surface 정리·이관 — 필요 시 코드/문서 변경
+Phase 4 (4-2c)   upload_session 레거시 컬럼 제거 — 조건 충족 후 table rebuild
+Phase 5 (4-3)    outbound_email·request-event 계열 table drop (runtime 0 확인 후)
+Phase 6 (4-4)    Downstream upload_session_id 제거 — §4.1 leaf → root 순
+                 권장: journal row/voucher → run → classification → material/link
+                 → validation/declaration → payroll extraction → upload_file
+Phase 7 (4-5)    upload_session table retirement 또는 compatibility view
+                 adaptive_structure_* · audit_proof retention 정책 반영
 ```
 
 ### 7.3 Guardrails
@@ -237,7 +241,10 @@ Phase 5 (4-5)  upload_session table retirement 또는 compatibility view
 |---|---|---|---|
 | **4-0** | allowlist 감사 (이 문서) | 없음 | Slice 3c 완료 |
 | **4-1** | dead code: `createSessionAndSend`, `missing-request` 모듈 등 | 없음 | **완료** |
-| **4-2** | `upload_session` 레거시 컬럼 제거 | rebuild migration | 4-1, portal 필드 read 0 |
+| **4-2-0** | `upload_session` 컬럼 retirement brief: 삭제 후보와 차단 조건 고정 | 없음 | **완료** — [Brief 26](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md) |
+| **4-2a** | redirect-blocked `sessions/new`·request-email/context residue 정리 결정 및 구현 | 없음 또는 코드 삭제 | 4-2-0, 사용자 승인 |
+| **4-2b** | AI/review criteria context 이관 또는 compatibility 유지 결정 | 필요 시 additive migration | 4-2a |
+| **4-2c** | 조건 충족된 `upload_session` 레거시 컬럼 제거 | rebuild migration | 삭제 대상 컬럼 runtime read/write 0 |
 | **4-3** | `outbound_email`, request-event schema retirement | drop/rebuild | runtime INSERT 0 (현재 충족) |
 | **4-4** | downstream `upload_session_id` 제거 | per-table rebuild 0065+ | dual-write 안정, read prefer 검토 |
 | **4-5** | `upload_session` table retirement | final migration | 4-4 완료, retention 정책 |
@@ -264,6 +271,7 @@ Slice 4 각 sub-slice PR 머지 후:
 ## 11. Related Documents
 
 - [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md)
+- [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md)
 - [Legacy Upload/Email Retirement Audit](./20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)
 - [Legacy Mail Side-effect Audit](./21_LEGACY_MAIL_SIDE_EFFECT_AUDIT.md)
 - [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
