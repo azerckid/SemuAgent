@@ -145,7 +145,7 @@ Non-goals before done:
 
 Type: 제출 준비물 생성.
 
-Current gate: scope gate partially passed — PII policy and simplified-wage layout acquisition path decided (2026-07-06); implementation blocked until Pre-Code Brief field mapping and UI-First Gate.
+Current gate: scope gate partially passed — PII policy, layout acquisition path (2026-07-06), and UI-First Gate (2026-07-07) closed; implementation blocked until Pre-Code Brief field mapping and latest HWP download.
 
 May start implementation only after:
 
@@ -154,7 +154,7 @@ May start implementation only after:
 - The latest official file layout field definitions are mapped in Pre-Code Brief (from HWP + errata for the target submission period).
 - The target tax type is fixed for v1. Current first candidate is 근로소득 간이지급명세서.
 - Validation rules are defined from the official layout.
-- UI-First Gate shows file-generation status, validation errors, and responsibility boundary.
+- [x] UI-First Gate shows file-generation status, validation errors, and responsibility boundary — [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html), approved 2026-07-07.
 - Pre-Code Brief maps SemuAgent's confirmed data to file fields.
 
 Done means:

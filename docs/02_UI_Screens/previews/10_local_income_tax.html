@@ -43,6 +43,10 @@
   .nav-item:hover { background: #f4f4f5; color: var(--fg); }
   .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 600; }
   .nav-item .cnt { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; border-radius: 999px; padding: 1px 7px; }
+  .nav-group { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item.active-parent { background: #fafafa; color: var(--fg); font-weight: 600; }
+  .nav-item.sub { padding: 6px 10px 6px 28px; font-size: 12.5px; }
+  .nav-item.sub .ico { width: 14px; font-size: 11px; opacity: .55; }
   .sidebar .spacer { flex: 1; }
   .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
   .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
@@ -128,7 +132,12 @@
     <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
     <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여</a>
     <a href="05_filing_support.html" class="nav-item"><span class="ico">↧</span> 신고지원</a>
-    <a href="08_filing_preparation.html" class="nav-item active"><span class="ico">◷</span> 신고 준비 <span class="cnt">3</span></a>
+    <div class="nav-group">
+      <a href="08_filing_preparation.html" class="nav-item active-parent"><span class="ico">◷</span> 신고 준비 <span class="cnt">3</span></a>
+      <a href="09_payment_year_end.html" class="nav-item sub"><span class="ico">›</span> 지급명세서·연말정산</a>
+      <a href="10_local_income_tax.html" class="nav-item sub active"><span class="ico">›</span> 지방소득세</a>
+      <a href="11_business_status_report.html" class="nav-item sub"><span class="ico">›</span> 사업장현황신고</a>
+    </div>
     <div class="nav-label">관리</div>
     <div class="nav-item"><span class="ico">⚙</span> 설정</div>
     <a href="06_employee_directory.html" class="nav-item"><span class="ico">◍</span> 직원 명부</a>
