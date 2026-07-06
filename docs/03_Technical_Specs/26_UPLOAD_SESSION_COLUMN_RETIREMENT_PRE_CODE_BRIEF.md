@@ -1,16 +1,16 @@
 # JC-031 Slice 4-2 Upload Session Column Retirement Pre-Code Brief
 > Created: 2026-07-06 19:26 KST
-> Last Updated: 2026-07-06 20:20 KST
+> Last Updated: 2026-07-06 21:55 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2a 완료 — redirect-blocked session/request context residue 제거
+현재: JC-031 Slice 4-2b 완료 — AI/review criteria context 감사 및 compatibility retain 결정
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-1, Slice 4-2-0~4-2a(이번 PR), prod DB migration 0060 적용(2026-07-06)
-다음: Slice 4-2b AI/review criteria context 이관 여부 결정
-필요 확인: 없음
+완료: Slice 1~3c, Slice 4-0~4-1, Slice 4-2-0~4-2b(이번 PR), prod DB migration 0060 적용(2026-07-06)
+다음: Slice 4-2c `upload_session` table rebuild 준비 — 삭제 후보 컬럼 runtime read/write 0 + prod migration plan
+필요 확인: 없음 (4-2c 착수 전 `request_email_cc` 및 criteria read path 제거 여부를 4-2b-impl에서 선택)
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -67,6 +67,115 @@ Slice 4-2의 원래 표현은 `upload_session` 레거시 portal/mail 컬럼 reti
 
 **4-2b**에서 criteria/review context 이관을 검토하기 전까지 `request_email_*` 컬럼 삭제는 금지다.
 
+### 2.4 Slice 4-2b Criteria Context Audit (2026-07-06)
+
+감사 기준: main `3dd203f`(PR #114 머지 후), 2026-07-06 KST.
+
+```bash
+# runtime 후보 (test/e2e 제외)
+rg -l 'analysisNotes|extractedCriteria|additionalCriteria|sessionEvaluation|requestEmailSubject|requestEmailBody|requestEmailCc' \
+  --glob '*.{ts,tsx}' | grep -v '\.test\.' | grep -v '\.e2e\.'
+
+# 4-2a 삭제 확인 (파일시스템 기준 0건)
+test ! -e 'app/(dashboard)/dashboard/sessions/new' && test ! -e 'app/api/sessions/extract-criteria'
+```
+
+**Redirect-blocked UI:** `sessions/layout.tsx`·`reviews/layout.tsx`가 `/dashboard`로 redirect하므로 `session-detail.tsx`·`reviews/page.tsx`는 **도달 불가 UI**다. 아래 표의 "UI read"는 코드 잔존이며 live API/파이프라인과 구분한다.
+
+**`client.analysis_notes`와 `upload_session.analysis_notes`는 별개다.** 회사 설정·clients API·`client-manager.tsx`의 `analysisNotes`는 `client` 테이블 컬럼이며 Slice 4-2b 범위 밖이다.
+
+#### 2.4.1 `analysis_notes` (`upload_session`)
+
+| 구분 | 파일 (runtime, test 제외) |
+|---|---|
+| **WRITE live** | `lib/services/session-service.ts` (`createDirectUploadSession`), `app/api/staff-direct-upload/route.ts`, `lib/first-run-sample/seed.ts` |
+| **READ live** | `lib/ai/session-eval.ts` (`sessionAnalysisNotes`), `lib/ai/analyze.ts` (`session.analysisNotes`) |
+| **UI read (redirect-blocked)** | `app/(dashboard)/dashboard/sessions/[id]/_components/session-detail.tsx` |
+
+**4-2b 결정: compatibility retain (이관 보류).**
+
+- **근거:** direct-upload 검토 메모가 세션 단위로 기록되고, 자료 제출 후 `upload/submit` → session evaluation 파이프라인이 세션 메모를 프롬프트에 포함한다. `client.analysis_notes`(회사 상시 기준)와 역할이 다르다.
+- **이관하지 않는 이유:** `source_batch`에 대응 컬럼이 없고, additive migration + dual-write + read switch는 docs-first 범위를 넘는다. optional 후속 **4-2b-impl**에서 `source_batch` metadata 또는 `upload_item_declaration` snapshot으로 옮길 수 있으나 4-2c 전 필수는 아니다.
+- **4-2c:** 컬럼 DROP 금지 (live write/read 유지).
+
+#### 2.4.2 `extracted_criteria` / `additional_criteria`
+
+| 구분 | 파일 (runtime, test 제외) |
+|---|---|
+| **WRITE live** | `lib/services/session-service.ts` — **항상 `null`만 기록** (4-2a 이후 GIWA 메일 추출 write path 없음) |
+| **READ live** | `lib/ai/session-eval.ts`, `lib/ai/analyze.ts`, `lib/ai/prompt.ts` |
+| **UI read (redirect-blocked)** | `session-detail.tsx` |
+| **기타** | `shouldMergeDefaultCriteria` 분기(`session-eval.ts`): 두 컬럼이 비어 있으면 `request_item_validation` + default criteria 병합 |
+
+**4-2b 결정: compatibility retain (read 유지, write 사실상 dead).**
+
+- **근거:** 신규 direct-upload 세션은 항상 null이지만, prod snapshot(§2.1) 2건이 legacy 값을 보유할 수 있고, evaluation/analyze 프롬프트가 여전히 컬럼을 읽는다.
+- **이관하지 않는 이유:** GIWA `extract-criteria` API는 4-2a에서 삭제됐고, 대체 write path가 없다. `client.analysis_notes`로 이관하면 세션별·회사별 기준 경계가 깨진다. 별도 `review_context` 테이블은 Slice 4-5급 설계다.
+- **4-2c:** **DROP 후보** — 단, `session-eval`·`analyze`·`prompt` read 제거(optional **4-2b-impl**) 또는 legacy prod row 2건 폐기 정책 확정 후에만 rebuild 목록에 넣는다.
+
+#### 2.4.3 `session_evaluation`
+
+| 구분 | 파일 (runtime, test 제외) |
+|---|---|
+| **WRITE live** | `lib/ai/session-eval.ts` (평가 결과 JSON `UPDATE`) |
+| **WRITE null** | `lib/upload-session-revision.ts` (revision 시 초기화) |
+| **READ live** | `lib/reviews/build-review-sessions.ts`, `lib/reviews/adaptive-structuring-eligibility-context.ts` |
+| **UI read (redirect-blocked)** | `session-detail.tsx` |
+| **트리거 (live API)** | `app/api/upload/submit/route.ts`, `app/api/sessions/evaluate/route.ts`, `app/api/sessions/[id]/start-evaluation/route.ts` |
+
+**4-2b 결정: compatibility retain (이관 보류).**
+
+- **근거:** v1 자료 제출 직후 세션 평가 결과가 review/adaptive-structuring eligibility 입력으로 쓰인다. 별도 결과 테이블 이관은 스키마·dual-write·read switch가 필요하다.
+- **이관하지 않는 이유:** `source_batch` lineage와 무관한 **세션 검토 산출물**이며, Slice 3에서 downstream FK 이관 대상이 아니었다(Allowlist §3c-5와 동일 provenance 성격).
+- **4-2c:** 컬럼 DROP 금지.
+
+#### 2.4.4 `request_email_subject` / `request_email_body`
+
+| 구분 | 파일 (runtime, test 제외) |
+|---|---|
+| **WRITE live** | `lib/services/session-service.ts` — direct-upload **synthetic** subject/body |
+| **READ live** | `lib/ai/session-eval.ts`, `lib/review/default-criteria-data.ts` (`inferGeneralDefaultCriteriaWorkType`), `lib/bookkeeping/classification-service.ts`, `lib/reviews/build-review-sessions.ts`, `lib/reviews/adaptive-structuring-eligibility-context.ts` |
+| **UI read (redirect-blocked)** | `session-detail.tsx` |
+| **4-2a 삭제 확인** | `sessions/new`·`extract-criteria` — 파일시스템 **0건** (`rg` 인덱스 잔존 가능, `test ! -e`로 재검증) |
+
+**4-2b 결정: compatibility retain (단기); inference 이관은 optional 4-2b-impl.**
+
+- **근거:** direct-upload는 실제 요청 메일이 없지만, synthetic subject/body가 work-type 추론·분류 프롬프트·review context에 쓰인다.
+- **이관하지 않는 이유:** `request_kind`·`staff_direct_label`·`source_batch.display_label`로 대체 가능하나 **코드 변경**이 필요하다. docs-first 4-2b에서는 결정만 고정하고 구현은 4-2b-impl 또는 4-2c 직전 micro-slice로 분리한다.
+- **4-2c:** subject/body DROP는 **4-2b-impl 완료 후** 또는 read path 0건 증명 후. `request_email_cc`와 동시 삭제하지 않는다(cc는 먼저 제거 가능).
+
+#### 2.4.5 `request_email_cc`
+
+| 구분 | 파일 (runtime, test 제외) |
+|---|---|
+| **WRITE live** | `lib/services/session-service.ts` — **항상 `null`** |
+| **READ live** | **0건** (`requestEmailCc` / `request_email_cc`, schema·test·4-2a 삭제 잔재 `session-create-form` rg 히트 제외 시 파일시스템 0) |
+
+**4-2b 결정: 4-2c DROP 후보 (이관 불필요).**
+
+- **근거:** runtime read 없음, write는 null 고정, prod snapshot(§2.1)에서도 non-null 0건.
+- **이관 vs retain:** 이관 대상 없음. table rebuild 시 컬럼 제거만 하면 된다.
+
+#### 2.4.6 4-2b Decision Summary
+
+| 컬럼 | 결정 | 4-2c 처리 | 판단 근거 한 줄 |
+|---|---|---|---|
+| `analysis_notes` | **compatibility retain** | DROP 금지 | direct-upload 메모 write + AI eval/analyze read live |
+| `extracted_criteria` | **compatibility retain (read)** | DROP 후보 (read 제거 후) | write dead, AI read + prod legacy row 가능 |
+| `additional_criteria` | **compatibility retain (read)** | DROP 후보 (read 제거 후) | 동일 |
+| `session_evaluation` | **compatibility retain** | DROP 금지 | upload submit 평가 산출물, review eligibility live |
+| `request_email_subject` | **compatibility retain** | DROP 후보 (4-2b-impl 후) | synthetic write + work-type/classification read live |
+| `request_email_body` | **compatibility retain** | DROP 후보 (4-2b-impl 후) | 동일 |
+| `request_email_cc` | **4-2c DROP** | 첫 rebuild에 포함 가능 | runtime read 0, null-only write, prod non-null 0 |
+
+**Optional 후속 slice `4-2b-impl` (코드, 본 PR 범위 밖):**
+
+- `inferGeneralDefaultCriteriaWorkType`를 `request_kind` + `staff_direct_label`(+ `source_batch`) 기반으로 대체.
+- `session-eval`·`analyze`·`prompt`에서 `extracted_criteria`/`additional_criteria` read 제거(legacy row 정책 확정 후).
+- 위가 끝나면 `request_email_subject`/`body` synthetic write 중단 검토.
+
+4-2b-impl 없이도 **4-2c는 `request_email_cc`만** 안전하게 제거할 수 있다. 나머지 컬럼은 §5 gate 미충족.
+
 ## 3. Column Retirement Classification
 
 ### 3.1 Do Not Remove In Slice 4-2
@@ -80,13 +189,14 @@ Slice 4-2의 원래 표현은 `upload_session` 레거시 portal/mail 컬럼 reti
 | `analysis_notes`, `session_evaluation`, `extracted_criteria`, `additional_criteria` | AI evaluation, classification prompt, review context, adaptive eligibility | 별도 review context 이관 전 삭제 금지 |
 | `request_email_subject`, `request_email_body`, `request_email_cc` | review/session UI, AI/default criteria input, direct upload synthetic snapshots | 4-2a에서 surface 정리 또는 이관 전 삭제 금지 |
 
-### 3.2 Candidate After 4-2a
+### 3.2 Candidate After 4-2a (4-2b 결정 반영)
 
-| 후보 | 조건 | 가능한 처리 |
+| 후보 | 4-2b 결정 | 4-2c 조건 |
 |---|---|---|
-| `request_email_subject`, `request_email_body`, `request_email_cc` | 4-2a에서 redirect-blocked surface 제거 완료. **남은 live path:** direct-upload write, AI/review/bookkeeping read | 4-2b 이관 후 4-2c rebuild |
-| `extracted_criteria`, `additional_criteria` | AI/review criteria context를 `client.analysis_notes` 또는 별도 internal review context로 대체하고 기존 row migration 정책 확정 | 제거 또는 유지 결정 |
-| `analysis_notes`, `session_evaluation` | prod row 2건이 실제 보유. session detail/evaluation UX에서 더 이상 필요 없거나 이관 완료 | 제거 또는 compatibility 유지 |
+| `request_email_cc` | **DROP** — 이관 불필요 | runtime read 0 확인 완료(§2.4.5). 첫 rebuild에 포함 가능 |
+| `extracted_criteria`, `additional_criteria` | **retain (read)** — write dead | optional 4-2b-impl로 AI read 제거 후 DROP |
+| `request_email_subject`, `request_email_body` | **retain** — synthetic write + inference read | 4-2b-impl로 `request_kind`/`staff_direct_label` 대체 후 DROP |
+| `analysis_notes`, `session_evaluation` | **retain** — v1 파이프라인 핵심 | 별도 이관 설계 전 DROP 금지 |
 
 ### 3.3 Not A Column In `upload_session`
 
@@ -97,11 +207,12 @@ Slice 4-2의 원래 표현은 `upload_session` 레거시 portal/mail 컬럼 reti
 | Sub-slice | 범위 | DB migration | 완료 조건 |
 |---|---|---|---|
 | **4-2-0** | 이 문서. 컬럼별 운명과 blocker 고정 | 없음 | 삭제 금지 컬럼/후보 컬럼 문서화, 기존 allowlist/backlog sync |
-| **4-2a** | `sessions/new` 및 request-email/context residue 결정 | 없음 또는 코드 삭제만 | **완료(이번 PR):** redirect-blocked UI/API 삭제, live `request_email_*` path 문서화 |
-| **4-2b** | AI/review criteria context 이관 여부 결정 | 필요 시 additive migration | `analysis_notes`/criteria/sessionEvaluation을 유지할지 새 모델로 옮길지 확정 |
+| **4-2a** | `sessions/new` 및 request-email/context residue 결정 | 없음 또는 코드 삭제만 | **완료:** redirect-blocked UI/API 삭제, live `request_email_*` path 문서화 |
+| **4-2b** | AI/review criteria context 이관 vs compatibility 결정 | 없음 (docs-only) | **완료(이번 PR):** §2.4 필드별 live path 감사, retain vs 4-2c DROP 후보 확정 |
+| **4-2b-impl** (optional) | criteria inference·read path 코드 이관 | 없음 | 4-2c 전 subject/body/criteria DROP unblock (필수 아님) |
 | **4-2c** | 실제 `upload_session` table rebuild | rebuild migration | 제거 대상 컬럼 runtime read/write 0, prod row migration plan, dev/prod `foreign_key_check` |
 
-4-2a와 4-2b가 끝나기 전에는 4-2c를 시작하지 않는다.
+4-2b가 끝나기 전에는 4-2c를 시작하지 않는다. 4-2b-impl은 선택적이며 gate를 막지 않는다(`request_email_cc` 단독 DROP 가능).
 
 ## 5. Table Rebuild Gate
 
@@ -130,6 +241,7 @@ Slice 4-2의 원래 표현은 `upload_session` 레거시 portal/mail 컬럼 reti
 - [x] 4-2가 4-2-0/4-2a/4-2b/4-2c로 쪼개지고, 각 완료 조건이 명확하다.
 - [x] 기존 allowlist, completion contract, backlog가 새 브리프를 참조한다.
 - [x] 4-2a에서 legacy session/request context surface가 실제로 제거 또는 이관된다(redirect-blocked residue 삭제, live path는 4-2b로 이관).
+- [x] 4-2b에서 criteria context 필드별 live read/write가 `rg`로 감사되고 migrate vs retain 결정이 §2.4에 고정된다.
 - [ ] 4-2c에서 삭제 대상 컬럼의 runtime read/write 0건이 증명된다.
 
 ## 8. Related Documents

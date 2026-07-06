@@ -1,15 +1,15 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-06 20:05 KST
+> Last Updated: 2026-07-06 21:55 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2a 완료 — redirect-blocked session/request context residue 제거
+현재: JC-031 Slice 4-2b 완료 — criteria context 감사 및 compatibility retain 결정
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-2a, prod DB migration 0060 적용(2026-07-06, table rebuild)
-다음: Slice 4-2b AI/review criteria context 이관 결정
+완료: Slice 1~3c, Slice 4-0~4-2b, prod DB migration 0060 적용(2026-07-06, table rebuild)
+다음: Slice 4-2c `upload_session` table rebuild 준비
 필요 확인: 없음(직전 open item 해소)
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
