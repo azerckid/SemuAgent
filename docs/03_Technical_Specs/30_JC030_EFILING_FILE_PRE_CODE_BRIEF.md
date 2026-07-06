@@ -1,6 +1,6 @@
 # JC-030 E-Filing File Generation Pre-Code Technical Brief
 > Created: 2026-07-07 00:35 KST
-> Last Updated: 2026-07-07 01:15 KST
+> Last Updated: 2026-07-07 01:35 KST
 
 ## 0. Governing Principle
 
@@ -138,7 +138,7 @@ z.object({
 | **1b** | 패널 UI + validation read model (다운로드 없이 검증만) | 1a — **구현 완료(2026-07-07)** `summary.ts` + `payment-statements` 패널 |
 | **2a** | Generate API plain 파일 스트림 + PII 입력 폼 | 1a — **구현 완료(2026-07-07)** generate API·plain 다운로드 |
 | **2b** | NTS-CRYPTO 암호화 + 비밀번호 입력 | NTS crypto 스펙 확보 |
-| **3** | 홈택스 업로드 가이드 deep link · 운영 체크리스트 | 선택 |
+| **3** | 홈택스 업로드 가이드 deep link · 운영 체크리스트 | 선택 — **구현 완료(2026-07-07)** `hometax-guide.ts` + 패널 안내 |
 
 ## 8. Acceptance Criteria (Implementation)
 

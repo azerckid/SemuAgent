@@ -1,5 +1,6 @@
 import type { SimplifiedWageEfilingSummary } from '@/lib/efiling-simplified-wage/summary'
 import { SimplifiedWageEfilingGenerateForm } from './simplified-wage-efiling-generate-form'
+import { SimplifiedWageEfilingUploadGuide } from './simplified-wage-efiling-upload-guide'
 
 const LIST_TONE: Record<string, string> = {
   ok: 'text-[#16a34a]',
@@ -47,7 +48,7 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
         <StepCard step={1} title="데이터 확인" desc="JC-024 반기 집계·누락 검토" />
         <StepCard step={2} active title="식별정보 입력" desc="요청 동안만 사용 · DB·로그 미저장" />
         <StepCard step={3} title="사전검증" desc="파일변환신고 전 형식·정합성 확인" />
-        <StepCard step={4} title="다운로드 · 홈택스 안내" desc="사용자 직접 변환제출" />
+        <StepCard step={4} active title="다운로드 · 홈택스 안내" desc="사용자 직접 변환제출" />
       </div>
 
       <div className="grid gap-4 px-[18px] py-4 lg:grid-cols-2">
@@ -92,6 +93,8 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
       </div>
 
       <SimplifiedWageEfilingGenerateForm efiling={efiling} />
+
+      <SimplifiedWageEfilingUploadGuide />
 
       <div className="border-t border-[#e9e5ff] bg-[#faf5ff] px-[18px] py-3.5 text-[12px] leading-relaxed text-[#4c1d95]">
         <b className="text-[#3b0764]">책임 경계</b>
