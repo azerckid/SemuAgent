@@ -31,10 +31,11 @@ export function validateWithholdingPanel(input: ValidateWithholdingPanelInput): 
     }
   }
 
+  // JC-013 가이드 ④⑤ = 기간 요약, ⑥ = 확정 라인 소득세 합계
   if (
-    input.confirmedIncomeTaxKrw !== input.guideIncomeTaxKrw
-    || input.confirmedGrossPayKrw !== input.guideGrossPayKrw
-    || input.confirmedEmployeeCount !== input.guideEmployeeCount
+    input.periodEmployeeCount !== input.guideEmployeeCount
+    || input.periodGrossPayKrw !== input.guideGrossPayKrw
+    || input.confirmedIncomeTaxKrw !== input.guideIncomeTaxKrw
   ) {
     issues.push(
       issue(

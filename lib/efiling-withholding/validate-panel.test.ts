@@ -58,6 +58,25 @@ describe('validateWithholdingPanel', () => {
     expect(issues.some((i) => i.ruleId === 'W-V-03')).toBe(true)
   })
 
+  it('does not raise W-V-04 when guide matches period summary and confirmed income tax', () => {
+    const issues = validateWithholdingPanel(baseInput({
+      lines: [line({ status: 'needs_review' })],
+      confirmedEmployeeCount: 11,
+      confirmedGrossPayKrw: 39_050_000,
+    }))
+    expect(issues.some((i) => i.ruleId === 'W-V-04')).toBe(false)
+    expect(issues.some((i) => i.ruleId === 'W-V-02')).toBe(true)
+    expect(issues.some((i) => i.ruleId === 'W-V-03')).toBe(true)
+  })
+
+  it('flags JC-013 guide income tax mismatch (W-V-04)', () => {
+    const issues = validateWithholdingPanel(baseInput({
+      confirmedIncomeTaxKrw: 1_800_000,
+      guideIncomeTaxKrw: 1_910_000,
+    }))
+    expect(issues.some((i) => i.ruleId === 'W-V-04')).toBe(true)
+  })
+
   it('passes when A01 matches JC-013 guide values', () => {
     const issues = validateWithholdingPanel(baseInput({ lines: [line()] }))
     expect(issues.filter((i) => i.severity === 'error')).toHaveLength(0)

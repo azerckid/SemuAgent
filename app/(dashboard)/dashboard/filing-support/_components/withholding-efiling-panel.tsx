@@ -29,7 +29,7 @@ export function WithholdingEfilingPanel({ efiling }: { readonly efiling: Withhol
           <h3 className="text-[15px] font-semibold text-foreground">원천징수이행상황신고서 전자신고 파일 후보</h3>
           <p className="mt-1 max-w-[720px] text-[12.5px] leading-relaxed text-company-fg-muted">
             {efiling.payrollLabel} A01 간이세액 집계를 바탕으로 홈택스 <b className="font-semibold text-foreground">변환 파일제출</b>용 파일을 준비합니다.
-            Slice 1a는 서식·JC-013 가이드 사전검증만 제공하며, 바이너리 레이아웃 입수 전까지 다운로드는 비활성입니다.
+            현재는 서식·JC-013 가이드 사전검증만 제공하며, 바이너리 레이아웃 입수 전까지 다운로드는 비활성입니다.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
@@ -124,7 +124,7 @@ export function WithholdingEfilingPanel({ efiling }: { readonly efiling: Withhol
       <div className="border-t border-[#e9e5ff] bg-[#faf5ff] px-[18px] py-3.5 text-[12px] leading-relaxed text-[#4c1d95]">
         <b className="text-[#3b0764]">책임 경계</b>
         {' — '}
-        본 기능은 A01 서식 집계·JC-013 가이드 사전검증까지입니다(Slice 1a).
+        본 기능은 A01 서식 집계·JC-013 가이드 사전검증까지입니다.
         홈택스 제출 보장·자동 신고·「국세청 검증 완료」 표시는 하지 않습니다.
         {efiling.businessRegistrationMasked ? (
           <>
