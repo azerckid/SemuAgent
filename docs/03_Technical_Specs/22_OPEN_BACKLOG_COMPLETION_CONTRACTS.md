@@ -207,7 +207,7 @@ Non-goals (all JC-030 layers):
 ### JC-034 — GIWA handoff package (Path 2 · ZIP Export v1)
 
 Current gate: scope fixed in [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md);
-implementation not started.
+**implementation deferred** until Path 1 tax-type expansion is stable ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)).
 
 May start implementation only after:
 
@@ -305,6 +305,7 @@ If a later audit finds another legacy surface, it must be classified into one of
 - [E-Filing File Generation Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md)
 - [JC-034 GIWA Handoff Package Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md)
 - [JC-034 GIWA Handoff Pre-Code Brief](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md)
+- [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
 - [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
 - [JC-030 Simplified Wage E-Filing Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md)
 - [Legacy Upload/Email Retirement Audit](./20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)

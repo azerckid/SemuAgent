@@ -1,6 +1,6 @@
 # Filing Preparation Pipeline Product Direction
 > Created: 2026-07-04 17:13
-> Last Updated: 2026-07-07 04:10 KST
+> Last Updated: 2026-07-07 04:20 KST
 
 ## 1. Purpose
 
@@ -113,7 +113,8 @@ SemuAgent의 책임 경계는 명확하다.
 ## 8. Related Documents
 
 - **Concept_Design**: [Product Baseline — 3 Filing Paths](./01_PRODUCT_BASELINE.md)
-- **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) - v1 ZIP Export 범위
+- **Technical_Specs**: [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) - 홈택스 양식 기입·세목 확대 순서 (최우선)
+- **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) - v1 ZIP Export 범위 (구현 보류)
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 신고 준비 화면 흐름과 데이터 입출력
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 신고 준비 화면 컴포넌트와 내비게이션 규칙
 - **UI_Screens**: [Filing Preparation Preview](../02_UI_Screens/previews/08_filing_preparation.html) - 브라우저 확인용 HTML Preview

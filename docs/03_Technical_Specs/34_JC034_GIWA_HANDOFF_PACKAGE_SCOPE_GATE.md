@@ -1,16 +1,15 @@
 # JC-034 — GIWA Handoff Package Scope Gate
 > Created: 2026-07-07 04:00 KST
-> Last Updated: 2026-07-07 04:10 KST
+> Last Updated: 2026-07-07 04:20 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
 현재: Filing Path 2 — 세무회계사무소 연결 (자료기와 / JARYO-GIWA)
-Gate: 본 Brief 승인 후 코드 착수
-완료: UI-First Gate — 08_filing_preparation.html Path 2 패널
-완료: Pre-Code Brief — [35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md)
-다음: 구현 Slice 1 (schemas + CSV builders + tests)
+Gate: Path 1 세목 확대(홈택스 양식 기입) 안정 전 코드 착수 금지
+완료: UI-First Gate · Pre-Code Brief
+다음: Path 1 원천세 등 세목 확대 후 ZIP Export 구현 ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md))
 v1 범위: ZIP Export only (API·실시간 연동 없음)
 ```
 

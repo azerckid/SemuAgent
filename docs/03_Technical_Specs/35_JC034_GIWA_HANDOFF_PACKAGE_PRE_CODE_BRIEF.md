@@ -1,11 +1,13 @@
 # JC-034 GIWA Handoff Package Pre-Code Technical Brief
 > Created: 2026-07-07 04:15 KST
-> Last Updated: 2026-07-07 04:15 KST
+> Last Updated: 2026-07-07 04:20 KST
 
 ## 0. Governing Principle
 
 JC-034는 **Filing Path 2** 를 구현한다. 회사가 확정한 신고 준비 데이터를 **수임 세무사무소**가
 **자료기와(JARYO-GIWA)** 에서 검토할 수 있는 **구조화 handoff ZIP**으로 보낸다.
+
+- **구현 우선순위:** Path 1(홈택스 양식 기입·신고 보조) 세목 확대가 **JC-034 코드 착수보다 선행**한다 ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)).
 
 - SemuAgent는 홈택스에 제출하지 않는다. 사무소는 위하고·세무사랑 등 **검정 SW**로 전자신고·대리 제출한다.
 - v1은 **ZIP Export only** — SemuAgent↔GIWA API·실시간 연동·세무대리 알선 없음.
@@ -20,9 +22,9 @@ JC-034는 **Filing Path 2** 를 구현한다. 회사가 확정한 신고 준비 
 ```text
 [Flow]
 현재: Filing Path 2 — JC-034 Pre-Code Brief 완료 (승인 2026-07-07)
-Gate: 코드 착수 가능 — Copy review·QA 시나리오는 구현 PR에서 확정
+Gate: Path 1 세목 확대 선행 — 구현 착수 보류
 완료: UI-First Gate — 08_filing_preparation.html Path 2 패널
-다음: 구현 PR (lib/giwa-handoff + export API + 신고 준비 패널)
+다음: Path 1 원천세 layout acquisition 후 JC-034 Slice 1 재검토
 v1 최소 트랙: 간이지급 반기 + 원천세 summary + 부가세 summary
 ```
 
