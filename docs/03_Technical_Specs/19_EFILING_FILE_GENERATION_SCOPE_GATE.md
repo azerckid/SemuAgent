@@ -158,7 +158,8 @@ Pre-Code Brief는 아래가 확정된 뒤 작성한다.
 - **Concept_Design**: [Product Baseline §3 Filing Paths](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - **Concept_Design**: [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md)
 - **Technical_Specs**: [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
-- **Technical_Specs**: [Withholding Layout Acquisition](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) — 원천세 Slice 0a
+- **Technical_Specs**: [Withholding Field Mapping](./38_JC030_WITHHOLDING_EFILING_FIELD_MAPPING.md)
+- **Technical_Specs**: [Withholding Pre-Code Brief](./39_JC030_WITHHOLDING_EFILING_PRE_CODE_BRIEF.md)
 - **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) — 구현 보류
 - **Technical_Specs**: [JC-023 Hometax Autosubmit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 파일변환신고·적합성 검정 리서치
 - **Technical_Specs**: [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md) — PII 일회성 입력 정책
