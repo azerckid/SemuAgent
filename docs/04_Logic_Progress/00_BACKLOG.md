@@ -600,7 +600,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 3단계 다리(입력 가이드 → 전자신고 파일 생성·검증 → 사용자 승인 자동제출)의 중간 단계. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 확정 데이터 준비→handoff 경계.
 - Related Domain: 신고지원(JC-013) 확정 산출물 · 부가세(JC-011)·급여/원천세(JC-012) read model. 자동제출 후속은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
-- Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상 후보·공식 자료 확인·차단 조건(최신 파일 레이아웃). [JC-030 E-Filing File PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md) — PII 일회성 입력 정책(2026-07-06 확정).
+- Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상·Gate. [PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md). [Layout Acquisition](../03_Technical_Specs/28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md) — 간이지급(근로) 입수 경로(2026-07-06).
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-030](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 전자신고 파일 생성·검증의 착수 게이트와 done 조건
 - Related Research: [JC-023 Hometax Auto-submit Research §2.1·§2.5](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 세목별 전자신고 파일 규격·파일변환신고 관문·적합성 검정. JC-030은 이 리서치의 "파일 생성·파일변환신고까지"의 실현가능 구간을 독립 기능으로 승격한 것.
 - Related UI Docs: N/A - 착수 시 신고지원 화면 확장(파일 다운로드·검증 결과)으로 정의. UI-First Gate 대상.
@@ -608,8 +608,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related QA Docs: N/A - 착수 시 파일 규격 적합성·정합성 검증 시나리오 신설.
 - Prototype Review / 승인: N/A - 로드맵 항목. 구현 착수 시 Pre-Code Brief·UI 확인 선행.
 - Implementation Preconditions (조사·설계 과제):
-  - [x] 대상 세목 우선순위 확정 — [Scope Gate §4](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md): v1은 **근로소득 간이지급명세서**를 1순위 후보로 둔다(JC-024 데이터 live, 공식 제출주기 확인). 단, 최신 파일 레이아웃·직원 식별정보 정책이 닫힌 뒤 구현 착수.
-  - [ ] 세목별 홈택스 전자신고 파일 규격 입수 (JC-023 Research §2.1의 [미확인] 규격서 공식 입수 경로 해소, 홈택스 자료실/국세청 126 확인)
+  - [x] 대상 세목 우선순위 확정 — [Scope Gate §4](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md): v1은 **근로소득 간이지급명세서**. PII·레이아웃 입수 경로 확정 후에도 필드 매핑·Pre-Code Brief 선행.
+  - [x] 간이지급(근로) 전자신고 레이아웃 **공식 입수 경로** 확정 — [Layout Acquisition §3](../03_Technical_Specs/28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md)(2026-07-06). 연말 지급명세서(1175)와 분리. HWP 필드 정의는 Pre-Code Brief에서 최신본 다운로드 후 반영.
   - [x] 직원 식별정보 처리 정책 확정 — **서버 미저장 일회성 입력** ([PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md), 2026-07-06). `employee_profile` 주민번호 컬럼 추가 없음.
   - [ ] 확정 데이터(신고지원 산출물) → 전자신고 파일 필드 매핑 정의
   - [ ] 파일 형식·정합성 검증 규칙 정의 (제출 전 사용자에게 경고할 오류 항목)
@@ -620,7 +620,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 사용자가 파일을 내려받아 **직접** 홈택스에 업로드·제출한다(자동 제출 아님)
   - [ ] 자격증명 저장·자동 로그인·자동 제출은 하지 않는다(JC-023 원칙 유지)
   - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
-- Document Sync Check: 2026-07-05 Scope Gate 작성. 입력 가이드(JC-013)와 자동제출(JC-023) 사이의 현실적 다리라는 방향은 유지하되, **바로 구현 금지**: v1 1순위 후보는 근로소득 간이지급명세서이나 최신 파일 레이아웃·직원 식별정보 정책이 미확정. 다음 단계는 UI Preview(파일 생성 패널) 또는 공식 규격/PII 정책 확정 후 Pre-Code Brief.
+- Document Sync Check: 2026-07-05 Scope Gate 작성. 2026-07-06 PII Policy(0b)·Layout Acquisition(0a) 반영. v1 1순위는 근로소득 간이지급명세서. **구현 금지 유지**: 필드 매핑 Pre-Code Brief·UI Preview·적합성 검정 미완. 다음: UI Preview 또는 Pre-Code Brief.
 
 ### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
 
