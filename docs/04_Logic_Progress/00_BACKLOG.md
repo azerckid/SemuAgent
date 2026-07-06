@@ -45,6 +45,7 @@
 | JC-030 | todo | 전자신고 파일 생성·검증 (파일변환신고용 제출 파일) | `lib/filing-support`, `lib/vat`·`lib/payroll-workspace` 산출물, 홈택스 전자신고 파일 규격 | **우선순위: 높음(가이드와 자동제출 사이의 현실적 다리) · 법적 리스크: 낮음.** self-filing 편의 경로를 **홈택스 입력 가이드(JC-013) → 전자신고 파일 생성·검증(JC-030) → 사용자 승인 자동제출(JC-023)** 3단계로 명시하는 중간 단계. 확정된 신고 데이터(부가세·원천세·지급명세서 등)를 홈택스 "파일변환신고"에 업로드 가능한 전자신고 파일(전자신고 규격)로 생성하고 형식·정합성을 검증해 제공한다. **자동 제출이 아님** — 사용자가 파일을 내려받아 홈택스에 직접 업로드·제출한다. 자격증명 저장·자동 로그인·자동 제출 없음(JC-023 원칙 유지). 착수 전 홈택스 전자신고 파일 규격 조사 필요(JC-023 리서치와 공유). [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) · [Hometax Autosubmit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) 참조. |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
+| JC-033 | todo | 간이지급명세서 홈택스 직접입력 가이드 (JC-030 대안 경로) | `lib/payment-statements`, `app/(dashboard)/dashboard/filing-preparation/payment-statements`, JC-013 홈택스 입력 가이드 패턴 | **우선순위: 검토 중 · 저위험(read-only 가이드).** JC-030의 파일변환신고 경로가 암호화 필수([NTS Crypto Spec §4.1](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md))·적합성 검정 미확정([Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md))으로 지금 당장 제출까지 이어지지 않을 수 있어, 홈택스 **"(일용·간이·용역)직접작성 제출"** 화면에 직접 타이핑하는 대안 경로를 가이드한다. 파일 생성·자동입력 없음 — JC-013 스타일의 "무엇을 어떤 순서로 입력할지" 안내만 제공. [Scope Gate](../03_Technical_Specs/33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md) 참조. |
 
 ## Implementation Rule
 
@@ -613,7 +614,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 직원 식별정보 처리 정책 확정 — **서버 미저장 일회성 입력** ([PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md), 2026-07-06). `employee_profile` 주민번호 컬럼 추가 없음.
   - [x] 확정 데이터(JC-024 산출물) → 전자신고 파일 필드 매핑 정의 — [Field Mapping](../03_Technical_Specs/29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md)(2026-07-07)
   - [x] 파일 형식·정합성 검증 규칙 정의 — Mapping §7 · [Pre-Code Brief §6](../03_Technical_Specs/30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md)(2026-07-07)
-  - [ ] 파일변환신고 적합성 검정 요건 확인 (JC-023 Research §2.5, 국세청 공식 문의)
+  - [ ] 파일변환신고 적합성 검정 요건 확인 — [Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md)(2026-07-07 착수, 국세청 공식 문의 대기)
   - [x] **UI-First Gate**: [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html) JC-030 파일 생성 패널 — 사용자 승인(2026-07-07)
 - Acceptance Criteria:
   - [ ] 확정된 신고 데이터로 홈택스 파일변환신고에 업로드 가능한 전자신고 파일을 생성한다
@@ -621,7 +622,30 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 사용자가 파일을 내려받아 **직접** 홈택스에 업로드·제출한다(자동 제출 아님)
   - [ ] 자격증명 저장·자동 로그인·자동 제출은 하지 않는다(JC-023 원칙 유지)
   - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
-- Document Sync Check: 2026-07-07 **JC-030 v1 완결** — Slices 1a–2a·3 on main(#126·#127). [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md)(#128) — fcrypt 입수·트랙 분리. **Slice 2b** = 윈도우 microservice 별도 트랙·보류(DLL 실행 검증 선행).
+- Document Sync Check: 2026-07-07 **JC-030 v1 완결** — Slices 1a–2a·3 on main(#126·#127). [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md)(#128) — fcrypt 입수·트랙 분리. **Slice 2b** = 윈도우 microservice 별도 트랙·보류(DLL 실행 검증 선행). 2026-07-07 [SW Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) 착수 — 파일변환신고가 적합성 검정 통과 SW만 받을 가능성 확인, 국세청 문의 대기. 대안 경로는 [JC-033](#jc-033--간이지급명세서-홈택스-직접입력-가이드-jc-030-대안-경로).
+
+### JC-033 · 간이지급명세서 홈택스 직접입력 가이드 (JC-030 대안 경로)
+
+- Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 3단계 다리 중 "입력 가이드" 축. JC-030(파일 생성)과 대체·병행 관계.
+- Related Domain: 지급명세서·연말정산(JC-024) 반기 집계 데이터. 기존 "홈택스 입력 가이드" 패턴은 신고지원(JC-013).
+- Related Technical Docs: [Simplified Wage Direct Input Guide Scope Gate](../03_Technical_Specs/33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md) — 메뉴 경로·데이터 매핑 후보·Non-goals.
+- Related Completion Contract: N/A - 착수 시 Completion Contract §3에 항목 추가 검토.
+- Related Research: [SW Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) — 이 항목이 필요해진 배경(JC-030 파일변환신고 경로 불확실성).
+- Related UI Docs: N/A - 착수 시 payment-statements 화면에 가이드 패널 추가로 정의(JC-030 패널과 병기). UI-First Gate 대상.
+- Related HTML Preview: N/A - 착수 시 `09_payment_year_end.html`에 직접입력 가이드 패널 추가.
+- Related QA Docs: N/A - 착수 시 정의.
+- Prototype Review / 승인: N/A - Scope Gate 단계.
+- Implementation Preconditions (조사·설계 과제):
+  - [x] 홈택스 직접입력 메뉴 진입 경로 확인 — [Scope Gate §2](../03_Technical_Specs/33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md)(2026-07-07, 웹 검색)
+  - [ ] 화면별 정확한 필드명·순서·필수여부 확인(로그인 후 실화면 확인 또는 국세청 매뉴얼)
+  - [ ] 소득세·지방소득세 자동계산 여부 확인
+  - [ ] UI Preview(HTML) 작성
+- Acceptance Criteria:
+  - [ ] JC-024 반기 집계 데이터를 홈택스 직접입력 화면 필드 순서에 맞춰 안내한다
+  - [ ] 주민등록번호는 저장하지 않고 홈택스 화면에서 사용자가 직접 입력하도록 안내한다(PII 원칙 유지)
+  - [ ] 자동입력·브라우저 자동화는 하지 않는다(수동 타이핑 가이드까지만)
+  - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
+- Document Sync Check: 2026-07-07 Scope Gate 작성 — 메뉴 경로 확인, 화면 필드 상세는 미확인. **구현 금지 유지** — 화면 필드 확인·UI Preview·승인 전.
 
 ### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
 

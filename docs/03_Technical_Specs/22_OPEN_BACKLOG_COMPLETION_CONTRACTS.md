@@ -145,7 +145,7 @@ Non-goals before done:
 
 Type: 제출 준비물 생성.
 
-Current gate: **JC-030 v1** (Slices 1a–2a, 3) **complete** on main — plain·검증·홈택스 안내 실사용 가능. **Slice 2b** (fcrypt·윈도우 microservice) is a **separate deferred track** per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md); Windows DLL execution + Hometax round-trip before code.
+Current gate: **JC-030 v1** (Slices 1a–2a, 3) **complete** on main — plain·검증·홈택스 안내 실사용 가능. **Slice 2b** (fcrypt·윈도우 microservice) is a **separate deferred track** per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md); Windows DLL execution + Hometax round-trip before code. **Open risk (2026-07-07):** the file-conversion path itself may require [software conformance certification](./32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) that SemuAgent has not obtained — NTS inquiry pending. Alternate direct-input path: [JC-033](./33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md).
 
 May start implementation only after:
 
