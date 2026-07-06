@@ -23,6 +23,8 @@ import {
   FilingReceiptDeleteButton,
   FilingReceiptUploadButton,
 } from './filing-actions'
+import { WithholdingEfilingPanel } from './withholding-efiling-panel'
+import type { WithholdingEfilingSummary } from '@/lib/efiling-withholding/summary'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 
@@ -42,9 +44,10 @@ const filingIcon: Record<FilingSupportItem['type'], { label: string; className: 
 
 export interface FilingSupportWorkspaceProps {
   readonly summary: FilingSupportSummary
+  readonly withholdingEfiling?: WithholdingEfilingSummary | null
 }
 
-export function FilingSupportWorkspace({ summary }: FilingSupportWorkspaceProps) {
+export function FilingSupportWorkspace({ summary, withholdingEfiling }: FilingSupportWorkspaceProps) {
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <FilingTopbar summary={summary} />
@@ -53,6 +56,7 @@ export function FilingSupportWorkspace({ summary }: FilingSupportWorkspaceProps)
         {summary.hasSourceArtifacts ? (
           <>
             <FilingItemsSection items={summary.items} />
+            {withholdingEfiling ? <WithholdingEfilingPanel efiling={withholdingEfiling} /> : null}
             <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
               <InputGuideCard guide={summary.guide} periodKey={summary.period.payrollPeriodKey} />
               <ReceiptsCard periodKey={summary.period.filingPeriodKey} receipts={summary.receipts} />

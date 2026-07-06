@@ -1,6 +1,6 @@
 # Filing Preparation Pipeline Product Direction
 > Created: 2026-07-04 17:13
-> Last Updated: 2026-07-04 17:13
+> Last Updated: 2026-07-07 04:20 KST
 
 ## 1. Purpose
 
@@ -9,7 +9,7 @@
 핵심 전환은 다음이다.
 
 - 달력은 커모디티다. 기한을 보여주는 것만으로는 제품 차별점이 약하다.
-- SemuAgent의 차별점은 홈택스·위택스에 넣을 확정 데이터가 준비됐는가를 보여주는 것이다.
+- SemuAgent의 차별점은 확정 데이터 준비 여부와, **신고 3경로**(Path 1 홈택스 파일·Path 2 사무소 handoff·Path 3 미래 인증) 중 선택한 경로로 넘길 수 있는지다.
 - 따라서 세무 일정은 독립 화면의 중심이 아니라 신고 준비 화면 안의 한 섹션으로 내려간다.
 
 ## 2. Product Decision
@@ -23,7 +23,12 @@ JC-029의 이름과 목적을 다음처럼 바꾼다.
 | 일정표·커버리지 read-only 허브 | 공통 기반 + 병렬 신고 트랙의 준비 상태 화면 |
 | 달력/기한 중심 | 데이터 준비·검토·handoff 중심 |
 
-SemuAgent는 신고서를 대신 제출하는 제품이 아니다. 사용자가 직접 신고한다는 전제에서, 제출 직전까지 필요한 신고 데이터를 최대한 준비하고 검증해 담당자에게 넘기는 제품이다.
+SemuAgent는 신고서를 대신 제출하지 않는다. 데이터 준비 후 사용자는 **3 Filing Paths** 중
+하나로 진행한다 ([Product Baseline §3 Filing Paths](./01_PRODUCT_BASELINE.md)).
+
+- **Path 1:** SemuAgent가 양식 파일 생성 → 사용자가 홈택스에 업로드·제출 (JC-013·JC-030 Path 1)
+- **Path 2:** SemuAgent가 handoff ZIP → 자료기와(JARYO-GIWA) → 사무소가 대리 제출 (JC-034)
+- **Path 3:** (미래) 인증·암호화 파일 → 사용자 홈택스 제출 (JC-030 Path 3)
 
 ## 3. Mental Model
 
@@ -35,7 +40,10 @@ SemuAgent는 신고서를 대신 제출하는 제품이 아니다. 사용자가 
                              ├─ 부가세(분기)
                              ├─ 지급명세서/연말정산(연)
                              └─ 지방소득세(본세 종속)
-                                          -> 신고지원(handoff)
+                                          -> 공통 검증(JC-030 Validation)
+                                          ├─ Path 1: 양식 파일 + 홈택스 안내 -> 사업자 제출
+                                          ├─ Path 2: GIWA handoff ZIP(JC-034) -> 사무소 대리신고
+                                          └─ Path 3: (미래) 암호화 파일 -> 사업자 제출
 
 ### 공통 기반
 
@@ -54,10 +62,13 @@ SemuAgent는 신고서를 대신 제출하는 제품이 아니다. 사용자가 
 SemuAgent의 책임 경계는 명확하다.
 
 - SemuAgent는 신고서에 넣을 확정 데이터를 준비한다.
-- SemuAgent는 담당자가 직접 신고할 수 있도록 패키지·입력값·체크리스트를 제공한다.
-- 최종 신고·제출·납부는 사용자가 직접 수행한다.
+- SemuAgent는 JC-034 handoff 패키지(Path 2)·양식 파일(Path 1)·가이드(JC-013)를 제공한다.
+- **Path 1:** 사업자가 홈택스에 직접 업로드·제출.
+- **Path 2:** 수임 세무사무소가 자료기와에서 검토 후 검정 SW로 대리 제출.
+- **Path 3:** 인증 후 암호화 파일 — 미래; Path 1 plain 파일 한계는 UI에 명시.
 - 자동 제출은 JC-023의 별도 법무·보안·사용자 승인 게이트 없이는 도입하지 않는다.
 - 홈택스/위택스 자격증명 원문, 공동인증서 비밀번호, 은행·카드 비밀번호는 저장하지 않는다.
+- 세무대리인 알선·마켓플레이스·기장료 중개는 하지 않는다.
 
 ## 5. Data Contracts
 
@@ -65,10 +76,10 @@ SemuAgent의 책임 경계는 명확하다.
 |---|---|---|---|
 | 자료수집 | 회사/담당자 업로드 | 수집 현황 + 누락 목록 | 기장 가능 상태 |
 | 기장검토 | 수집자료 + 귀속기간 | 귀속월 확정 · 중복제거 · 계정분류 후보 | 확정 거래원장 |
-| 원천세 | 급여대장 · 지급내역 | 간이세액표 집계 | 원천세 신고서 초안 수치 |
-| 부가세 | 매출 · 매입 세금계산서 | 매입/매출세액 집계 + 검증 | 부가세 초안값 + 불일치 경고 |
-| 지급명세서/연말정산 | 연간 지급내역 | 명세서 데이터셋 · 정산액 | 제출용 명세서 |
-| 지방소득세 | 확정 본세 · 원천세 | 안분 · 세액 | 지방세 신고 수치 |
+| 원천세 | 급여대장 · 지급내역 | 간이세액표 집계 | Path 1: 신고지원 가이드 · Path 2: JC-034 섹션 |
+| 부가세 | 매출 · 매입 세금계산서 | 매입/매출세액 집계 + 검증 | Path 1: 신고지원 · Path 2: JC-034 섹션 |
+| 지급명세서/연말정산 | 연간 지급내역 | 명세서 데이터셋 · 정산액 | 검증 후 Path 1 파일 또는 Path 2 ZIP |
+| 지방소득세 | 확정 본세 · 원천세 | 안분 · 세액 | Path 1: 위택스 안내 · Path 2: JC-034 (사무소 처리) |
 
 ## 6. First Scope
 
@@ -81,7 +92,7 @@ SemuAgent의 책임 경계는 명확하다.
 - 공통 기반(자료수집 -> 기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세) 구조
 - 트랙별 입력·산출·handoff 표시
 - 세무 일정은 하단/보조 섹션으로 표시
-- 신고지원으로 넘어가는 handoff 책임 경계 표시
+- 신고 3경로(Path 1·2·3) 책임 경계 표시
 
 제외한다.
 
@@ -101,7 +112,9 @@ SemuAgent의 책임 경계는 명확하다.
 
 ## 8. Related Documents
 
-- **Concept_Design**: [Product Baseline](./01_PRODUCT_BASELINE.md) - SemuAgent 제품 범위와 self-filing 책임 경계
+- **Concept_Design**: [Product Baseline — 3 Filing Paths](./01_PRODUCT_BASELINE.md)
+- **Technical_Specs**: [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) - 홈택스 양식 기입·세목 확대 순서 (최우선)
+- **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) - v1 ZIP Export 범위 (구현 보류)
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 신고 준비 화면 흐름과 데이터 입출력
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 신고 준비 화면 컴포넌트와 내비게이션 규칙
 - **UI_Screens**: [Filing Preparation Preview](../02_UI_Screens/previews/08_filing_preparation.html) - 브라우저 확인용 HTML Preview

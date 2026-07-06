@@ -186,15 +186,17 @@
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
-| Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·handoff 상태를 요약 | 진행률 + blocker 카운트 |
-| Next Action List | 신고 전 처리해야 할 blocker와 해당 워크스페이스 CTA | danger/warn/ok dot + 라우팅 |
+| Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·Path 2 handoff 가능 여부 | 진행률 + blocker 카운트 |
+| **3 Filing Paths** | Path 1(양식 파일)·Path 2(사무소 ZIP)·Path 3(미래) 카드 | Path 1 최우선; Path 2 패널은 Preview만(구현 보류) |
+| **JC-034 Export Panel** | Path 2 handoff ZIP — 트랙 선택·manifest·README | UI Preview 승인; 코드는 Path 1 세목 확대 후 |
+| Next Action List | 신고 전 blocker와 해당 워크스페이스 CTA | danger/warn/ok dot + 라우팅 |
 | Common Foundation Cards | 자료수집 -> 기장검토 공통 기반의 입력·산출 상태 | 누락/검토대기/원장 준비 상태칩 |
-| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/handoff 3단 계약 + 상태칩 |
+| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/Path 1·2 handoff |
 | Schedule Strip | 다가오는 마감·D-day | 일정은 보조 정보, 중심 프레임 아님 |
-| Responsibility Boundary | 직접 신고·자동제출 제외 경계 | accent 안내 박스 |
+| Responsibility Boundary | 3 Filing Paths 책임 경계·자동제출 제외 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
 
-- 화면의 중심 질문은 "언제까지 무엇을 해야 하는가"가 아니라 "홈택스·위택스에 넣을 확정 데이터가 준비됐는가"다.
+- 화면의 중심 질문은 "홈택스·위택스에 넣을 확정 데이터가 준비됐는가"이며, **실행 우선순위는 Path 1(홈택스 양식 기입)** 이다 ([Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)).
 - 세무 일정은 하단 보조 섹션으로만 둔다.
 - 자동제출·신규 산출 엔진·신규 DB는 JC-029 Preview 범위 밖이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
@@ -208,7 +210,7 @@
 | Prep Hero | 대상 인원·확인 필요(누락)·데이터 준비 완료 요약 | 진행률 + 카운트 |
 | Next Action List | 급여 미확정·인적사항 누락 blocker + 급여/직원 명부 CTA | danger/warn dot + 라우팅 |
 | 간이지급명세서 Table | 직원별 귀속기간·지급총액·원천징수세액·준비 상태(근로소득 반기) | 준비완료/누락 월/확인 필요 상태칩 |
-| E-Filing File Panel (JC-030) | 간이지급 전자신고 파일 후보·4단계 흐름·사전검증·PII 1회 입력·홈택스 안내 | Scope Gate §5.3 문구·서버 미저장 |
+| E-Filing File Panel (JC-030) | **Path 1** — 간이지급 plain 양식 파일·사전검증·PII 1회 입력·홈택스 안내 | Scope Gate §5.3 · 서버 미저장 |
 | 연말정산 Table | 직원별 재직·연간 지급합계·기납부 원천세·누락·검토 상태 | 검토 준비/월 급여 필요/중도정산 검토 |
 | Responsibility Boundary | 신고 준비 데이터·JC-030 파일 후보까지·정산액 계산·홈택스 제출 제외 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |

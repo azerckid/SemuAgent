@@ -1,38 +1,80 @@
 # SemuAgent Product Baseline
 > Created: 2026-07-01 17:55
-> Last Updated: 2026-07-04 17:13
+> Last Updated: 2026-07-07 04:20 KST
 
 ## Purpose
 
-SemuAgent helps a small company use AI-assisted workflows to prepare its own
-tax filing materials:
+SemuAgent helps a small company use AI-assisted workflows to prepare tax filing
+materials, then complete filing through one of **three product paths**:
 
-`source collection -> classification/bookkeeping -> VAT calculation -> payroll -> review/approval -> filing-material package -> Hometax submission support -> receipt storage`
+`source collection -> classification/bookkeeping -> VAT calculation -> payroll -> review/approval -> filing-material package -> (Path 1 | 2 | 3)`
 
-The product is designed for small-company users who want to prepare and review
-their own tax filing workflow without routing every step through an accounting
-or tax office. SemuAgent is not automatic tax filing; final Hometax submission
-and payment remain user-confirmed actions.
+SemuAgent is not automatic tax filing and is not a tax-representative marketplace.
+Final Hometax submission and payment remain outside SemuAgent unless a separately
+approved JC-023 flow exists.
+
+## 3 Filing Paths (신고 3경로)
+
+공통 **데이터 준비**(자료수집·기장·부가세·급여·신고 준비) 이후, 사용자는 아래 세 경로
+중 하나(또는 병행)로 신고를 마친다. 세 경로는 **동등한 제품 방향**이며 시점만 다르다.
+
+| Path | 이름 | SemuAgent 역할 | 제출 주체 | 백로그 | 시점 |
+|---|---|---|---|---|---|
+| **1** | 양식 파일 + 홈택스 업로드 안내 | 국세청 전자신고 **양식 파일 생성**(평문)·검증 + 홈택스 **작성·업로드 단계 안내** | 사업자 | JC-013, JC-030 Path 1 | **현재** |
+| **2** | 세무회계사무소 연결 (자료기와) | **handoff ZIP 패키지** Export → JARYO-GIWA에서 검토 | 수임 사무소 (검정 SW) | JC-034 | **현재** (v1 ZIP) |
+| **3** | 인증 후 암호화 파일 업로드 | **적합성 검정**·NTS fcrypt 등으로 홈택스 업로드 가능 **암호화 파일** 생성 | 사업자 | JC-030 Path 3 | **미래** |
+
+### Path 1 — 양식 다운로드·작성·업로드 안내 (파일은 SemuAgent가 생성)
+
+홈택스·국세청에 **전자신고 양식(전산매체 규격)** 이 있으므로, SemuAgent가 확정 데이터로
+**파일을 만들어 준다**. 사용자는 홈택스 파일변환신고 등 메뉴에서 **직접 업로드·제출**한다.
+
+- JC-013: 단계별 입력 가이드·접수증 보관
+- JC-030 Path 1: plain 전자신고 파일 생성·사전검증·홈택스 변환제출 안내 (main에 구현됨)
+- Path 1은 **고급 옵션이 아니다**. 수임 사무소가 없거나 직접 신고를 선택하는 정식 경로다.
+- Path 1 평문 파일이 홈택스에서 거절될 수 있는 경우는 Path 3 완성 전까지 UI에서 명시한다.
+
+### Path 2 — 세무회계사무소 연결 (JARYO-GIWA / 자료기와)
+
+사업자가 SemuAgent에서 자료를 정리·검토한 뒤, **기존 수임 관계**의 세무·회계 사무소에
+패키지를 넘긴다. 사무소는 **자료기와(JARYO-GIWA)** 에서 검토하고 위하고·세무사랑 등
+**검정 SW**로 홈택스에 **대리 제출**한다.
+
+- JC-034 v1: ZIP Export (manifest + Excel/CSV). API·실시간 연동 없음.
+- 세무대리인 **알선·마켓플레이스·기장료 중개 없음**.
+
+### Path 3 — 미래: 인증 후 암호화 파일 업로드
+
+Path 1의 **완성형**. 국세청 **전자신고 파일변환 적합성 검정** 및 NTS fcrypt 등을 거쳐
+홈택스에 올릴 수 있는 **암호화 전자신고 파일**을 SemuAgent가 생성한다.
+
+- JC-030 Path 3: Slice 2b (fcrypt·윈도우 microservice 등). 인증·규격 확보 **후** 착수.
+- Path 3 전까지 Path 1 사용자는 plain 파일 + 홈택스 안내로 운영한다.
+
+### 공통 검증 레이어 (JC-030 Validation)
+
+Path 1 파일 다운로드와 Path 2 ZIP Export **모두** 전에, 확정 데이터를 공식 레이아웃 기준으로
+**검증**한다 (`lib/efiling-simplified-wage` 등). 이 레이어는 세 경로가 공유하는 품질 관문이다.
 
 ## Public SEO Positioning
 
 - Primary title: `SemuAgent - 작은 회사를 위한 AI 세무 에이전트`
-- One-line description: 작은 회사가 직접 세무신고를 준비할 수 있도록 AI가 증빙, 기장, 부가세, 급여, 신고자료를 정리한다.
-- Core search intents: `AI 세무`, `세무신고 준비`, `홈택스 신고 보조`, `자가 기장`, `부가세 계산`, `급여정산`, `증빙 수집`, `신고자료 생성`.
-- Public positioning: SemuAgent is an AI-assisted tax-preparation workflow for small companies, not an accounting-firm client-management product and not an automatic Hometax submission agent.
+- One-line description: 작은 회사가 AI로 증빙·기장·부가세·급여를 정리하고, 홈택스 양식 파일을 만들거나 수임 세무사무소(자료기와)에 넘긴다.
+- Core search intents: `AI 세무`, `세무신고 준비`, `홈택스 신고 보조`, `전자신고 파일`, `신고자료 정리`, `자가 기장`, `세무사무소 자료 전달`.
+- Public positioning: SemuAgent is an AI-assisted tax-preparation workflow for small companies, not an accounting-firm client-management product, not a tax-agent marketplace, and not an automatic Hometax submission agent.
 - Canonical URL source: public metadata, robots, and sitemap use `NEXT_PUBLIC_SITE_URL`; the local fallback is `https://semuagent.app` until the production domain is finalized.
 
 ## Primary Users
 
-**타깃 세그먼트: 개인사업자 및 직원 10인 이하 소규모 법인.** SemuAgent의 목표는 이 규모의
-사업자가 **직접 해야 하는 세무 전체**(부가세·원천세·종합소득세/법인세·연말정산·지급명세서·
-4대보험 등)를 한 제품에서 준비·검토하고 홈택스 제출까지 보조하는 것이다. 세무대리(세무사 위임)를
-대체하려는 것이 아니라, 사업자가 스스로 신고를 준비·제출할 수 있게 돕는 self-filing 도구다.
+**타깃 세그먼트: 개인사업자 및 직원 10인 이하 소규모 법인.** SemuAgent는 이 규모 사업자의
+**신고 준비 데이터**를 한 제품에서 정리·검토한 뒤, **Path 1(직접 신고)** 또는 **Path 2(수임 사무소)**
+로 이어준다. Path 3은 동일 제품의 미래 확장이다.
 
 - CEO or owner-manager who wants direct visibility into accounting status
-- Finance/accounting staff
+- Finance/accounting staff who prepare materials before the filing deadline
 - Operations staff handling receipts, payroll, and tax materials
-- Optional external tax accountant as reviewer or advisor
+- Users who file directly via Hometax (Path 1)
+- Users with an existing external tax accountant or accounting firm (Path 2 via JARYO-GIWA, not in-app marketplace)
 
 ## Target Tax Coverage — 개인사업자 · 소규모 법인(≤10인)
 
@@ -74,7 +116,8 @@ and payment remain user-confirmed actions.
 - Classify transactions and generate reviewable bookkeeping entries.
 - Prepare VAT-period summaries and supporting schedules.
 - Calculate payroll from structured company payroll inputs.
-- Generate filing-material packages and Hometax entry guidance.
+- Generate filing-material packages for **Path 1** (e-filing files + Hometax guide) and **Path 2** (GIWA handoff ZIP, JC-034).
+- Provide Hometax entry guidance and e-filing file validation (JC-030 Path 1).
 - Store submission receipts, payment notices, and audit trail.
 - Use AI-assisted automation for source classification, missing-item checks,
   reminders, and filing-preparation updates.
@@ -85,32 +128,20 @@ and payment remain user-confirmed actions.
   자동제출은 아래 Strategic Direction 및 Backlog JC-023의 로드맵 방향이다.)
 - Server-side storage of Hometax, bank, card, certificate, or password
   credentials.
-- Licensed tax-representative service positioning.
-- Direct financial transactions or tax payments without a separate reviewed
-  integration design.
+- Licensed tax-representative service positioning or in-app tax-agent marketplace/lead gen.
+- SemuAgent obtaining NTS file-conversion certification (**Path 3 only**; not required for Path 1 plain files or Path 2 handoff).
+- Direct financial transactions or tax payments without a separate reviewed integration design.
 
 ## Strategic Direction (Post-MVP)
 
-MVP는 "홈택스 제출 보조(입력 가이드)"까지이고 자동제출은 하지 않는다. 다만
-"가이드/신고지원"은 **중간 단계**이며, SemuAgent의 최종 목표는 **사용자 승인 기반
-홈택스 자동제출**이다.
+MVP 이후에도 신고 완료는 위 **3 Filing Paths** 로 고정한다. 자동제출(JC-023)은 Path 1/3의
+**추가 로드맵**이며 MVP 밖이다.
 
-self-filing 편의는 한 번에 자동제출로 뛰지 않고 **3단계 다리**로 올라간다:
-
-1. **홈택스 입력 가이드** (현행, JC-013) — 확정 값을 단계별로 보여주고 값 복사를 제공한다.
-2. **전자신고 파일 생성·검증** (JC-030) — 확정 데이터를 홈택스 "파일변환신고"에
-   업로드 가능한 전자신고 파일로 만들어 검증해준다. 사용자가 파일을 내려받아 직접
-   업로드·제출하며 **자동 제출이 아니다.** 법적 리스크가 낮고 체감 편의는 크게 오르는
-   현실적 중간 단계다. 단, 실제 업로드 가능 파일 생성은 귀속연도별 최신 전자신고 파일
-   규격과 필요한 민감 식별정보 처리 정책이 확정된 뒤 착수한다(JC-030 Scope Gate).
-3. **사용자 승인 기반 자동제출** (JC-023, 최종) — 아래 절차로 완성된다:
-
-- 사용자가 신고 내용을 최종 확인하고 승인하면,
-- SemuAgent가 **사용자 권한 범위 안에서** 홈택스 제출 절차를 자동으로 진행하고,
-- **접수증까지 자동으로 회수·보관**한다.
-
-즉 사용자 승인 기반 원클릭 홈택스 제출이 최종 제품 방향이며, 전자신고 파일 생성(2단계)이
-가이드와 자동제출 사이를 잇는 다리다.
+| Path | 현재 실행 우선순위 | 다음 마일스톤 |
+|---|---|---|
+| 1 | **최우선** — 홈택스 양식 입수·기입·신고 보조 | 세목 확대: **원천세** → 부가세 ([Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)) |
+| 2 | **후순위** — Path 1 Validation 안정 후 | JC-034 ZIP (문서 완료, **구현 착수 보류**) |
+| 3 | 보류 (인증·fcrypt) | 적합성 검정·NTS round-trip 후 Slice 2b |
 
 ### 원칙 (자동제출 설계 시 필수)
 
@@ -134,6 +165,24 @@ JARYO-GIWA remains the accounting-firm workflow. Its code is the first reuse
 source for data extraction, bookkeeping, payroll, AI analysis, auth, database,
 and dashboard UI.
 
+SemuAgent and JARYO-GIWA are **separate products**. Path 2 links them via handoff:
+
+| Side | Operator | Role |
+|---|---|---|
+| SemuAgent | Company (business tenant) | Prepare, review, export handoff package |
+| JARYO-GIWA | Accounting firm (office tenant) | Receive, review, file via certified SW |
+
+Bridge rules (JC-034):
+
+- **구현 우선순위:** Path 1 세목 확대(홈택스 양식 기입)가 JC-034 ZIP보다 **선행**한다.
+- v1: manual ZIP export from SemuAgent; firm imports via existing GIWA upload/review surfaces.
+- No in-app tax-agent discovery, referral fees, or first-month bookkeeping promotions.
+- No shared tenant DB; link only with explicit business consent (v2: invitation code).
+- No Hometax passwords or certificates stored on either side.
+
+Revenue model (product-level): GIWA subscription from firms; SemuAgent subscription from
+companies. Bookkeeping fees between firm and client are **not** SemuAgent revenue.
+
 Every reused flow must be checked for operator mismatch:
 
 - `client` in JARYO-GIWA often means an accounting-firm customer company.
@@ -147,5 +196,7 @@ Every reused flow must be checked for operator mismatch:
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 화면 흐름 및 데이터 입출력
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 디자인 시스템 및 컴포넌트
 - **Technical_Specs**: [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md) - 런타임·스택·재사용 기반
+- **Technical_Specs**: [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) - 홈택스 양식 기입·세목 확대 순서
+- **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) - 사무소 전달 패키지 v1 범위 (구현 보류)
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - MVP 실행 항목 및 Context Lock
 - **QA_Validation**: [MVP QA Baseline](../05_QA_Validation/01_MVP_QA_BASELINE.md) - 품질 기준선

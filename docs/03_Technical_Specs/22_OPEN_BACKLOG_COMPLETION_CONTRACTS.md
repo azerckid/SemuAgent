@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-06 19:26 KST
+> Last Updated: 2026-07-07 04:10 KST
 
 ## 0. Purpose
 
@@ -12,10 +12,13 @@ Rule: an open backlog item may not start implementation unless its completion co
 
 | Category | Meaning | Items |
 |---|---|---|
-| 신고 준비 기능 | Prepares reviewable data for the user to file directly | JC-025, JC-026, JC-028 |
-| 제출 준비물 생성 | Produces a file or artifact the user can take to Hometax/Wetax | JC-030 |
+| 신고 준비 기능 | Prepares reviewable data for any filing path | JC-025, JC-026, JC-028 |
+| 공통 검증 | Validates confirmed data against official layout (Path 1 & 2) | JC-030 Validation |
+| Path 1 제출 준비물 | Plain e-filing files + Hometax upload guide for self-filing | JC-030 Path 1, JC-013 |
+| Path 2 사무소 handoff | ZIP/package for JARYO-GIWA (자료기와) | JC-034 |
+| Path 3 인증 제출 준비물 | Encrypted Hometax-uploadable files after certification | JC-030 Path 3 |
 | 제출 자동화 | Attempts submission after explicit user approval | JC-023 |
-| 기반 정리 | Removes copied GIWA assumptions or legacy surfaces that confuse SemuAgent | JC-031 |
+| 기반 정리 | Removes copied GIWA assumptions or legacy surfaces | JC-031 |
 
 JC-031 is not a 신고 준비 feature. It is product-foundation cleanup so the 신고 준비 product no longer carries accounting-firm/customer-request assumptions.
 
@@ -25,7 +28,7 @@ Every item can move to `done` only when all of the following are true:
 
 1. Scope is fixed in the backlog and, when user-visible, through UI-First Gate.
 2. A Pre-Code Brief exists for implementation work, unless the item is explicitly docs-only or blocked by an external gate.
-3. Responsibility boundary is explicit: SemuAgent prepares data or files; final filing/payment remains user action unless JC-023 is separately approved.
+3. Responsibility boundary is explicit: SemuAgent prepares data and artifacts; final filing is by the user (Path 1/3), licensed firm (Path 2), unless JC-023 is separately approved.
 4. No Hometax/certificate/bank/card credentials are stored.
 5. Tests and docs are updated for the implemented scope.
 6. Backlog status, acceptance checks, and Document Sync Check match the actual code state.
@@ -141,35 +144,94 @@ Non-goals before done:
 - Automatic submission.
 - Corporate or VAT-liable business handling in this workflow.
 
-### JC-030 — 전자신고 파일 생성·검증
+### JC-030 — 전자신고 검증 및 파일 생성 (Validation / Path 1 / Path 3)
 
-Type: 제출 준비물 생성.
+Type: 공통 검증 + Path 1 plain files + Path 3 encrypted files (future).
 
 Current gate: **JC-030 v1** (Slices 1a–2a, 3) **complete** on main — plain·검증·홈택스 안내 실사용 가능. **Slice 2b** (fcrypt·윈도우 microservice) is a **separate deferred track** per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md); Windows DLL execution + Hometax round-trip before code. **Open risk (2026-07-07):** the file-conversion path itself may require [software conformance certification](./32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) that SemuAgent has not obtained — NTS inquiry pending. Alternate direct-input path: [JC-033](./33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md).
 
-May start implementation only after:
+**3 Filing Paths (2026-07-07):** JC-030 is **not closed**. It has three layers:
 
-- [x] PII policy is decided — **server non-storage one-time input** ([PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)).
-- [x] Official layout acquisition path for **간이지급명세서(근로소득)** is documented — not the annual wage statement bundle ([Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md)). Reference HWP acquired; latest Hometax HWP before each submission period.
-- [x] The latest official file layout field definitions are mapped — [Field Mapping](./29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md) from NTS reference HWP (2019·2021).
-- The target tax type is fixed for v1. Current first candidate is 근로소득 간이지급명세서.
-- [x] Validation rules are defined from the official layout — Mapping §7 · Brief §6.
-- [x] UI-First Gate shows file-generation status, validation errors, and responsibility boundary — [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html), approved 2026-07-07.
-- [x] Pre-Code Brief maps SemuAgent's confirmed data to file fields — [Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md) **사용자 승인(2026-07-07)**. Slice **1a** `lib/efiling-simplified-wage/build-records.ts` 구현 완료.
+| Layer | Filing Path | Status |
+|---|---|---|
+| **Validation** | Path 1 & 2 공통 | Implemented (Slices 1a–2a·3) |
+| **Path 1** | 양식 파일 + 홈택스 안내 | Implemented (plain SC·guide UI) |
+| **Path 3** | 인증·암호화 업로드 파일 | Deferred (Slice 2b·적합성 검정) |
+
+#### Validation — 공통 검증 (Path 1 & 2)
+
+Current state: `lib/efiling-simplified-wage` on main — layout validation, plain record build, tests.
 
 Done means:
 
-- For at least one approved tax type, SemuAgent generates a file candidate from confirmed preparation data.
-- The file format follows the official layout and has deterministic formatting tests.
-- The app validates required fields, totals, period, and format before download.
-- The user downloads and directly uploads/submits through Hometax; the app does not log in or submit.
-- The UI avoids claims such as `국세청 검증 완료` or `제출 보장` unless actually certified.
-- Tests include golden-file output, validation failures, PII non-persistence, and tenant isolation.
+- For at least one approved tax type (간이지급명세서 v1), SemuAgent validates confirmed data against the official layout before Path 1 download or Path 2 ZIP export.
+- Validation covers required fields, totals, period, and format; errors/warnings are shown.
+- PII follows one-time non-storage policy; tests cover validation, PII non-persistence, tenant isolation.
 
-Non-goals before done:
+Remaining:
 
-- User-approved auto-submit. That remains JC-023.
-- Any file type without an official current layout.
+- [ ] JC-034 v1 consumes validation output in ZIP
+- [ ] UI shows Path 1·2·3 boundaries clearly (separate UI PR)
+
+#### Path 1 — 양식 파일 + 홈택스 업로드 안내
+
+Current state: plain SC download + Hometax conversion upload guide on main.
+
+Done means (Path 1, per tax type v1):
+
+- User can download plain e-filing file candidates from validated preparation data.
+- Hometax step-by-step upload guide is shown (JC-013 alignment).
+- UI states plain-file limits until Path 3 certification exists.
+- User uploads and submits directly; SemuAgent does not log in or submit.
+
+#### Path 3 — 인증 후 암호화 파일 (future)
+
+Current state: not started. Slice 2b (fcrypt) and 적합성 검정 deferred.
+
+May start only after:
+
+- NTS file-conversion certification path is confirmed, and
+- Crypto round-trip validated per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md).
+
+Done means (Path 3):
+
+- User can download encrypted files intended for Hometax file-conversion upload.
+- Certification status is accurate in UI (`국세청 검증 완료` only if true).
+
+Non-goals (all JC-030 layers):
+
+- User-approved auto-submit (JC-023).
+- Tax-representative marketplace positioning.
+- File types without an official current layout.
+
+### JC-034 — GIWA handoff package (Path 2 · ZIP Export v1)
+
+Current gate: scope fixed in [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md);
+**implementation deferred** until Path 1 tax-type expansion is stable ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)).
+
+May start implementation only after:
+
+- [x] UI-First Gate for handoff export panel (신고 준비) — [08_filing_preparation.html](../02_UI_Screens/previews/08_filing_preparation.html), approved 2026-07-07
+- [x] Pre-Code Brief with manifest Zod schema and per-track CSV/Excel columns — [35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md), approved 2026-07-07
+- [ ] Copy approved: existing firm only, no marketplace/referral language
+- [ ] JC-030 Validation integrated for 간이지급 v1 scope
+
+Done means (v1):
+
+- User can export a ZIP for a selected period containing manifest + at least one track section.
+- Export is blocked when Validation has blocking errors (configurable per track).
+- User confirms handoff scope before download; export event is audit-logged (no raw PII in logs).
+- README-handoff states firm responsibility for filing and certified SW submission.
+- Tests cover manifest schema, tenant isolation, empty/inapplicable tracks, and validation gating.
+
+Non-goals (v1):
+
+- SemuAgent ↔ GIWA real-time API
+- Tax-firm discovery, referral fees, or bookkeeping-fee sharing
+- Hometax submission or certificate storage
+- Replacing firm's Wehago/Semusarang workflow
+
+v2 (separate contract update): invitation link, API push, receipt sync back to SemuAgent.
 
 ### JC-031 — 레거시 GIWA upload/email 서브시스템 은퇴
 
@@ -241,6 +303,9 @@ If a later audit finds another legacy surface, it must be classified into one of
 - [Backlog](../04_Logic_Progress/00_BACKLOG.md)
 - [JC-023 Hometax Auto-submit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md)
 - [E-Filing File Generation Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md)
+- [JC-034 GIWA Handoff Package Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md)
+- [JC-034 GIWA Handoff Pre-Code Brief](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md)
+- [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
 - [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
 - [JC-030 Simplified Wage E-Filing Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md)
 - [Legacy Upload/Email Retirement Audit](./20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)
