@@ -1,16 +1,16 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-06 15:00 KST
+> Last Updated: 2026-07-06 15:25 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 3c-5 완료 — Adaptive structuring Slice 4 allowlist 결정
+현재: JC-031 Slice 4-0 완료 — upload_session·outbound_email allowlist 감사(이번 PR)
 Gate: 통과
-완료: Slice 1~2c, dev/prod DB 0061·0062·0063·0064 적용, Slice 3a~3b, Slice 3c-0~3c-4a(PR #107), Slice 3c-5 감사(이번 PR)
-다음: Slice 4 schema retirement 준비 — `upload_session` allowlist·table rebuild 전략
-필요 확인: Slice 4 allowlist 초안(`adaptive_structure_*` 포함), prod DB 0060 적용 여부
+완료: Slice 1~3c, dev/prod DB 0061~0064, Slice 3c-5, Slice 4-0 allowlist(이번 PR)
+다음: Slice 4-1 dead code 제거 후보(createSessionAndSend·missing-request 모듈)
+필요 확인: prod DB migration 0060 적용 여부, allowlist 문서 리뷰
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -285,7 +285,7 @@ Done for 3c:
 - downstream additive FK 이관(validation·bookkeeping·payroll extraction)은 3c-2~3c-4a에서 완료했다.
 - `adaptive_structure_model`·`adaptive_structure_model_run`은 provenance/audit로 Slice 4 allowlist에 남긴다(3c-5).
 - 남은 `upload_session` 참조는 compatibility/legacy/request-event/audit allowlist로 분류된다.
-- `rg upload_session|uploadSession` 결과가 allowlist 문서와 일치한다(Slice 4에서 완료).
+- `rg upload_session|uploadSession` 결과가 allowlist 문서와 일치한다(Slice 4-0에서 초안 완료, [Slice 4 Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md)).
 
 ## 5. Non-goals
 
@@ -325,7 +325,7 @@ Slice 3 전체 완료 기준:
 - [ ] `upload_file`과 핵심 자료수집 read model이 `source_batch`를 사용한다.
 - [ ] 기장/급여/신고 준비 read model이 `source_batch` 우선, legacy fallback 허용 방식으로 동작한다.
 - [ ] 새 runtime code가 source lineage 목적으로 `upload_session` 의존을 추가하지 않는다.
-- [ ] 남은 `upload_session` 참조가 compatibility/legacy/request-event/audit allowlist로 문서화된다.
+- [x] 남은 `upload_session` 참조가 compatibility/legacy/request-event/audit allowlist로 문서화된다(Slice 4-0, [Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md)).
 - [ ] direct-upload, source collection, bookkeeping review, payroll, VAT, filing support, reminders, filing preparation tests pass.
 
 ## 9. Related Documents
@@ -335,3 +335,4 @@ Slice 3 전체 완료 기준:
 - [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
 - [DB Schema](./03_DB_SCHEMA.md)
 - [Backlog JC-031](../04_Logic_Progress/00_BACKLOG.md)
+- [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md)

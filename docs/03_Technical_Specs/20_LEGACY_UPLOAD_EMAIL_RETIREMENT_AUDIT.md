@@ -6,11 +6,11 @@
 
 ```text
 [Flow]
-현재: JC-031 Slice 3c-5 완료 — Adaptive structuring Slice 4 allowlist 결정
+현재: JC-031 Slice 4-0 완료 — upload_session·outbound_email allowlist 감사
 Gate: 통과
-완료: Slice 1~1c 외부 포털 quarantine/dead code 제거, Slice 2a~2b-5 레거시 요청메일 side effect 제거, Slice 2c sent_email_id FK 제거·purpose draft API 410, Slice 3a source_batch 도입, Slice 3b read model 전환, Slice 3c-0 migration 전략 고정, Slice 3c-1 company-home read switch, Slice 3c-2 validation FK(migration 0062), Slice 3c-3 bookkeeping FK(migration 0063), Slice 3c-4 payroll lineage decision, Slice 3c-4a payroll extraction FK(PR #107, dev/prod 0064 머지 전 적용), Slice 3c-5 adaptive structuring allowlist 결정
-다음: Slice 4 schema retirement 준비 — `upload_session` allowlist·table rebuild 전략(`adaptive_structure_*` 포함)
-필요 확인: Slice 4 allowlist 초안, prod DB 0060 적용 여부
+완료: Slice 1~3c, Slice 4-0 allowlist([Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md))
+다음: Slice 4-1 dead code 제거(createSessionAndSend·missing-request 모듈)
+필요 확인: prod DB migration 0060 적용 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 
@@ -159,4 +159,5 @@ Slice 2b-1~2b-5의 상세 완료 상태는 [Legacy Mail Side-effect Audit](./21_
 - **Technical_Specs**: [Internal Reminder Cron Brief](./14_INTERNAL_REMINDER_CRON_PRE_CODE_BRIEF.md) — 레거시 cron 제거 선행
 - **Technical_Specs**: [DB Schema](./03_DB_SCHEMA.md) — `upload_session`, `outbound_email`, 파생 FK 현황
 - **Technical_Specs**: [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — JC-031 최종 done 조건과 남은 slice 고정
+- **Technical_Specs**: [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md) — `upload_session`/`outbound_email` 잔존 참조 분류·table rebuild 전략
 - **Technical_Specs**: [Legacy Mail Side-effect Audit](./21_LEGACY_MAIL_SIDE_EFFECT_AUDIT.md) — Slice 2b 보충요청 초안 side effect·transaction-purpose FK 감사
