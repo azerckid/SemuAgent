@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { requireTenantSession } from '@/lib/auth-helpers'
+import { loadSimplifiedWageEfilingSummary } from '@/lib/efiling-simplified-wage/summary'
 import { loadPaymentStatementSummary } from '@/lib/payment-statements/summary'
 import { PaymentStatementEmptyState, PaymentStatementReview } from './_components/payment-statement-review'
 
@@ -20,11 +21,14 @@ export default async function PaymentStatementsPage({ searchParams }: PageProps)
     redirect('/sign-in')
   }
 
-  const summary = await loadPaymentStatementSummary({ tenantId, periodKey: period })
+  const [summary, efiling] = await Promise.all([
+    loadPaymentStatementSummary({ tenantId, periodKey: period }),
+    loadSimplifiedWageEfilingSummary({ tenantId, periodKey: period }),
+  ])
 
   if (!summary.businessEntity) {
     return <PaymentStatementEmptyState tenantName={summary.tenant.name} />
   }
 
-  return <PaymentStatementReview summary={summary} />
+  return <PaymentStatementReview summary={summary} efiling={efiling} />
 }

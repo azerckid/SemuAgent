@@ -1,6 +1,6 @@
 # JC-030 E-Filing File Generation Pre-Code Technical Brief
 > Created: 2026-07-07 00:35 KST
-> Last Updated: 2026-07-07 00:45 KST
+> Last Updated: 2026-07-07 01:00 KST
 
 ## 0. Governing Principle
 
@@ -135,7 +135,7 @@ z.object({
 | 슬라이스 | 내용 | 착수 조건 |
 |:---|:---|:---|
 | **1a** | `build-records` 순수 함수 + V-01~V-11 테스트 | Brief 승인 — **구현 완료(2026-07-07)** `lib/efiling-simplified-wage/` |
-| **1b** | 패널 UI + validation read model (다운로드 없이 검증만) | 1a |
+| **1b** | 패널 UI + validation read model (다운로드 없이 검증만) | 1a — **구현 완료(2026-07-07)** `summary.ts` + `payment-statements` 패널 |
 | **2a** | Generate API plain 파일 스트림 | 1a |
 | **2b** | NTS-CRYPTO 암호화 + 비밀번호 입력 | NTS crypto 스펙 확보 |
 | **3** | 홈택스 업로드 가이드 deep link · 운영 체크리스트 | 선택 |
