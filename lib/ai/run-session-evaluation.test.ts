@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   evaluateSessionAgainstCriteria: vi.fn(),
-  generateMissingRequestDraft: vi.fn(),
 }))
 
 vi.mock('./session-eval', () => ({
@@ -27,10 +26,6 @@ vi.mock('@/lib/db/schema', () => ({
   },
 }))
 
-vi.mock('@/lib/email/missing-request', () => ({
-  generateMissingRequestDraft: mocks.generateMissingRequestDraft,
-}))
-
 const { runSessionEvaluationPipeline } = await import('./run-session-evaluation')
 
 beforeEach(() => {
@@ -38,7 +33,7 @@ beforeEach(() => {
 })
 
 describe('runSessionEvaluationPipeline', () => {
-  it('keeps needs_resubmission outcomes without creating legacy missing-request drafts', async () => {
+  it('returns needs_resubmission outcomes from evaluation', async () => {
     mocks.evaluateSessionAgainstCriteria.mockResolvedValue({
       ok: true,
       status: 'needs_resubmission',
@@ -47,6 +42,5 @@ describe('runSessionEvaluationPipeline', () => {
     const result = await runSessionEvaluationPipeline('session-1', 'tenant-1')
 
     expect(result).toEqual({ ok: true, status: 'needs_resubmission' })
-    expect(mocks.generateMissingRequestDraft).not.toHaveBeenCalled()
   })
 })

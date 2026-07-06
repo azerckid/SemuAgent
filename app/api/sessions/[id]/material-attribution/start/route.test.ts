@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => ({
   getActiveStaffForPeriodAttribution: vi.fn(),
   startBookkeepingMaterialAttribution: vi.fn(),
   runBookkeepingLedgerDraftPipeline: vi.fn(),
-  generateMissingRequestDraft: vi.fn(),
 }))
 
 vi.mock('@/lib/auth-helpers', () => ({ requireTenantSession: mocks.requireTenantSession }))
@@ -16,9 +15,6 @@ vi.mock('@/lib/bookkeeping/period-attribution-service', () => ({
 }))
 vi.mock('@/lib/bookkeeping/fiscal-year-ledger-pipeline', () => ({
   runBookkeepingLedgerDraftPipeline: mocks.runBookkeepingLedgerDraftPipeline,
-}))
-vi.mock('@/lib/email/missing-request', () => ({
-  generateMissingRequestDraft: mocks.generateMissingRequestDraft,
 }))
 
 const { POST } = await import('./route')
@@ -38,7 +34,6 @@ beforeEach(() => {
   mocks.getActiveStaffForPeriodAttribution.mockReset()
   mocks.startBookkeepingMaterialAttribution.mockReset()
   mocks.runBookkeepingLedgerDraftPipeline.mockReset()
-  mocks.generateMissingRequestDraft.mockReset()
   mocks.requireTenantSession.mockResolvedValue({ user: { id: 'user-1' }, tenantId: 'tenant-1' })
   mocks.getActiveStaffForPeriodAttribution.mockResolvedValue(STAFF)
 })
@@ -65,7 +60,6 @@ describe('POST /api/sessions/[id]/material-attribution/start', () => {
       tenantId: 'tenant-1',
       staffRecord: STAFF,
     })
-    expect(mocks.generateMissingRequestDraft).not.toHaveBeenCalled()
   })
 
   it('does not run the pipeline when attribution itself fails', async () => {

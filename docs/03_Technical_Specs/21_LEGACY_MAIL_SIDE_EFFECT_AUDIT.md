@@ -9,7 +9,7 @@
 현재: JC-031 Slice 4-0 완료 — upload_session·outbound_email allowlist 감사
 Gate: 통과
 완료: Slice 1~2c, Slice 3a~3c-5, Slice 4-0 allowlist
-다음: Slice 4-1 dead code 제거(createSessionAndSend·missing-request 모듈)
+다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
 필요 확인: prod DB migration 0060 적용 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```

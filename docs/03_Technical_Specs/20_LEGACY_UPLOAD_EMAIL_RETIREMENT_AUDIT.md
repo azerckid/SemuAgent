@@ -1,15 +1,15 @@
 # Legacy Upload/Email Retirement Audit
 > Created: 2026-07-05 14:30
-> Last Updated: 2026-07-06 14:22
+> Last Updated: 2026-07-06 15:35 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-0 완료 — upload_session·outbound_email allowlist 감사
+현재: JC-031 Slice 4-1 완료 — legacy mail dead code 제거
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0 allowlist([Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md))
-다음: Slice 4-1 dead code 제거(createSessionAndSend·missing-request 모듈)
+완료: Slice 1~3c, Slice 4-0~4-1
+다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
 필요 확인: prod DB migration 0060 적용 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```

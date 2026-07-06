@@ -1,16 +1,16 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-06 15:25 KST
+> Last Updated: 2026-07-06 15:35 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-0 완료 — upload_session·outbound_email allowlist 감사(이번 PR)
+현재: JC-031 Slice 4-1 완료 — legacy mail dead code 제거
 Gate: 통과
-완료: Slice 1~3c, dev/prod DB 0061~0064, Slice 3c-5, Slice 4-0 allowlist(이번 PR)
-다음: Slice 4-1 dead code 제거 후보(createSessionAndSend·missing-request 모듈)
-필요 확인: prod DB migration 0060 적용 여부, allowlist 문서 리뷰
+완료: Slice 1~3c, Slice 4-0~4-1
+다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
+필요 확인: prod DB migration 0060 적용 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 

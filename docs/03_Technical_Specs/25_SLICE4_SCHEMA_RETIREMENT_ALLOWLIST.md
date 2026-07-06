@@ -1,16 +1,16 @@
 # JC-031 Slice 4 Schema Retirement Allowlist
 > Created: 2026-07-06 15:25 KST
-> Last Updated: 2026-07-06 15:25 KST
+> Last Updated: 2026-07-06 15:35 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-0 완료 — upload_session·outbound_email allowlist 감사(이번 PR)
+현재: JC-031 Slice 4-1 완료 — legacy mail dead code 제거(이번 PR)
 Gate: 통과
-완료: Slice 1~3c, dev/prod DB 0061~0064, Slice 3c-5 adaptive allowlist 결정
-다음: Slice 4-1 dead code 제거 후보 검토(createSessionAndSend·missing-request 모듈)
-필요 확인: prod DB migration 0060 적용 여부, Slice 4-1 착수 전 allowlist 리뷰
+완료: Slice 1~3c, Slice 4-0~4-1
+다음: Slice 4-2 upload_session 레거시 컬럼 retirement 준비
+필요 확인: prod DB migration 0060 적용 여부
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -22,7 +22,7 @@ Slice 3는 SemuAgent 내부 source lineage를 `source_batch`로 분리하고 dow
 
 ## 2. Audit Method
 
-감사 일시: 2026-07-06 (main `d01b5c4`, PR #108 머지 후)
+감사 일시: 2026-07-06 (PR #110 Slice 4-1 브랜치 기준)
 
 ```bash
 rg -l 'upload_session|uploadSession' --glob '*.{ts,tsx}'
@@ -32,8 +32,8 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 
 | 패턴 | TS/TSX 파일 수 | SQL migration 파일 수 |
 |---|---:|---:|
-| `upload_session\|uploadSession` | 117 | 29 |
-| `outbound_email\|outboundEmail` | 12 (런타임 5, 테스트 7) | 5 |
+| `upload_session\|uploadSession` | 116 | 29 |
+| `outbound_email\|outboundEmail` | 10 (런타임 3, 테스트 7) | 5 |
 
 테스트 파일(`.test.ts`, `.e2e.test.ts`)은 allowlist **T — test/fixture**로 일괄 분류한다. Slice 4에서 런타임을 제거할 때 테스트 fixture를 함께 정리한다.
 
@@ -156,8 +156,6 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 | 경로 | 역할 | 비고 |
 |---|---|---|
 | `app/api/request-events/[id]/route.ts` | request-event 조회 | write API는 Slice 2a에서 410 |
-| `lib/services/session-service.ts` | `createSessionAndSend` | **H — 호출처 없음(dead)** |
-| `lib/email/missing-request.ts` | outbound_email draft CRUD | **H — import/call chain 없음(dead)** |
 | `lib/completion.ts` | `checkAndCompleteSession` — 세션 완료 판정 | C — `app/api/sessions/[id]/matches/[matchId]/route.ts`에서 호출 |
 
 ### G — audit / cascade delete
@@ -167,16 +165,17 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 | `lib/services/proof-service.ts` | `audit_proof` 기록 |
 | `app/api/clients/[id]/route.ts` | 클라이언트 삭제 시 session/file/outbound_email/audit_proof cascade |
 
-### H — dead code (Slice 4-1 후보)
+### H — dead code (Slice 4-1 완료)
 
 | 경로 | 근거 |
 |---|---|
-| `lib/services/session-service.ts` → `createSessionAndSend` | `rg createSessionAndSend`: 정의만 존재, 호출처 0 |
-| `lib/email/missing-request.ts` | `rg missing-request` import: 테스트 mock만; Slice 2b-1 이후 런타임 미호출 |
-| `lib/email/period-gap-missing-request.ts` | missing-request 전용; 연쇄 dead 후보 |
-| `lib/sessions/missing-request-targets.ts` | missing-request 전용; 연쇄 dead 후보 |
+| ~~`lib/services/session-service.ts` → `createSessionAndSend`~~ | Slice 4-1 제거 |
+| ~~`lib/email/missing-request.ts`~~ | Slice 4-1 제거 |
+| ~~`lib/email/period-gap-missing-request.ts`~~ | Slice 4-1 제거 |
+| ~~`lib/sessions/missing-request-targets.ts`~~ | Slice 4-1 제거 |
+| ~~`lib/validations/session.ts`~~ | Slice 4-1 제거 |
 
-4-1 착수 전 `rg`로 호출처 재확인 필수.
+4-1 이후 `rg generateMissingRequestDraft|createSessionAndSend` 런타임 0건.
 
 ### I — schema / migration
 
@@ -188,13 +187,11 @@ rg -l 'upload_session|outbound_email' --glob 'drizzle/*.sql'
 | 경로 | 카테고리 | retire 시점 |
 |---|---|---|
 | `lib/db/schema.ts` | I | 4-3 |
-| `lib/services/session-service.ts` (`createSessionAndSend` 내부 insert) | H | 4-1 dead code와 함께 |
-| `lib/email/missing-request.ts` | H | 4-1 |
 | `app/api/clients/[id]/route.ts` (cascade delete) | G | 4-3 후 cascade 로직 제거 |
 | `app/api/transaction-purpose-requests/[id]/send/route.ts` | F | 이미 410 (Slice 2b-2) |
 | `*.test.ts` (7건) | T | 런타임 제거 시 정리 |
 
-**런타임 신규 `outbound_email` INSERT 경로는 없음** (Slice 2a~2c 이후). 남은 참조는 schema·dead code·cascade delete·테스트다.
+**런타임 신규 `outbound_email` INSERT 경로는 없음** (Slice 2a~2c 이후). 남은 참조는 schema·410 route comment·cascade delete·테스트다.
 
 ## 7. Table Rebuild Strategy (SQLite/Turso)
 
@@ -239,7 +236,7 @@ Phase 5 (4-5)  upload_session table retirement 또는 compatibility view
 | Sub-slice | 범위 | DB migration | 선행 조건 |
 |---|---|---|---|
 | **4-0** | allowlist 감사 (이 문서) | 없음 | Slice 3c 완료 |
-| **4-1** | dead code: `createSessionAndSend`, `missing-request` 모듈 등 | 없음 | 4-0 리뷰 |
+| **4-1** | dead code: `createSessionAndSend`, `missing-request` 모듈 등 | 없음 | **완료** |
 | **4-2** | `upload_session` 레거시 컬럼 제거 | rebuild migration | 4-1, portal 필드 read 0 |
 | **4-3** | `outbound_email`, request-event schema retirement | drop/rebuild | runtime INSERT 0 (현재 충족) |
 | **4-4** | downstream `upload_session_id` 제거 | per-table rebuild 0065+ | dual-write 안정, read prefer 검토 |

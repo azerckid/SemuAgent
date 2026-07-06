@@ -174,7 +174,7 @@ Non-goals before done:
 
 Type: 기반 정리.
 
-Current state: Slice 1 through Slice 4-0 documented. Slice 3 downstream FK migration is complete. [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md) classifies remaining `upload_session`/`outbound_email` references and defines 4-1..4-5 sub-slices.
+Current state: Slice 1 through Slice 4-1 documented. Slice 3 downstream FK migration is complete. [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md) classifies remaining `upload_session`/`outbound_email` references and defines 4-1..4-5 sub-slices.
 
 Remaining slices:
 
@@ -198,8 +198,9 @@ Remaining slices:
    - Execute in the fixed order from Brief 24: **3a schema/backfill/dual-write -> 3b read model switch -> 3c-0 migration strategy -> 3c-1..3c-5 downstream FK migration**. Payroll is split into 3c-4 decision and 3c-4a additive FK implementation.
    - `upload_session` deletion is not part of Slice 3; it remains a compatibility surface until Slice 4.
 3. **Slice 4 — Schema retirement**
-   - **4-0 complete:** allowlist audit in [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md). `upload_session` 117 TS/TSX refs categorized; `outbound_email` runtime INSERT paths none.
-   - **4-1 next:** dead code removal (`createSessionAndSend`, `missing-request` module) — no DB migration.
+   - **4-0 complete:** allowlist audit in [Slice 4 Schema Retirement Allowlist](./25_SLICE4_SCHEMA_RETIREMENT_ALLOWLIST.md). `upload_session` 116 TS/TSX refs categorized; `outbound_email` runtime INSERT paths none.
+   - **4-1 complete:** removed `createSessionAndSend`, `lib/email/missing-request.ts`, `period-gap-missing-request`, `missing-request-targets`, and `lib/validations/session.ts`. `session-service.ts` retains only `createDirectUploadSession`. No DB migration.
+   - **4-2 next:** `upload_session` legacy portal/mail column retirement (table rebuild).
    - Remove or quarantine remaining `outbound_email`, request-event, mail-console, and legacy upload-session schema pieces after FK migration.
    - Keep only explicitly approved compatibility surfaces, if any, and document why they remain.
 
