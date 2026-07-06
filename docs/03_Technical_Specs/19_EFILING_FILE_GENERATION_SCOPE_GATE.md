@@ -8,7 +8,7 @@
 [Flow]
 현재: Path 1 세목 확대 최우선 — 홈택스 양식 입수·기입·신고 보조
 완료: 근로소득 간이지급 — Validation + Path 1 plain·검증·홈택스 안내
-다음: 원천세 신고서 layout acquisition → JC-030 확장 ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md))
+다음: 원천세 layout acquisition — [37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) (Slice 0a 진행)
 보류: JC-034 Path 2 ZIP 구현 · Path 3 Slice 2b는 인증 후
 ```
 
@@ -157,7 +157,8 @@ Pre-Code Brief는 아래가 확정된 뒤 작성한다.
 
 - **Concept_Design**: [Product Baseline §3 Filing Paths](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - **Concept_Design**: [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md)
-- **Technical_Specs**: [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md) — 세목 확대 순서·게이트
+- **Technical_Specs**: [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
+- **Technical_Specs**: [Withholding Layout Acquisition](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) — 원천세 Slice 0a
 - **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) — 구현 보류
 - **Technical_Specs**: [JC-023 Hometax Autosubmit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 파일변환신고·적합성 검정 리서치
 - **Technical_Specs**: [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md) — PII 일회성 입력 정책

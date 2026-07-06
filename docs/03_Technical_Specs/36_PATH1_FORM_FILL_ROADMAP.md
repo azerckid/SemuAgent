@@ -1,6 +1,6 @@
 # Path 1 — Hometax Form Fill Roadmap
 > Created: 2026-07-07 04:20 KST
-> Last Updated: 2026-07-07 04:20 KST
+> Last Updated: 2026-07-07 04:25 KST
 
 ## 0. Governing Principle
 
@@ -21,7 +21,7 @@ Path 2 (JC-034 GIWA ZIP)와 Path 3 (인증·암호화)는 Path 1 Validation·세
 [Flow]
 현재: Path 1 세목 확대 — 홈택스 양식 기입·신고 보조가 최우선
 완료: 근로소득 간이지급명세서 — layout·mapping·Path 1 구현 (JC-030)
-다음: 원천세 신고서 — layout acquisition → field mapping → Pre-Code Brief → 구현
+다음: 원천세 — 최신 HWP 입수 → Field Mapping(38) ([Layout Acquisition](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) Slice 0a 진행)
 보류: JC-034 Path 2 ZIP 구현 (문서만 완료, 코드 착수 대기)
 미래: Path 3 fcrypt·적합성 검정
 ```
@@ -47,7 +47,7 @@ Path 2 (JC-034 GIWA ZIP)와 Path 3 (인증·암호화)는 Path 1 Validation·세
 | 순서 | 세목 | 데이터 소스 (live) | 양식 입수 | Path 1 구현 | 비고 |
 |:---:|:---|:---|:---:|:---:|:---|
 | 1 | **근로소득 간이지급명세서** | JC-024, JC-015 | 완료 | **완료** | 반기; 2027~ 월 제출 전환 대비 |
-| 2 | **원천세 신고서** | JC-012, JC-013, JC-027 | **미착수** | 없음 | 월 신고; 급여·원천 집계 live |
+| 2 | **원천세 신고서** | JC-012, JC-013, JC-027 | **Slice 0a 진행** | 없음 | [37](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) |
 | 3 | **부가가치세** | JC-011, JC-013 | 미확정 | 없음 | 분기; 레이아웃 입수 경로 선행 조사 |
 | 4 | **지방소득세(원천 특별징수)** | JC-027 | 위택스 별도 | 없음 | 원천세 Path 1 후 또는 병렬 layout 조사 |
 | 5 | **사업장현황신고** | JC-028 | 미착수 | 없음 | 면세 개인; 홈택스 직접 입력 비중 큼 |
@@ -62,11 +62,11 @@ Path 2 (JC-034 GIWA ZIP)와 Path 3 (인증·암호화)는 Path 1 Validation·세
 
 ### 3.1 착수 전 작업 (코드 없음)
 
-1. 홈택스 자료실·국세청 프로그램 게시판에서 **원천세 신고 전산매체 제출요령** 최신본 HWP 입수
-2. `37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md` 작성 (28번 간이지급 문서 형식 따름)
-3. JC-012 `payroll_period_summary` · JC-013 filing-support 원천세 항목과 필드 매핑 초안
-4. PII: 원천세는 간이지급 대비 직원 식별정보 의존 낮을 수 있음 — mapping 단계에서 확정
-5. UI: 신고지원 `/dashboard/filing-support` 또는 급여 화면 연동 패널 (Pre-Code Brief에서 확정)
+1. [x] `37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md` — 입수 경로·관문·데이터 가설 (2026-07-07)
+2. [ ] 홈택스 자료실에서 **제출 대상 귀속월 최신 HWP+정오표** 다운로드
+3. [ ] `38_JC030_WITHHOLDING_EFILING_FIELD_MAPPING.md` — record·필드·JC-012/013 매핑
+4. [ ] PII 범위 확정(집계-only vs 직원 부표)
+5. [ ] UI: 신고지원 `/dashboard/filing-support` 또는 급여 연동 패널 (Pre-Code Brief에서 확정)
 
 ### 3.2 완료 정의 (Path 1)
 
@@ -98,6 +98,7 @@ Path 1 우선순위 반영 시 아래 문서가 일치해야 한다.
 
 ## 6. Related Documents
 
+- **Technical_Specs**: [Withholding Layout Acquisition](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) — 원천세 Slice 0a (진행)
 - **Technical_Specs**: [JC-030 Simplified Wage Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md) — 완료된 1번 세목 참조
 - **Technical_Specs**: [JC-030 Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md)
 - **Technical_Specs**: [JC-034 Pre-Code Brief](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md) — Path 2, 구현 대기

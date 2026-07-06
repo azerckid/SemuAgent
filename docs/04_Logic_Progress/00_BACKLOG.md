@@ -618,7 +618,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 파일변환신고 적합성 검정 요건 확인 — [Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md)(2026-07-07 착수, 국세청 공식 문의 대기)
   - [x] **UI-First Gate**: [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html) JC-030 파일 생성 패널 — 사용자 승인(2026-07-07)
   - [x] Validation + Path 1 plain·검증·안내 구현 (간이지급)
-  - [ ] **다음 세목: 원천세** — layout acquisition → field mapping → Pre-Code Brief → 구현
+  - [x] 원천세 layout acquisition Slice 0a — [37](../03_Technical_Specs/37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md)
+  - [ ] 원천세 최신 HWP 입수 → Field Mapping(38) → Pre-Code Brief → 구현
   - [ ] 부가세 Path 1 (원천세 다음)
   - [ ] JC-034 Path 2 ZIP이 Validation 출력 소비 (Path 1 세목 확대 후)
 - Acceptance Criteria:
