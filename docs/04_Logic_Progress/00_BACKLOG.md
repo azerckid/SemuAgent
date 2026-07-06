@@ -600,7 +600,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 3단계 다리(입력 가이드 → 전자신고 파일 생성·검증 → 사용자 승인 자동제출)의 중간 단계. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 확정 데이터 준비→handoff 경계.
 - Related Domain: 신고지원(JC-013) 확정 산출물 · 부가세(JC-011)·급여/원천세(JC-012) read model. 자동제출 후속은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
-- Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상 후보·공식 자료 확인·차단 조건(최신 파일 레이아웃, 직원 식별정보 정책)을 고정.
+- Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상 후보·공식 자료 확인·차단 조건(최신 파일 레이아웃). [JC-030 E-Filing File PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md) — PII 일회성 입력 정책(2026-07-06 확정).
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-030](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 전자신고 파일 생성·검증의 착수 게이트와 done 조건
 - Related Research: [JC-023 Hometax Auto-submit Research §2.1·§2.5](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 세목별 전자신고 파일 규격·파일변환신고 관문·적합성 검정. JC-030은 이 리서치의 "파일 생성·파일변환신고까지"의 실현가능 구간을 독립 기능으로 승격한 것.
 - Related UI Docs: N/A - 착수 시 신고지원 화면 확장(파일 다운로드·검증 결과)으로 정의. UI-First Gate 대상.
@@ -610,7 +610,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Implementation Preconditions (조사·설계 과제):
   - [x] 대상 세목 우선순위 확정 — [Scope Gate §4](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md): v1은 **근로소득 간이지급명세서**를 1순위 후보로 둔다(JC-024 데이터 live, 공식 제출주기 확인). 단, 최신 파일 레이아웃·직원 식별정보 정책이 닫힌 뒤 구현 착수.
   - [ ] 세목별 홈택스 전자신고 파일 규격 입수 (JC-023 Research §2.1의 [미확인] 규격서 공식 입수 경로 해소, 홈택스 자료실/국세청 126 확인)
-  - [ ] 직원 식별정보 처리 정책 확정 — JC-024 최소 PII 원칙상 주민등록번호를 저장하지 않는다. 근로소득 간이지급명세서 파일 생성을 위해 서버 미저장 일회성 입력/암호화 저장/부가세 선회 중 하나를 결정([Scope Gate §5.2](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md)).
+  - [x] 직원 식별정보 처리 정책 확정 — **서버 미저장 일회성 입력** ([PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md), 2026-07-06). `employee_profile` 주민번호 컬럼 추가 없음.
   - [ ] 확정 데이터(신고지원 산출물) → 전자신고 파일 필드 매핑 정의
   - [ ] 파일 형식·정합성 검증 규칙 정의 (제출 전 사용자에게 경고할 오류 항목)
   - [ ] 파일변환신고 적합성 검정 요건 확인 (JC-023 Research §2.5, 국세청 공식 문의)

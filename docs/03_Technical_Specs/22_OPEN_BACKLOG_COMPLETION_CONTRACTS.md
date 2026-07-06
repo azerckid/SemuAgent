@@ -145,12 +145,12 @@ Non-goals before done:
 
 Type: 제출 준비물 생성.
 
-Current gate: scope gate exists; implementation blocked by official file spec and PII policy.
+Current gate: scope gate partially passed — PII policy decided (2026-07-06); implementation still blocked by official file spec.
 
 May start implementation only after:
 
 - The latest official file layout for the selected tax type is obtained and linked.
-- PII policy is decided. For wage-related files, the default safe path is server non-storage one-time input unless a separate encrypted-storage design is approved.
+- [x] PII policy is decided — **server non-storage one-time input** ([PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)). Encrypted storage is not approved for v1.
 - The target tax type is fixed for v1. Current first candidate is 근로소득 간이지급명세서.
 - Validation rules are defined from the official layout.
 - UI-First Gate shows file-generation status, validation errors, and responsibility boundary.
@@ -240,6 +240,7 @@ If a later audit finds another legacy surface, it must be classified into one of
 - [Backlog](../04_Logic_Progress/00_BACKLOG.md)
 - [JC-023 Hometax Auto-submit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md)
 - [E-Filing File Generation Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md)
+- [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
 - [Legacy Upload/Email Retirement Audit](./20_LEGACY_UPLOAD_EMAIL_RETIREMENT_AUDIT.md)
 - [Legacy Mail Side-effect Audit](./21_LEGACY_MAIL_SIDE_EFFECT_AUDIT.md)
 - [Upload Session Column Retirement Pre-Code Brief](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md)
