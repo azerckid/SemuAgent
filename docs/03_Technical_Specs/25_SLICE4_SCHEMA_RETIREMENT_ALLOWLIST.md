@@ -1,15 +1,15 @@
 # JC-031 Slice 4 Schema Retirement Allowlist
 > Created: 2026-07-06 15:25 KST
-> Last Updated: 2026-07-06 22:30 KST
+> Last Updated: 2026-07-06 22:50 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2c micro 완료 — request_email_cc DROP (migration 0065 dev+prod)
+현재: JC-031 의도적 보류(paused) — Slice 4-2c micro까지 완료, 에픽 미완료(todo)
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-2c micro, prod DB migration 0060·0065 적용(2026-07-06)
-다음: optional 4-2b-impl 또는 추가 4-2c micro
+완료: Slice 1~3c, Slice 4-0~4-2c micro, prod DB 0060·0065(2026-07-06)
+다음: 재개 시 4-3+ 또는 optional 4-2b-impl — 필수 아님
 필요 확인: 없음
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
@@ -245,7 +245,7 @@ Phase 7 (4-5)    upload_session table retirement 또는 compatibility view
 | **4-2a** | redirect-blocked `sessions/new`·`extract-criteria`·`direct-send` residue 제거 | 없음 | **완료** |
 | **4-2b** | AI/review criteria context 이관 vs compatibility 결정 | 없음 (docs-only) | **완료** — [Brief 26 §2.4](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md) |
 | **4-2b-impl** (optional) | criteria inference/read path 코드 이관 | 없음 | 4-2c 전 subject/body/criteria DROP unblock (필수 아님) |
-| **4-2c** | `request_email_cc` 제거(table rebuild) | migration 0065 | **완료** — dev+prod 적용(Brief 26 §2.5) |
+| **4-2c** | `request_email_cc` 제거(table rebuild) | migration 0065 | **micro 완료** — dev+prod 적용; 추가 컬럼 DROP은 paused |
 | **4-3** | `outbound_email`, request-event schema retirement | drop/rebuild | runtime INSERT 0 (현재 충족) |
 | **4-4** | downstream `upload_session_id` 제거 | per-table rebuild 0065+ | dual-write 안정, read prefer 검토 |
 | **4-5** | `upload_session` table retirement | final migration | 4-4 완료, retention 정책 |
@@ -265,6 +265,7 @@ Slice 4 각 sub-slice PR 머지 후:
 | 항목 | 상태 |
 |---|---|
 | prod DB migration 0060 적용 여부 | **해소(2026-07-06)** — dev는 이미 적용, prod는 `turso db shell semuagent`로 table rebuild 직접 적용·검증(`foreign_key_check` 0건) |
+| JC-031 epic pause | **해소(2026-07-06)** — paused at 4-2c micro; epic stays `todo`. [Completion Contract §3 Paused](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) |
 | prod DB migration 0065 적용 여부 | **해소(2026-07-06)** — `semuagent-dev` → `semuagent` 순 적용, `request_email_cc` absent, row 2, `foreign_key_check` 0건 |
 | `lib/completion.ts` 호출처 | `matches/[matchId]/route.ts` — 세션 완료 판정(C) |
 | read prefer `source_batch_id` on downstream tables | 3c에서 deferred; 4-4 전 micro-slice 가능 |

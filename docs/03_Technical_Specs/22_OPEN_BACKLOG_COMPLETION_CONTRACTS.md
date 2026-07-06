@@ -207,6 +207,13 @@ Remaining slices:
    - Remove or quarantine remaining `outbound_email`, request-event, mail-console, and legacy upload-session schema pieces after FK migration.
    - Keep only explicitly approved compatibility surfaces, if any, and document why they remain.
 
+**Paused (2026-07-06):** The epic is **not done**. Backlog status stays `todo`. This is an intentional pause at a safe checkpoint after 4-2c micro, not epic completion. Live `upload_session` columns (`analysis_notes`, `extracted_criteria`, `additional_criteria`, `session_evaluation`, `request_email_subject`, `request_email_body`) remain for v1 direct-upload and AI/review pipelines. **Resume paths (optional, not required now):**
+
+1. **Slice 4-3+** — retire dead schema (`outbound_email`, request-event remnants) after allowlist re-audit; less live-pipeline risk than 4-2b-impl.
+2. **optional 4-2b-impl** — migrate inference off subject/body/criteria, then additional 4-2c micro column drops.
+
+Product backlog (e.g. JC-030 filing files) may take priority until legacy schema causes operational pain. Do not mark JC-031 `done` until all "Done means" criteria below are met.
+
 Done means:
 
 - No runtime route, API, service, UI, or side effect creates or depends on GIWA-style external customer request email.
