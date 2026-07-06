@@ -201,6 +201,12 @@ JC-011 구현은 아래 두 테이블을 `lib/db/schema.ts`와
 | `status`, `issue_code`, `issue_message` | 확인 필요·준비·마감 |
 | `edited_by_staff_id`, `edited_at`, `created_at`, `updated_at` | 감사·동기화 |
 
+주의: 이 테이블의 `source_batch_id`는 범용 `source_batch.id`가 아니라
+`payroll_extraction_batch.id`를 가리키는 급여 전용 FK다. JC-031 Slice 3c-4에서
+범용 source lineage는 `payroll_extraction_batch/row`, `payroll_rule_profile_application`,
+`payroll_excel_draft`에 별도 nullable `source_batch_id -> source_batch.id`를 추가하는
+방향으로 고정했다. `payroll_employee_line.source_batch_id`는 Slice 4 전까지 rename/drop하지 않는다.
+
 #### `payroll_insurance_notice_import`
 
 건강보험 EDI/사회보험 고지내역 파일 또는 수동 입력 묶음. 자격증명은 저장하지 않는다.

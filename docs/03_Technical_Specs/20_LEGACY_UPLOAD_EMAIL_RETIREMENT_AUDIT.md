@@ -1,16 +1,16 @@
 # Legacy Upload/Email Retirement Audit
 > Created: 2026-07-05 14:30
-> Last Updated: 2026-07-06 12:05
+> Last Updated: 2026-07-06 12:38
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 3c-3 구현 완료 — bookkeeping source output FK additive migration(PR review pending)
+현재: JC-031 Slice 3c-4 감사/결정 완료 — payroll lineage migration scope fixed
 Gate: 통과
-완료: Slice 1~1c 외부 포털 quarantine/dead code 제거, Slice 2a~2b-5 레거시 요청메일 side effect 제거, Slice 2c sent_email_id FK 제거·purpose draft API 410, Slice 3a source_batch 도입, Slice 3b read model 전환, Slice 3c-0 migration 전략 고정, Slice 3c-1 company-home read switch, Slice 3c-2 validation FK(migration 0062), Slice 3c-3 bookkeeping FK(migration 0063)
-다음: Slice 3c-4 payroll lineage decision → Slice 3c-5 adaptive structuring allowlist/migration → Slice 4 schema retirement
-필요 확인: PR review/merge 후 Vercel deploy 확인, direct-upload compatibility smoke
+완료: Slice 1~1c 외부 포털 quarantine/dead code 제거, Slice 2a~2b-5 레거시 요청메일 side effect 제거, Slice 2c sent_email_id FK 제거·purpose draft API 410, Slice 3a source_batch 도입, Slice 3b read model 전환, Slice 3c-0 migration 전략 고정, Slice 3c-1 company-home read switch, Slice 3c-2 validation FK(migration 0062), Slice 3c-3 bookkeeping FK(migration 0063), Slice 3c-4 payroll lineage decision
+다음: Slice 3c-4a payroll extraction FK additive migration → Slice 3c-5 adaptive structuring allowlist/migration → Slice 4 schema retirement
+필요 확인: 3c-4a 머지 전 prod 0061~0063 schema 확인, direct-upload/payroll compatibility smoke
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 
