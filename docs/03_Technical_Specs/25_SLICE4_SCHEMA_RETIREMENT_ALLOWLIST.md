@@ -1,15 +1,15 @@
 # JC-031 Slice 4 Schema Retirement Allowlist
 > Created: 2026-07-06 15:25 KST
-> Last Updated: 2026-07-06 20:20 KST
+> Last Updated: 2026-07-06 21:55 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2a 완료 — redirect-blocked session/request context residue 제거
+현재: JC-031 Slice 4-2b 완료 — criteria context 감사 및 compatibility retain 결정
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-2a, prod DB migration 0060 적용(2026-07-06)
-다음: Slice 4-2b AI/review criteria context 이관 여부 결정
+완료: Slice 1~3c, Slice 4-0~4-2b, prod DB migration 0060 적용(2026-07-06)
+다음: Slice 4-2c `upload_session` table rebuild 준비
 필요 확인: 없음
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
@@ -243,7 +243,8 @@ Phase 7 (4-5)    upload_session table retirement 또는 compatibility view
 | **4-1** | dead code: `createSessionAndSend`, `missing-request` 모듈 등 | 없음 | **완료** |
 | **4-2-0** | `upload_session` 컬럼 retirement brief: 삭제 후보와 차단 조건 고정 | 없음 | **완료** — [Brief 26](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md) |
 | **4-2a** | redirect-blocked `sessions/new`·`extract-criteria`·`direct-send` residue 제거 | 없음 | **완료** |
-| **4-2b** | AI/review criteria context 이관 또는 compatibility 유지 결정 | 필요 시 additive migration | 4-2a |
+| **4-2b** | AI/review criteria context 이관 vs compatibility 결정 | 없음 (docs-only) | **완료** — [Brief 26 §2.4](./26_UPLOAD_SESSION_COLUMN_RETIREMENT_PRE_CODE_BRIEF.md) |
+| **4-2b-impl** (optional) | criteria inference/read path 코드 이관 | 없음 | 4-2c 전 subject/body/criteria DROP unblock (필수 아님) |
 | **4-2c** | 조건 충족된 `upload_session` 레거시 컬럼 제거 | rebuild migration | 삭제 대상 컬럼 runtime read/write 0 |
 | **4-3** | `outbound_email`, request-event schema retirement | drop/rebuild | runtime INSERT 0 (현재 충족) |
 | **4-4** | downstream `upload_session_id` 제거 | per-table rebuild 0065+ | dual-write 안정, read prefer 검토 |
