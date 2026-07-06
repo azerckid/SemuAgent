@@ -34,6 +34,7 @@ beforeAll(async () => {
       id text PRIMARY KEY,
       tenant_id text NOT NULL,
       upload_session_id text NOT NULL,
+      source_batch_id text,
       request_event_id text,
       status text NOT NULL DEFAULT 'pending',
       source_upload_file_ids text NOT NULL,

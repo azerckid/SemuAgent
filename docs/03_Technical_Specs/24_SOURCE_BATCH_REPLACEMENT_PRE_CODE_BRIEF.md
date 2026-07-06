@@ -1,16 +1,16 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-06 12:38 KST
+> Last Updated: 2026-07-06 14:22 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 3c-4 감사/결정 완료 — Payroll lineage FK migration scope fixed
+현재: JC-031 Slice 3c-4a 구현 완료 — Payroll extraction FK additive migration(이번 PR)
 Gate: 통과
-완료: Slice 1~2c, dev/prod DB 0061·0062·0063 적용, Slice 3a source_batch 도입, Slice 3b read switch, Slice 3c-0 전략 감사, Slice 3c-1 company-home read switch(PR #103, INTERNAL_SOURCE_BATCH_READ_KINDS), Slice 3c-2 source collection validation FK(PR #104), Slice 3c-3 bookkeeping FK(PR #105), Slice 3c-4 payroll lineage decision(이번 PR)
-다음: Slice 3c-4a payroll extraction FK additive migration
-필요 확인: prod DB 0060 적용 여부, 3c-4a 머지 전 prod 0061~0063 스키마 재확인
+완료: Slice 1~2c, dev/prod DB 0061·0062·0063 적용, Slice 3a source_batch 도입, Slice 3b read switch, Slice 3c-0 전략 감사, Slice 3c-1 company-home read switch(PR #103, INTERNAL_SOURCE_BATCH_READ_KINDS), Slice 3c-2 source collection validation FK(PR #104), Slice 3c-3 bookkeeping FK(PR #105), Slice 3c-4 payroll lineage decision(PR #106), Slice 3c-4a payroll extraction FK 구현(이번 PR)
+다음: PR 머지 후 dev/prod DB 0064 적용·검증 → Slice 3c-5 adaptive structuring allowlist/migration
+필요 확인: prod DB 0060 적용 여부, 0064 적용 전 prod 0061~0063 스키마 확인(이번 PR에서 완료)
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -174,7 +174,7 @@ Fixed 3c order:
 2. **3c-2 — Source collection validation FK additive migration.** **완료(2026-07-06, PR #104):** nullable `source_batch_id`를 `request_item_validation`·`upload_item_declaration`에 추가, `source_batch.legacy_upload_session_id` 기준 backfill, 신규 생성 dual-write. dev/prod DB 0062 적용·검증 완료.
 3. **3c-3 — Bookkeeping source outputs FK additive migration.** **구현 완료(2026-07-06, PR #105):** nullable `source_batch_id`를 `bookkeeping_material_attribution`, `bookkeeping_ledger_material_link`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_journal_entry_run`, `bookkeeping_journal_entry_row`, `bookkeeping_journal_entry_voucher`에 추가하고 migration 0063으로 backfill. 신규 material attribution, classification run/row, journal run/voucher, first-run sample은 deterministic `source_batch_id`를 dual-write한다. `bookkeeping_journal_entry_voucher_line`은 voucher child라 직접 source lineage FK 대상이 아니며, `bookkeeping_ledger_month.last_upload_session_id`는 상태 snapshot이라 이번 slice 범위 밖.
 4. **3c-4 — Payroll lineage FK audit/decision.** **완료(이번 PR):** 아래 "Slice 3c-4 — Payroll Lineage Decision"으로 payroll extraction table의 범용 `source_batch` 이관 범위를 고정한다.
-5. **3c-4a — Payroll extraction FK additive migration.** Add nullable generic `source_batch_id` only to the selected payroll extraction tables, backfill from `source_batch.legacy_upload_session_id`, and dual-write new rows. Do not touch `payroll_employee_line.source_batch_id`.
+5. **3c-4a — Payroll extraction FK additive migration.** **구현 완료(이번 PR):** Add nullable generic `source_batch_id` only to the selected payroll extraction tables, backfill from `source_batch.legacy_upload_session_id`, and dual-write new rows. Do not touch `payroll_employee_line.source_batch_id`.
 6. **3c-5 — Adaptive structuring allowlist or migration.** Do not migrate until model provenance semantics are confirmed.
 
 3c-0 Non-goals:
@@ -209,15 +209,25 @@ Fixed 3c order:
 - Read switch는 session-scoped payroll APIs가 아직 많으므로 3c-4a의 필수 목표가 아니다. 먼저 FK/backfill/dual-write를 완료하고, Slice 4 allowlist에서 남은 `upload_session_id` 의존을 판단한다.
 - `payroll_employee_line.source_batch_id`의 이름이 혼동을 유발하지만, FK 제약이 있는 컬럼 rename/drop은 SQLite/Turso table rebuild가 필요하므로 Slice 4 전까지 건드리지 않는다.
 
+3c-4a 구현 결과(이번 PR):
+
+- Migration 0064: `payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`, `payroll_excel_draft`에 nullable `source_batch_id -> source_batch.id`와 tenant/source index를 추가한다.
+- Backfill: 네 테이블 모두 `source_batch.legacy_upload_session_id = <table>.upload_session_id` 기준으로 기존 row를 연결한다.
+- Dual-write: `executePayrollExtraction`이 batch/row/rule application에 `sourceBatchIdForLegacyUploadSession(sessionId)`를 기록하고, payroll draft 생성 route가 `payroll_excel_draft.source_batch_id`를 기록한다.
+- First-run sample: payroll용 `source_batch_payroll_202606` row를 payroll extraction batch/row에도 기록한다.
+- `payroll_employee_line.source_batch_id`는 변경하지 않았다.
+- 머지 전 prod 확인: 0061~0063 스키마(`source_batch`, validation/declaration FK, bookkeeping FK)가 prod에 존재함을 읽기 전용 query로 확인했다.
+- 머지 후 필요: dev/prod DB에 migration 0064 적용 후 네 테이블 backfill count와 `foreign_key_check`를 확인한다.
+
 3c migration checklist for every implementation PR:
 
-- [x] Add only nullable `source_batch_id` columns and indexes. (3c-2·3c-3 완료)
-- [x] Backfill by joining `source_batch.legacy_upload_session_id = <table>.upload_session_id`. (3c-2·3c-3 완료)
-- [x] Keep `upload_session_id` writes until Slice 4. (3c-2·3c-3 완료)
-- [x] Dual-write `source_batch_id` only after the caller can resolve the source batch id deterministically. (3c-2 완료, 3c-3는 `sourceBatchIdForLegacyUploadSession(sessionId)` 또는 first-run sample의 explicit `sourceBatchId` 사용)
+- [x] Add only nullable `source_batch_id` columns and indexes. (3c-2·3c-3·3c-4a 구현 완료)
+- [x] Backfill by joining `source_batch.legacy_upload_session_id = <table>.upload_session_id`. (3c-2·3c-3·3c-4a 구현 완료)
+- [x] Keep `upload_session_id` writes until Slice 4. (3c-2·3c-3·3c-4a 구현 완료)
+- [x] Dual-write `source_batch_id` only after the caller can resolve the source batch id deterministically. (3c-2 완료, 3c-3는 `sourceBatchIdForLegacyUploadSession(sessionId)` 또는 first-run sample의 explicit `sourceBatchId` 사용, 3c-4a는 payroll extraction/draft path에 `sourceBatchIdForLegacyUploadSession(sessionId)` 사용)
 - [ ] Read prefer `source_batch_id`; fallback to `upload_session_id` only where legacy rows can still exist.
-- [x] Before merge, confirm prod schema has all previous migrations required by the new runtime code. (3c-3: prod 0061·0062 present before 0063)
-- [x] After dev/prod migration, verify `foreign_key_check` and row counts for linked/unlinked records. (3c-3: dev/prod 0063 applied, FK check 0)
+- [x] Before merge, confirm prod schema has all previous migrations required by the new runtime code. (3c-4a: prod 0061·0062·0063 present before adding runtime writes)
+- [ ] After dev/prod migration, verify `foreign_key_check` and row counts for linked/unlinked records. (3c-4a: 0064 적용 후 확인 필요)
 
 **Slice 3b 리뷰에서 나온 후속 메모(비차단, 3c 계획에 반영)**:
 

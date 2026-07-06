@@ -15,6 +15,7 @@ import {
   DEFAULT_TEMPLATE_RELATIVE_PATH,
 } from '@/lib/services/payroll-service'
 import { deleteSupersededPayrollDraftBlobs } from '@/lib/sessions/blob-cleanup'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 
 const DEDUCTION_COMPONENT_FIELDS = [
   'nationalPension',
@@ -229,6 +230,7 @@ export async function POST(
       id: draftId,
       tenantId,
       uploadSessionId: sessionId,
+      sourceBatchId: sourceBatchIdForLegacyUploadSession(sessionId),
       batchId: batch.id,
       templateId: template.id,
       status: result.success ? 'generated' : 'failed',

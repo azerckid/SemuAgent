@@ -1,16 +1,16 @@
 # Legacy Mail Side-effect Audit
 > Created: 2026-07-05 16:39
-> Last Updated: 2026-07-06 12:38
+> Last Updated: 2026-07-06 14:22
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 3c-4 감사/결정 완료 — payroll lineage migration scope fixed
+현재: JC-031 Slice 3c-4a 구현 완료 — payroll extraction FK additive migration(이번 PR)
 Gate: 통과
-완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리, Slice 3a source_batch 도입, Slice 3b read model 전환, Slice 3c-0 migration 전략 고정, Slice 3c-1 company-home read switch, Slice 3c-2 validation FK(migration 0062), Slice 3c-3 bookkeeping FK(migration 0063), Slice 3c-4 payroll lineage decision
-다음: Slice 3c-4a payroll extraction FK additive migration → Slice 3c-5 adaptive structuring allowlist/migration → Slice 4 schema retirement
-필요 확인: 3c-4a 머지 전 prod 0061~0063 schema 확인, direct-upload/payroll compatibility smoke
+완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리, Slice 3a source_batch 도입, Slice 3b read model 전환, Slice 3c-0 migration 전략 고정, Slice 3c-1 company-home read switch, Slice 3c-2 validation FK(migration 0062), Slice 3c-3 bookkeeping FK(migration 0063), Slice 3c-4 payroll lineage decision, Slice 3c-4a payroll extraction FK 구현
+다음: PR 머지 후 dev/prod DB 0064 적용·검증 → Slice 3c-5 adaptive structuring allowlist/migration → Slice 4 schema retirement
+필요 확인: 0064 적용 후 direct-upload/payroll compatibility smoke
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 

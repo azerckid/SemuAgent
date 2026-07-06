@@ -1419,12 +1419,14 @@ export const payrollRuleProfileApplication = sqliteTable('payroll_rule_profile_a
   profileId: text('profile_id').notNull().references(() => clientPayrollRuleProfile.id),
   profileVersion: integer('profile_version').notNull(),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   batchId: text('batch_id').references(() => payrollExtractionBatch.id),
   snapshotJson: text('snapshot_json').notNull(), // 적용 시점 규칙 스냅샷 (불변)
   appliedAt: text('applied_at').notNull(),
   createdAt: text('created_at').notNull(),
 }, (table) => [
   index('payroll_rule_profile_application_session_idx').on(table.tenantId, table.uploadSessionId),
+  index('payroll_rule_profile_application_source_batch_idx').on(table.tenantId, table.sourceBatchId),
 ])
 
 // ---------------------------------------------------------------------------
@@ -1434,6 +1436,7 @@ export const payrollExtractionBatch = sqliteTable('payroll_extraction_batch', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   requestEventId: text('request_event_id').references(() => clientRequestEvent.id),
   status: text('status', {
     enum: ['pending', 'running', 'needs_review', 'completed', 'failed'],
@@ -1447,6 +1450,7 @@ export const payrollExtractionBatch = sqliteTable('payroll_extraction_batch', {
 }, (table) => [
   // 동일 세션의 'running' batch 동시 INSERT 차단 (partial unique index)
   uniqueIndex('payroll_batch_running_uidx').on(table.uploadSessionId).where(sql`status = 'running'`),
+  index('payroll_batch_source_batch_idx').on(table.tenantId, table.sourceBatchId),
 ])
 
 // ---------------------------------------------------------------------------
@@ -1457,6 +1461,7 @@ export const payrollExtractionRow = sqliteTable('payroll_extraction_row', {
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   batchId: text('batch_id').notNull().references(() => payrollExtractionBatch.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   payrollPeriod: text('payroll_period').notNull(),
   employeeCode: text('employee_code'),
   employeeName: text('employee_name'),
@@ -1491,7 +1496,9 @@ export const payrollExtractionRow = sqliteTable('payroll_extraction_row', {
   reviewedAt: text('reviewed_at'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
-})
+}, (table) => [
+  index('payroll_extraction_row_source_batch_idx').on(table.tenantId, table.sourceBatchId),
+])
 
 // ---------------------------------------------------------------------------
 // payroll_excel_draft  (작성된 결과 엑셀 초안)
@@ -1500,6 +1507,7 @@ export const payrollExcelDraft = sqliteTable('payroll_excel_draft', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   batchId: text('batch_id').notNull().references(() => payrollExtractionBatch.id),
   templateId: text('template_id').notNull().references(() => payrollExcelTemplate.id),
   status: text('status', { enum: ['generated', 'failed'] }).notNull(),
@@ -1510,7 +1518,9 @@ export const payrollExcelDraft = sqliteTable('payroll_excel_draft', {
   errorMessage: text('error_message'),
   generatedByStaffId: text('generated_by_staff_id').notNull().references(() => staff.id),
   generatedAt: text('generated_at').notNull(),
-})
+}, (table) => [
+  index('payroll_excel_draft_source_batch_idx').on(table.tenantId, table.sourceBatchId),
+])
 
 // ---------------------------------------------------------------------------
 // payroll_period_summary

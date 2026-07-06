@@ -169,6 +169,12 @@ JC-011 구현은 아래 두 테이블을 `lib/db/schema.ts`와
 4대보험 고지액 매칭 상태를 담기에는 컬럼이 부족하다. JC-012 구현은 아래 테이블을
 `lib/db/schema.ts`와 신규 migration에 추가한 뒤 진행한다.
 
+JC-031 Slice 3c-4a 이후 급여 추출 lineage는 `upload_session_id` compatibility와 별도
+범용 `source_batch_id -> source_batch.id`를 함께 기록한다. 대상은
+`payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`,
+`payroll_excel_draft`다. `payroll_employee_line.source_batch_id`는 아래 주의처럼 여전히
+`payroll_extraction_batch.id`를 가리키는 급여 전용 FK다.
+
 #### `payroll_period_summary`
 
 사업장·귀속월별 급여 요약과 마감 상태.

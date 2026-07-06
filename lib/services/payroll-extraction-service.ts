@@ -36,6 +36,7 @@ import {
   formatPayrollExtractionMessageForDisplay,
 } from '@/lib/payroll/extraction-message'
 import { PAYROLL_RUNNING_BATCH_STALE_MINUTES } from '@/lib/payroll/extraction-status'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 
 export type PayrollExtractionServiceResult =
   | { success: true; batchId: string; rowCount: number; warnings: string[] }
@@ -302,6 +303,7 @@ export async function executePayrollExtraction(
 
   const ts = toDBString(now())
   const batchId = randomUUID()
+  const sourceBatchId = sourceBatchIdForLegacyUploadSession(sessionId)
 
   // batch 생성 (running 상태)
   // 위 SELECT 검사 후 INSERT 사이 race condition은 partial unique index
@@ -311,6 +313,7 @@ export async function executePayrollExtraction(
       id: batchId,
       tenantId,
       uploadSessionId: sessionId,
+      sourceBatchId,
       requestEventId: session.requestEventId ?? null,
       status: 'running',
       sourceUploadFileIds: JSON.stringify(files.map((f) => f.id)),
@@ -450,6 +453,7 @@ export async function executePayrollExtraction(
             tenantId,
             batchId,
             uploadSessionId: sessionId,
+            sourceBatchId,
             payrollPeriod,
             employeeCode: r.employeeCode ?? null,
             employeeName: r.employeeName ?? null,
@@ -516,6 +520,7 @@ export async function executePayrollExtraction(
         profileId: ruleApplication.profileId,
         profileVersion: ruleApplication.profileVersion,
         uploadSessionId: sessionId,
+        sourceBatchId,
         batchId,
         snapshotJson: ruleApplication.snapshotJson,
         appliedAt: snapshotTs,

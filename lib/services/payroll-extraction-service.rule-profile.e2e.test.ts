@@ -9,6 +9,7 @@ import {
   type ClientPayrollRuleProfileV1,
 } from '@/lib/validations/payroll-rule-profile'
 import type { PayrollExtractedRow } from '@/lib/validations/payroll'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 
 /**
  * Slice 7 통합 e2e — `executePayrollExtraction`를 실제로 구동해 급여기준 프로필
@@ -62,6 +63,7 @@ vi.mock('@/lib/payroll/adaptive-structuring-apply', () => ({
 
 const {
   uploadSession,
+  sourceBatch,
   uploadFile,
   payrollExtractionRow,
   payrollExtractionBatch,
@@ -85,6 +87,23 @@ beforeAll(async () => {
   // 스키마 그대로 사용해 drift를 막는다. libsql in-memory는 FK를 강제하지
   // 않으므로 부모 테이블(tenant/client/staff) 없이도 동작한다.
   const ddl = [
+    `CREATE TABLE source_batch (
+      id text PRIMARY KEY NOT NULL,
+      tenant_id text NOT NULL,
+      client_id text NOT NULL,
+      created_by_staff_id text NOT NULL,
+      source_kind text DEFAULT 'staff_direct' NOT NULL,
+      accounting_period text NOT NULL,
+      bookkeeping_period_type text,
+      bookkeeping_period_start text,
+      bookkeeping_period_end text,
+      display_label text,
+      legacy_upload_session_id text,
+      deleted_at text,
+      deleted_by_staff_id text,
+      created_at text NOT NULL,
+      updated_at text NOT NULL
+    )`,
     `CREATE TABLE upload_session (
       id text PRIMARY KEY NOT NULL,
       tenant_id text NOT NULL,
@@ -138,6 +157,7 @@ beforeAll(async () => {
       id TEXT PRIMARY KEY,
       tenant_id TEXT NOT NULL,
       upload_session_id TEXT NOT NULL,
+      source_batch_id TEXT,
       request_event_id TEXT,
       status TEXT NOT NULL DEFAULT 'pending',
       source_upload_file_ids TEXT NOT NULL,
@@ -153,6 +173,7 @@ beforeAll(async () => {
       tenant_id TEXT NOT NULL,
       batch_id TEXT NOT NULL,
       upload_session_id TEXT NOT NULL,
+      source_batch_id TEXT,
       payroll_period TEXT NOT NULL,
       employee_code TEXT,
       employee_name TEXT,
@@ -210,6 +231,7 @@ beforeAll(async () => {
       profile_id text NOT NULL,
       profile_version integer NOT NULL,
       upload_session_id text NOT NULL,
+      source_batch_id text,
       batch_id text,
       snapshot_json text NOT NULL,
       applied_at text NOT NULL,
@@ -227,6 +249,7 @@ beforeEach(async () => {
     'client_payroll_rule_profile',
     'upload_file',
     'upload_session',
+    'source_batch',
   ]) {
     await client.execute(`DELETE FROM ${t}`)
   }
@@ -236,6 +259,22 @@ beforeEach(async () => {
 async function seedPayrollSession(): Promise<string> {
   const ts = toDBString(now())
   const sessionId = 'session-1'
+  const sourceBatchId = sourceBatchIdForLegacyUploadSession(sessionId)
+  await testDb.insert(sourceBatch).values({
+    id: sourceBatchId,
+    tenantId: TENANT,
+    clientId: CLIENT,
+    createdByStaffId: STAFF,
+    sourceKind: 'staff_direct',
+    accountingPeriod: PERIOD,
+    bookkeepingPeriodType: 'monthly',
+    bookkeepingPeriodStart: PERIOD,
+    bookkeepingPeriodEnd: PERIOD,
+    displayLabel: '급여대장.xlsx',
+    legacyUploadSessionId: sessionId,
+    createdAt: ts,
+    updatedAt: ts,
+  })
   await testDb.insert(uploadSession).values({
     id: sessionId,
     tenantId: TENANT,
@@ -250,6 +289,7 @@ async function seedPayrollSession(): Promise<string> {
   await testDb.insert(uploadFile).values({
     id: 'file-1',
     uploadSessionId: sessionId,
+    sourceBatchId,
     tenantId: TENANT,
     originalFilename: '급여대장.xlsx',
     storageKey: 'blob/file-1',
@@ -351,11 +391,14 @@ describe('executePayrollExtraction × 급여기준 프로필 (Slice 7 e2e)', () 
     const rows = (await storedRows(result.batchId)).sort((a, b) =>
       (a.employeeCode ?? '').localeCompare(b.employeeCode ?? ''),
     )
+    const sourceBatchId = sourceBatchIdForLegacyUploadSession(sessionId)
     expect(rows.map((r) => r.mealAllowance)).toEqual([200000, 200000])
     expect(rows.every((r) => r.aiVerdict === 'pass')).toBe(true)
+    expect(rows.every((r) => r.sourceBatchId === sourceBatchId)).toBe(true)
 
     const batch = (await testDb.select().from(payrollExtractionBatch).where(eq(payrollExtractionBatch.id, result.batchId)))[0]
     expect(batch.status).toBe('completed')
+    expect(batch.sourceBatchId).toBe(sourceBatchId)
 
     const applications = await testDb
       .select()
@@ -364,6 +407,7 @@ describe('executePayrollExtraction × 급여기준 프로필 (Slice 7 e2e)', () 
     expect(applications).toHaveLength(1)
     expect(applications[0].profileId).toBe('profile-1')
     expect(applications[0].profileVersion).toBe(1)
+    expect(applications[0].sourceBatchId).toBe(sourceBatchId)
     expect(applications[0].snapshotJson.length).toBeGreaterThan(0)
   })
 
