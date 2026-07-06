@@ -101,7 +101,7 @@ JC-030 생성 파일의 사용자 제출 관문(자동 제출 아님):
 |---|---|---|
 | 원본 레이아웃 매체 | 국세청 HWP `…전산매체 제출요령` + `정오표` | NTS 85418, CFO 2021 안내 [확실] |
 | 레코드 구조 | 고정길이 record type·순서·오류검증 규칙 HWP에 정의 | 동일 [확실] |
-| 배포 파일 | 급여 SW가 생성하는 **암호화 전자파일**(NTS-CRYPTO) | JC-023 §2.1, 실무 안내 [확실] |
+| 배포 파일 | 급여 SW가 **fcrypt API**로 만든 암호화 전자파일; 홈택스는 **NTS-CRYPTO**로 복호화 | JC-023 §2.1, [NTS Crypto Spec](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) [확실] |
 | 암호 | 제작 시 **8~15자리**; 홈택스 검증 시 동일 비밀번호 | 실무·JC-023 [확실] |
 | 인코딩·줄바꿈 | HWP 명시 따름 | [미확인 — HWP 필요] |
 | 월별 구분 | 2022~ 급여·인정상여 **월별** 수록 | CFO 2021 하반기 안내 [확실] |
@@ -139,3 +139,4 @@ JC-030 생성 파일의 사용자 제출 관문(자동 제출 아님):
 - [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
 - [JC-030 Simplified Wage Field Mapping](./29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md)
 - [JC-030 E-Filing File Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md)
+- [JC-030 NTS Crypto Spec Acquisition](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md)

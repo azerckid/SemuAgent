@@ -145,7 +145,7 @@ Non-goals before done:
 
 Type: 제출 준비물 생성.
 
-Current gate: Slice **2a** plain path complete on main. Slice **3** hometax upload guide done. **Blocked:** Slice **2b** NTS-CRYPTO until spec acquired. JC-030 v1 (plain) is user-ready; encrypted file path pending 2b.
+Current gate: **JC-030 v1** (Slices 1a–2a, 3) **complete** on main — plain·검증·홈택스 안내 실사용 가능. **Slice 2b** (fcrypt·윈도우 microservice) is a **separate deferred track** per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md); Windows DLL execution + Hometax round-trip before code.
 
 May start implementation only after:
 
