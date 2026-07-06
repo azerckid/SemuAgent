@@ -1,17 +1,16 @@
 # E-Filing File Generation Scope Gate
 > Created: 2026-07-05 11:18
-> Last Updated: 2026-07-06 23:15 KST
+> Last Updated: 2026-07-07 00:35 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-030 Slice 0a 완료 — 간이지급명세서(근로) 레이아웃 입수 경로·문서 정체성 확정
-Gate: 부분 통과 (입수 경로 닫힘 · 필드 매핑·Pre-Code Brief·적합성 검정 미착수)
-완료: PII Policy, [Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md), JC-024 데이터 live
-다음: UI Preview(파일 생성 패널) 또는 Pre-Code Brief(최신 HWP 다운로드 후)
-필요 확인: 구현 직전 홈택스 자료실 최신 HWP·정오표, 적합성 검정 요건
-권장 스킬: rules-product -> UI-First Gate -> Pre-Code Technical Brief
+현재: JC-030 Slice 1 — HWP 참조본·필드 매핑·Pre-Code Brief 초안
+Gate: Brief 사용자 승인 전 — 코드 착수 금지
+완료: UI-First Gate, PII, Layout Acquisition, Field Mapping(29), Pre-Code Brief(30)
+다음: Brief 승인 → 구현 슬라이스 1a
+필요 확인: 제출 직전 홈택스 최신 HWP·NTS-CRYPTO 스펙(슬라이스 2)
 ```
 
 ## 1. Purpose
@@ -129,11 +128,11 @@ Pre-Code Brief는 아래가 확정된 뒤 작성한다.
 
 - [x] 최신 전자신고 파일 레이아웃의 출처 URL/문서명 — **간이지급(근로) 전용** ([Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md) §3). 귀속연도별 HWP는 구현 직전 재확인.
 - [x] 직원 식별정보 처리 방식 — **서버 미저장 일회성 입력** ([PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md))
-- [ ] JC-024 데이터셋 → 전자신고 record field mapping
-- [ ] 파일 생성 포맷(encoding, line ending, padding, fixed-width/CSV/XML 여부)
-- [ ] 검증 규칙과 실패 시 UI 문구
-- [ ] 적합성 검정 전/후 UI 문구 차이
-- [ ] 생성 파일 보관 여부와 만료/삭제 정책
+- [x] JC-024 데이터셋 → 전자신고 record field mapping — [Field Mapping](./29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md)(2026-07-07)
+- [x] 파일 생성 포맷(encoding, line ending, padding, fixed-width/CSV/XML 여부) — Brief §4 · Mapping §2.1 (EUC-KR·190byte 고정 [추정])
+- [x] 검증 규칙과 실패 시 UI 문구 — Mapping §7 · Brief §6
+- [x] 적합성 검정 전/후 UI 문구 차이 — Scope Gate §5.3 · Brief §6.2
+- [x] 생성 파일 보관 여부와 만료/삭제 정책 — PII Policy · Brief §0 (서버 미보관)
 
 ## 8. Related Documents
 
@@ -141,5 +140,7 @@ Pre-Code Brief는 아래가 확정된 뒤 작성한다.
 - **Technical_Specs**: [JC-023 Hometax Autosubmit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 파일변환신고·적합성 검정 리서치
 - **Technical_Specs**: [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md) — PII 일회성 입력 정책
 - **Technical_Specs**: [JC-030 Simplified Wage E-Filing Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md) — 간이지급 레이아웃 입수 경로
+- **Technical_Specs**: [JC-030 Simplified Wage Field Mapping](./29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md) — A/B/C 필드 매핑
+- **Technical_Specs**: [JC-030 E-Filing File Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md) — 구현 계약
 - **Technical_Specs**: [Payment Statement Pre-Code Brief](./16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md) — JC-024 데이터셋·주민번호 제외 경계
 - **Logic_Progress**: [Backlog JC-030](../04_Logic_Progress/00_BACKLOG.md) — 전자신고 파일 생성·검증 Context Lock

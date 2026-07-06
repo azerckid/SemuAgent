@@ -1,17 +1,16 @@
 # JC-030 Slice 0a — 근로소득 간이지급명세서 전자신고 레이아웃 입수
 > Created: 2026-07-06 23:15 KST
-> Last Updated: 2026-07-06 23:15 KST
+> Last Updated: 2026-07-07 00:35 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-030 Slice 0a 완료 — 간이지급명세서(근로소득) 공식 레이아웃 입수 경로·문서 정체성 확정
-Gate: 부분 통과 (입수 경로 닫힘 · 필드 레벨 매핑·Pre-Code Brief는 미착수)
-완료: 연말 지급명세서(1175)와 간이지급명세서 문서 분리, 홈택스 변환제출 경로, 파일 포맷 개요
-다음: UI Preview(파일 생성 패널) 또는 Pre-Code Brief(최신 HWP 다운로드 후 필드 매핑)
-필요 확인: 구현 직전 홈택스 자료실 최신 HWP·정오표 재확인(매 제출 주기)
-권장 스킬: rules-product -> UI-First Gate -> Pre-Code Technical Brief
+현재: JC-030 Slice 1 — HWP 참조본 입수·필드 매핑·Pre-Code Brief 초안
+Gate: 부분 통과 (Brief 승인 전 · 코드 착수 금지 유지)
+완료: scratch 참조 HWP(2019·2021) · Field Mapping(29) · Pre-Code Brief(30)
+다음: Brief 사용자 승인 → 구현 슬라이스 1a(build-records)
+필요 확인: 제출 직전 홈택스 자료실 최신 HWP·정오표
 ```
 
 라벨 — **[확실]** 공식 URL·게시판 확인 · **[추정]** 실무 블로그·2차 안내 · **[미확인]** SemuAgent 미다운로드 HWP 내부 필드 정의
@@ -125,7 +124,7 @@ JC-030 생성 파일의 사용자 제출 관문(자동 제출 아님):
 - [x] 공식 입수 경로 URL·게시판·문서명 기록
 - [x] 홈택스 변환제출 메뉴 경로 기록
 - [x] 파일 암호화·검증 관문 개요
-- [ ] 최신 귀속연도 HWP를 SemuAgent에 필드 매핑표로 반영 — **Pre-Code Brief**
+- [x] 최신 귀속연도 HWP를 SemuAgent에 필드 매핑표로 반영 — **참조본 입수(2026-07-07)** [Field Mapping](./29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md); 제출 직전 홈택스 최신본 재대조 필수
 - [ ] 적합성 검정 요건 — 별도(국세청 문의 또는 JC-023 후속)
 
 ## 8. Implementation Gate (unchanged)
@@ -138,6 +137,5 @@ JC-030 생성 파일의 사용자 제출 관문(자동 제출 아님):
 
 - [E-Filing File Generation Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md)
 - [JC-030 E-Filing File PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
-- [JC-023 Hometax Autosubmit Research §2.1](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md)
-- [Payment Statement Pre-Code Brief §4](./16_PAYMENT_STATEMENT_YEAR_END_PRE_CODE_BRIEF.md)
-- [Open Backlog Completion Contracts §3 / JC-030](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
+- [JC-030 Simplified Wage Field Mapping](./29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md)
+- [JC-030 E-Filing File Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md)

@@ -145,17 +145,17 @@ Non-goals before done:
 
 Type: 제출 준비물 생성.
 
-Current gate: scope gate partially passed — PII policy, layout acquisition path (2026-07-06), and UI-First Gate (2026-07-07) closed; implementation blocked until Pre-Code Brief field mapping and latest HWP download.
+Current gate: Pre-Code Brief draft complete (2026-07-07) — **user approval of Brief required** before code slice 1a. Latest Hometax HWP re-check at submission time remains operational.
 
 May start implementation only after:
 
 - [x] PII policy is decided — **server non-storage one-time input** ([PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)).
-- [x] Official layout acquisition path for **간이지급명세서(근로소득)** is documented — not the annual wage statement bundle ([Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md)). Latest HWP must be downloaded before coding.
-- The latest official file layout field definitions are mapped in Pre-Code Brief (from HWP + errata for the target submission period).
+- [x] Official layout acquisition path for **간이지급명세서(근로소득)** is documented — not the annual wage statement bundle ([Layout Acquisition](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md)). Reference HWP acquired; latest Hometax HWP before each submission period.
+- [x] The latest official file layout field definitions are mapped — [Field Mapping](./29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md) from NTS reference HWP (2019·2021).
 - The target tax type is fixed for v1. Current first candidate is 근로소득 간이지급명세서.
-- Validation rules are defined from the official layout.
+- [x] Validation rules are defined from the official layout — Mapping §7 · Brief §6.
 - [x] UI-First Gate shows file-generation status, validation errors, and responsibility boundary — [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html), approved 2026-07-07.
-- Pre-Code Brief maps SemuAgent's confirmed data to file fields.
+- [x] Pre-Code Brief maps SemuAgent's confirmed data to file fields — [Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md) draft (2026-07-07); **user sign-off pending**.
 
 Done means:
 
