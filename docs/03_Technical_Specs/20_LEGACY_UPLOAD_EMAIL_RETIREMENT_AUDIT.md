@@ -1,15 +1,15 @@
 # Legacy Upload/Email Retirement Audit
 > Created: 2026-07-05 14:30
-> Last Updated: 2026-07-06 21:55 KST
+> Last Updated: 2026-07-06 22:30 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2b 완료 — criteria context 감사 및 compatibility retain 결정
+현재: JC-031 Slice 4-2c micro 완료 — request_email_cc DROP (migration 0065 dev+prod)
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-2b, prod DB migration 0060 적용(2026-07-06)
-다음: Slice 4-2c `upload_session` table rebuild 준비
+완료: Slice 1~3c, Slice 4-0~4-2c micro, prod DB migration 0060·0065 적용(2026-07-06)
+다음: optional 4-2b-impl 또는 추가 4-2c micro(subject/body/criteria)
 필요 확인: 없음
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```

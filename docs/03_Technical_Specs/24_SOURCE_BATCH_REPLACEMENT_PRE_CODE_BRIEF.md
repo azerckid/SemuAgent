@@ -1,20 +1,22 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-06 21:55 KST
+> Last Updated: 2026-07-06 22:30 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 4-2b 완료 — criteria context 감사 및 compatibility retain 결정
+현재: JC-031 Slice 4-2c micro 완료 — request_email_cc DROP (migration 0065 dev+prod)
 Gate: 통과
-완료: Slice 1~3c, Slice 4-0~4-2b, prod DB migration 0060 적용(2026-07-06, table rebuild)
-다음: Slice 4-2c `upload_session` table rebuild 준비
-필요 확인: 없음(직전 open item 해소)
+완료: Slice 1~3c, Slice 4-0~4-2c micro, prod DB migration 0060·0065 적용(2026-07-06)
+다음: optional 4-2b-impl 또는 추가 4-2c micro
+필요 확인: 없음
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
 **migration 0060 prod 적용 기록(2026-07-06):** `bookkeeping_transaction_purpose_request`의 `sent_email_id`→`outbound_email` FK를 table rebuild로 제거. dev DB는 이미 적용된 상태였고(0행), prod는 미적용 상태(0행, `sent_email_id` 컬럼·FK 존재)였다. 사용자 승인 후 `turso db shell semuagent`로 직접 rebuild(CREATE `__new_*` → INSERT SELECT → DROP → RENAME → 인덱스 3개 재생성) 적용. 검증: 신규 schema가 dev와 일치, 인덱스 3개 재생성 확인, row count 0, `foreign_key_check` 0건, Vercel 런타임 에러 0건.
+
+**migration 0065 적용 기록(2026-07-06):** `upload_session.request_email_cc` 컬럼을 table rebuild로 제거. `semuagent-dev` → `semuagent`(prod) 순으로 `turso db shell` 적용. 검증: `request_email_cc` absent, `upload_session` 26 cols·2 rows, 인덱스 2개(PK auto + `upload_session_token_hash_unique`), `foreign_key_check` 0건.
 
 ## 1. Purpose
 
