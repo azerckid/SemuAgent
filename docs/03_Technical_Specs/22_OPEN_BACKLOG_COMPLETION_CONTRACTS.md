@@ -145,7 +145,7 @@ Non-goals before done:
 
 Type: 제출 준비물 생성.
 
-Current gate: Pre-Code Brief draft complete (2026-07-07) — **user approval of Brief required** before code slice 1a. Latest Hometax HWP re-check at submission time remains operational.
+Current gate: Pre-Code Brief **approved(2026-07-07)**. Slice **1a** plain record builder done. Next: **1b** validation read model + UI panel (no download). Slice **2b** (NTS-CRYPTO) blocked until spec acquired.
 
 May start implementation only after:
 
@@ -155,7 +155,7 @@ May start implementation only after:
 - The target tax type is fixed for v1. Current first candidate is 근로소득 간이지급명세서.
 - [x] Validation rules are defined from the official layout — Mapping §7 · Brief §6.
 - [x] UI-First Gate shows file-generation status, validation errors, and responsibility boundary — [09_payment_year_end.html](../02_UI_Screens/previews/09_payment_year_end.html), approved 2026-07-07.
-- [x] Pre-Code Brief maps SemuAgent's confirmed data to file fields — [Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md) draft (2026-07-07); **user sign-off pending**.
+- [x] Pre-Code Brief maps SemuAgent's confirmed data to file fields — [Pre-Code Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md) **사용자 승인(2026-07-07)**. Slice **1a** `lib/efiling-simplified-wage/build-records.ts` 구현 완료.
 
 Done means:
 
