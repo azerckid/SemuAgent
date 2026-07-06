@@ -1,16 +1,16 @@
 # JC-031 Slice 3 Source Batch Replacement Pre-Code Brief
 > Created: 2026-07-05 23:28 KST
-> Last Updated: 2026-07-06 02:00 KST
+> Last Updated: 2026-07-06 12:05 KST
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 3c-2 구현 중 — Source collection validation FK additive migration
+현재: JC-031 Slice 3c-3 구현 완료 — Bookkeeping source output FK additive migration(PR review pending)
 Gate: 통과
-완료: Slice 1~2c, dev/prod DB 0060·0061 적용, Slice 3a source_batch 도입, Slice 3b read switch, Slice 3c-0 전략 감사, Slice 3c-1 company-home read switch(PR #103, INTERNAL_SOURCE_BATCH_READ_KINDS)
-다음: Slice 3c-2 migration 0062 적용·검증 → Slice 3c-3 bookkeeping additive FK
-필요 확인: migration 0062 prod schema 사전 확인(머지 전), dev/prod backfill·foreign_key_check, prod DB 0060 적용 여부
+완료: Slice 1~2c, dev/prod DB 0061·0062·0063 적용, Slice 3a source_batch 도입, Slice 3b read switch, Slice 3c-0 전략 감사, Slice 3c-1 company-home read switch(PR #103, INTERNAL_SOURCE_BATCH_READ_KINDS), Slice 3c-2 source collection validation FK(PR #104), Slice 3c-3 bookkeeping FK(이번 PR)
+다음: Slice 3c-4 payroll lineage decision
+필요 확인: prod DB 0060 적용 여부, PR review/merge 후 Vercel deploy 확인
 권장 스킬: rules-product -> rules-dev/rules-workflow
 ```
 
@@ -171,8 +171,8 @@ Audit findings:
 Fixed 3c order:
 
 1. **3c-1 — Company-home read switch.** No migration. `company-home` summary uses `source_batch` scoping so home/source-collection/bookkeeping numbers cannot diverge. **완료(2026-07-06, PR #103):** `INTERNAL_SOURCE_BATCH_READ_KINDS = ['staff_direct', 'sample_data']`로 first-run 샘플 회귀까지 포함.
-2. **3c-2 — Source collection validation FK additive migration.** Add nullable `source_batch_id` to `request_item_validation` and `upload_item_declaration`, backfill via `source_batch.legacy_upload_session_id`, dual-write for new rows, read prefer where safe.
-3. **3c-3 — Bookkeeping source outputs FK additive migration.** Add nullable `source_batch_id` to material attribution/link and bookkeeping run/row/voucher tables only after 3c-2 proves the pattern.
+2. **3c-2 — Source collection validation FK additive migration.** **완료(2026-07-06, PR #104):** nullable `source_batch_id`를 `request_item_validation`·`upload_item_declaration`에 추가, `source_batch.legacy_upload_session_id` 기준 backfill, 신규 생성 dual-write. dev/prod DB 0062 적용·검증 완료.
+3. **3c-3 — Bookkeeping source outputs FK additive migration.** **구현 완료(2026-07-06, 이번 PR):** nullable `source_batch_id`를 `bookkeeping_material_attribution`, `bookkeeping_ledger_material_link`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_journal_entry_run`, `bookkeeping_journal_entry_row`, `bookkeeping_journal_entry_voucher`에 추가하고 migration 0063으로 backfill. 신규 material attribution, classification run/row, journal run/voucher, first-run sample은 deterministic `source_batch_id`를 dual-write한다. `bookkeeping_journal_entry_voucher_line`은 voucher child라 직접 source lineage FK 대상이 아니며, `bookkeeping_ledger_month.last_upload_session_id`는 상태 snapshot이라 이번 slice 범위 밖.
 4. **3c-4 — Payroll lineage FK audit/implementation.** Decide whether payroll extraction tables should point to 범용 `source_batch` directly or remain session-compatible until Slice 4.
 5. **3c-5 — Adaptive structuring allowlist or migration.** Do not migrate until model provenance semantics are confirmed.
 
@@ -186,18 +186,20 @@ Fixed 3c order:
 
 3c migration checklist for every implementation PR:
 
-- [ ] Add only nullable `source_batch_id` columns and indexes.
-- [ ] Backfill by joining `source_batch.legacy_upload_session_id = <table>.upload_session_id`.
-- [ ] Keep `upload_session_id` writes until Slice 4.
-- [ ] Dual-write `source_batch_id` only after the caller can resolve the source batch id deterministically.
+- [x] Add only nullable `source_batch_id` columns and indexes. (3c-2·3c-3 완료)
+- [x] Backfill by joining `source_batch.legacy_upload_session_id = <table>.upload_session_id`. (3c-2·3c-3 완료)
+- [x] Keep `upload_session_id` writes until Slice 4. (3c-2·3c-3 완료)
+- [x] Dual-write `source_batch_id` only after the caller can resolve the source batch id deterministically. (3c-2 완료, 3c-3는 `sourceBatchIdForLegacyUploadSession(sessionId)` 또는 first-run sample의 explicit `sourceBatchId` 사용)
 - [ ] Read prefer `source_batch_id`; fallback to `upload_session_id` only where legacy rows can still exist.
-- [ ] Before merge, confirm prod schema has all previous migrations required by the new runtime code.
-- [ ] After dev/prod migration, verify `foreign_key_check` and row counts for linked/unlinked records.
+- [x] Before merge, confirm prod schema has all previous migrations required by the new runtime code. (3c-3: prod 0061·0062 present before 0063)
+- [x] After dev/prod migration, verify `foreign_key_check` and row counts for linked/unlinked records. (3c-3: dev/prod 0063 applied, FK check 0)
 
 **Slice 3b 리뷰에서 나온 후속 메모(비차단, 3c 계획에 반영)**:
 
 1. `lib/company-home/summary.ts` — **3c-1 완료(PR #103).** `source_batch` 기준 read switch + `INTERNAL_SOURCE_BATCH_READ_KINDS`로 sample_data 포함.
-2. Slice 3b의 `listActiveSourceBatchSessions`는 런타임에 `upload_session`으로 fallback하지 않는다 — migration 0061의 backfill + `legacy_upload_session_id` 브릿지에 전적으로 의존한다. **실제 사고(2026-07-06)**: Slice 3b 머지 시점에 prod DB에는 0061이 미적용 상태였다(dev만 적용됨). 머지 3초 뒤 자동배포로 prod가 `source_batch` 테이블 없이 이 코드를 서빙하기 시작했고, `turso db shell semuagent`로 직접 확인해 발견 — 다행히 저트래픽 구간이라 실제 500 발생 전에 포착해 즉시 prod에 0061을 적용했다(source_batch 2건 생성, upload_file 4/4 연결, `foreign_key_check` 0건, dev와 동일 결과). **교훈**: "dev DB 적용 완료" 보고를 prod까지 적용됐다는 뜻으로 오인하지 말 것 — 새 테이블/컬럼을 추가하는 모든 PR은 머지 전 `turso db shell semuagent`로 prod 스키마를 직접 확인해야 한다(auto-memory `prod-db-migration-deploy-order` 갱신). 3c 설계 시 "런타임 fallback을 둘지, backfill 완전성에 계속 의존할지"는 여전히 결정 필요하나, 급한 위험은 해소됨.
+2. `request_item_validation`·`upload_item_declaration` — **3c-2 완료(PR #104).** migration 0062, backfill, dual-write, dev/prod DB 검증 완료.
+3. 기장 source output — **3c-3 구현 완료(이번 PR).** migration 0063, backfill, deterministic dual-write, dev/prod DB 검증 완료.
+4. Slice 3b의 `listActiveSourceBatchSessions`는 런타임에 `upload_session`으로 fallback하지 않는다 — migration 0061의 backfill + `legacy_upload_session_id` 브릿지에 전적으로 의존한다. **실제 사고(2026-07-06)**: Slice 3b 머지 시점에 prod DB에는 0061이 미적용 상태였다(dev만 적용됨). 머지 3초 뒤 자동배포로 prod가 `source_batch` 테이블 없이 이 코드를 서빙하기 시작했고, `turso db shell semuagent`로 직접 확인해 발견 — 다행히 저트래픽 구간이라 실제 500 발생 전에 포착해 즉시 prod에 0061을 적용했다(source_batch 2건 생성, upload_file 4/4 연결, `foreign_key_check` 0건, dev와 동일 결과). **교훈**: "dev DB 적용 완료" 보고를 prod까지 적용됐다는 뜻으로 오인하지 말 것 — 새 테이블/컬럼을 추가하는 모든 PR은 머지 전 `turso db shell semuagent`로 prod 스키마를 직접 확인해야 한다(auto-memory `prod-db-migration-deploy-order` 갱신). 3c 설계 시 "런타임 fallback을 둘지, backfill 완전성에 계속 의존할지"는 여전히 결정 필요하나, 급한 위험은 해소됨.
 
 Done for 3c:
 

@@ -111,6 +111,7 @@ describe('journal entry voucher lines', () => {
       tenantId: 'tenant-1',
       journalEntryRunId: 'run-1',
       uploadSessionId: 'session-1',
+      sourceBatchId: 'source_batch_session-1',
       requestedPeriod: '2026-05',
       attributedPeriod: '2026-05',
       closePeriod: '2026-04~2026-06',
@@ -120,6 +121,8 @@ describe('journal entry voucher lines', () => {
       debitLineId: 'line-debit-1',
       creditLineId: 'line-credit-1',
     })
+
+    expect(stored.voucher.sourceBatchId).toBe('source_batch_session-1')
 
     const displayLines = mapStoredVoucherLinesToDisplayLines(
       [{
@@ -143,8 +146,12 @@ describe('journal entry voucher lines', () => {
       memo: '광고비',
     }])
 
-    expect(displayLines.map(({ journalEntryRowId: _id, ...line }) => line)).toEqual(
-      legacyLines.map(({ journalEntryRowId: _id, ...line }) => line),
+    const omitJournalEntryRowId = (line: Record<string, unknown>) => Object.fromEntries(
+      Object.entries(line).filter(([key]) => key !== 'journalEntryRowId'),
+    )
+
+    expect(displayLines.map(omitJournalEntryRowId)).toEqual(
+      legacyLines.map(omitJournalEntryRowId),
     )
     expect(displayLines.find((line) => line.accountName === '광고선전비')?.accountCode).toBe('833')
     expect(stored.lines.every((line) => line.counterpartyCode === '')).toBe(true)

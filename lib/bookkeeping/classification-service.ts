@@ -20,6 +20,7 @@ import {
   defaultCriteriaForWorkType,
   formatGeneralDefaultCriteriaForPrompt,
 } from '@/lib/review/default-criteria'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 import { now, toDBString } from '@/lib/time'
 import { getActiveAiProviderOrder, type AiProvider } from '@/lib/ai/provider-order'
 import {
@@ -665,6 +666,7 @@ export async function executeBookkeepingClassification(params: {
   const ts = toDBString(now())
   const runId = randomUUID()
   const appliedCategoryNotes = buildAppliedCategoryNotes()
+  const sourceBatchId = sourceBatchIdForLegacyUploadSession(params.sessionId)
 
   await db.transaction(async (tx) => {
     await tx
@@ -682,6 +684,7 @@ export async function executeBookkeepingClassification(params: {
       id: runId,
       tenantId: params.tenantId,
       uploadSessionId: params.sessionId,
+      sourceBatchId,
       status: 'running',
       sourceFileCount: sourceFiles.length,
       extractedRowCount: 0,
@@ -799,6 +802,7 @@ export async function executeBookkeepingClassification(params: {
         tenantId: params.tenantId,
         classificationRunId: runId,
         uploadSessionId: params.sessionId,
+        sourceBatchId,
         uploadFileId: sourceFiles.some((file) => file.id === transaction.sourceFileId) ? transaction.sourceFileId : null,
         sourceType: transaction.sourceType,
         transactionDate: transaction.transactionDate ?? null,

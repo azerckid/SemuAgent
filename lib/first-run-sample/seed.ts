@@ -239,7 +239,7 @@ function buildValidationFileLinks(params: SeedParams, validationRows: Array<type
   return links
 }
 
-function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, runId: string) {
+function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, sourceBatchId: string, runId: string) {
   const rows: Array<typeof bookkeepingTransactionClassification.$inferInsert> = []
   const accounts = ['지급수수료', '소모품비', '여비교통비', '접대비', '통신비', '매출']
   for (let i = 1; i <= 342; i += 1) {
@@ -252,6 +252,7 @@ function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, runId
       tenantId: params.tenantId,
       classificationRunId: runId,
       uploadSessionId: sessionId,
+      sourceBatchId,
       uploadFileId: null,
       sourceType: i % 4 === 0 ? 'card' : i % 4 === 1 ? 'bank' : i % 4 === 2 ? 'tax_invoice' : 'receipt',
       transactionDate: `2026-06-${String((i % 27) + 1).padStart(2, '0')}`,
@@ -483,7 +484,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
   const validationRows = buildSampleValidationRows(params, sessionId, sourceBatchId)
   const uploadFiles = buildSampleUploadFiles(params, sessionId, sourceBatchId)
   const validationFileLinks = buildValidationFileLinks(params, validationRows, uploadFiles)
-  const bookkeepingRows = buildSampleBookkeepingRows(params, sessionId, runId)
+  const bookkeepingRows = buildSampleBookkeepingRows(params, sessionId, sourceBatchId, runId)
   const payrollLines = buildSamplePayrollLines(params, payrollSummaryId)
   const employeeRows = buildSampleEmployees(params)
   const reminderRules = buildSampleReminderRules(params)
@@ -492,6 +493,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     id: runId,
     tenantId: params.tenantId,
     uploadSessionId: sessionId,
+    sourceBatchId,
     status: 'completed',
     sourceFileCount: uploadFiles.length,
     extractedRowCount: 342,
@@ -509,6 +511,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     id: journalRunId,
     tenantId: params.tenantId,
     uploadSessionId: sessionId,
+    sourceBatchId,
     classificationRunId: runId,
     status: 'completed',
     rowCount: 1,
@@ -524,6 +527,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     tenantId: params.tenantId,
     journalEntryRunId: journalRunId,
     uploadSessionId: sessionId,
+    sourceBatchId,
     classificationRowId: firstPendingTxId,
     sourceClassificationRowIds: JSON.stringify([firstPendingTxId]),
     voucherNumber: 'SAMPLE-001',

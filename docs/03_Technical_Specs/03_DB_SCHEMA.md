@@ -65,6 +65,8 @@ tenant (로그인 주체 = 회사/대표)
 | `created_at`, `updated_at` | `text` | not null | audit |
 
 - `upload_file.source_batch_id`는 nullable FK로 시작한다. migration 0061이 기존 `upload_session` row를 `source_batch`로 backfill하고, 기존 `upload_file` row의 `source_batch_id`를 채운다.
+- 자료수집 검증 테이블(`request_item_validation`, `upload_item_declaration`)은 JC-031 Slice 3c-2부터 nullable `source_batch_id`를 갖는다(migration 0062).
+- 기장 source output 테이블(`bookkeeping_material_attribution`, `bookkeeping_ledger_material_link`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_journal_entry_run/row/voucher`)은 JC-031 Slice 3c-3부터 nullable `source_batch_id`를 갖는다(migration 0063). `bookkeeping_journal_entry_voucher_line`은 voucher child라 직접 source lineage FK를 두지 않는다.
 - 신규 direct-upload는 `upload_session` compatibility row와 `source_batch`를 dual-write한다.
 - `upload_session` 삭제·legacy 컬럼 제거는 Slice 4 schema retirement에서만 판단한다. Slice 3a는 비파괴 additive migration이다.
 
@@ -103,7 +105,7 @@ tenant (로그인 주체 = 회사/대표)
 | 공통/조직 | `tenant`, `staff`, auth(`user`/`session`/`account`/`organization`/`member`/`invitation`) | 재사용 |
 | 사업장 | `business_entity`(←`client`), `client_document`(←사업장 문서), `client_checklist`·`checklist_template`·`checklist_item`(수집 항목 정의) | 재정의 |
 | 자료수집 | `source_batch`(JC-031 Slice 3a 내부 원천 batch), `upload_session`(Slice 4 전 compatibility), `upload_file`, `upload_item_declaration`, `request_item_validation`·`request_item_validation_file`(수집 검증; JC-031 Slice 3c-2부터 nullable `source_batch_id`) | 재사용 + source lineage 분리 |
-| 기장검토 | `bookkeeping_material_attribution`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_transaction_purpose_request(_row)`, `bookkeeping_journal_entry_run/row/voucher/voucher_line`, `bookkeeping_fiscal_year_ledger`, `bookkeeping_ledger_month`, `analysis_run`, `material_match` | 재사용 |
+| 기장검토 | `bookkeeping_material_attribution`, `bookkeeping_ledger_material_link`, `bookkeeping_classification_run`, `bookkeeping_transaction_classification`, `bookkeeping_transaction_purpose_request(_row)`, `bookkeeping_journal_entry_run/row/voucher/voucher_line`, `bookkeeping_fiscal_year_ledger`, `bookkeeping_ledger_month`, `analysis_run`, `material_match` (JC-031 Slice 3c-3부터 핵심 source output은 nullable `source_batch_id`) | 재사용 + source lineage 분리 |
 | 급여 | `payroll_excel_template`, `client_payroll_rule_profile(_source)`, `payroll_rule_profile_application`, `payroll_extraction_batch`, `payroll_extraction_row`, `payroll_excel_draft` + 아래 4.2 신규 | 재사용 + 신규 필요 |
 | 부가세 | (기존 전용 테이블 없음 — 아래 4.1 신규) | 신규 필요 |
 | 신고지원 | (기존 전용 테이블 없음 — 아래 4.3 신규) | 신규 필요 |

@@ -1,16 +1,16 @@
 # Legacy Mail Side-effect Audit
 > Created: 2026-07-05 16:39
-> Last Updated: 2026-07-06 02:00
+> Last Updated: 2026-07-06 12:05
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-031 Slice 3c-2 구현 중 — source collection validation FK additive migration
+현재: JC-031 Slice 3c-3 구현 완료 — bookkeeping source output FK additive migration(PR review pending)
 Gate: 통과
-완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리, Slice 3a source_batch 도입, Slice 3b read model 전환, Slice 3c-0 migration 전략 고정, Slice 3c-1 company-home read switch
-다음: Slice 3c-2 validation FK(migration 0062) → Slice 3c-3 bookkeeping FK → Slice 4 schema retirement
-필요 확인: migration PR별 prod schema 사전 확인, 0062 dev/prod backfill·foreign_key_check, direct-upload compatibility smoke
+완료: Slice 1~1c 외부 포털 quarantine, Slice 2a 레거시 요청메일 쓰기 API 410 차단, Slice 2b 영향 감사, Slice 2b-1~2b-5 mail side-effect 제거, Slice 2c purpose FK 제거·draft API 410·dead-code 정리, Slice 3a source_batch 도입, Slice 3b read model 전환, Slice 3c-0 migration 전략 고정, Slice 3c-1 company-home read switch, Slice 3c-2 validation FK(migration 0062), Slice 3c-3 bookkeeping FK(migration 0063)
+다음: Slice 3c-4 payroll lineage decision → Slice 3c-5 adaptive structuring allowlist/migration → Slice 4 schema retirement
+필요 확인: PR review/merge 후 Vercel deploy 확인, direct-upload compatibility smoke
 권장 스킬: rules-product -> rules-dev/rules-workflow per deletion slice
 ```
 

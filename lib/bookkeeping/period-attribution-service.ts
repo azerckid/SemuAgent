@@ -11,6 +11,7 @@ import {
   uploadSession,
 } from '@/lib/db/schema'
 import { providerPriority } from '@/lib/ai/provider-order'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 import { DateTime, now, toDBString } from '@/lib/time'
 import { buildAttributionSummary } from '@/lib/reviews/build-material-attribution-summary'
 import type { ReviewMaterialAttribution } from '@/lib/reviews/review-workspace-types'
@@ -335,6 +336,7 @@ export async function startBookkeepingMaterialAttribution(params: {
 
   const ts = toDBString(now())
   const closePeriod = closePeriodFor(sessionRow.session.accountingPeriod)
+  const sourceBatchId = sourceBatchIdForLegacyUploadSession(params.sessionId)
 
   try {
     generatedRows = await enhanceMaterialAttributionWithLlm({
@@ -376,6 +378,7 @@ export async function startBookkeepingMaterialAttribution(params: {
         id: randomUUID(),
         tenantId: params.tenantId,
         uploadSessionId: params.sessionId,
+        sourceBatchId,
         uploadFileId: row.uploadFileId,
         status: ACTIVE_ATTRIBUTION_STATUS as 'active',
         sourceKind: row.sourceKind,

@@ -68,6 +68,7 @@ export type JournalEntryVoucherDraftContext = {
   tenantId: string
   journalEntryRunId: string
   uploadSessionId: string
+  sourceBatchId: string
   requestedPeriod: string
   attributedPeriod: string | null
   closePeriod: string
@@ -100,6 +101,7 @@ export function buildStoredVoucherRecordsFromDraft(
       tenantId: params.tenantId,
       journalEntryRunId: params.journalEntryRunId,
       uploadSessionId: params.uploadSessionId,
+      sourceBatchId: params.sourceBatchId,
       classificationRowId: draft.classificationRowId,
       sourceClassificationRowIds: encodeSourceClassificationRowIds([draft.classificationRowId]),
       voucherNumber: params.voucherNumber,
@@ -170,6 +172,7 @@ export function buildStoredVoucherRecordsFromSalesVatDraft(
       tenantId: params.tenantId,
       journalEntryRunId: params.journalEntryRunId,
       uploadSessionId: params.uploadSessionId,
+      sourceBatchId: params.sourceBatchId,
       classificationRowId: draft.classificationRowId,
       sourceClassificationRowIds: encodeSourceClassificationRowIds([draft.classificationRowId]),
       voucherNumber: params.voucherNumber,
@@ -223,6 +226,7 @@ export function buildStoredVoucherRecordsFromRemittanceFeeDraft(
       tenantId: params.tenantId,
       journalEntryRunId: params.journalEntryRunId,
       uploadSessionId: params.uploadSessionId,
+      sourceBatchId: params.sourceBatchId,
       classificationRowId: draft.principalClassificationRowId,
       sourceClassificationRowIds: encodeSourceClassificationRowIds([
         draft.principalClassificationRowId,

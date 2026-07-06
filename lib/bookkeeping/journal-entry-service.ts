@@ -12,6 +12,7 @@ import {
   client,
   uploadSession,
 } from '@/lib/db/schema'
+import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 import { DateTime, now, toDBString } from '@/lib/time'
 import { getActiveStaffForUser, getClassificationEligibility } from './classification-service'
 import {
@@ -389,6 +390,7 @@ export async function startBookkeepingJournalEntry(params: {
 
   const ts = toDBString(now())
   const runId = randomUUID()
+  const sourceBatchId = sourceBatchIdForLegacyUploadSession(params.sessionId)
   const unresolvedRowCount = voucherPlans.filter((plan) => plan.draft.status === 'needs_decision').length
 
   await db.transaction(async (tx) => {
@@ -407,6 +409,7 @@ export async function startBookkeepingJournalEntry(params: {
       id: runId,
       tenantId: params.tenantId,
       uploadSessionId: params.sessionId,
+      sourceBatchId,
       classificationRunId: classificationRun.id,
       status: 'draft',
       rowCount: voucherPlans.length,
@@ -422,6 +425,7 @@ export async function startBookkeepingJournalEntry(params: {
       tenantId: params.tenantId,
       journalEntryRunId: runId,
       uploadSessionId: params.sessionId,
+      sourceBatchId,
       timestamp: ts,
     }
 

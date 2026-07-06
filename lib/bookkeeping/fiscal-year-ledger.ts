@@ -13,7 +13,7 @@ import {
   client,
   uploadSession,
 } from '@/lib/db/schema'
-import { listActiveSourceBatchSessions, type SourceBatchSessionRow } from '@/lib/source-batch/scope'
+import { listActiveSourceBatchSessions, sourceBatchIdForLegacyUploadSession, type SourceBatchSessionRow } from '@/lib/source-batch/scope'
 import { DateTime, now, toDBString } from '@/lib/time'
 import {
   periodFromAttributionValue,
@@ -597,6 +597,7 @@ export async function mergeIncludedAttributionIntoLedger(params: {
         ledgerId: ledger.id,
         periodMonth,
         uploadSessionId: params.sessionId,
+        sourceBatchId: row.sourceBatchId ?? sourceBatchIdForLegacyUploadSession(params.sessionId),
         uploadFileId: row.uploadFileId,
         materialAttributionId: row.id,
         sourceFingerprint: fingerprint,

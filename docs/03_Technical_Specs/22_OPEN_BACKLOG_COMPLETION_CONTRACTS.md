@@ -174,7 +174,7 @@ Non-goals before done:
 
 Type: 기반 정리.
 
-Current state: Slice 1 through Slice 3c-1 complete. Slice 3 Pre-Code Brief is fixed in [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md). Slice 3c-0 has fixed the downstream FK migration strategy; Slice 3c-2 is in progress unless a docs PR updates this contract first.
+Current state: Slice 1 through Slice 3c-3 implemented. Slice 3 Pre-Code Brief is fixed in [Source Batch Replacement Pre-Code Brief](./24_SOURCE_BATCH_REPLACEMENT_PRE_CODE_BRIEF.md). Slice 3c-0 has fixed the downstream FK migration strategy; Slice 3c-4 is next after the 3c-3 PR is reviewed/merged.
 
 Remaining slices:
 
@@ -188,6 +188,8 @@ Remaining slices:
    - **3b complete:** priority read models use `source_batch` scoping first while legacy downstream tables still bridge through `legacy_upload_session_id`.
    - **3c-0 complete:** downstream FK migration strategy is fixed: 3c-1 company-home read switch, 3c-2 source collection validation additive FK, 3c-3 bookkeeping additive FK, 3c-4 payroll lineage decision, 3c-5 adaptive structuring allowlist/migration.
    - **3c-1 complete:** `company-home` read switch to `source_batch` scoping; `INTERNAL_SOURCE_BATCH_READ_KINDS` includes `sample_data` for first-run sample parity.
+   - **3c-2 complete:** `request_item_validation` and `upload_item_declaration` have nullable `source_batch_id`, migration 0062 backfill, and new-row dual-write; dev/prod DB validation completed.
+   - **3c-3 implemented:** bookkeeping material/link/run/row/voucher tables receive nullable `source_batch_id` via additive migration 0063 and deterministic dual-write; dev/prod DB validation completed. Read prefer remains later work.
    - Migrate `upload_file` and downstream bookkeeping/payroll/review references away from legacy `upload_session` where they only need source lineage.
    - Preserve direct-upload behavior and historical traceability.
    - Execute in the fixed order from Brief 24: **3a schema/backfill/dual-write -> 3b read model switch -> 3c-0 migration strategy -> 3c-1..3c-5 downstream FK migration**.

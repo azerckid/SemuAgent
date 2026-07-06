@@ -580,6 +580,7 @@ export const bookkeepingMaterialAttribution = sqliteTable('bookkeeping_material_
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   uploadFileId: text('upload_file_id').references(() => uploadFile.id),
   status: text('status', {
     enum: ['active', 'superseded'],
@@ -616,6 +617,7 @@ export const bookkeepingMaterialAttribution = sqliteTable('bookkeeping_material_
   updatedAt: text('updated_at').notNull(),
 }, (t) => ({
   sessionIdx: index('bookkeeping_attr_session_idx').on(t.tenantId, t.uploadSessionId, t.status),
+  sourceBatchIdx: index('bookkeeping_attr_source_batch_idx').on(t.tenantId, t.sourceBatchId),
   fileIdx: index('bookkeeping_attr_file_idx').on(t.tenantId, t.uploadFileId),
   periodIdx: index('bookkeeping_attr_period_idx').on(t.tenantId, t.attributedPeriod, t.periodRelation),
 }))
@@ -690,6 +692,7 @@ export const bookkeepingLedgerMaterialLink = sqliteTable('bookkeeping_ledger_mat
   ledgerId: text('ledger_id').notNull().references(() => bookkeepingFiscalYearLedger.id),
   periodMonth: text('period_month').notNull(),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   uploadFileId: text('upload_file_id').references(() => uploadFile.id),
   materialAttributionId: text('material_attribution_id').references(() => bookkeepingMaterialAttribution.id),
   sourceFingerprint: text('source_fingerprint').notNull(),
@@ -705,6 +708,7 @@ export const bookkeepingLedgerMaterialLink = sqliteTable('bookkeeping_ledger_mat
     .on(t.tenantId, t.ledgerId, t.periodMonth, t.sourceFingerprint)
     .where(sql`status = 'included'`),
   sessionIdx: index('bookkeeping_ledger_link_session_idx').on(t.tenantId, t.uploadSessionId),
+  sourceBatchIdx: index('bookkeeping_ledger_link_source_batch_idx').on(t.tenantId, t.sourceBatchId),
   attributionIdx: index('bookkeeping_ledger_link_attribution_idx').on(t.tenantId, t.materialAttributionId),
   statusIdx: index('bookkeeping_ledger_link_status_idx').on(t.tenantId, t.status),
 }))
@@ -857,6 +861,7 @@ export const bookkeepingClassificationRun = sqliteTable('bookkeeping_classificat
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   status: text('status', {
     enum: ['draft', 'running', 'completed', 'failed', 'superseded'],
   }).notNull().default('draft'),
@@ -873,6 +878,7 @@ export const bookkeepingClassificationRun = sqliteTable('bookkeeping_classificat
   updatedAt: text('updated_at').notNull(),
 }, (t) => ({
   sessionCreatedIdx: index('bookkeeping_run_session_created_idx').on(t.tenantId, t.uploadSessionId, t.createdAt),
+  sourceBatchCreatedIdx: index('bookkeeping_run_source_batch_created_idx').on(t.tenantId, t.sourceBatchId, t.createdAt),
   statusIdx: index('bookkeeping_run_status_idx').on(t.tenantId, t.status),
 }))
 
@@ -885,6 +891,7 @@ export const bookkeepingTransactionClassification = sqliteTable('bookkeeping_tra
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   classificationRunId: text('classification_run_id').notNull().references(() => bookkeepingClassificationRun.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   uploadFileId: text('upload_file_id').references(() => uploadFile.id),
   sourceType: text('source_type', {
     enum: ['bank', 'card', 'receipt', 'tax_invoice', 'other'],
@@ -914,6 +921,7 @@ export const bookkeepingTransactionClassification = sqliteTable('bookkeeping_tra
 }, (t) => ({
   runIdx: index('bookkeeping_tx_run_idx').on(t.tenantId, t.classificationRunId),
   sessionIdx: index('bookkeeping_tx_session_idx').on(t.tenantId, t.uploadSessionId),
+  sourceBatchIdx: index('bookkeeping_tx_source_batch_idx').on(t.tenantId, t.sourceBatchId),
   statusIdx: index('bookkeeping_tx_status_idx').on(t.tenantId, t.status),
 }))
 
@@ -993,6 +1001,7 @@ export const bookkeepingJournalEntryRun = sqliteTable('bookkeeping_journal_entry
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   classificationRunId: text('classification_run_id').notNull().references(() => bookkeepingClassificationRun.id),
   status: text('status', {
     enum: ['draft', 'completed', 'failed', 'superseded'],
@@ -1006,6 +1015,7 @@ export const bookkeepingJournalEntryRun = sqliteTable('bookkeeping_journal_entry
   updatedAt: text('updated_at').notNull(),
 }, (t) => ({
   sessionCreatedIdx: index('bookkeeping_journal_run_session_created_idx').on(t.tenantId, t.uploadSessionId, t.createdAt),
+  sourceBatchCreatedIdx: index('bookkeeping_journal_run_source_batch_created_idx').on(t.tenantId, t.sourceBatchId, t.createdAt),
   statusIdx: index('bookkeeping_journal_run_status_idx').on(t.tenantId, t.status),
 }))
 
@@ -1018,6 +1028,7 @@ export const bookkeepingJournalEntryRow = sqliteTable('bookkeeping_journal_entry
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   journalEntryRunId: text('journal_entry_run_id').notNull().references(() => bookkeepingJournalEntryRun.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   classificationRowId: text('classification_row_id').notNull().references(() => bookkeepingTransactionClassification.id),
   entryDate: text('entry_date'),
   requestedPeriod: text('requested_period').notNull(),
@@ -1041,6 +1052,7 @@ export const bookkeepingJournalEntryRow = sqliteTable('bookkeeping_journal_entry
 }, (t) => ({
   runIdx: index('bookkeeping_journal_row_run_idx').on(t.tenantId, t.journalEntryRunId),
   sessionIdx: index('bookkeeping_journal_row_session_idx').on(t.tenantId, t.uploadSessionId),
+  sourceBatchIdx: index('bookkeeping_journal_row_source_batch_idx').on(t.tenantId, t.sourceBatchId),
   statusIdx: index('bookkeeping_journal_row_status_idx').on(t.tenantId, t.status),
 }))
 
@@ -1053,6 +1065,7 @@ export const bookkeepingJournalEntryVoucher = sqliteTable('bookkeeping_journal_e
   tenantId: text('tenant_id').notNull().references(() => tenant.id),
   journalEntryRunId: text('journal_entry_run_id').notNull().references(() => bookkeepingJournalEntryRun.id),
   uploadSessionId: text('upload_session_id').notNull().references(() => uploadSession.id),
+  sourceBatchId: text('source_batch_id').references(() => sourceBatch.id),
   classificationRowId: text('classification_row_id').notNull().references(() => bookkeepingTransactionClassification.id),
   sourceClassificationRowIds: text('source_classification_row_ids'),
   voucherNumber: text('voucher_number').notNull(),
@@ -1072,6 +1085,7 @@ export const bookkeepingJournalEntryVoucher = sqliteTable('bookkeeping_journal_e
 }, (t) => ({
   runIdx: index('bookkeeping_journal_voucher_run_idx').on(t.tenantId, t.journalEntryRunId),
   sessionIdx: index('bookkeeping_journal_voucher_session_idx').on(t.tenantId, t.uploadSessionId),
+  sourceBatchIdx: index('bookkeeping_journal_voucher_source_batch_idx').on(t.tenantId, t.sourceBatchId),
   voucherNumberIdx: index('bookkeeping_journal_voucher_number_idx').on(t.tenantId, t.journalEntryRunId, t.voucherNumber),
 }))
 

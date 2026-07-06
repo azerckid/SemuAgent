@@ -126,6 +126,7 @@ beforeAll(async () => {
       id text PRIMARY KEY,
       tenant_id text NOT NULL,
       upload_session_id text NOT NULL,
+      source_batch_id text,
       upload_file_id text,
       status text NOT NULL DEFAULT 'active',
       source_kind text NOT NULL DEFAULT 'file_summary',

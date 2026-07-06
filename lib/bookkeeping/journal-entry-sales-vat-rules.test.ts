@@ -131,6 +131,7 @@ describe('journal entry sales vat rules', () => {
       tenantId: 'tenant-1',
       journalEntryRunId: 'run-1',
       uploadSessionId: 'session-1',
+      sourceBatchId: 'source_batch_session-1',
       requestedPeriod: '2025-04',
       attributedPeriod: '2025-04',
       closePeriod: '2025-04~2025-06',
@@ -141,6 +142,7 @@ describe('journal entry sales vat rules', () => {
     })
 
     expect(stored.lines).toHaveLength(3)
+    expect(stored.voucher.sourceBatchId).toBe('source_batch_session-1')
     expect(stored.voucher.sourceClassificationRowIds).toBe(JSON.stringify(['sales-vat']))
     expect(stored.lines.map((line) => line.accountName)).toEqual([
       SALES_VAT_PAYABLE_ACCOUNT_NAME,
