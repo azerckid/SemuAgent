@@ -16,6 +16,12 @@ const FLOW_NAV = [
   { href: '/dashboard/filing-preparation', label: '신고 준비', glyph: '◷' },
 ] as const
 
+const FILING_PREPARATION_CHILD_NAV = [
+  { href: '/dashboard/filing-preparation/payment-statements', label: '지급명세서·연말정산' },
+  { href: '/dashboard/filing-preparation/local-income-tax', label: '지방소득세' },
+  { href: '/dashboard/filing-preparation/business-status-report', label: '사업장현황신고' },
+] as const
+
 const MANAGE_NAV = [
   { href: '/dashboard/settings', label: '설정', glyph: '⚙' },
   { href: '/dashboard/employees', label: '직원 명부', glyph: '◍' },
@@ -80,10 +86,24 @@ export function Sidebar({
                   : 0
 
           return (
-            <SidebarNavLink key={item.href} href={item.href} badge={badge}>
-              <NavGlyph>{item.glyph}</NavGlyph>
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-            </SidebarNavLink>
+            <div key={item.href}>
+              <SidebarNavLink href={item.href} badge={badge}>
+                <NavGlyph>{item.glyph}</NavGlyph>
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              </SidebarNavLink>
+              {item.href === '/dashboard/filing-preparation' ? (
+                <div className="mt-0.5 ml-[28px] flex flex-col gap-0.5">
+                  {FILING_PREPARATION_CHILD_NAV.map((child) => (
+                    <SidebarNavLink key={child.href} href={child.href}>
+                      <span className="w-[10px] shrink-0 text-center text-[12px] text-company-fg-subtle" aria-hidden="true">
+                        ›
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-[12.5px]">{child.label}</span>
+                    </SidebarNavLink>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           )
         })}
 
