@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-08 04:51 KST
+> Last Updated: 2026-07-08 05:12 KST
 
 ## 0. Purpose
 
@@ -146,6 +146,40 @@ Slice 2a must not invent a new table. If Slice 2b discovers that confirmed
 matches need a durable pair/link model, Slice 2c must get a separate migration
 brief before code starts.
 
+### 2.1 Implementation Order and Traceability
+
+Approved ideas from the Prototype Review, §0.2 gap table, §8 UI contract, and
+§9 acceptance criteria must be implemented in the order below. Each step must
+land in its own PR-sized change set. Do not skip a step because a later step
+already looks partially present in the 1st slice.
+
+Traceability legend:
+
+- **P** = [Reconciliation Ledger Prototype Review](../02_UI_Screens/12_RECONCILIATION_LEDGER_PROTOTYPE_REVIEW.md)
+- **G** = §0.2 Required Functions gap row
+- **U** = §8 UI Contract item number
+- **A** = §9 Acceptance Criteria or [Backlog JC-010 AC](../04_Logic_Progress/00_BACKLOG.md)
+
+| Step | Slice | Goal | Covers | Done when |
+|:---|:---|:---|:---|:---|
+| 2a-1 | 2a | Read model + Zod boundary | G: bank↔tax-invoice matching, card↔evidence, period scope, evidence action status; §5.1; A: period switch, action-state labels, matching candidates | `ReconciliationPeriodMode`, `ReconciliationEvidenceActionState`, match candidates, blockers, `nextActions`, `taxBlockerSummaries`, `closingChecklist`, `batchSuggestionGroups`, and tab/query filters are Zod-validated; rows derive action states instead of showing final-looking "증빙없음"; query contract uses `evidence_required` and `explanation_required` instead of legacy `missing_evidence` tab only |
+| 2a-2 | 2a | UI shell and honest labels | U:1-4; P: hero, source summary, ledger table columns; §0.4 next-action queue, tax blocker reasons, closing checklist | Readiness hero, source summary, next-action queue, period scope control, action tabs, table chips, tax blocker reasons, and closing checklist render from the 2a-1 read model; inactive controls stay disabled until their step lands |
+| 2a-3 | 2a | Right work panel (display only) | U:6-7; §0.1; §0.3; P: work panel, concrete candidates, pattern basis; §0.4 one-line panel conclusion | Selecting a row opens the panel with a one-line conclusion first, then transaction summary, concrete evidence rows, remaining difference, and `patternSuggestion` basis; "후보 N건" is not the primary answer |
+| 2a-4 | 2a | Evidence finder browse + AI display | G: evidence finder, AI account recommendation, private/business-unrelated detection; §5.3; A: AI non-blocking, 증빙 찾기 flow; §0.4 source-collection back link | Finder opens from the panel in read/browse mode with source selector and filters; AI/heuristic recommendations and private-use flags show reasons; missing-source problems show a 자료수집 backlink with period/source context; provider failure falls back to manual review without blocking render |
+| 2b-1 | 2b | Account, explanation, exclusion mutations | G: explanation memo, bank usage-description memo, exclusion reason, inline account edit, user account selection; P: memo, exclusion, inline account; §0.4 shallow undo | User confirms/changes account, saves explanation memo, and excludes with required reason from the work panel via existing classification APIs; no redirect to the classification queue for the primary flow; the latest apply/confirm action can be cancelled from the current session |
+| 2b-2 | 2b | Evidence connect, exception, amount mismatch | G: bank↔tax-invoice and card↔evidence confirmation; P: connect evidence, confirm evidence exception, resolve amount mismatch | User can connect/unlink evidence, mark evidence exception, and resolve amount mismatch from the panel; remaining difference updates before save |
+| 2b-3 | 2b | Pattern apply/reject | §5.2; A: pattern recommendation AC; §0.4 batch suggestion acceptance | User can accept, change, or reject `patternSuggestion`; safe repeated suggestion groups can be batch-accepted only when eligibility is visible and the user explicitly confirms; rejected/changed decisions become the newer learning signal |
+| 2c | 2c | Durable confirmed links | Slice 2c trigger only | Start only if 2b proves user-confirmed bank↔evidence pairs must survive reload/audit beyond existing classification metadata |
+| 2d | downstream | Path 1 gate consumption | A: filing-preparation blocker counts; Backlog AC: confirmed ledger only | Filing-preparation and tax-type read models consume resolved ledger/blocker state from 자료대조원장 instead of treating raw classification rows as ready |
+
+Cross-cutting requirements:
+
+- Before **2a-2**, update [Component Plan §7.3a](./02_COMPONENT_LIBRARY_PLAN.md) for `Period Scope Control`, `Evidence Action Status`, `ReconciliationNextActionQueue`, `ReconciliationWorkPanelConclusion`, `ReconciliationBatchSuggestionBar`, `ReconciliationTaxBlockerReasons`, `ReconciliationClosingChecklist`, and source back-link/recent-undo controls.
+- Before **2b-1**, extend [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) with 자료대조원장 Phase 2 cases for action states, pattern display, AI fallback, and in-panel mutations.
+- **Evidence finder boundary:** browse/search/preview belongs to 2a-4; connect/unlink/save belongs to 2b-2.
+- **Mobile/narrow layout (P):** the work panel may collapse to a drawer, but the same step order and actions apply.
+
+
 ## 3. Existing Data to Reuse
 
 | Existing surface | Useful fields | Use in 자료대조원장 |
@@ -240,6 +274,23 @@ type ReconciliationBatchSuggestionGroup = {
   basisLabel: string
   eligibility: 'safe_to_offer' | 'mixed_reasons_blocked'
   requiresUserConfirmation: true
+}
+
+type ReconciliationClosingChecklist = {
+  evidenceRequiredCount: number
+  explanationRequiredCount: number
+  accountUnconfirmedCount: number
+  exclusionReasonRequiredCount: number
+  taxBlockerCount: number
+  isReadyForPath1: boolean
+}
+
+type ReconciliationLedgerSummary = {
+  rows: ReconciliationLedgerRow[]
+  nextActions: ReconciliationNextAction[]
+  taxBlockerSummaries: ReconciliationTaxBlockerSummary[]
+  closingChecklist: ReconciliationClosingChecklist
+  batchSuggestionGroups: ReconciliationBatchSuggestionGroup[]
 }
 
 type ReconciliationMatchCandidate = {
@@ -495,7 +546,8 @@ inactive search or settings controls must look disabled until implemented.
 - [x] AI escalation and non-blocking runtime rules documented for 자료대조원장.
 - [x] Period scope and evidence action-state terminology documented for 자료대조원장.
 - [x] Convenience contract documented for next-action queue, batch acceptance, one-line panel conclusion, source-collection back link, tax blocker reasons, closing checklist, and shallow undo.
-- [ ] Slice 2a read model reviewed before code.
+- [x] Phase 2 implementation order and traceability documented (§2.1).
+- [ ] Slice 2a-1 read model implementation started (§2.1 step 2a-1).
 - [ ] Slice 2b mutation mapping reviewed before code.
 - [ ] Slice 2c durable match-link schema approved if needed.
 
