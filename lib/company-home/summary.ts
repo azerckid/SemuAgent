@@ -107,6 +107,7 @@ type LoadCompanyHomeSummaryParams = {
 const ROUTES = {
   sourceCollection: '/dashboard/direct-upload',
   bookkeeping: '/dashboard/bookkeeping',
+  reconciliationLedger: '/dashboard/bookkeeping/reconciliation-ledger',
   vat: '/dashboard/vat',
   payroll: '/dashboard/payroll',
   filingSupport: '/dashboard/filing-support',
@@ -275,7 +276,7 @@ export function buildCompanyHomeActionItems(counts: Pick<
       description: '자료대조원장에서 신고 전 계정항목을 확정해야 합니다.',
       tone: 'danger',
       count: counts.unclassifiedTransactionCount,
-      href: ROUTES.bookkeeping,
+      href: ROUTES.reconciliationLedger,
       ctaLabel: '자료대조원장 열기',
     })
   }

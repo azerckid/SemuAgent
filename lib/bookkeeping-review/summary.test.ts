@@ -30,6 +30,8 @@ function row(partial: Partial<BookkeepingReviewQueueRow>): BookkeepingReviewQueu
     status: 'suggested',
     requiresManualAccount: false,
     ...partial,
+    sourceType: partial.sourceType ?? 'other',
+    direction: partial.direction ?? 'unknown',
   }
 }
 
@@ -123,6 +125,8 @@ describe('mapClassificationRow', () => {
       finalAccount: null,
       recommendationConfidence: 'low',
       status: 'needs_decision',
+      sourceType: 'card',
+      direction: 'expense',
     })
     expect(mapped.description).toBe('오피스디포') // description null → merchantName
     expect(mapped.counterparty).toBe('오피스디포')

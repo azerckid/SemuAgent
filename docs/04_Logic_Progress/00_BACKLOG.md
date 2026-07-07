@@ -167,10 +167,11 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 로딩·빈·오류 상태가 화면에 구현된다.
   - [x] 기장검토 하위 메뉴 "자료대조원장"이 Path 1의 자료 대조·계정확정 관문으로 표시된다.
   - [x] 자료대조원장 전용 Preview가 통장·카드·세금계산서·현금영수증을 한 원장 표에서 대조하는 구조로 승인됐다(2026-07-08).
+  - [x] `/dashboard/bookkeeping/reconciliation-ledger` 전용 라우트 1차 구현으로 자료대조원장 화면이 기장검토 분류 큐와 분리된다.
   - [ ] 자료대조원장에 입출금↔세금계산서/카드/현금영수증/영수증 매칭 후보가 표시된다.
   - [ ] 자료대조원장에서 계정항목 확정·사용내역 소명·업무무관/사적 사용 제외 사유가 한 화면 흐름으로 처리된다.
   - [ ] 세목별 Path 1 양식·파일 생성은 자료대조원장 blocker가 해소된 확정 거래만 사용한다.
-- Document Sync Check: Screen Flow 4c / UI Design 4.3+4.3a / Prototype Review / Preview / Component Plan 7.3 / Pre-Code Brief / QA Scenarios 상호 링크됨. 2026-07-08: "자료대조원장"은 신고 준비 하위가 아니라 기장검토 하위 진입점으로 정리했고, 전용 Preview(12)에서 통장·카드·세금계산서·현금영수증 대조 원장 구조를 승인했다. 2026-07-08 02:01: Phase 2 Brief(41)로 입출금↔증빙 후보, 계정확정, 사용내역 소명 모달, 제외 사유 taxonomy, 세목별 Path 1 blocker 계약을 고정했다. 기존 구현은 `/dashboard/bookkeeping` 분류 큐이며, 전용 라우트·read model 구현은 후속 Slice에서 진행한다. 구현 파일: `lib/bookkeeping-review/summary.ts`, `app/(dashboard)/dashboard/bookkeeping/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.tsx`, `app/(dashboard)/dashboard/bookkeeping/loading.tsx`, `app/(dashboard)/dashboard/bookkeeping/error.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.test.ts`.
+- Document Sync Check: Screen Flow 4c / UI Design 4.3+4.3a / Prototype Review / Preview / Component Plan 7.3 / Pre-Code Brief / QA Scenarios 상호 링크됨. 2026-07-08: "자료대조원장"은 신고 준비 하위가 아니라 기장검토 하위 진입점으로 정리했고, 전용 Preview(12)에서 통장·카드·세금계산서·현금영수증 대조 원장 구조를 승인했다. `/dashboard/bookkeeping`은 기장검토 분류 큐로 유지하고, `/dashboard/bookkeeping/reconciliation-ledger` 전용 라우트 1차 구현으로 자료대조원장 화면을 분리한다. 1차 구현은 기존 classification read model을 재사용한다. 2026-07-08 02:01: Phase 2 Brief(41)로 입출금↔증빙 후보, 계정확정, 사용내역 소명 모달, 제외 사유 taxonomy, 세목별 Path 1 blocker 계약을 고정했다. 자동 매칭 엔진·신규 DB는 Brief 41의 Slice 2c 조건 없이는 도입하지 않는다. 구현 파일: `lib/bookkeeping-review/summary.ts`, `app/(dashboard)/dashboard/bookkeeping/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.tsx`, `app/(dashboard)/dashboard/bookkeeping/loading.tsx`, `app/(dashboard)/dashboard/bookkeeping/error.tsx`, `app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/_components/reconciliation-ledger.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.test.tsx`.
 
 ### JC-011 · Build VAT workspace (부가세) — 신규
 

@@ -4,7 +4,7 @@
 
 ## 0. Governing Principle — Preview UI가 계약이다
 
-JC-010의 회사 기장검토 분류 큐는 승인된 [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html) 구조를 그대로 따른다. 2026-07-08 승인된 [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html)은 Path 1 자료대조원장 전용 Preview이며, Phase 2 행동 계약은 [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)에 고정한다. 아래 두 규칙을 강제한다(정적 테스트로 검증):
+JC-010의 회사 기장검토 분류 큐는 승인된 [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html) 구조를 그대로 따른다. 2026-07-08 승인된 [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html)은 Path 1 자료대조원장 전용 Preview이다. 1차 앱 구현은 `/dashboard/bookkeeping/reconciliation-ledger` read-only route로 Preview 계약을 반영한다. 입출금 매칭 후보·계정 확정·소명·제외 사유·Path 1 blocker의 Phase 2 행동 계약은 [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)에 고정한다. 자동 대조 엔진·신규 DB는 이 Brief의 Slice 2c 조건 없이는 도입하지 않는다. 아래 두 규칙을 강제한다(정적 테스트로 검증):
 
 - **보이는 UI는 회사용으로 새로 만든다.** GIWA `/dashboard/reviews` 워크스페이스 컴포넌트를
   회사 기장검토 화면에서 import/render/embed하지 않는다. (자료수집에서 세션 폼이 새어든 실수 반복 금지)
@@ -23,7 +23,7 @@ GIWA `bookkeeping_transaction_classification` 스키마가 Preview와 정확히 
 | 항목 | 결정 |
 |:---|:---|
 | Route | **신규 `/dashboard/bookkeeping`** (회사 분류 큐). 물리 경로 `app/(dashboard)/dashboard/bookkeeping/` |
-| 사이드바·링크 | `ROUTES.bookkeeping`(`lib/company-home/summary.ts`)은 `/dashboard/bookkeeping` 기장검토 분류 큐로 연결한다. 자료대조원장 전용 하위 라우트와 Phase 2 행동 계약은 [41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)에서 다룬다. |
+| 사이드바·링크 | `ROUTES.bookkeeping`(`lib/company-home/summary.ts`)은 `/dashboard/bookkeeping` 기장검토 분류 큐로 연결한다. 자료대조원장 하위 메뉴와 회사 홈 CTA는 `/dashboard/bookkeeping/reconciliation-ledger`로 연결한다. Phase 2 행동 계약은 [41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)에서 다룬다. |
 | GIWA reviews | `/dashboard/reviews`는 **내부 심화 도구로 유지**(회사 내비에서 링크하지 않음). 회사 화면에서 embed 금지 |
 | Read model | `lib/bookkeeping-review/summary.ts` 신규. Server Component에서 호출 |
 | Mutation | 기존 세션 API 재사용: 개별 `PATCH /api/sessions/[id]/account-classification/rows/[rowId]`, 일괄 `POST /api/sessions/[id]/account-classification/bulk-confirm` |

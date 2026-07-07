@@ -1,17 +1,17 @@
 # Bookkeeping Review Prototype Review
 > Created: 2026-07-01 20:20
-> Last Updated: 2026-07-01 20:20
+> Last Updated: 2026-07-08 01:20
 
 ## 1. HTML UI Preview
 - Preview: [기장검토](./previews/02_bookkeeping_review.html)
-- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 회사 홈 "자료대조원장 열기"(다음 할 일) 또는 사이드바 "기장검토"로 진입.
+- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 사이드바 "기장검토"로 진입. 회사 홈 "자료대조원장 열기"는 2026-07-08 이후 전용 자료대조원장 Preview/route로 이동한다.
 - 확인 목적: 거래 분류·계정과목 확정·승인 흐름의 화면 구조, 동선, 상태별 UI
 
 ## 2. Prototype Link/Screenshot
 - 정적 HTML Preview 파일 1종. 회사 홈·자료수집과 상호 링크.
 
 ## 3. Key User Flows
-- 회사 홈 → 기장검토 진입(다음 할 일 CTA / 사이드바).
+- 사이드바 → 기장검토 진입.
 - 분류 큐에서 AI 추천 계정과목·신뢰도 확인 → 개별 승인/수정 또는 다중 선택 일괄 승인.
 - 신뢰도 낮은 거래는 "계정 지정"으로 강제 확인.
 - 선택 거래 상세에서 분개 미리보기·기간 귀속·부가세 공제 확인 후 승인.
@@ -35,7 +35,7 @@
 - HTML Preview 확인 여부: 확인함 (브라우저 열람, 홈 ↔ 자료수집 ↔ 기장검토 상호 이동 확인)
 - 확인자: 프로젝트 오너
 - 확인 일시: 2026-07-01
-- 보완 필요 사항: 없음 (현 방향 승인).
+- 보완 필요 사항: 없음. 2026-07-08 자료대조원장 전용 Preview가 분리되어, 이 문서는 기장검토 분류 큐 계약으로 유지한다.
 
 ## 7. Feedback & Improvements
 - 기장검토 방향 승인(분류 큐 + AI 추천/신뢰도 + 분개 미리보기 + 사용자 확정 책임 흐름). 후속: 01_UI_DESIGN.md 기장검토 컴포넌트 반영, BACKLOG JC-010 + Context Lock 추가.
@@ -45,4 +45,5 @@
 - **UI_Screens**: [Screen Flow](./00_SCREEN_FLOW.md) - 사용자 흐름 (4c. 기장검토)
 - **UI_Screens**: [UI Design](./01_UI_DESIGN.md) - 디자인 시스템 및 컴포넌트
 - **UI_Screens**: [Source Collection Prototype Review](./03_SOURCE_COLLECTION_PROTOTYPE_REVIEW.md) - 선행 화면(자료수집)
-- **UI_Screens**: [HTML Preview](./previews/02_bookkeeping_review.html) - 브라우저 확인용 프로토타입
+- **UI_Screens**: [HTML Preview](./previews/02_bookkeeping_review.html) - 기장검토 분류 큐 Preview
+- **UI_Screens**: [Reconciliation Ledger Prototype Review](./12_RECONCILIATION_LEDGER_PROTOTYPE_REVIEW.md) - 자료대조원장 전용 Preview

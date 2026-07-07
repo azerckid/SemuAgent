@@ -12,10 +12,12 @@ describe('bookkeeping review UI boundaries (JC-010)', () => {
   const sidebarNavLinkSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/_components/sidebar-nav-link.tsx'), 'utf8')
   const layoutSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/layout.tsx'), 'utf8')
   const companyHomeSummarySource = readFileSync(join(workspaceRoot, 'lib/company-home/summary.ts'), 'utf8')
+  const reconciliationPageSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/page.tsx'), 'utf8')
+  const reconciliationViewSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/_components/reconciliation-ledger.tsx'), 'utf8')
 
   it('renders the approved preview section order and core labels (S-01)', () => {
-    expect(source).toContain('자료대조원장')
-    expect(source).toContain('신고 전 거래 대조·계정확정')
+    expect(source).toContain('기장검토')
+    expect(source).toContain('거래 분류 현황')
     expect(source).toContain('검토 대기')
     expect(source).toContain('신뢰도 낮음')
     expect(source).toContain('거래내용 / 상대처')
@@ -51,9 +53,21 @@ describe('bookkeeping review UI boundaries (JC-010)', () => {
 
   it('routes company navigation to the preview-aligned bookkeeping screen (S-02)', () => {
     expect(sidebarSource).toContain("href: '/dashboard/bookkeeping'")
+    expect(sidebarSource).toContain("href: '/dashboard/bookkeeping/reconciliation-ledger'")
     expect(sidebarSource).toContain('자료대조원장')
     expect(companyHomeSummarySource).toContain("bookkeeping: '/dashboard/bookkeeping'")
+    expect(companyHomeSummarySource).toContain("reconciliationLedger: '/dashboard/bookkeeping/reconciliation-ledger'")
     expect(companyHomeSummarySource).toContain('자료대조원장 열기')
+  })
+
+  it('renders the reconciliation ledger route as a dedicated Path 1 gate', () => {
+    expect(reconciliationPageSource).toContain('ReconciliationLedgerView')
+    expect(reconciliationViewSource).toContain('Path 1 데이터 준비 관문')
+    expect(reconciliationViewSource).toContain('통장·카드·세금계산서·현금영수증')
+    expect(reconciliationViewSource).toContain('자료대조원장은 신고 준비 화면이 아니라 기장검토 하위 관문입니다')
+    expect(reconciliationViewSource).toContain('filter="bank"')
+    expect(reconciliationViewSource).toContain('reconciliationFilterHref(periodKey, filter)')
+    expect(reconciliationPageSource).toContain('normalizeReconciliationFilter(source)')
   })
 
   it('renders the pending-count sidebar badge from the server layout for Preview parity', () => {

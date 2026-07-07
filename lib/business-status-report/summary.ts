@@ -46,7 +46,7 @@ export type BusinessStatusBlocker = {
   title: string
   description: string
   tone: 'warn' | 'danger'
-  href: '/dashboard/direct-upload' | '/dashboard/bookkeeping' | '/dashboard/settings'
+  href: '/dashboard/direct-upload' | '/dashboard/bookkeeping/reconciliation-ledger' | '/dashboard/settings'
   ctaLabel: '자료수집 열기' | '자료대조원장 열기' | '설정 열기'
 }
 
@@ -188,7 +188,7 @@ export function buildBusinessStatusBlockers(params: {
       title: `기장검토 확인 필요 ${unconfirmedCount}건`,
       description: '수입금액과 매입·경비 계정분류를 확정해야 합계에 반영됩니다.',
       tone: 'danger',
-      href: '/dashboard/bookkeeping',
+      href: '/dashboard/bookkeeping/reconciliation-ledger',
       ctaLabel: '자료대조원장 열기',
     })
   }
