@@ -278,6 +278,26 @@ The UI must show the basis, for example:
 
 A pattern recommendation can raise confidence, preselect a likely account, suggest an evidence source, or flag likely exclusion review. It must not automatically confirm the row, create a durable evidence link, or exclude the row without user action. If the user changes the suggestion, the changed decision becomes the newer learning signal for future periods.
 
+## 5.2 AI Escalation and Non-Blocking Runtime Rules
+
+자료대조원장의 AI 판단은 단계형으로 실행한다. 목적은 정확도를 높이는 것이며, 화면을 멈추거나 사용자가 확정 작업을 못 하게 만드는 것이 아니다.
+
+| Stage | When to use | Required behavior |
+|:---|:---|:---|
+| Deterministic rules | Exact or near-exact amount, date, source type, and counterparty match | No LLM call required; show the concrete matching basis |
+| Prior confirmed patterns | Same tenant/business entity has repeated confirmed account, evidence, exclusion, or internal-transfer behavior | Show `patternSuggestion` with basis; user must accept/change/reject |
+| Single-provider AI | Counterparty, memo, account, evidence, or private-use judgment is ambiguous but not high risk | Return a recommendation with confidence and reason; never auto-confirm |
+| Multi-provider consensus | The row is high amount, filing-impacting, repeatedly ambiguous, suspected private/business-unrelated, or AI and prior pattern disagree | Run primary providers in parallel where available, use a tie-breaker only on disagreement, and expose the final reason |
+| Manual review fallback | Provider timeout, quota, parse failure, low consensus, or unavailable provider | Mark the row as needs review and keep manual account/evidence/exclusion actions available |
+
+Runtime safety rules:
+
+- The ledger page must not wait indefinitely for LLM results. Initial render must be possible with deterministic rules, existing recommendations, cached/stored AI results, or a `needs_review` fallback.
+- LLM calls must have bounded timeouts. If a provider times out, errors, returns invalid JSON, or is quota-limited, the row falls back to the next available stage or manual review.
+- A failed LLM call must never crash the page, block row selection, or hide existing source data. The UI may show "AI 판단 보류" or "수동 확인 필요" with the failure-safe reason.
+- Do not run all three providers for every row on every page load. Multi-provider consensus is reserved for ambiguous or high-risk rows and should run on upload analysis, explicit user action, background job, or cached/stored result reuse.
+- Provider outputs are recommendations only. They may populate candidates, `recommendedAccount`, `patternSuggestion`, private-use flags, or explanation text, but user confirmation is required before any account, evidence link, exclusion, or Path 1 readiness state is finalized.
+
 ## 6. User Actions
 
 | Action | Description | Preferred implementation |
@@ -356,6 +376,7 @@ inactive search or settings controls must look disabled until implemented.
 - Filing-preparation tracks read blocker counts from this gate instead of
   pretending the tax form is ready.
 - The screen does not provide Hometax direct-entry guidance.
+- AI/LLM recommendation failures, timeouts, quota errors, or provider disagreement do not block page rendering or user review; the row falls back to a visible manual-review state.
 
 ## 10. Implementation Preconditions
 
@@ -364,6 +385,7 @@ inactive search or settings controls must look disabled until implemented.
 - [x] HTML Preview approved:
   [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html).
 - [x] Existing classification and attribution schemas inspected.
+- [x] AI escalation and non-blocking runtime rules documented for 자료대조원장.
 - [ ] Slice 2a read model reviewed before code.
 - [ ] Slice 2b mutation mapping reviewed before code.
 - [ ] Slice 2c durable match-link schema approved if needed.
