@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-08 02:01 KST
+> Last Updated: 2026-07-08 02:40 KST
 
 ## 0. Purpose
 
@@ -20,6 +20,38 @@ The approved product path is Path 1 only:
 This screen is not a tax-filing finish screen and not a Hometax direct-entry
 guide. It is the data quality gate that decides whether tax-type Path 1 files
 can trust the ledger beneath them.
+
+
+
+## 0.1 Adopted UI Direction: Ledger Table + Right Work Panel
+
+The adopted UI direction is **not** a passive candidate-count dashboard. It is a workbench where the user finishes each transaction row.
+
+The main layout is:
+
+- Left/center: a dense ledger table with bank, card, tax-invoice, cash-receipt, receipt, and other rows.
+- Right side: a persistent work panel for the selected row.
+
+The right work panel is the preferred SemuAgent adaptation of the reference screens. A bottom drawer is allowed only on narrow screens, but desktop should keep the selected row visible while the user works in the side panel.
+
+The right work panel must include:
+
+1. Selected transaction summary: source, date, counterparty, description, amount, current account, and remaining difference.
+2. Auto-suggested evidence: concrete evidence rows with amount/date/counterparty match reasons, not just a count.
+3. Evidence finder: source selector for 세금계산서, 현금영수증, 체크카드/카드, plus search, date filter, amount filter, and row-level connect actions.
+4. Account confirmation: recommended account, searchable account selector, and optional repeat/apply-to-similar control.
+5. Explanation and exclusion: business-use memo, personal/private, business-unrelated, duplicate, wrong-period, internal-transfer, or other exclusion reasons.
+6. Save state: confirmed only when evidence, account, counterparty, explanation/exclusion, and period relevance are resolved as needed.
+
+## 0.2 Candidate Count Rule
+
+"후보 N건" by itself is not an acceptable final UI state. It may appear as a compact hint, but the row or work panel must expose the actual candidate rows and actions.
+
+- Clear match: show the linked evidence row and actions to confirm, unlink, or replace.
+- Ambiguous match: show concrete candidates and actions such as "이 증빙 연결", "아님", and "직접 찾기".
+- No match: show "증빙 찾기" as the primary action.
+
+Path 1 file generation must read the resolved completion state, not a candidate count.
 
 ## 1. Scope
 
@@ -163,7 +195,7 @@ type ReconciliationLedgerRow = {
 
 ## 5. Candidate Matching Rules
 
-Slice 2a shows candidates; it does not silently confirm them.
+Slice 2a shows candidates; it does not silently confirm them. A candidate count is never enough by itself. Every candidate state must expose the concrete evidence rows and a next action: confirm this evidence, reject it, or search manually.
 
 | Case | Candidate rule | Initial state |
 |:---|:---|:---|
@@ -186,6 +218,8 @@ why a candidate was suggested.
 | Confirm account | User accepts or changes `finalAccount` | Existing account classification row PATCH |
 | Explain use | User writes usage/business purpose memo | `staffMemo` for v1 |
 | Exclude row | User marks personal/private, business-unrelated, duplicate, wrong period, etc. | `status='excluded'` + required reason/memo; map to existing memo first |
+| Open evidence finder | User chooses 세금계산서 / 현금영수증 / 체크카드 and searches evidence rows | Row-level work panel or bottom drawer |
+| Add evidence link | User selects one or more evidence rows and balances the transaction amount | Slice 2a read-only; Slice 2c persisted link if required |
 | Confirm match | User confirms bank-to-evidence candidate | Slice 2a read-only; Slice 2c persisted link if required |
 | Mark no evidence required | User says the row is allowed without matching evidence | v1 can store memo; durable enum requires Slice 2c |
 | Hold for later | User keeps row out of current filing period | Existing material attribution decision where applicable |
@@ -229,10 +263,10 @@ Phase 2 implementation should keep that layout:
 2. Source summary cards.
 3. Source tabs: all, bank, card, tax invoice, cash receipt, missing evidence,
    exclusion review.
-4. Unified ledger table.
-5. Row detail or modal for match candidates, account, explanation, and
-   exclusion.
-6. Tax-file readiness panel.
+4. Unified ledger table. The linked-evidence column must show either an actual linked evidence item, an actionable concrete candidate, or "증빙 찾기". It must not stop at "후보 N건".
+5. Right work panel for the selected row. It handles match candidates, evidence search, account confirmation, explanation, and exclusion while keeping the ledger table visible. On narrow screens this may collapse into a drawer.
+6. Evidence finder inside the work panel opened from "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, add/select action, selected total, remaining difference, save/cancel.
+7. Tax-file readiness panel.
 
 The table may initially be read-only in Slice 2a, but the labels must be honest:
 inactive search or settings controls must look disabled until implemented.
@@ -242,6 +276,8 @@ inactive search or settings controls must look disabled until implemented.
 - The user can see which bank movements match or fail to match tax invoices,
   card approvals, cash receipts, or receipts.
 - The user can see why a match candidate was suggested.
+- From a bank row, the user can open "증빙 찾기", choose 세금계산서/현금영수증/체크카드, search rows, select evidence, and see the remaining difference before saving.
+- The final UI does not use candidate counts as the main answer; it shows concrete candidate rows and actions.
 - Ambiguous matches are not auto-confirmed.
 - The user can confirm or change the account category for filing-relevant rows.
 - The user can open a row-level explanation modal and save a memo.

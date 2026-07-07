@@ -22,6 +22,16 @@ The user provided Clobe reference screens for dense source-ledger workflows:
 
 The SemuAgent preview uses those screens only as operational inspiration. It does not copy their information architecture directly; it adapts the pattern to SemuAgent's Path 1 workflow.
 
+## Adopted UI Direction
+
+The adopted direction is **ledger table + right work panel**. The Clobe-style lower evidence list is useful as a reference for evidence selection, but SemuAgent should make the selected transaction and its work state clearer.
+
+- The ledger table stays visible on the left/center.
+- Selecting a row opens a right work panel.
+- The panel shows the selected transaction, remaining difference, suggested evidence, evidence finder, account selector, explanation memo, exclusion reason, and save/cancel actions.
+- "후보 N건" is not enough. The panel must show the actual evidence rows and let the user connect, reject, search manually, unlink, or replace.
+- On mobile/narrow screens, the same panel may become a drawer, but the interaction contract stays the same.
+
 ## Approved Information Structure
 
 - Hero: Path 1 data readiness progress and blocker counts.
