@@ -18,9 +18,13 @@ import {
   type EvidenceFinderSource,
   workPanelPrimaryActionLabel,
 } from '@/lib/bookkeeping-review/reconciliation-work-panel'
-import { cn } from '@/lib/utils'
-
-const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 const disabledActionNote = 'Slice 2b 전까지 저장·확정이 비활성화됩니다.'
 const disabledFinderNote = 'Slice 2a-4에서 증빙 찾기 검색·선택이 연결됩니다.'
 
@@ -42,36 +46,62 @@ const sourceLabels: Record<ReconciliationLedgerRow['source'], string> = {
   other: '기타',
 }
 
-export interface ReconciliationLedgerWorkPanelProps {
+import { cn } from '@/lib/utils'
+
+export interface ReconciliationLedgerWorkPanelModalProps {
   readonly allRows: ReconciliationLedgerRow[]
+  readonly onOpenChange: (open: boolean) => void
+  readonly open: boolean
   readonly row: ReconciliationLedgerRow | null
 }
 
-export function ReconciliationLedgerWorkPanel({ allRows, row }: ReconciliationLedgerWorkPanelProps) {
+export function ReconciliationLedgerWorkPanelModal({
+  allRows,
+  onOpenChange,
+  open,
+  row,
+}: ReconciliationLedgerWorkPanelModalProps) {
+  return (
+    <Dialog onOpenChange={onOpenChange} open={open}>
+      <DialogContent
+        className="flex max-h-[min(88vh,920px)] w-full max-w-3xl flex-col gap-0 overflow-hidden border-company-border bg-company-surface p-0 sm:max-w-3xl"
+        showCloseButton
+      >
+        {row ? (
+          <>
+            <DialogHeader className="border-b border-company-border px-5 py-4 pr-12">
+              <DialogTitle className="text-base font-semibold text-foreground">선택 행 작업</DialogTitle>
+              <DialogDescription className="text-[13px] text-company-fg-muted">
+                {row.counterparty ?? '거래처 미정'} · {formatKrwAmount(row.amountKrw)}
+              </DialogDescription>
+            </DialogHeader>
+            <ReconciliationLedgerWorkPanelContent allRows={allRows} row={row} />
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+interface ReconciliationLedgerWorkPanelContentProps {
+  readonly allRows: ReconciliationLedgerRow[]
+  readonly row: ReconciliationLedgerRow
+}
+
+function ReconciliationLedgerWorkPanelContent({ allRows, row }: ReconciliationLedgerWorkPanelContentProps) {
   const [finderOpenRowId, setFinderOpenRowId] = useState<string | null>(null)
   const [finderSource, setFinderSource] = useState<EvidenceFinderSource>('tax_invoice')
-  const finderOpen = row ? finderOpenRowId === row.id : false
-
-  const remainingDifferenceKrw = useMemo(
-    () => (row ? computeRemainingDifferenceKrw(row.amountKrw, row.candidates) : null),
-    [row],
-  )
+  const finderOpen = finderOpenRowId === row.id
 
   const browseRows = useMemo(
-    () => (row ? listEvidenceFinderBrowseRows(allRows, finderSource, row.id) : []),
-    [allRows, finderSource, row],
+    () => listEvidenceFinderBrowseRows(allRows, finderSource, row.id),
+    [allRows, finderSource, row.id],
   )
 
-  if (!row) {
-    return (
-      <aside className={cn(panelClass, 'flex min-h-[320px] flex-col justify-center p-5 xl:sticky xl:top-[72px] xl:max-h-[calc(100vh-96px)]')}>
-        <p className="text-[13px] font-semibold text-foreground">작업 패널</p>
-        <p className="mt-2 text-[12.5px] text-company-fg-muted">
-          원장에서 행을 선택하면 한 줄 결론, 증빙 후보, 패턴 근거를 여기서 확인합니다.
-        </p>
-      </aside>
-    )
-  }
+  const remainingDifferenceKrw = useMemo(
+    () => computeRemainingDifferenceKrw(row.amountKrw, row.candidates),
+    [row.amountKrw, row.candidates],
+  )
 
   const conclusionTone: Tone = row.blockers.some(
     (blocker) => blocker.code === 'missing_evidence' || blocker.code === 'ambiguous_match',
@@ -92,15 +122,7 @@ export function ReconciliationLedgerWorkPanel({ allRows, row }: ReconciliationLe
     finderOpen || row.workPanelConclusion.primaryAction === 'connect_evidence' || row.candidates.length === 0
 
   return (
-    <aside className={cn(panelClass, 'flex flex-col xl:sticky xl:top-[72px] xl:max-h-[calc(100vh-96px)]')}>
-      <div className="border-b border-company-border px-4 py-3">
-        <p className="text-[11px] font-semibold text-company-fg-subtle">선택 행 작업 패널</p>
-        <p className="mt-0.5 truncate text-[13px] font-semibold text-foreground">
-          {row.counterparty ?? '거래처 미정'} · {formatKrwAmount(row.amountKrw)}
-        </p>
-      </div>
-
-      <div className="flex-1 space-y-4 overflow-auto px-4 py-4">
+    <div className="flex-1 space-y-4 overflow-auto px-5 py-4">
         <section className="rounded-[10px] border border-company-border bg-[#fcfcfd] p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
@@ -339,8 +361,7 @@ export function ReconciliationLedgerWorkPanel({ allRows, row }: ReconciliationLe
             </div>
           </section>
         ) : null}
-      </div>
-    </aside>
+    </div>
   )
 }
 
