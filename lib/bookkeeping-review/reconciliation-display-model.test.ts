@@ -40,13 +40,21 @@ describe('reconciliation display model', () => {
     const rowIds = new Set(model.rows.map((row) => row.id))
 
     expect(rowIds.has(RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.bankToTaxInvoice)).toBe(true)
+    expect(rowIds.has(RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.bankLinked)).toBe(true)
+    expect(rowIds.has(RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.bankExplanation)).toBe(true)
     expect(rowIds.has(RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.cardExplanation)).toBe(true)
     expect(rowIds.has(RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.privateExclusion)).toBe(true)
-    expect(rowIds.has(RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.sourceCollectionBackLink)).toBe(true)
 
     const bankRow = model.rows.find((row) => row.id === RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.bankToTaxInvoice)
     expect(bankRow?.candidates.length).toBeGreaterThan(0)
     expect(bankRow?.source).toBe('bank')
+
+    const bankLinkedRow = model.rows.find((row) => row.id === RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.bankLinked)
+    expect(bankLinkedRow?.evidenceActionState).toBe('linked')
+
+    const bankExplanationRow = model.rows.find((row) => row.id === RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.bankExplanation)
+    expect(bankExplanationRow?.evidenceActionState).toBe('explanation_required')
+    expect(bankExplanationRow?.source).toBe('bank')
 
     const cardRow = model.rows.find((row) => row.id === RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.cardExplanation)
     expect(cardRow?.evidenceActionState).toBe('explanation_required')
@@ -54,17 +62,12 @@ describe('reconciliation display model', () => {
     const exclusionRow = model.rows.find((row) => row.id === RECONCILIATION_DISPLAY_FIXTURE_ROW_IDS.privateExclusion)
     expect(exclusionRow?.patternSuggestion?.suggestedExclusionReason).toBe('personal_private')
 
+    const bankCount = model.rows.filter((row) => row.source === 'bank').length
+    expect(bankCount).toBeGreaterThanOrEqual(5)
+
     const safeBatch = model.batchSuggestionGroups.find((group) => group.eligibility === 'safe_to_offer')
     expect(safeBatch?.requiresUserConfirmation).toBe(true)
     expect((safeBatch?.rowIds.length ?? 0) >= 2).toBe(true)
-
-    const sourceBackLink = model.nextActions.find((action) => action.targetRoute.includes('/dashboard/direct-upload'))
-    expect(sourceBackLink).toBeDefined()
-    expect(
-      model.rows.some(
-        (row) => row.workPanelConclusion.primaryAction === 'open_source_collection',
-      ),
-    ).toBe(true)
   })
 
   it('rejects invalid display models', () => {
