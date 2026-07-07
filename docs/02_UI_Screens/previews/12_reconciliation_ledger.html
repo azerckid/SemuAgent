@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SemuAgent · 자료대조원장 (UI Preview)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .brand .name { font-weight: 650; font-size: 15px; }
+  .brand .sub { font-size: 11px; color: var(--fg-subtle); }
+  .nav-label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 14px 8px 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; cursor: pointer; font-size: 13.5px; }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .8; }
+  .nav-item:hover { background: #f4f4f5; color: var(--fg); }
+  .nav-item.active, .nav-item.active-parent { background: #f4f4f5; color: var(--fg); font-weight: 600; }
+  .nav-item .cnt { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; border-radius: 999px; padding: 1px 7px; }
+  .nav-group { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item.sub { padding: 6px 10px 6px 28px; font-size: 12.5px; }
+  .nav-item.sub .ico { width: 14px; font-size: 11px; opacity: .55; }
+  .sidebar .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .user .who { font-size: 12.5px; font-weight: 600; }
+  .user .role { font-size: 11px; color: var(--fg-subtle); }
+
+  .main { display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .crumb { font-size: 12.5px; color: var(--fg-subtle); font-weight: 500; }
+  .crumb a:hover { color: var(--fg-muted); text-decoration: underline; }
+  .topbar h1 { font-size: 16px; font-weight: 650; }
+  .topbar .co { color: var(--fg-muted); font-weight: 500; font-size: 13px; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .pill { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
+  .pill .tag { font-size: 10.5px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 7px; }
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 18px; max-width: 1320px; }
+
+  .hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+  .hero .eyebrow { color: var(--fg-muted); font-size: 12px; font-weight: 650; margin-bottom: 8px; }
+  .hero h2 { font-size: 23px; letter-spacing: -.02em; margin-bottom: 8px; }
+  .hero p { color: var(--fg-muted); font-size: 13px; max-width: 720px; }
+  .progress { margin-top: 16px; height: 8px; background: #e4e4e7; border-radius: 999px; overflow: hidden; max-width: 520px; }
+  .progress > span { display: block; height: 100%; width: 81%; background: var(--accent); }
+  .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .metric { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: #fcfcfd; }
+  .metric .label { font-size: 11px; color: var(--fg-subtle); }
+  .metric .value { font-size: 18px; font-weight: 750; letter-spacing: -.02em; margin-top: 2px; }
+
+  .section-head { display: flex; align-items: baseline; gap: 10px; }
+  .section-head h2 { font-size: 15px; font-weight: 650; }
+  .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
+  .notice { border: 1px solid #fed7aa; background: #fff7ed; color: #9a3412; border-radius: 10px; padding: 12px 14px; font-size: 12.5px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .summary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; }
+  .summary .k { font-size: 11.5px; color: var(--fg-subtle); font-weight: 650; }
+  .summary .v { font-size: 20px; font-weight: 750; margin-top: 4px; }
+  .summary .s { color: var(--fg-muted); font-size: 12px; margin-top: 2px; }
+
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tabs { display: inline-flex; background: #f1f1f2; border-radius: 9px; padding: 3px; gap: 2px; }
+  .tab { font-size: 12.5px; font-weight: 600; color: var(--fg-muted); padding: 6px 11px; border-radius: 7px; cursor: pointer; }
+  .tab.active { background: var(--surface); color: var(--fg); box-shadow: var(--shadow); }
+  .tab .badge { font-size: 11px; color: var(--fg-subtle); margin-left: 4px; }
+  .search { margin-left: auto; min-width: 260px; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 8px 10px; color: var(--fg-subtle); font-size: 12.5px; }
+  .btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--fg-subtle); padding: 11px 12px; border-bottom: 1px solid var(--border); background: #fafafa; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  tbody td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafafa; }
+  tbody tr.warn-row { background: #fffaf0; }
+  tbody tr.danger-row { background: #fff7f7; }
+  .mono { font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+  .amt { font-variant-numeric: tabular-nums; font-weight: 650; text-align: right; white-space: nowrap; }
+  .main-text { font-weight: 650; }
+  .sub { font-size: 11.5px; color: var(--fg-subtle); margin-top: 2px; }
+  .source { display: inline-flex; align-items: center; gap: 7px; font-weight: 650; }
+  .source .mark { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff; }
+  .mark.bank { background: #0f766e; }
+  .mark.card { background: #1d4ed8; }
+  .mark.tax { background: #7c3aed; }
+  .mark.cash { background: #ca8a04; }
+  .mark.manual { background: #71717a; }
+  .chip { font-size: 11.5px; font-weight: 650; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
+  .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+  .select-like { min-width: 108px; border: 1px solid var(--border); background: #fcfcfd; border-radius: 7px; padding: 5px 8px; display: inline-flex; justify-content: space-between; gap: 8px; color: var(--fg); }
+  .row-actions { display: inline-flex; gap: 6px; }
+  .mini-btn { font-size: 11.5px; font-weight: 650; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 7px; padding: 4px 9px; cursor: pointer; }
+  .mini-btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+  .card h3 { font-size: 13.5px; font-weight: 650; margin-bottom: 10px; }
+  .check-list, .gate-list { display: grid; gap: 9px; }
+  .line { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; background: #fcfcfd; }
+  .line .k { color: var(--fg-muted); font-size: 12.5px; }
+  .line .v { font-weight: 650; font-size: 12.5px; }
+  .states { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .state { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 13px; min-height: 96px; }
+  .state .s-title { font-size: 12px; font-weight: 650; margin-bottom: 6px; }
+  .state .s-body { font-size: 11.5px; color: var(--fg-muted); }
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .hero, .detail-grid { grid-template-columns: 1fr; }
+    .summary-grid, .states { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .search { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <a href="00_company_home.html" class="brand">
+      <div class="logo">자</div>
+      <div><div class="name">SemuAgent</div><div class="sub">회사 세무·회계 운영</div></div>
+    </a>
+    <a href="00_company_home.html" class="nav-item"><span class="ico">◧</span> 회사 홈</a>
+    <div class="nav-label">운영 흐름</div>
+    <a href="01_source_collection.html" class="nav-item"><span class="ico">↥</span> 자료수집</a>
+    <div class="nav-group">
+      <a href="02_bookkeeping_review.html" class="nav-item active-parent"><span class="ico">▤</span> 기장검토 <span class="cnt">18</span></a>
+      <a href="12_reconciliation_ledger.html" class="nav-item sub active"><span class="ico">›</span> 자료대조원장</a>
+    </div>
+    <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
+    <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여</a>
+    <a href="05_filing_support.html" class="nav-item"><span class="ico">↧</span> 신고지원</a>
+    <div class="nav-group">
+      <a href="08_filing_preparation.html" class="nav-item"><span class="ico">◷</span> 신고 준비</a>
+      <a href="09_payment_year_end.html" class="nav-item sub"><span class="ico">›</span> 지급명세서·연말정산</a>
+      <a href="10_local_income_tax.html" class="nav-item sub"><span class="ico">›</span> 지방소득세</a>
+      <a href="11_business_status_report.html" class="nav-item sub"><span class="ico">›</span> 사업장현황신고</a>
+    </div>
+    <div class="nav-label">관리</div>
+    <div class="nav-item"><span class="ico">⚙</span> 설정</div>
+    <a href="06_employee_directory.html" class="nav-item"><span class="ico">◍</span> 직원 명부</a>
+    <a href="07_internal_reminder.html" class="nav-item"><span class="ico">✉</span> 리마인드</a>
+    <div class="spacer"></div>
+    <div class="user"><div class="av">김</div><div><div class="who">김대표</div><div class="role">샘플컴퍼니(주) · 대표</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><div class="crumb"><a href="00_company_home.html">회사 홈</a> › 기장검토 › 자료대조원장</div><h1>자료대조원장</h1></div>
+      <span class="co">샘플컴퍼니(주)</span>
+      <div class="right"><span class="pill">기준 기간 <span class="tag">2026년 1기</span></span><span class="pill">보기 <span class="tag">전체 자료</span></span></div>
+    </div>
+
+    <main class="content">
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Path 1 데이터 준비 관문</div>
+          <h2>통장·카드·세금계산서·현금영수증을 한 원장으로 대조하고 확정합니다</h2>
+          <p>자료수집이 끝난 뒤 제일 먼저 보는 화면입니다. 증빙 연결, 중복·사적 사용 제외, 계정항목 확정이 끝난 거래만 세목별 신고 양식·파일에 들어갈 수 있습니다.</p>
+          <div class="progress"><span></span></div>
+        </div>
+        <div class="metrics">
+          <div class="metric"><div class="label">원장 준비율</div><div class="value">81%</div></div>
+          <div class="metric"><div class="label">확정 거래</div><div class="value">324건</div></div>
+          <div class="metric"><div class="label">확인 필요</div><div class="value">18건</div></div>
+          <div class="metric"><div class="label">증빙 없음</div><div class="value">6건</div></div>
+        </div>
+      </section>
+
+      <div class="notice">자료대조원장은 신고 준비 화면이 아니라 기장검토 하위 관문입니다. 여기서 확정된 거래원장을 부가세·사업장현황신고·지방소득세 등 Path 1 양식 생성 화면이 읽습니다.</div>
+
+      <section class="summary-grid">
+        <div class="summary"><div class="k">통장 내역</div><div class="v">126건</div><div class="s">미연결 7건</div></div>
+        <div class="summary"><div class="k">카드 승인</div><div class="v">88건</div><div class="s">계정 확인 5건</div></div>
+        <div class="summary"><div class="k">세금계산서</div><div class="v">64건</div><div class="s">대조 필요 3건</div></div>
+        <div class="summary"><div class="k">현금영수증</div><div class="v">31건</div><div class="s">사적 사용 후보 2건</div></div>
+        <div class="summary"><div class="k">제외 검토</div><div class="v">9건</div><div class="s">업무무관·중복</div></div>
+      </section>
+
+      <div class="section-head"><h2>대조 원장</h2><span class="hint">출처별 자료를 거래 단위로 연결하고 신고 포함 여부를 확정합니다</span></div>
+      <div class="toolbar">
+        <div class="tabs">
+          <span class="tab active">전체 <span class="badge">342</span></span>
+          <span class="tab">통장 <span class="badge">126</span></span>
+          <span class="tab">카드 <span class="badge">88</span></span>
+          <span class="tab">세금계산서 <span class="badge">64</span></span>
+          <span class="tab">현금영수증 <span class="badge">31</span></span>
+          <span class="tab">증빙 없음 <span class="badge">6</span></span>
+          <span class="tab">제외 검토 <span class="badge">9</span></span>
+        </div>
+        <div class="search">거래처, 금액, 적요, 증빙번호 검색</div>
+        <button class="btn">표시 설정</button>
+        <button class="btn primary">선택 3건 확정</button>
+      </div>
+
+      <section class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>거래일</th><th>출처</th><th>거래처/가맹점</th><th>적요/품목</th><th>공급가액</th><th>세액</th><th>연결 증빙</th><th>계정항목</th><th>거래처</th><th>상태</th><th>처리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">06-30</td>
+              <td><span class="source"><span class="mark bank">통</span> 통장</span></td>
+              <td><div class="main-text">엘아이티넥스원(주)</div><div class="sub">마이너스 한도 계좌</div></td>
+              <td><div class="main-text">브루셀 AI MLOPS PLATFORM LICENSE</div><div class="sub">매출 세금계산서와 입금액 일치</div></td>
+              <td class="amt">25,085,000</td><td class="amt">2,508,500</td>
+              <td><span class="chip ok">세금계산서 연결</span></td>
+              <td><span class="select-like">매출 <span>▾</span></span></td>
+              <td><span class="select-like">엘아이티넥스원 <span>▾</span></span></td>
+              <td><span class="chip ok">확정 가능</span></td>
+              <td><span class="row-actions"><button class="mini-btn primary">확정</button><button class="mini-btn">보기</button></span></td>
+            </tr>
+            <tr class="warn-row">
+              <td class="mono">06-28</td>
+              <td><span class="source"><span class="mark card">카</span> 카드</span></td>
+              <td><div class="main-text">AI POWERED INC USA</div><div class="sub">국민카드 5524****2651</div></td>
+              <td><div class="main-text">해외 SaaS 결제</div><div class="sub">USD 80.00 · 해외 여부 확인</div></td>
+              <td class="amt">112,000</td><td class="amt">0</td>
+              <td><span class="chip muted">카드 승인만 있음</span></td>
+              <td><span class="select-like">소프트웨어비 <span>▾</span></span></td>
+              <td><span class="select-like">거래처 없음 <span>▾</span></span></td>
+              <td><span class="chip warn">계정/거래처 확인</span></td>
+              <td><span class="row-actions"><button class="mini-btn primary">계정 지정</button><button class="mini-btn">증빙 찾기</button></span></td>
+            </tr>
+            <tr class="danger-row">
+              <td class="mono">06-27</td>
+              <td><span class="source"><span class="mark tax">세</span> 세금계산서</span></td>
+              <td><div class="main-text">주식회사 하드슨에이아이</div><div class="sub">전자세금계산서</div></td>
+              <td><div class="main-text">Managed Cloud_NAS 추가</div><div class="sub">입금 또는 카드 결제 연결 필요</div></td>
+              <td class="amt">6,303,000</td><td class="amt">630,300</td>
+              <td><span class="chip danger">연결 거래 없음</span></td>
+              <td><span class="select-like">매출 <span>▾</span></span></td>
+              <td><span class="select-like">하드슨AI <span>▾</span></span></td>
+              <td><span class="chip danger">대조 필요</span></td>
+              <td><span class="row-actions"><button class="mini-btn primary">거래 연결</button><button class="mini-btn">보류</button></span></td>
+            </tr>
+            <tr>
+              <td class="mono">06-25</td>
+              <td><span class="source"><span class="mark cash">현</span> 현금영수증</span></td>
+              <td><div class="main-text">최대준</div><div class="sub">휴대폰 현금영수증</div></td>
+              <td><div class="main-text">주말 식대</div><div class="sub">사적 사용 후보로 표시됨</div></td>
+              <td class="amt">27,000</td><td class="amt">2,700</td>
+              <td><span class="chip ok">현금영수증</span></td>
+              <td><span class="select-like">복리후생비 <span>▾</span></span></td>
+              <td><span class="select-like">최대준 <span>▾</span></span></td>
+              <td><span class="chip warn">제외 검토</span></td>
+              <td><span class="row-actions"><button class="mini-btn">업무사용</button><button class="mini-btn primary">제외</button></span></td>
+            </tr>
+            <tr class="warn-row">
+              <td class="mono">06-21</td>
+              <td><span class="source"><span class="mark bank">통</span> 통장</span></td>
+              <td><div class="main-text">무신사페이먼츠</div><div class="sub">입금 내역</div></td>
+              <td><div class="main-text">매출 정산 입금</div><div class="sub">카드 승인 합계와 62,140원 차이</div></td>
+              <td class="amt">3,829,500</td><td class="amt">0</td>
+              <td><span class="chip warn">카드 합계 차이</span></td>
+              <td><span class="select-like">매출 <span>▾</span></span></td>
+              <td><span class="select-like">무신사페이먼츠 <span>▾</span></span></td>
+              <td><span class="chip warn">금액 대조</span></td>
+              <td><span class="row-actions"><button class="mini-btn primary">차이 확인</button><button class="mini-btn">메모</button></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="detail-grid">
+        <div class="card">
+          <h3>확정 조건</h3>
+          <div class="check-list">
+            <div class="line"><span class="k">자료 수집</span><span class="chip ok">완료</span></div>
+            <div class="line"><span class="k">증빙 연결</span><span class="chip warn">13건 확인</span></div>
+            <div class="line"><span class="k">계정항목</span><span class="chip warn">18건 미확정</span></div>
+            <div class="line"><span class="k">업무무관/사적 사용 제외</span><span class="chip warn">9건 검토</span></div>
+            <div class="line"><span class="k">중복 제거</span><span class="chip danger">2건 의심</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>세목별 양식 생성 가능 여부</h3>
+          <div class="gate-list">
+            <div class="line"><span class="k">부가세 Path 1 양식</span><span class="chip danger">공제 검토 전</span></div>
+            <div class="line"><span class="k">사업장현황신고</span><span class="chip warn">수입금액 2건 대조</span></div>
+            <div class="line"><span class="k">간이지급명세서</span><span class="chip ok">급여 검토로 이동</span></div>
+            <div class="line"><span class="k">지방소득세</span><span class="chip ok">급여 확정값 사용</span></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-head"><h2>화면 상태 예시</h2><span class="hint">구현 시 공통 state 패턴 재사용</span></div>
+      <section class="states">
+        <div class="state"><div class="s-title">Loading</div><div class="s-body">원천 자료와 대조 결과를 불러오는 동안 표 skeleton을 보여준다.</div></div>
+        <div class="state"><div class="s-title">Empty</div><div class="s-body">자료가 없으면 자료수집 화면으로 안내한다.</div></div>
+        <div class="state"><div class="s-title">Error</div><div class="s-body">대조 상태를 불러오지 못하면 재시도와 자료수집 링크를 제공한다.</div></div>
+        <div class="state"><div class="s-title">No Permission</div><div class="s-body">권한이 없으면 회사 관리자에게 요청하도록 안내한다.</div></div>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

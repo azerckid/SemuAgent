@@ -99,7 +99,7 @@ transaction candidates. But the product still needs an explicit checklist for:
 - missing evidence for a bank movement,
 - tax-invoice-only evidence that has not appeared in bank/card records.
 
-This is now positioned as the **기장검토 하위 "자료대조원장"** gate before a tax form can be marked ready, not as a 신고 준비 child screen.
+This is now positioned as the **기장검토 하위 "자료대조원장"** gate before a tax form can be marked ready, not as a 신고 준비 child screen. The dedicated UI Preview is approved in `docs/02_UI_Screens/previews/12_reconciliation_ledger.html` (2026-07-08), using bank/card/tax-invoice/cash-receipt source-ledger references as inspiration.
 
 ### 5.2 Private or business-unrelated exclusion needs one shared language
 

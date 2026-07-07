@@ -1,20 +1,18 @@
 # Bookkeeping Review Pre-Code Technical Brief
 > Created: 2026-07-02 09:00
-> Last Updated: 2026-07-02 09:25
+> Last Updated: 2026-07-08 00:45
 
 ## 0. Governing Principle — Preview UI가 계약이다
 
-JC-010의 회사 기장검토/자료대조원장 화면은 승인된 [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html)
-구조를 그대로 따른다. 아래 두 규칙을 강제한다(정적 테스트로 검증):
+JC-010의 회사 기장검토 분류 큐는 승인된 [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html) 구조를 그대로 따른다. 2026-07-08 승인된 [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html)은 Path 1 자료대조원장 전용 Preview이며, 별도 구현 Brief가 필요하다. 아래 두 규칙을 강제한다(정적 테스트로 검증):
 
 - **보이는 UI는 회사용으로 새로 만든다.** GIWA `/dashboard/reviews` 워크스페이스 컴포넌트를
-  회사 기장검토/자료대조원장 화면에서 import/render/embed하지 않는다. (자료수집에서 세션 폼이 새어든 실수 반복 금지)
+  회사 기장검토 화면에서 import/render/embed하지 않는다. (자료수집에서 세션 폼이 새어든 실수 반복 금지)
 - **재사용은 데이터·서비스 레이어에서만.** read model 쿼리 + 기존 분류/승인 mutation API 호출.
 
 ## 1. Scope
 
-JC-010 회사 기장검토/자료대조원장 구현 직전 계약. 정규화된 거래의 **계정과목 분류 큐**를 Path 1 첫 관문인 자료대조원장 구조로
-렌더하고, AI 추천·신뢰도 표시, 개별/일괄 승인, 선택 거래 분개 미리보기를 제공한다.
+JC-010 회사 기장검토 분류 큐 구현 계약. 정규화된 거래의 **계정과목 분류 큐**를 렌더하고, AI 추천·신뢰도 표시, 개별/일괄 승인, 선택 거래 분개 미리보기를 제공한다.
 
 GIWA `bookkeeping_transaction_classification` 스키마가 Preview와 정확히 대응한다:
 `recommendedAccount`(AI 추천) · `recommendationConfidence`(high/medium/low = 신뢰도 바) ·
@@ -25,7 +23,7 @@ GIWA `bookkeeping_transaction_classification` 스키마가 Preview와 정확히 
 | 항목 | 결정 |
 |:---|:---|
 | Route | **신규 `/dashboard/bookkeeping`** (회사 분류 큐). 물리 경로 `app/(dashboard)/dashboard/bookkeeping/` |
-| 사이드바·링크 | `ROUTES.bookkeeping`(`lib/company-home/summary.ts`)과 사이드바 "기장검토 > 자료대조원장"을 `/dashboard/bookkeeping`로 연결. 회사 홈 CTA는 "자료대조원장 열기"로 표시 |
+| 사이드바·링크 | `ROUTES.bookkeeping`(`lib/company-home/summary.ts`)은 `/dashboard/bookkeeping` 기장검토 분류 큐로 연결한다. 자료대조원장 전용 하위 라우트는 12번 Preview 후속 Brief에서 확정한다. |
 | GIWA reviews | `/dashboard/reviews`는 **내부 심화 도구로 유지**(회사 내비에서 링크하지 않음). 회사 화면에서 embed 금지 |
 | Read model | `lib/bookkeeping-review/summary.ts` 신규. Server Component에서 호출 |
 | Mutation | 기존 세션 API 재사용: 개별 `PATCH /api/sessions/[id]/account-classification/rows/[rowId]`, 일괄 `POST /api/sessions/[id]/account-classification/bulk-confirm` |

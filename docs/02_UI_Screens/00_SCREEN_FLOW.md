@@ -100,14 +100,14 @@
 
 | 항목 | 입력 | 표시 | 저장/전송 |
 |:---|:---|:---|:---|
-| 신고 전 거래 대조·계정확정 현황 | tenant·기간, 거래 집계 | 확정/대기 건수, 진행률 | 없음(읽기) |
-| 분류 큐 | 정규화된 거래, AI 추천 계정과목·신뢰도 | 거래일·내용·상대처·금액·추천계정·신뢰도 | 계정과목 확정/변경 |
-| 선택 거래 상세 | 선택 거래 | 분개 미리보기(차/대변), 기간 귀속, 증빙, 부가세 공제 | 없음(읽기, 승인 전 미리보기) |
-| 승인 | 사용자 승인 액션 | 상태칩(검토 대기→확정) | 전표 확정(mutation), 확정 탭으로 이동 |
-| 일괄 처리 | 다중 선택 | 선택 건수 | 일괄 승인/계정 변경(mutation) |
+| 기장검토 분류 큐 | 정규화된 거래, AI 추천 계정과목·신뢰도 | 거래일·내용·상대처·금액·추천계정·신뢰도 | 계정과목 확정/변경 |
+| 자료대조원장 요약 | 통장·카드·세금계산서·현금영수증·수기 자료 | 원장 준비율, 확정/대기/증빙 없음/제외 검토 건수 | 없음(읽기) |
+| 자료대조 원장 표 | 출처별 거래 후보 + 연결 증빙 | 출처·거래처·적요·공급가액·세액·연결 증빙·계정·거래처·상태 | 증빙 연결/계정 지정/확정/제외 |
+| 선택 거래 상세 | 선택 거래 | 분개 미리보기, 기간 귀속, 증빙, 부가세 공제, 제외 사유 | 승인 전 미리보기 |
+| 세목별 생성 가능 여부 | 확정 거래원장 + tax-specific blockers | 부가세·사업장현황신고·지방소득세 등 Path 1 파일 생성 가능 여부 | 없음(읽기) |
 
 기장검토는 **분류 확정·승인 mutation이 발생**한다. AI 추천은 초안이며 확정 책임은 사용자에게 있다.
-신뢰도 낮은 항목(예: 접대비/복리후생비 경계)은 "계정 지정"으로 강제 확인시킨다. 자료대조원장은 별도 신규 엔진이 아니라 이 기장검토 화면을 Path 1의 첫 관문으로 명명한 하위 진입점이며, 홈택스 양식 생성 전 계정항목·업무무관 제외 여부를 확정하는 장소다.
+신뢰도 낮은 항목(예: 접대비/복리후생비 경계)은 "계정 지정"으로 강제 확인시킨다. 자료대조원장은 별도 세목 화면이 아니라 기장검토 하위의 Path 1 관문이다. 기존 기장검토 분류 큐와 달리 통장·카드·세금계산서·현금영수증을 같은 원장 표에서 대조하고, 홈택스 업로드용 양식·파일 생성 전에 증빙 연결·계정항목·거래처·업무무관 제외 여부를 확정한다.
 
 ## 4d. 부가세 화면 흐름 및 데이터
 
@@ -324,6 +324,7 @@
 - Preview (회사 홈): [00_company_home.html](./previews/00_company_home.html)
 - Preview (자료수집): [01_source_collection.html](./previews/01_source_collection.html)
 - Preview (기장검토): [02_bookkeeping_review.html](./previews/02_bookkeeping_review.html)
+- Preview (자료대조원장): [12_reconciliation_ledger.html](./previews/12_reconciliation_ledger.html)
 - Preview (부가세): [03_vat.html](./previews/03_vat.html)
 - Preview (급여): [04_payroll.html](./previews/04_payroll.html)
 - Preview (신고지원): [05_filing_support.html](./previews/05_filing_support.html)
@@ -333,7 +334,7 @@
 - Preview (지급명세서·연말정산): [09_payment_year_end.html](./previews/09_payment_year_end.html)
 - Preview (지방소득세): [10_local_income_tax.html](./previews/10_local_income_tax.html)
 - Preview (사업장현황신고): [11_business_status_report.html](./previews/11_business_status_report.html)
-- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 기존 6개 워크스페이스와 직원 명부·리마인드·신고 준비는 사이드바/CTA로 상호 이동 가능. 신고 준비(08)는 허브, 09·10·11은 사이드바 하위 항목으로 직접 진입 가능(Preview 2026-07-06).
+- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 기존 6개 워크스페이스와 직원 명부·리마인드·신고 준비는 사이드바/CTA로 상호 이동 가능. 신고 준비(08)는 허브, 09·10·11은 사이드바 하위 항목으로 직접 진입 가능하다. 자료대조원장(12)은 기장검토 하위 Path 1 데이터 관문으로 직접 진입 가능하다(Preview 2026-07-08).
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자 정의

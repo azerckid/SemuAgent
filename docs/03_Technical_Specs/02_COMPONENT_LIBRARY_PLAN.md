@@ -11,6 +11,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 회사 홈 — [00_company_home.html](../02_UI_Screens/previews/00_company_home.html)
 - 자료수집 — [01_source_collection.html](../02_UI_Screens/previews/01_source_collection.html)
 - 기장검토 — [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html)
+- 자료대조원장 — [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html)
 - 부가세 — [03_vat.html](../02_UI_Screens/previews/03_vat.html)
 - 급여 — [04_payroll.html](../02_UI_Screens/previews/04_payroll.html)
 - 신고지원 — [05_filing_support.html](../02_UI_Screens/previews/05_filing_support.html)
@@ -94,7 +95,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 | 화면 컴포넌트 | 구현 방식 | 기반 |
 |:---|:---|:---|
-| Classification Header | 커스텀 `BookkeepingClassificationHeader` - 자료대조원장 제목·신고 전 거래 대조/계정확정 설명 | `card` + `progress` |
+| Classification Header | 커스텀 `BookkeepingClassificationHeader` - 기장검토 제목·AI 계정분류 대기열 설명 | `card` + `progress` |
 | Queue Tabs | 커스텀 `BookkeepingReviewTabs` | 세그먼트 탭(`button`) + 건수 배지 |
 | Bulk Action Bar | 커스텀 `BookkeepingBulkActions` | `button`(선택 N건 승인/일괄 변경) |
 | Classification Queue Table | 커스텀 `BookkeepingClassificationQueue` | `table` + `badge`(AI 배지) + `Confidence Bar` + 행 액션(승인/수정/계정 지정) |
@@ -106,6 +107,22 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 신규 shadcn 없음(progress·skeleton은 자료수집 단계에서 확보). 신규 라이브러리 없음.
 - 승인/수정 mutation은 **기존 세션 API 호출**(신규 컴포넌트에서 fetch). GIWA `/dashboard/reviews` 워크스페이스 컴포넌트는 재사용/import하지 않는다(Preview 계약, Brief §0).
 - 공용 원자 컴포넌트(StatusChip·Dot·State*)는 앞 화면들과 공유(DRY).
+
+### 7.3a 자료대조원장 (UI Design 4.3a)
+
+| 화면 컴포넌트 | 구현 방식 | 기반 |
+|:---|:---|:---|
+| Reconciliation Readiness Hero | 커스텀 `ReconciliationLedgerHero` - Path 1 데이터 관문 준비율 | `card` + `progress` + metrics |
+| Source Summary Cards | 커스텀 `ReconciliationSourceSummary` | `card` grid + status chip |
+| Source Tabs / Filters | 커스텀 `ReconciliationLedgerFilters` | segmented tabs + search input + display settings button |
+| Reconciliation Ledger Table | 커스텀 `ReconciliationLedgerTable` | dense `table`, source marker, linked evidence chip, account/counterparty controls |
+| Evidence Link Status | 공용 `StatusChip` 확장 | ok/warn/danger/muted |
+| Exclusion Review Action | 커스텀 row action group | 업무사용/제외/메모 버튼 |
+| Tax File Gate Panel | 커스텀 `TaxFileReadinessPanel` | line list + status chip |
+| State(로딩/빈/오류/권한 없음) | 공용 재사용 | skeleton + empty/error/no-permission state |
+
+- 신규 라이브러리 없음. 사용자 제공 Clobe 참고 화면은 dense source ledger UX의 참고일 뿐, SemuAgent 컴포넌트는 기존 card/table/chip/button 패턴으로 만든다.
+- 자료대조원장은 기존 기장검토 분류 큐를 대체하지 않고, Path 1 양식 생성 전 증빙 연결·계정확정·제외 검토를 한 화면에서 점검하는 하위 관문으로 구현한다.
 
 ### 7.4 부가세 (UI Design 4.4)
 
