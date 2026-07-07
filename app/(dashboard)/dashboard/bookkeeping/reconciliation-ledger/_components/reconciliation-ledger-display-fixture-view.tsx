@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import {
   buildReconciliationDisplaySourceCounts,
   countCashReceiptDisplayRows,
@@ -21,6 +21,7 @@ import type {
   ReconciliationTaxBlockerSummary,
 } from '@/lib/bookkeeping-review/reconciliation-display-model'
 import { cn } from '@/lib/utils'
+import { ReconciliationLedgerWorkPanel } from './reconciliation-ledger-work-panel'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 const disabledActionNote = 'Slice 2b 전까지 저장·확정이 비활성화됩니다.'
@@ -58,15 +59,35 @@ export interface ReconciliationLedgerDisplayFixtureViewProps {
   readonly activeFilter: ReconciliationDisplayFilter
   readonly companyName: string
   readonly displayModel: ReconciliationLedgerDisplayModel
+  readonly initialRowId?: string | null
 }
 
 export function ReconciliationLedgerDisplayFixtureView({
   activeFilter,
   companyName,
   displayModel,
+  initialRowId = null,
 }: ReconciliationLedgerDisplayFixtureViewProps) {
   const rows = displayModel.rows
   const filteredRows = filterReconciliationDisplayRows(rows, activeFilter)
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(initialRowId)
+
+  const effectiveSelectedRowId = useMemo(() => {
+    if (selectedRowId && filteredRows.some((row) => row.id === selectedRowId)) {
+      return selectedRowId
+    }
+
+    if (initialRowId && filteredRows.some((row) => row.id === initialRowId)) {
+      return initialRowId
+    }
+
+    return filteredRows[0]?.id ?? null
+  }, [filteredRows, initialRowId, selectedRowId])
+
+  const selectedRow = useMemo(
+    () => filteredRows.find((row) => row.id === effectiveSelectedRowId) ?? null,
+    [filteredRows, effectiveSelectedRowId],
+  )
   const sourceCounts = buildReconciliationDisplaySourceCounts(rows)
   const cashReceiptCount = countCashReceiptDisplayRows(rows)
   const periodLabel = rows[0]?.periodLabel ?? '기간 미정'
@@ -110,7 +131,7 @@ export function ReconciliationLedgerDisplayFixtureView({
         </section>
 
         <div className="rounded-[10px] border border-[#bfdbfe] bg-[#eff6ff] px-3.5 py-3 text-[12.5px] text-[#1e40af]">
-          Fixture workbench (Slice 2a-2): live read model을 사용하지 않습니다. 우측 작업 패널은 Slice 2a-3에서 추가됩니다.
+          Fixture workbench (Slice 2a-3): 행을 선택하면 우측 작업 패널에서 한 줄 결론, 증빙 후보, 패턴 근거를 확인합니다. 저장·연결은 Slice 2b까지 비활성입니다.
         </div>
 
         <NextActionQueue actions={displayModel.nextActions} />
@@ -186,35 +207,46 @@ export function ReconciliationLedgerDisplayFixtureView({
           </button>
         </div>
 
-        <section className={panelClass}>
-          <div className="max-h-[520px] overflow-auto">
-            <table className="w-full border-collapse text-left text-[12.5px]">
-              <thead className="sticky top-0 z-[1] bg-[#fafafa] text-[11.5px] font-semibold text-company-fg-subtle uppercase">
-                <tr className="border-b border-company-border">
-                  <th className="px-3 py-3">거래일</th>
-                  <th className="px-3 py-3">출처</th>
-                  <th className="px-3 py-3">거래처/가맹점</th>
-                  <th className="px-3 py-3">적요/품목</th>
-                  <th className="px-3 py-3 text-right">금액</th>
-                  <th className="px-3 py-3">증빙 상태</th>
-                  <th className="px-3 py-3">계정항목</th>
-                  <th className="px-3 py-3">한 줄 결론</th>
-                  <th className="px-3 py-3">처리</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.length > 0 ? (
-                  filteredRows.map((row) => <FixtureRow key={row.id} row={row} />)
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-10 text-center text-company-fg-muted">
-                      선택한 조건에 해당하는 거래가 없습니다. 다음 할 일 큐 또는 전체 탭을 확인하세요.
-                    </td>
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className={panelClass}>
+            <div className="max-h-[520px] overflow-auto">
+              <table className="w-full border-collapse text-left text-[12.5px]">
+                <thead className="sticky top-0 z-[1] bg-[#fafafa] text-[11.5px] font-semibold text-company-fg-subtle uppercase">
+                  <tr className="border-b border-company-border">
+                    <th className="px-3 py-3">거래일</th>
+                    <th className="px-3 py-3">출처</th>
+                    <th className="px-3 py-3">거래처/가맹점</th>
+                    <th className="px-3 py-3">적요/품목</th>
+                    <th className="px-3 py-3 text-right">금액</th>
+                    <th className="px-3 py-3">증빙 상태</th>
+                    <th className="px-3 py-3">계정항목</th>
+                    <th className="px-3 py-3">한 줄 결론</th>
+                    <th className="px-3 py-3">처리</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredRows.length > 0 ? (
+                    filteredRows.map((row) => (
+                      <FixtureRow
+                        key={row.id}
+                        isSelected={row.id === effectiveSelectedRowId}
+                        onSelect={() => setSelectedRowId(row.id)}
+                        row={row}
+                      />
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-10 text-center text-company-fg-muted">
+                        선택한 조건에 해당하는 거래가 없습니다. 다음 할 일 큐 또는 전체 탭을 확인하세요.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          <ReconciliationLedgerWorkPanel allRows={rows} row={selectedRow} />
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
@@ -360,7 +392,15 @@ function BatchSuggestionBar({ groups }: { readonly groups: ReconciliationBatchSu
   )
 }
 
-function FixtureRow({ row }: { readonly row: ReconciliationLedgerRow }) {
+function FixtureRow({
+  isSelected = false,
+  onSelect,
+  row,
+}: {
+  readonly isSelected?: boolean
+  readonly onSelect: () => void
+  readonly row: ReconciliationLedgerRow
+}) {
   const source = sourceLabels[row.source]
   const evidence = evidenceActionLabels[row.evidenceActionState]
   const tone = row.blockers.some((blocker) => blocker.code === 'missing_evidence' || blocker.code === 'ambiguous_match')
@@ -370,7 +410,21 @@ function FixtureRow({ row }: { readonly row: ReconciliationLedgerRow }) {
       : 'ok'
 
   return (
-    <tr className={cn('border-b border-company-border last:border-b-0 hover:bg-[#fafafa]', tone === 'danger' ? 'bg-[#fff7f7]' : tone === 'warn' ? 'bg-[#fffaf0]' : '')}>
+    <tr
+      className={cn(
+        'cursor-pointer border-b border-company-border last:border-b-0 hover:bg-[#fafafa]',
+        isSelected ? 'bg-[#eff6ff] ring-1 ring-inset ring-[#93c5fd]' : '',
+        !isSelected && tone === 'danger' ? 'bg-[#fff7f7]' : !isSelected && tone === 'warn' ? 'bg-[#fffaf0]' : '',
+      )}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect()
+        }
+      }}
+      tabIndex={0}
+    >
       <td className="px-3 py-3 font-mono text-company-fg-muted">{formatDate(row.transactionDate)}</td>
       <td className="px-3 py-3">
         <span className="inline-flex items-center gap-2 font-semibold text-foreground">
@@ -407,6 +461,7 @@ function FixtureRow({ row }: { readonly row: ReconciliationLedgerRow }) {
         <button
           className="cursor-not-allowed rounded-md border border-company-border-strong bg-company-surface px-2.5 py-1 text-[11.5px] font-semibold text-company-fg-subtle"
           disabled
+          onClick={(event) => event.stopPropagation()}
           title={row.workPanelConclusion.disabledReason ?? disabledActionNote}
           type="button"
         >

@@ -15,11 +15,12 @@ type PageProps = {
     period?: string
     source?: string
     display?: string
+    row?: string
   }>
 }
 
 export default async function ReconciliationLedgerPage({ searchParams }: PageProps) {
-  const { period, source, display } = await searchParams
+  const { period, source, display, row } = await searchParams
   let tenantId: string
 
   try {
@@ -42,6 +43,7 @@ export default async function ReconciliationLedgerPage({ searchParams }: PagePro
         activeFilter={normalizeReconciliationDisplayFilter(source)}
         companyName={summary.businessEntity?.name ?? summary.tenant.name}
         displayModel={displayModel}
+        initialRowId={row ?? null}
       />
     )
   }
