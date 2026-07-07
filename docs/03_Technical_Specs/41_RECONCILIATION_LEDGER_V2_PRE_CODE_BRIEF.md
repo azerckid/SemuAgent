@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-08 05:34 KST
+> Last Updated: 2026-07-08 07:45 KST
 
 ## 0. Purpose
 
@@ -570,7 +570,9 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Convenience contract documented for next-action queue, batch acceptance, one-line panel conclusion, source-collection back link, tax blocker reasons, closing checklist, and shallow undo.
 - [x] Phase 2 implementation order and traceability documented (§2.1).
 - [x] UI-first lite sequence documented: display contract + fixture before full read model wiring (§2.1 step 2a-0).
-- [ ] Slice 2a-0 display contract + fixture implementation started (§2.1 step 2a-0).
+- [x] Slice 2a-0 display contract + fixture implementation started (§2.1 step 2a-0) — landed on main (`01971b1`).
+- [x] Slice 2a-2 UI shell and honest labels implemented (§2.1 step 2a-2) — landed on main (`169ade8`).
+- [x] Slice 2a-3 table-cell evidence/account actions implemented (§2.1 step 2a-3) — PR #150, merged to main (`7b0ba25`). Known gap: `candidate` evidence-action state still renders no status chip (falls back to the evidence-finder action only); §0.3/§5.1's "증빙 후보 있음" label is not yet shown. Track in Slice 2a-4.
 - [ ] Slice 2b mutation mapping reviewed before code.
 - [ ] Slice 2c durable match-link schema approved if needed.
 
