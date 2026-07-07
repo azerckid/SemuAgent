@@ -22,9 +22,9 @@ export type HometaxUploadStep = z.infer<typeof hometaxUploadStepSchema>
 export const HOMETAX_SIMPLIFIED_WAGE_UPLOAD_STEPS: HometaxUploadStep[] = [
   { order: 1, label: '홈택스 로그인' },
   { order: 2, label: '지급명세·자료 → 일용·간이지급명세서/사업장제공자 등의 과세자료 제출명세서 제출(매월·반기)' },
-  { order: 3, label: '변환 파일제출(회계·급여 프로그램 이용) 선택' },
-  { order: 4, label: '간이지급명세서(근로소득) 파일 업로드' },
-  { order: 5, label: '전자신고 암호(8~15자리) 입력 → 형식·내용 검증 → 제출 (암호화 파일은 슬라이스 2b)' },
+  { order: 3, label: '변환 파일제출(회계·급여 프로그램 이용) 메뉴 확인' },
+  { order: 4, label: 'plain 후보 파일은 사전검증용으로 확인' },
+  { order: 5, label: '실제 업로드·제출은 암호화(NTS-CRYPTO)·적합성 검정 확인 후 진행' },
 ]
 
 export const operationalChecklistItemSchema = z.object({
@@ -50,6 +50,6 @@ export const SIMPLIFIED_WAGE_OPERATIONAL_CHECKLIST: OperationalChecklistItem[] =
   },
   {
     id: 'staging-upload',
-    label: '홈택스 변환제출 시험 업로드(사용자 수동) — plain/암호화 파일 형식 확인',
+    label: '홈택스 변환제출 시험 검증(사용자 수동) — plain 후보/암호화 파일 수용 여부 확인',
   },
 ]
