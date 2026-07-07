@@ -70,13 +70,13 @@ Until these are implemented, the screen must be described as an initial read-onl
 
 ## 0.3 Candidate Count Rule
 
-"후보 N건" by itself is not an acceptable final UI state. It may appear as a compact hint, but the row cell or modal must expose the actual candidate rows and actions.
+Candidate counts are internal matching details, not user-facing status. The row cell or modal must expose the actual evidence rows and actions: AI found this evidence, or the user must find evidence manually.
 
 - Clear match: show the linked evidence row and actions to confirm, unlink, or replace. In Slice 2a-3 fixture UI, linked rows show a **증빙있음** chip in the evidence-status column; clicking it opens a read-only modal with the linked evidence summary (source, counterparty, amount, date, match basis). Unlink/replace actions remain disabled until Slice 2b-2.
-- Ambiguous match: show concrete candidates and actions such as "이 증빙 연결", "아님", and "직접 찾기".
+- Ambiguous match: show concrete suggested evidence rows and actions such as "이 증빙 연결", "아님", and "직접 찾기".
 - No match: show "증빙 찾기" as the primary action.
 
-Path 1 file generation must read the resolved completion state, not a candidate count.
+Path 1 file generation must read the resolved completion state, not an internal candidate count.
 
 ## 0.4 Convenience Contract
 
@@ -412,7 +412,7 @@ The default period comes from the current filing context when the user enters fr
 | User-facing state | Meaning | Expected user action |
 |:---|:---|:---|
 | 증빙있음 (`linked`) | A concrete tax invoice, cash receipt, card approval, or other proof is linked | Click **증빙있음** to review linked evidence; replace/unlink in later slices |
-| 증빙 후보 있음 | Concrete candidate evidence exists | Select, reject, or search manually |
+| AI 증빙 확인 | AI/rules found concrete evidence rows, but the user has not confirmed them | Review the suggested evidence, connect it, reject it, or use **증빙 찾기** |
 | 증빙 필요 | Evidence is normally required but not linked | Open evidence finder |
 | 소명 필요 | Evidence may not exist or is weak, but business purpose must be explained | Enter explanation memo |
 | 소명 완료 | User explained why the row can remain without normal evidence | Reviewable, auditable state |
@@ -520,7 +520,7 @@ Phase 2 implementation should keep that layout:
 3. Period scope control: month, quarter, half-year, year, and custom range. The default must follow the filing context, but the user can switch scope for review.
 4. Next-action queue: unresolved items ordered by filing blocker, amount, and due-date impact. The queue should let the user start work without hunting through tabs.
 5. Source/action tabs: all, bank, card, tax invoice, cash receipt, evidence needed, explanation needed, exclusion review. Tabs are secondary to the queue.
-6. Unified ledger table. The evidence-status column must show either **증빙있음** (linked, clickable to view), **증빙 찾기** (evidence required or AI candidate), **소명 입력** (explanation required), or a resolution chip such as "증빙 필요", "소명 완료", "증빙 예외", or "제외됨". It must not stop at "후보 N건" or render "증빙없음" as a completed state.
+6. Unified ledger table. The evidence-status column must show either **증빙있음** (linked, clickable to view), **AI 증빙 확인** (AI/rules found concrete evidence rows to review), **증빙 찾기** (evidence required and the user must search manually), **소명 입력** (explanation required), or a resolution chip such as "증빙 필요", "소명 완료", "증빙 예외", or "제외됨". It must not stop at candidate-count labels or render "증빙없음" as a completed state.
 7. Previous-period pattern chip or row subtext: show the historical basis such as last month/recent months, matched count, prior account/evidence/exclusion decision, and confidence.
 8. One-line conclusion column: each row must show the recommended account/evidence/exclusion decision, basis, and primary action before a modal is opened.
 9. Evidence finder opened from the evidence-status cell's "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, add/select action, selected total, remaining difference, save/cancel.
@@ -535,7 +535,7 @@ inactive search or settings controls must look disabled until implemented.
 
 - The user can see which bank movements match or fail to match tax invoices,
   card approvals, cash receipts, or receipts.
-- The user can see why a match candidate was suggested.
+- The user can see why AI/rules suggested a concrete evidence row.
 - The user can start from a next-action queue that prioritizes Path 1 blockers before lower-impact rows.
 - The user can switch review scope between month, quarter, half-year, year, and custom range, with sensible defaults from the current filing context.
 - The user can see previous-period pattern recommendations with their basis, and those recommendations do not auto-confirm rows.
@@ -543,7 +543,7 @@ inactive search or settings controls must look disabled until implemented.
 - From a bank row, the user can open "증빙 찾기", choose 세금계산서/현금영수증/체크카드, search rows, select evidence, and see the remaining difference before saving.
 - The ledger row shows a one-line conclusion and primary action before the user opens detailed evidence/AI/pattern rationale in a modal.
 - Safe repeated suggestions can be accepted as a batch only when the group eligibility is visible and the user explicitly confirms the group.
-- The final UI does not use candidate counts as the main answer; it shows concrete candidate rows and actions.
+- The final UI does not use candidate counts as the main answer; it shows concrete evidence rows and actions.
 - Ambiguous matches are not auto-confirmed.
 - The user can confirm or change the account category for filing-relevant rows.
 - The user can open a row-level explanation modal and save a memo.
@@ -572,7 +572,7 @@ inactive search or settings controls must look disabled until implemented.
 - [x] UI-first lite sequence documented: display contract + fixture before full read model wiring (§2.1 step 2a-0).
 - [x] Slice 2a-0 display contract + fixture implementation started (§2.1 step 2a-0) — landed on main (`01971b1`).
 - [x] Slice 2a-2 UI shell and honest labels implemented (§2.1 step 2a-2) — landed on main (`169ade8`).
-- [x] Slice 2a-3 table-cell evidence/account actions implemented (§2.1 step 2a-3) — PR #150, merged to main (`7b0ba25`). Known gap: `candidate` evidence-action state still renders no status chip (falls back to the evidence-finder action only); §0.3/§5.1's "증빙 후보 있음" label is not yet shown. Track in Slice 2a-4.
+- [x] Slice 2a-3 table-cell evidence/account actions implemented (§2.1 step 2a-3) — PR #150, merged to main (`7b0ba25`). Product wording update (PR #152): `candidate` remains an internal match state only; the live view (`reconciliation-ledger.tsx`) and the fixture view (`evidenceActionChipLabel` in `reconciliation-row-actions.ts`) both show **AI 증빙 확인** when concrete evidence rows were found, or **증빙 찾기** when the user must search manually. Do not add a separate candidate-style evidence state.
 - [ ] Slice 2b mutation mapping reviewed before code.
 - [ ] Slice 2c durable match-link schema approved if needed.
 

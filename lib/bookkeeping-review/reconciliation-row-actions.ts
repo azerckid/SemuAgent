@@ -114,7 +114,7 @@ export function matchCandidateReasonLabel(reason: ReconciliationMatchCandidateRe
   if (reason === 'same_amount_near_day') return '같은 금액·인접 일자'
   if (reason === 'same_counterparty_amount') return '같은 거래처·금액'
   if (reason === 'partial_amount') return '부분 금액 일치'
-  if (reason === 'many_to_one') return '다건 합산 후보'
+  if (reason === 'many_to_one') return '다건 합산 추천'
   return '수동 참조'
 }
 
@@ -170,7 +170,7 @@ export function evidenceActionChipLabel(
   state: ReconciliationLedgerRow['evidenceActionState'],
 ): { label: string; tone: 'ok' | 'warn' | 'danger' | 'muted' } | null {
   if (state === 'candidate') {
-    return null
+    return { label: 'AI 증빙 확인', tone: 'warn' }
   }
 
   if (state === 'linked') {
