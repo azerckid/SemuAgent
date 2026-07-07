@@ -32,6 +32,19 @@ The adopted direction is **ledger table + right work panel**. The Clobe-style lo
 - "후보 N건" is not enough. The panel must show the actual evidence rows and let the user connect, reject, search manually, unlink, or replace.
 - On mobile/narrow screens, the same panel may become a drawer, but the interaction contract stays the same.
 
+## Current Implementation Caveat
+
+The current app screen is still an initial slice. It should not be treated as the completed 자료대조원장 until these workbench functions exist:
+
+- bank deposit/withdrawal to tax-invoice matching,
+- card payment to evidence connection,
+- evidence finder with 세금계산서/현금영수증/체크카드 selection,
+- explanation and bank usage-description memo,
+- visible AI account recommendation confidence and user account selection,
+- personal/private or low-business-use expense detection,
+- exclusion reason selection,
+- inline account editing from the 자료대조원장 work panel.
+
 ## Approved Information Structure
 
 - Hero: Path 1 data readiness progress and blocker counts.
