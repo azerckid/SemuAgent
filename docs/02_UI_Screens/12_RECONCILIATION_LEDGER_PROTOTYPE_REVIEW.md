@@ -32,6 +32,8 @@ The adopted direction is **ledger table + right work panel**. The Clobe-style lo
 - Previous-period pattern recommendation means the UI can say why it suggests an account/evidence/exclusion, for example last month or recent months had the same counterparty, amount pattern, evidence source, or exclusion decision.
 - "후보 N건" is not enough. The panel must show the actual evidence rows and let the user connect, reject, search manually, unlink, or replace.
 - On mobile/narrow screens, the same panel may become a drawer, but the interaction contract stays the same.
+- Period scope must be explicit: month, quarter, half-year, year, and custom range. The default follows the filing context rather than forcing one global period.
+- "증빙없음" is not a completed state. The UI must show action-oriented states such as 증빙 필요, 소명 필요, 소명 완료, 증빙 예외, or 제외됨.
 
 ## Current Implementation Caveat
 
@@ -50,10 +52,10 @@ The current app screen is still an initial slice. It should not be treated as th
 ## Approved Information Structure
 
 - Hero: Path 1 data readiness progress and blocker counts.
-- Source summary: bank, card, tax invoice, cash receipt, no-evidence, exclusion-review counts.
+- Source summary: bank, card, tax invoice, cash receipt, evidence/explanation-needed, exclusion-review counts.
 - Ledger table: one row per reconciled transaction candidate.
 - Key columns: transaction date, source, counterparty, memo/item, supply amount, tax amount, linked evidence, account, counterparty master, status, action.
-- Required actions: connect evidence, apply or reject prior-period pattern recommendation, assign account, confirm transaction, exclude private/business-unrelated use, resolve amount mismatch.
+- Required actions: connect evidence, explain usage, confirm evidence exception, apply or reject prior-period pattern recommendation, assign account, confirm transaction, exclude private/business-unrelated use, resolve amount mismatch.
 - Gate panel: tax-type file generation readiness reads this confirmed ledger.
 - States: loading, empty, error, no permission.
 
