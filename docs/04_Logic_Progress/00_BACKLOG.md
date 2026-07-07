@@ -144,7 +144,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [Screen Flow 4c](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.3/4.3a](../02_UI_Screens/01_UI_DESIGN.md)
 - Related HTML Preview: [02_bookkeeping_review.html](../02_UI_Screens/previews/02_bookkeeping_review.html) — 기장검토 분류 큐. [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html) — 자료대조원장 전용 Path 1 관문 Preview(2026-07-08 승인)
-- Related Technical Docs: [Component & Library Plan 7.3](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
+- Related Technical Docs: [Component & Library Plan 7.3](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) · [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
 - Related QA Docs: [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) - 분류 큐 집계·신뢰도·승인 mutation·Preview 계약·범위 격리 검증
 - Prototype Review / 승인: [Bookkeeping Review](../02_UI_Screens/04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인. [Reconciliation Ledger](../02_UI_Screens/12_RECONCILIATION_LEDGER_PROTOTYPE_REVIEW.md) — 자료대조원장 전용 Preview, 2026-07-08 승인
 - Implementation Preconditions:
@@ -153,6 +153,10 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] Pre-Code Technical Brief(분류 큐 데이터 소스·AI 추천 신뢰도·승인 mutation·분류 확정) 정리 — [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
   - [x] 회사 tenant/기간·전표 데이터 모델 확인 — [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) 기준 기존 bookkeeping 테이블 재사용, `clientId`→`businessEntityId` 개념 전환, 물리 rename은 JC-005 후속
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md)
+  - [x] 자료대조원장 Phase 2 행동 계약 작성 — [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)
+  - [ ] 자료대조원장 Slice 2a read model 착수 전 검토 — 입출금↔증빙 후보·blocker 파생
+  - [ ] 자료대조원장 Slice 2b mutation mapping 착수 전 검토 — 계정확정·소명·제외 사유 저장
+  - [ ] 자료대조원장 Slice 2c durable match-link schema 필요 여부 판단
 - Acceptance Criteria:
   - [x] 정규화된 거래가 분류 큐에 AI 추천 계정과목·신뢰도와 함께 표시된다.
   - [x] 신뢰도 낮은 거래는 승인 전 "계정 지정"으로 강제 확인된다.
@@ -163,7 +167,10 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 로딩·빈·오류 상태가 화면에 구현된다.
   - [x] 기장검토 하위 메뉴 "자료대조원장"이 Path 1의 자료 대조·계정확정 관문으로 표시된다.
   - [x] 자료대조원장 전용 Preview가 통장·카드·세금계산서·현금영수증을 한 원장 표에서 대조하는 구조로 승인됐다(2026-07-08).
-- Document Sync Check: Screen Flow 4c / UI Design 4.3+4.3a / Prototype Review / Preview / Component Plan 7.3 / Pre-Code Brief / QA Scenarios 상호 링크됨. 2026-07-08: "자료대조원장"은 신고 준비 하위가 아니라 기장검토 하위 진입점으로 정리했고, 전용 Preview(12)에서 통장·카드·세금계산서·현금영수증 대조 원장 구조를 승인했다. 기존 구현은 `/dashboard/bookkeeping` 분류 큐이며, 전용 라우트·read model 구현은 후속 Slice에서 진행한다. 구현 파일: `lib/bookkeeping-review/summary.ts`, `app/(dashboard)/dashboard/bookkeeping/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.tsx`, `app/(dashboard)/dashboard/bookkeeping/loading.tsx`, `app/(dashboard)/dashboard/bookkeeping/error.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.test.ts`.
+  - [ ] 자료대조원장에 입출금↔세금계산서/카드/현금영수증/영수증 매칭 후보가 표시된다.
+  - [ ] 자료대조원장에서 계정항목 확정·사용내역 소명·업무무관/사적 사용 제외 사유가 한 화면 흐름으로 처리된다.
+  - [ ] 세목별 Path 1 양식·파일 생성은 자료대조원장 blocker가 해소된 확정 거래만 사용한다.
+- Document Sync Check: Screen Flow 4c / UI Design 4.3+4.3a / Prototype Review / Preview / Component Plan 7.3 / Pre-Code Brief / QA Scenarios 상호 링크됨. 2026-07-08: "자료대조원장"은 신고 준비 하위가 아니라 기장검토 하위 진입점으로 정리했고, 전용 Preview(12)에서 통장·카드·세금계산서·현금영수증 대조 원장 구조를 승인했다. 2026-07-08 02:01: Phase 2 Brief(41)로 입출금↔증빙 후보, 계정확정, 사용내역 소명 모달, 제외 사유 taxonomy, 세목별 Path 1 blocker 계약을 고정했다. 기존 구현은 `/dashboard/bookkeeping` 분류 큐이며, 전용 라우트·read model 구현은 후속 Slice에서 진행한다. 구현 파일: `lib/bookkeeping-review/summary.ts`, `app/(dashboard)/dashboard/bookkeeping/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.tsx`, `app/(dashboard)/dashboard/bookkeeping/loading.tsx`, `app/(dashboard)/dashboard/bookkeeping/error.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.test.ts`.
 
 ### JC-011 · Build VAT workspace (부가세) — 신규
 

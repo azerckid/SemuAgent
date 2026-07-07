@@ -1,6 +1,6 @@
 # Path 1 End-to-End Filing Readiness Audit
 > Created: 2026-07-07 23:29 KST
-> Last Updated: 2026-07-07 23:29 KST
+> Last Updated: 2026-07-08 02:01 KST
 
 ## 0. Purpose
 
@@ -99,7 +99,7 @@ transaction candidates. But the product still needs an explicit checklist for:
 - missing evidence for a bank movement,
 - tax-invoice-only evidence that has not appeared in bank/card records.
 
-This is now positioned as the **기장검토 하위 "자료대조원장"** gate before a tax form can be marked ready, not as a 신고 준비 child screen. The dedicated UI Preview is approved in `docs/02_UI_Screens/previews/12_reconciliation_ledger.html` (2026-07-08), using bank/card/tax-invoice/cash-receipt source-ledger references as inspiration.
+This is now positioned as the **기장검토 하위 "자료대조원장"** gate before a tax form can be marked ready, not as a 신고 준비 child screen. The dedicated UI Preview is approved in `docs/02_UI_Screens/previews/12_reconciliation_ledger.html` (2026-07-08), using bank/card/tax-invoice/cash-receipt source-ledger references as inspiration. The detailed Phase 2 contract is fixed in [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md): bank-to-evidence candidates, account confirmation, explanation memo, exclusion reason taxonomy, and Path 1 blockers.
 
 ### 5.2 Private or business-unrelated exclusion needs one shared language
 
@@ -140,6 +140,8 @@ The next product work should be Path 1 completion, not Path 2 and not Path 3.
    - Add a single readiness contract under 기장검토 that every tax-type file checks before
      download: source completeness, reconciliation, exclusion reasons, account
      confirmation, tax-specific review.
+   - Implement against the Phase 2 contract in
+     [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md).
 2. **원천세 Path 1 complete**
    - Finish official layout acquisition.
    - Add filled-form preview for the withholding form.
@@ -166,3 +168,4 @@ Related:
 - [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md)
 - [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
 - [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
+- [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)
