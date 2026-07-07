@@ -27,6 +27,7 @@ import {
   formatKrwAmount,
   formatRemainingDifferenceLabel,
   listEvidenceFinderBrowseRows,
+  resolveLinkedEvidenceDisplay,
   shouldShowEvidenceFinder,
   type EvidenceFinderSource,
 } from '@/lib/bookkeeping-review/reconciliation-work-panel'
@@ -46,12 +47,14 @@ const chipClass: Record<Tone, string> = {
 export interface ReconciliationEvidenceCellProps {
   readonly onOpenEvidencePicker: (source: EvidenceFinderSource) => void
   readonly onOpenExplanation: () => void
+  readonly onViewLinkedEvidence: () => void
   readonly row: ReconciliationLedgerRow
 }
 
 export function ReconciliationEvidenceCell({
   onOpenEvidencePicker,
   onOpenExplanation,
+  onViewLinkedEvidence,
   row,
 }: ReconciliationEvidenceCellProps) {
   const statusChip = evidenceActionChipLabel(row.evidenceActionState)
@@ -66,6 +69,17 @@ export function ReconciliationEvidenceCell({
           type="button"
         >
           소명 입력
+        </button>
+      ) : row.evidenceActionState === 'linked' && statusChip ? (
+        <button
+          className={cn(
+            'inline-flex rounded-full border px-2.5 py-0.5 text-[11.5px] font-semibold hover:opacity-90',
+            chipClass[statusChip.tone],
+          )}
+          onClick={onViewLinkedEvidence}
+          type="button"
+        >
+          {statusChip.label}
         </button>
       ) : statusChip ? (
         <StatusChip tone={statusChip.tone}>{statusChip.label}</StatusChip>
@@ -198,6 +212,71 @@ export function ReconciliationAccountSelector({ row }: ReconciliationAccountSele
         </div>
       </PopoverContent>
     </Popover>
+  )
+}
+
+export interface ReconciliationLinkedEvidenceModalProps {
+  readonly onOpenChange: (open: boolean) => void
+  readonly open: boolean
+  readonly row: ReconciliationLedgerRow | null
+}
+
+export function ReconciliationLinkedEvidenceModal({
+  onOpenChange,
+  open,
+  row,
+}: ReconciliationLinkedEvidenceModalProps) {
+  const linkedEvidence = useMemo(
+    () => (row ? resolveLinkedEvidenceDisplay(row) : []),
+    [row],
+  )
+
+  return (
+    <Dialog onOpenChange={onOpenChange} open={open}>
+      <DialogContent className="flex w-full max-w-lg flex-col gap-0 overflow-hidden border-company-border bg-company-surface p-0 sm:max-w-lg">
+        {row ? (
+          <>
+            <DialogHeader className="border-b border-company-border px-5 py-4 pr-12">
+              <DialogTitle className="text-base font-semibold text-foreground">연결된 증빙</DialogTitle>
+              <DialogDescription className="text-[13px] text-company-fg-muted">
+                {row.counterparty ?? '거래처 미정'} · {formatKrwAmount(row.amountKrw)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 px-5 py-4">
+              {linkedEvidence.map((evidence) => (
+                <div
+                  key={`${evidence.source}-${evidence.date}-${evidence.amountKrw}`}
+                  className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-3"
+                >
+                  <p className="text-[12px] font-semibold text-foreground">
+                    {evidence.sourceLabel} · {formatKrwAmount(evidence.amountKrw)}
+                  </p>
+                  <p className="mt-1 text-[12px] text-company-fg-muted">
+                    {evidence.counterparty ?? '거래처 미정'}
+                    {evidence.date ? ` · ${evidence.date.slice(5, 10)}` : ''}
+                  </p>
+                  {evidence.description ? (
+                    <p className="mt-1 text-[12px] text-company-fg-subtle">{evidence.description}</p>
+                  ) : null}
+                  {evidence.basisLabel ? (
+                    <p className="mt-1 text-[11px] text-company-fg-subtle">{evidence.basisLabel}</p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            <DialogFooter className="border-t border-company-border bg-[#fcfcfd] px-5 py-3 sm:justify-end">
+              <button
+                className="rounded-lg border border-company-border px-3 py-2 text-[12px] font-semibold text-company-fg-muted"
+                onClick={() => onOpenChange(false)}
+                type="button"
+              >
+                닫기
+              </button>
+            </DialogFooter>
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
   )
 }
 

@@ -2,6 +2,7 @@ import type {
   ReconciliationLedgerRow,
   ReconciliationMatchCandidate,
   ReconciliationPatternSuggestion,
+  ReconciliationSource,
   ReconciliationWorkPanelConclusion,
 } from './reconciliation-display-model'
 import { isCashReceiptDisplaySource } from './reconciliation-display-filters'
@@ -18,6 +19,25 @@ export const evidenceFinderSourceOptions: Array<{ source: EvidenceFinderSource; 
   { source: 'cash_receipt', label: '현금영수증' },
   { source: 'card', label: '체크카드' },
 ]
+
+const evidenceSourceLabels: Record<ReconciliationSource, string> = {
+  bank: '통장',
+  card: '카드',
+  tax_invoice: '세금계산서',
+  receipt: '현금영수증',
+  cash_receipt: '현금영수증',
+  other: '기타',
+}
+
+export type LinkedEvidenceDisplay = {
+  source: ReconciliationSource
+  sourceLabel: string
+  date: string | null
+  counterparty: string | null
+  amountKrw: number | null
+  description: string | null
+  basisLabel: string | null
+}
 
 export function computeCandidateTotalKrw(candidates: ReconciliationMatchCandidate[]): number {
   return candidates.reduce((sum, candidate) => sum + (candidate.amountKrw ?? 0), 0)
@@ -57,6 +77,36 @@ export function listEvidenceFinderBrowseRows(
   return allRows.filter(
     (row) => row.id !== selectedRowId && matchesEvidenceFinderSource(row.source, finderSource),
   )
+}
+
+export function resolveLinkedEvidenceDisplay(row: ReconciliationLedgerRow): LinkedEvidenceDisplay[] {
+  if (row.evidenceActionState !== 'linked') {
+    return []
+  }
+
+  if (row.candidates.length > 0) {
+    return row.candidates.map((candidate) => ({
+      source: candidate.source,
+      sourceLabel: evidenceSourceLabels[candidate.source],
+      date: candidate.date,
+      counterparty: candidate.counterparty,
+      amountKrw: candidate.amountKrw,
+      description: null,
+      basisLabel: matchCandidateReasonLabel(candidate.reason),
+    }))
+  }
+
+  return [
+    {
+      source: row.source,
+      sourceLabel: evidenceSourceLabels[row.source],
+      date: row.transactionDate,
+      counterparty: row.counterparty,
+      amountKrw: row.amountKrw,
+      description: row.description,
+      basisLabel: row.workPanelConclusion.basisLabel,
+    },
+  ]
 }
 
 export function matchCandidateReasonLabel(reason: ReconciliationMatchCandidateReason): string {

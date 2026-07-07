@@ -26,6 +26,7 @@ import {
   ReconciliationEvidenceCell,
   ReconciliationEvidencePickerModal,
   ReconciliationExplanationModal,
+  ReconciliationLinkedEvidenceModal,
 } from './reconciliation-ledger-fixture-interactions'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
@@ -81,6 +82,7 @@ export function ReconciliationLedgerDisplayFixtureView({
     }
     return null
   })
+  const [linkedEvidenceRowId, setLinkedEvidenceRowId] = useState<string | null>(null)
 
   const evidencePickerRow = useMemo(
     () => (evidencePicker ? rows.find((row) => row.id === evidencePicker.rowId) ?? null : null),
@@ -89,6 +91,10 @@ export function ReconciliationLedgerDisplayFixtureView({
   const explanationRow = useMemo(
     () => (explanationRowId ? rows.find((row) => row.id === explanationRowId) ?? null : null),
     [explanationRowId, rows],
+  )
+  const linkedEvidenceRow = useMemo(
+    () => (linkedEvidenceRowId ? rows.find((row) => row.id === linkedEvidenceRowId) ?? null : null),
+    [linkedEvidenceRowId, rows],
   )
 
   const sourceCounts = buildReconciliationDisplaySourceCounts(rows)
@@ -232,6 +238,7 @@ export function ReconciliationLedgerDisplayFixtureView({
                       key={row.id}
                       onOpenEvidencePicker={(source) => setEvidencePicker({ rowId: row.id, source })}
                       onOpenExplanation={() => setExplanationRowId(row.id)}
+                      onViewLinkedEvidence={() => setLinkedEvidenceRowId(row.id)}
                       row={row}
                     />
                   ))
@@ -268,6 +275,16 @@ export function ReconciliationLedgerDisplayFixtureView({
           }}
           open={explanationRow !== null}
           row={explanationRow}
+        />
+
+        <ReconciliationLinkedEvidenceModal
+          onOpenChange={(open) => {
+            if (!open) {
+              setLinkedEvidenceRowId(null)
+            }
+          }}
+          open={linkedEvidenceRow !== null}
+          row={linkedEvidenceRow}
         />
 
         <section className="grid gap-4 lg:grid-cols-2">
@@ -416,10 +433,12 @@ function BatchSuggestionBar({ groups }: { readonly groups: ReconciliationBatchSu
 function FixtureRow({
   onOpenEvidencePicker,
   onOpenExplanation,
+  onViewLinkedEvidence,
   row,
 }: {
   readonly onOpenEvidencePicker: (source: EvidenceFinderSource) => void
   readonly onOpenExplanation: () => void
+  readonly onViewLinkedEvidence: () => void
   readonly row: ReconciliationLedgerRow
 }) {
   const source = sourceLabels[row.source]
@@ -458,6 +477,7 @@ function FixtureRow({
         <ReconciliationEvidenceCell
           onOpenEvidencePicker={onOpenEvidencePicker}
           onOpenExplanation={onOpenExplanation}
+          onViewLinkedEvidence={onViewLinkedEvidence}
           row={row}
         />
       </td>

@@ -6,6 +6,7 @@ import {
   hasAiEvidenceSuggestion,
   listEvidenceFinderBrowseRows,
   matchesEvidenceFinderSource,
+  resolveLinkedEvidenceDisplay,
   shouldShowEvidenceFinder,
 } from './reconciliation-work-panel'
 
@@ -44,6 +45,16 @@ describe('reconciliation-work-panel', () => {
     }
 
     expect(shouldShowEvidenceFinder(linkedRow)).toBe(false)
+  })
+
+  it('resolves linked evidence from candidates or row fallback', () => {
+    const rentRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-rent-linked')
+    const interestRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-interest-income')
+    expect(rentRow).toBeDefined()
+    expect(interestRow).toBeDefined()
+
+    expect(resolveLinkedEvidenceDisplay(rentRow!)[0]?.source).toBe('tax_invoice')
+    expect(resolveLinkedEvidenceDisplay(interestRow!)[0]?.source).toBe('bank')
   })
 
   it('lists browse rows for evidence finder by source', () => {

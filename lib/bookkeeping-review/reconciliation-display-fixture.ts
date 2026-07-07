@@ -318,7 +318,19 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
       exclusionReason: null,
       matchState: 'matched',
       evidenceActionState: 'linked',
-      candidates: [],
+      candidates: [
+        {
+          id: 'linked-tax-rent-june',
+          source: 'tax_invoice',
+          rowId: 'preview-tax-rent-june',
+          date: '2026-06-19',
+          counterparty: '강남타워임대(주)',
+          amountKrw: 1_650_000,
+          taxAmountKrw: 165_000,
+          confidence: 'high',
+          reason: 'same_amount_same_day',
+        },
+      ],
       patternSuggestion: {
         suggestedAccount: '지급임차료',
         suggestedEvidenceSource: 'tax_invoice',
