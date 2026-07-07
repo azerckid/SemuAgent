@@ -25,11 +25,11 @@ describe('reconciliation-row-actions', () => {
     expect(computeRemainingDifferenceKrw(row!.amountKrw, row!.candidates)).toBe(112_000)
   })
 
-  it('shows AI 증빙 확인 for candidate rows with matches and still offers the evidence finder', () => {
+  it('shows 증빙있음 for candidate rows with matches and still offers the evidence finder', () => {
     const row = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-litnex')
     expect(row).toBeDefined()
     expect(hasAiEvidenceSuggestion(row!)).toBe(true)
-    expect(evidenceActionChipLabel(row!.evidenceActionState)?.label).toBe('AI 증빙 확인')
+    expect(evidenceActionChipLabel(row!.evidenceActionState)?.label).toBe('증빙있음')
     expect(shouldShowEvidenceFinder(row!)).toBe(true)
   })
 

@@ -170,7 +170,7 @@ export function evidenceActionChipLabel(
   state: ReconciliationLedgerRow['evidenceActionState'],
 ): { label: string; tone: 'ok' | 'warn' | 'danger' | 'muted' } | null {
   if (state === 'candidate') {
-    return { label: 'AI 증빙 확인', tone: 'warn' }
+    return { label: '증빙있음', tone: 'ok' }
   }
 
   if (state === 'linked') {

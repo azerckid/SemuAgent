@@ -312,13 +312,13 @@ function reconciliationStatus(row: BookkeepingReviewQueueRow): { label: string; 
   if (row.status === 'unclassified') return { label: '분류 필요', tone: 'danger', actionLabel: '분류' }
   if (hasMissingEvidenceBlocker(row)) return { label: '증빙 확인', tone: 'danger', actionLabel: '확인' }
   if (row.reconciliation.matchState === 'ambiguous') return { label: '대조 필요', tone: 'warn', actionLabel: '확인' }
-  if (row.reconciliation.matchState === 'candidate') return { label: 'AI 증빙 확인', tone: 'warn', actionLabel: '확인' }
+  if (row.reconciliation.matchState === 'candidate') return { label: '증빙있음', tone: 'ok', actionLabel: '보기' }
   if (row.status === 'confirmed') return { label: '확정', tone: 'ok', actionLabel: '보기' }
   return { label: '확인 필요', tone: 'warn', actionLabel: '확인' }
 }
 
 function evidenceStatus(row: BookkeepingReviewQueueRow): { label: string; tone: Tone } {
-  if (row.reconciliation.candidates.length > 0) return { label: 'AI 증빙 확인', tone: 'warn' }
+  if (row.reconciliation.candidates.length > 0) return { label: '증빙있음', tone: 'ok' }
   if (hasMissingEvidenceBlocker(row)) return { label: '증빙 필요', tone: 'danger' }
   if (row.status === 'confirmed') return { label: '확정 자료', tone: 'ok' }
   return { label: '원천 자료 확인', tone: 'warn' }
