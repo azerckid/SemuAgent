@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-08 03:25 KST
+> Last Updated: 2026-07-08 05:34 KST
 
 ## Status Legend
 
@@ -154,12 +154,15 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 회사 tenant/기간·전표 데이터 모델 확인 — [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) 기준 기존 bookkeeping 테이블 재사용, `clientId`→`businessEntityId` 개념 전환, 물리 rename은 JC-005 후속
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md)
   - [x] 자료대조원장 Phase 2 행동 계약 작성 — [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)
-  - [ ] 자료대조원장 Slice 2a read model 착수 전 검토 — 입출금↔증빙 후보·blocker 파생
+  - [x] 자료대조원장 Phase 2 implementation order 고정 — [Brief §2.1](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md) traceability across Prototype Review, §0.2, §8, §9, JC-010 AC
+  - [x] 자료대조원장 UI-first lite 순서 고정 — display contract + fixture를 실제 read model wiring보다 먼저 둠
+  - [ ] 자료대조원장 Slice 2a-0 display contract + fixture 착수 — Brief §2.1 step 2a-0 (ReconciliationLedgerDisplayModel, Preview 12 fixture, disabled actions)
+  - [ ] 자료대조원장 Slice 2a-5 full read model wiring 착수 — Brief §2.1 step 2a-5 (기간, action-state, 매칭, blocker, nextActions, taxBlockerSummaries, closingChecklist)
   - [x] 자료대조원장 반복 패턴 추천 계약 검토 — 전월/최근 확정 이력 기반 추천, 확정 row 정의, AI 추천과 패턴 추천 관계, 자동 확정 금지
   - [x] 자료대조원장 AI escalation/fallback 계약 검토 — 규칙→패턴→단일 AI→multi-provider consensus→수동 검토, LLM 실패·타임아웃 시 화면 비차단
   - [x] 자료대조원장 기간 단위·증빙 상태 용어 계약 검토 — 월/분기/반기/연/사용자 지정, "증빙없음"은 최종 상태가 아니라 증빙 필요·소명 필요·소명 완료·증빙 예외·제외됨으로 표시
   - [x] 자료대조원장 편의성 계약 검토 — 다음 할 일 큐, 일괄 제안 수락, 패널 한 줄 결론, 자료수집 역링크, 세목별 차단 이유, 마감 체크리스트, 최근 적용 취소
-  - [ ] 자료대조원장 Slice 2b mutation mapping 착수 전 검토 — 계정확정·소명·제외 사유 저장
+  - [ ] 자료대조원장 Slice 2b mutation mapping 착수 전 검토 — Brief §2.1 steps 2b-1..2b-3 (계정·소명·제외·증빙 연결·패턴 수락/거부·최근 적용 취소)
   - [ ] 자료대조원장 Slice 2c durable match-link schema 필요 여부 판단
 - Acceptance Criteria:
   - [x] 정규화된 거래가 분류 큐에 AI 추천 계정과목·신뢰도와 함께 표시된다.
@@ -182,7 +185,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 우측 작업 패널은 한 줄 결론을 먼저 보여주고, 부족한 자료는 자료수집 역링크로 연결하며, 최근 적용 1건을 취소할 수 있다.
   - [ ] 자료대조원장에서 계정항목 확정·사용내역 소명·업무무관/사적 사용 제외 사유가 한 화면 흐름으로 처리된다.
   - [ ] 세목별 Path 1 양식·파일 생성은 자료대조원장 blocker가 해소된 확정 거래만 사용한다.
-- Document Sync Check: Screen Flow 4c / UI Design 4.3+4.3a / Prototype Review / Preview / Component Plan 7.3 / Pre-Code Brief / QA Scenarios 상호 링크됨. 2026-07-08: "자료대조원장"은 신고 준비 하위가 아니라 기장검토 하위 진입점으로 정리했고, 전용 Preview(12)에서 통장·카드·세금계산서·현금영수증 대조 원장 구조를 승인했다. `/dashboard/bookkeeping`은 기장검토 분류 큐로 유지하고, `/dashboard/bookkeeping/reconciliation-ledger` 전용 라우트 1차 구현으로 자료대조원장 화면을 분리한다. 1차 구현은 기존 classification read model을 재사용한다. 2026-07-08 02:01: Phase 2 Brief(41)로 입출금↔증빙 후보, 계정확정, 사용내역 소명 모달, 제외 사유 taxonomy, 세목별 Path 1 blocker 계약을 고정했다. 2026-07-08 03:12: 현재 앱의 자료대조원장은 아직 1차 slice이며 완성형이 아니다. 완성 기준은 우측 작업 패널, 통장 입출금↔세금계산서 매칭, 카드↔증빙 연결, 증빙 찾기, 사용내역/소명 입력, AI 계정 추천과 불확실 항목 사용자 선택, 사적·업무무관 의심 표시, 제외 사유 선택, 계정항목 인라인 수정까지 포함한다. 전월/최근 확정 패턴은 계정·증빙·제외 추천의 근거로만 사용하며, 사용자의 수락/변경/거부 없이 자동 확정하지 않는다. AI 판단은 규칙→패턴→단일 AI→multi-provider consensus→수동 검토 fallback 순서로 단계화하고, LLM 실패·타임아웃·quota·provider disagreement가 화면 렌더나 사용자 검토를 막지 않도록 Brief 41에 비차단 런타임 계약을 추가했다. 2026-07-08 04:02: 자료대조원장 기간 단위는 월/분기/반기/연/사용자 지정으로 고정하고, 기본값은 원천세 월·부가세 기간·간이지급 반기·사업장현황신고 연 등 진입한 신고 맥락에 맞춘다. "증빙없음"은 완료 상태가 아니라 내부 원인/문제이므로 화면에는 증빙 필요·소명 필요·소명 완료·증빙 예외·제외됨처럼 사용자 행동과 해결 상태를 표시한다. 2026-07-08 04:51: 편의성 계약 추가 — 기본 흐름은 다음 할 일 큐로 막힌 항목을 우선 처리하고, 우측 패널 한 줄 결론·세목별 차단 이유·마감 체크리스트·자료수집 역링크·안전한 반복 패턴 일괄 수락·최근 적용 취소를 제공한다. 분할/묶음 editor, 장문 소명 초안, 별도 규칙 저장, 빠른/전체 모드 분리는 후속으로 보류한다. 자동 매칭 엔진·신규 DB는 Brief 41의 Slice 2c 조건 없이는 도입하지 않는다. 구현 파일: `lib/bookkeeping-review/summary.ts`, `app/(dashboard)/dashboard/bookkeeping/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.tsx`, `app/(dashboard)/dashboard/bookkeeping/loading.tsx`, `app/(dashboard)/dashboard/bookkeeping/error.tsx`, `app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/_components/reconciliation-ledger.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.test.tsx`.
+- Document Sync Check: Screen Flow 4c / UI Design 4.3+4.3a / Prototype Review / Preview / Component Plan 7.3 / Pre-Code Brief / QA Scenarios 상호 링크됨. 2026-07-08: "자료대조원장"은 신고 준비 하위가 아니라 기장검토 하위 진입점으로 정리했고, 전용 Preview(12)에서 통장·카드·세금계산서·현금영수증 대조 원장 구조를 승인했다. `/dashboard/bookkeeping`은 기장검토 분류 큐로 유지하고, `/dashboard/bookkeeping/reconciliation-ledger` 전용 라우트 1차 구현으로 자료대조원장 화면을 분리한다. 1차 구현은 기존 classification read model을 재사용한다. 2026-07-08 02:01: Phase 2 Brief(41)로 입출금↔증빙 후보, 계정확정, 사용내역 소명 모달, 제외 사유 taxonomy, 세목별 Path 1 blocker 계약을 고정했다. 2026-07-08 03:12: 현재 앱의 자료대조원장은 아직 1차 slice이며 완성형이 아니다. 완성 기준은 우측 작업 패널, 통장 입출금↔세금계산서 매칭, 카드↔증빙 연결, 증빙 찾기, 사용내역/소명 입력, AI 계정 추천과 불확실 항목 사용자 선택, 사적·업무무관 의심 표시, 제외 사유 선택, 계정항목 인라인 수정까지 포함한다. 전월/최근 확정 패턴은 계정·증빙·제외 추천의 근거로만 사용하며, 사용자의 수락/변경/거부 없이 자동 확정하지 않는다. AI 판단은 규칙→패턴→단일 AI→multi-provider consensus→수동 검토 fallback 순서로 단계화하고, LLM 실패·타임아웃·quota·provider disagreement가 화면 렌더나 사용자 검토를 막지 않도록 Brief 41에 비차단 런타임 계약을 추가했다. 2026-07-08 04:02: 자료대조원장 기간 단위는 월/분기/반기/연/사용자 지정으로 고정하고, 기본값은 원천세 월·부가세 기간·간이지급 반기·사업장현황신고 연 등 진입한 신고 맥락에 맞춘다. "증빙없음"은 완료 상태가 아니라 내부 원인/문제이므로 화면에는 증빙 필요·소명 필요·소명 완료·증빙 예외·제외됨처럼 사용자 행동과 해결 상태를 표시한다. 2026-07-08 04:51: 편의성 계약 추가 — 기본 흐름은 다음 할 일 큐로 막힌 항목을 우선 처리하고, 우측 패널 한 줄 결론·세목별 차단 이유·마감 체크리스트·자료수집 역링크·안전한 반복 패턴 일괄 수락·최근 적용 취소를 제공한다. 분할/묶음 editor, 장문 소명 초안, 별도 규칙 저장, 빠른/전체 모드 분리는 후속으로 보류한다. 자동 매칭 엔진·신규 DB는 Brief 41의 Slice 2c 조건 없이는 도입하지 않는다. 2026-07-08 05:12: Brief §2.1로 Phase 2 implementation order(2a-0..2d)와 Prototype/§0.2/§8/§9/Backlog AC traceability를 고정했고, 2a-0 display model shape(`nextActions`, `taxBlockerSummaries`, `closingChecklist`, `batchSuggestionGroups`, row-level `workPanelConclusion`)와 Component Plan §7.3a 컴포넌트 목록을 보강했다. 2026-07-08 05:23: UI-first lite 순서를 추가해 2a-0 display contract + Preview 12 fixture를 먼저 만들고, 2a-2/2a-3/2a-4 UI가 이 display model만 읽도록 한 뒤, 2a-5 full read model wiring으로 fixture를 실데이터로 교체하는 순서로 고정했다. 구현 파일: `lib/bookkeeping-review/summary.ts`, `app/(dashboard)/dashboard/bookkeeping/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.tsx`, `app/(dashboard)/dashboard/bookkeeping/loading.tsx`, `app/(dashboard)/dashboard/bookkeeping/error.tsx`, `app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/page.tsx`, `app/(dashboard)/dashboard/bookkeeping/reconciliation-ledger/_components/reconciliation-ledger.tsx`, `app/(dashboard)/dashboard/bookkeeping/_components/bookkeeping-review.test.tsx`.
 
 ### JC-011 · Build VAT workspace (부가세) — 신규
 

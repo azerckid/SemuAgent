@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-04 00:20
+> Last Updated: 2026-07-08 05:23 KST
 
 ## 1. 목적 및 범위
 
@@ -114,15 +114,23 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 |:---|:---|:---|
 | Reconciliation Readiness Hero | 커스텀 `ReconciliationLedgerHero` - Path 1 데이터 관문 준비율 | `card` + `progress` + metrics |
 | Source Summary Cards | 커스텀 `ReconciliationSourceSummary` | `card` grid + status chip |
+| Next Action Queue | 커스텀 `ReconciliationNextActionQueue` | `card`/button list + priority chip |
 | Source Tabs / Filters | 커스텀 `ReconciliationLedgerFilters` | segmented tabs + search input + display settings button |
 | Reconciliation Ledger Table | 커스텀 `ReconciliationLedgerTable` | dense `table`, source marker, linked evidence chip, account/counterparty controls |
 | Evidence Link Status | 공용 `StatusChip` 확장 | ok/warn/danger/muted |
+| Work Panel Conclusion | 커스텀 `ReconciliationWorkPanelConclusion` | 선택 행 한 줄 결론 + primary action |
+| Batch Suggestion Bar | 커스텀 `ReconciliationBatchSuggestionBar` | 동일 근거 반복 제안 그룹 + 명시 확인 버튼 |
 | Exclusion Review Action | 커스텀 row action group | 업무사용/제외/메모 버튼 |
 | Tax File Gate Panel | 커스텀 `TaxFileReadinessPanel` | line list + status chip |
+| Tax Blocker Reasons | 커스텀 `ReconciliationTaxBlockerReasons` | 세목별 blocker reason list |
+| Closing Checklist | 커스텀 `ReconciliationClosingChecklist` | 증빙·소명·계정·제외·세목 blocker zero-state |
+| Source Back Link / Recent Undo | 커스텀 `ReconciliationResolutionActions` | 자료수집 context link + 최근 적용 1건 취소 |
 | State(로딩/빈/오류/권한 없음) | 공용 재사용 | skeleton + empty/error/no-permission state |
 
 - 신규 라이브러리 없음. 사용자 제공 Clobe 참고 화면은 dense source ledger UX의 참고일 뿐, SemuAgent 컴포넌트는 기존 card/table/chip/button 패턴으로 만든다.
 - 자료대조원장은 기존 기장검토 분류 큐를 대체하지 않고, Path 1 양식 생성 전 증빙 연결·계정확정·제외 검토를 한 화면에서 점검하는 하위 관문으로 구현한다.
+- 기본 흐름은 `ReconciliationNextActionQueue`에서 시작하고, 출처 탭은 보조 탐색으로 둔다. 일괄 수락은 같은 근거·같은 추천을 가진 안전한 그룹에만 노출한다.
+- UI-first lite 단계에서는 모든 자료대조원장 컴포넌트가 `ReconciliationLedgerDisplayModel` fixture를 입력으로 받아 렌더링하고, 저장/연결/확정 버튼은 2b mutation 전까지 disabled 또는 준비 중 상태로 표시한다.
 
 ### 7.4 부가세 (UI Design 4.4)
 
