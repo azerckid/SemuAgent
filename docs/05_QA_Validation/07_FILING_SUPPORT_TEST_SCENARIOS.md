@@ -5,7 +5,7 @@
 신고지원(JC-013) Layer 5 QA 시나리오. [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
 
-핵심: **Preview UI 계약 준수**, 부가세·급여 산출물 연동, 홈택스 입력 가이드, 접수증 보관,
+핵심: **Preview UI 계약 준수**, 부가세·급여 산출물 연동, 신고 준비값 확인, 접수증 보관,
 사후 체크리스트, 자동 제출/납부 비범위, tenant/사업장 범위 격리.
 
 표기: Result 범례 - `PASS·단위` / `PASS·구현` / `Pending`(도메인별 후속 E2E).
@@ -27,10 +27,10 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-01 | 인증 tenant + 사업장 + VAT/payroll 산출물 | `/dashboard/filing-support` 진입 | 책임 경계 배너 -> 신고 항목 -> 입력 가이드/접수증 -> 체크리스트 순서 | PASS·구현 |
+| S-01 | 인증 tenant + 사업장 + VAT/payroll 산출물 | `/dashboard/filing-support` 진입 | 책임 경계 배너 -> 신고 항목 -> 준비값 확인/접수증 -> 체크리스트 순서 | PASS·구현 |
 | S-02 | 사이드바 "신고지원" | 클릭 | `/dashboard/filing-support` 이동 | PASS·구현 |
 | S-03 | 승인 Preview 기준 데이터 | 렌더 | 부가세 패키지 대기, 원천세 패키지 준비됨, 4대보험 확인 필요 흐름 재현 | PASS·단위 |
-| S-04 | 하단 안내 | 렌더 | 자동 제출/납부가 아니라 패키지·입력 가이드·접수증 보관까지임을 표시 | PASS·구현 |
+| S-04 | 하단 안내 | 렌더 | 자동 제출/납부가 아니라 패키지·준비값 확인·접수증 보관까지임을 표시 | PASS·구현 |
 
 ### 2.2 기간·사업장 컨텍스트
 
@@ -52,14 +52,14 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-23 | payroll insuranceStatementStatus 미생성 또는 noticeImportStatus!=matched | 렌더 | 4대보험 항목 "확인 필요" | PASS·단위 |
 | S-24 | 선행 산출물 없음 | 렌더 | 해당 항목은 locked/needs_review로 표시하고 선행 화면 CTA 제공 | PASS·구현 |
 
-### 2.4 홈택스 입력 가이드
+### 2.4 신고 준비값 확인
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
 | S-30 | payroll employeeCount=12 | 원천세 가이드 렌더 | 인원 12명 표시 | PASS·단위 |
 | S-31 | payroll grossPayKrw=42,600,000 | 원천세 가이드 렌더 | 총지급액 42,600,000원 표시 | PASS·단위 |
 | S-32 | payroll withholdingTaxKrw=2,100,000 | 원천세 가이드 렌더 | 소득세/지방소득세 합계 또는 세부 값 표시 | PASS·단위 |
-| S-33 | "가이드 값 복사" | 클릭 | clipboard 복사만 수행, DB mutation 없음 | PASS·구현 |
+| S-33 | "준비값 복사" | 클릭 | clipboard 복사만 수행, DB mutation 없음 | PASS·구현 |
 | S-34 | 홈택스 가이드 영역 | 렌더 | "자동 제출 아님" 문구 표시 | PASS·구현 |
 
 ### 2.5 접수증 보관

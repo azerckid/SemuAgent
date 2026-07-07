@@ -235,7 +235,7 @@ export function ClientDocumentsPanel({
                 </div>
                 {documentType === '기타' && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-600">직접 입력</label>
+                    <label className="block text-xs font-medium text-gray-600">수동 작성</label>
                     <input
                       value={customType}
                       onChange={(event) => setCustomType(event.target.value)}

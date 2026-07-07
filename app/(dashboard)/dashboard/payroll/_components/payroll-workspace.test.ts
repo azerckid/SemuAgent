@@ -78,7 +78,7 @@ describe('payroll workspace static contract (JC-012)', () => {
     }
   })
 
-  it('keeps insurance notice import as upload/manual input without credential storage (S-35~37)', () => {
+  it('keeps insurance notice import as upload/manual confirmation without credential storage (S-35~37)', () => {
     expect(noticeImportRouteSource).toContain('payrollInsuranceNoticeImportSchema.safeParse')
     expect(noticeImportRouteSource).toContain("storageKey: null")
     expect(noticeImportRouteSource).toContain('matchKeyHash')

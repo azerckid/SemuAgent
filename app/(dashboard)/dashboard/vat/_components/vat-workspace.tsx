@@ -360,7 +360,7 @@ function StateCoverageSection() {
 function PreviewNote() {
   return (
     <p className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
-      <b className="text-company-fg-muted">책임 경계</b> — 세무 에이전트는 부가세 세액 집계, 공제 검토, 신고 패키지 초안과 홈택스 입력 가이드까지만 지원합니다.
+      <b className="text-company-fg-muted">책임 경계</b> — 세무 에이전트는 부가세 세액 집계, 공제 검토, 신고 패키지 초안과 신고 준비값 확인까지만 지원합니다.
       자동 홈택스 제출, 자동 납부, 외부 세무사 대행 흐름은 v1 범위 밖입니다.
     </p>
   )

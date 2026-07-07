@@ -1,6 +1,6 @@
 # JC-030 — 세무프로그램 적합성 검정(전자신고 파일변환) 조사
 > Created: 2026-07-07 03:00 KST
-> Last Updated: 2026-07-07 03:00 KST
+> Last Updated: 2026-07-07 19:45 KST
 
 ## 0. Flow Status
 
@@ -57,14 +57,13 @@ SemuAgent가 이 인증을 받지 못하면 파일변환신고 경로 자체가 
 
 ## 5. Decision Gate
 
-**신청 여부는 조사 완료 전까지 보류한다.** 심사 기간이 길거나 소규모 서비스 신청이 어렵다고 확인되면,
-JC-030 파일변환신고 경로 자체의 v1 우선순위를 낮추고 [직접입력 가이드 확장](./33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md)
-쪽에 무게를 싣는 재검토가 필요하다.
+**신청 여부는 조사 완료 전까지 보류한다.** 심사 기간이 길거나 소규모 서비스 신청이 어렵다고 확인되어도,
+SemuAgent의 대안은 홈택스 화면에 값을 옮겨 적도록 안내하는 방식이 아니다. Path 1은 공식 양식·전산매체 규격에 맞춘
+업로드용 파일/양식 작성 지원으로 유지하고, 검정이 필요한 파일변환 경로는 Path 3로 분리한다.
 
 ## 6. Related Documents
 
 - [NTS Crypto Spec Acquisition §4.2](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) — 적합성 검정 언급 출처
 - [Layout Acquisition §3.4](./28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md) — 국세청 문의 연락처
 - [JC-023 Hometax Autosubmit Research](./13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 적합성 검정을 최종 관문으로 전제한 기존 분석
-- [Simplified Wage Direct Input Guide Scope Gate](./33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md) — 파일변환신고가 막힐 경우의 대안 경로
 - [Backlog JC-030](../04_Logic_Progress/00_BACKLOG.md)

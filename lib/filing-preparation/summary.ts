@@ -388,7 +388,7 @@ export function buildTracks(
       output: businessStatus && type === 'tax_exempt'
         ? `수입금액 ${formatKrw(businessStatus.revenueTotalKrw)} · 누락/미확정 ${businessStatus.attention}건`
         : '면세 개인사업자 사업장현황신고 준비 데이터',
-      handoffLabel: 'handoff: 홈택스 사업장현황신고 직접 입력',
+      handoffLabel: 'handoff: 사업장현황신고 준비값 확인',
       href: isTrackApplicable('business_status', type)
         ? '/dashboard/filing-preparation/business-status-report'
         : null,

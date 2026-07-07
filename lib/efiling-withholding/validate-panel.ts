@@ -41,7 +41,7 @@ export function validateWithholdingPanel(input: ValidateWithholdingPanelInput): 
       issue(
         'W-V-04',
         'error',
-        'JC-013 입력 가이드 값과 A01 집계가 일치하지 않습니다. 급여·지방소득세 집계를 다시 확인하세요.',
+        'JC-013 신고 준비값과 A01 집계가 일치하지 않습니다. 급여·지방소득세 집계를 다시 확인하세요.',
       ),
     )
   }

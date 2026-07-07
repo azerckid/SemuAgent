@@ -326,7 +326,7 @@ export function buildVatPackagePreview(params: {
   if (params.taxSummary.pendingDeductionCount > 0) {
     return {
       fileName,
-      description: 'PDF 초안과 홈택스 입력 가이드는 공제 검토 완료 후 생성됩니다.',
+      description: 'PDF 초안과 신고 준비값 확인은 공제 검토 완료 후 생성됩니다.',
       locked: true,
       lockReason: `공제 검토 ${params.taxSummary.pendingDeductionCount}건 완료 후 생성`,
       canGenerate: false,
@@ -334,7 +334,7 @@ export function buildVatPackagePreview(params: {
   }
   return {
     fileName,
-    description: params.packageStorageKey ? '생성된 패키지 초안이 보관되어 있습니다.' : 'PDF 초안과 홈택스 입력 가이드를 생성할 수 있습니다.',
+    description: params.packageStorageKey ? '생성된 패키지 초안이 보관되어 있습니다.' : 'PDF 초안과 신고 준비값 확인 자료를 생성할 수 있습니다.',
     locked: false,
     lockReason: null,
     canGenerate: params.packageStatus !== 'generated',

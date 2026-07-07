@@ -496,7 +496,7 @@ export function ScheduleCreateForm({
             onChange={(e) => setForm((prev) => ({ ...prev, analysisCriteria: e.target.value }))}
             maxLength={10000}
             rows={6}
-            placeholder="제출 자료 AI 검토에 사용할 기준을 직접 입력합니다."
+            placeholder="제출 자료 AI 검토에 사용할 기준을 작성합니다."
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
           />
         </div>

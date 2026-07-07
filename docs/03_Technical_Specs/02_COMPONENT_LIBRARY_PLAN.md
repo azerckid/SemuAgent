@@ -123,7 +123,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 신규 shadcn 없음. `progress`/`skeleton`과 기존 `card`/`badge`/`button`/`table` 재사용.
 - 패키지 생성 버튼은 공제 검토 완료 전 `disabled` + `aria-disabled="true"` + visible locknote를 사용한다. 브라우저별 `title` 툴팁에 의존하지 않는다.
 - 부가세 화면은 회사용 `/dashboard/vat`로 새로 구성하며, GIWA `/dashboard/reviews` 워크스페이스 컴포넌트를 import/render하지 않는다.
-- 자동 홈택스 제출·자동 납부 UI는 만들지 않는다. 홈택스 입력 가이드는 JC-013 신고지원에서 최종 연결한다.
+- 자동 홈택스 제출·자동 납부 UI는 만들지 않는다. 신고 준비값 확인과 접수증 보관은 JC-013 신고지원에서 최종 연결한다.
 
 ### 7.5 급여 (UI Design 4.5)
 
@@ -151,7 +151,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 | Responsibility Banner | 커스텀 `FilingResponsibilityBanner` | `card` 계열 컨테이너 + 상태 아이콘 |
 | Filing Item Card/List | 커스텀 `FilingItemList` / `FilingItemCard` | `card` + `badge` + `button` |
 | Filing Package Actions | 커스텀 `FilingPackageActions` | `button` + 공용 `LockedActionButton` |
-| Hometax Input Guide | 커스텀 `FilingInputGuide` | 단계 리스트 + `button`(값 복사) |
+| Filing Preparation Values | 커스텀 `FilingPreparationValues` | 단계 리스트 + `button`(값 복사) |
 | Receipt Storage | 커스텀 `FilingReceiptList` / `ReceiptUploadButton` | 파일 입력 + `button` + `badge` |
 | Post-filing Checklist | 커스텀 `FilingChecklist` | checkbox/버튼형 토글 + 상태 텍스트 |
 | State(로딩/빈/오류) | 공용 재사용 | `skeleton` + `button` |
@@ -205,7 +205,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 회사 홈: **읽기 전용** — Server Component에서 데이터 페치, 클라이언트 상태 최소.
 - 자료수집: 업로드/정규화 **mutation 발생** — 업로드 진행·오류는 로컬 컴포넌트 상태 + `sonner` 토스트. 목록 갱신은 서버 재검증.
 - 급여: 직원 line 수정·고지액 import/match·명세서 생성·마감 **mutation 발생** — 로컬 입력 상태 + `sonner` 토스트, 성공 후 서버 재검증.
-- 신고지원: 접수증 업로드/삭제·체크리스트 토글 **mutation 발생** — 성공 후 서버 재검증. 가이드 값 복사는 클라이언트 clipboard만 사용하고 DB mutation 없음.
+- 신고지원: 접수증 업로드/삭제·체크리스트 토글 **mutation 발생** — 성공 후 서버 재검증. 준비값 복사는 클라이언트 clipboard만 사용하고 DB mutation 없음.
 - 기간 컨텍스트는 URL 파라미터로 관리(전역 스토어 미도입).
 
 ## 10. 미결/후속
@@ -230,7 +230,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) - 기장검토 분류 큐·승인 mutation·Preview 계약
 - **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 세액 집계·공제 검토·패키지 잠금 계약
 - **Technical_Specs**: [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md) - 급여대장·고지액 매칭·마감 잠금 계약
-- **Technical_Specs**: [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) - 신고 항목·입력 가이드·접수증 보관 계약
+- **Technical_Specs**: [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) - 신고 항목·준비값 확인·접수증 보관 계약
 - **Technical_Specs**: [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) - 샘플 banner/dialog 컴포넌트 계약
 - **Technical_Specs**: [Business Status Report Pre-Code Brief](./23_BUSINESS_STATUS_REPORT_PRE_CODE_BRIEF.md) - 사업장현황신고 read-only 집계·허브 트랙 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-006/JC-009/JC-010/JC-011/JC-012/JC-013 Context Lock

@@ -1,6 +1,6 @@
 # Path 1 — Hometax Form Fill Roadmap
 > Created: 2026-07-07 04:20 KST
-> Last Updated: 2026-07-07 04:40 KST
+> Last Updated: 2026-07-07 19:45 KST
 
 ## 0. Governing Principle
 
@@ -19,7 +19,7 @@ Path 2 (JC-034 GIWA ZIP)와 Path 3 (인증·암호화)는 Path 1 Validation·세
 
 ```text
 [Flow]
-현재: Path 1 세목 확대 — 홈택스 양식 기입·신고 보조가 최우선
+현재: Path 1 세목 확대 — 홈택스 업로드용 양식·파일 작성 지원이 최우선
 완료: 근로소득 간이지급명세서 — layout·mapping·Path 1 구현 (JC-030)
 다음: 원천세 — 바이너리 스펙 입수 → UI-First → 구현 1a ([Layout](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) Slice 0b 완료)
 보류: JC-034 Path 2 ZIP 구현 (문서만 완료, 코드 착수 대기)
@@ -50,7 +50,7 @@ Path 2 (JC-034 GIWA ZIP)와 Path 3 (인증·암호화)는 Path 1 Validation·세
 | 2 | **원천세 신고서** | JC-012, JC-013, JC-027 | **Slice 0b 완료** | 없음 | [37](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md) · [38](./38_JC030_WITHHOLDING_EFILING_FIELD_MAPPING.md) |
 | 3 | **부가가치세** | JC-011, JC-013 | 미확정 | 없음 | 분기; 레이아웃 입수 경로 선행 조사 |
 | 4 | **지방소득세(원천 특별징수)** | JC-027 | 위택스 별도 | 없음 | 원천세 Path 1 후 또는 병렬 layout 조사 |
-| 5 | **사업장현황신고** | JC-028 | 미착수 | 없음 | 면세 개인; 홈택스 직접 입력 비중 큼 |
+| 5 | **사업장현황신고** | JC-028 | 미착수 | 없음 | 면세 개인; 공식 업로드 양식·파일 입수 전까지 Path 1 미착수 |
 | — | 연말 지급명세서(1175) | JC-024 year-end prep | 별도 요령 | 없음 | 간이지급과 레이아웃 분리 |
 | — | 종합소득세·법인세 | JC-025/026 | 후순위 | 없음 | 법무 게이트 |
 
@@ -84,7 +84,7 @@ Path 2 (JC-034 GIWA ZIP)와 Path 3 (인증·암호화)는 Path 1 Validation·세
 | **Path 1** | 본 문서 — **최우선** |
 | **Path 2 (JC-034)** | 각 세목 Path 1 Validation 출력을 ZIP에 포함. **구현은 Path 1 세목 2개 이상 안정 후** |
 | **Path 3** | plain 파일 한계 대체. 인증·fcrypt 후 |
-| **JC-013** | 홈택스 **수동 입력 가이드**는 유지; Path 1이 **파일 생성**을 담당 |
+| **JC-013** | 기존 신고지원은 준비값 확인·접수증 보관 역할로 유지; Path 1은 **업로드용 양식·파일 작성**을 담당 |
 
 ## 5. Documentation Sync Checklist
 

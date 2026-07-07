@@ -95,7 +95,7 @@ export function buildWithholdingEfilingSummary(params: {
     validationItems.push({
       id: 'structural:a01-guide',
       tone: 'ok',
-      message: 'A01 ④⑤⑥ — JC-013 입력 가이드와 일치 · 서식 집계 준비됨',
+      message: 'A01 ④⑤⑥ — JC-013 신고 준비값과 일치 · 서식 집계 준비됨',
     })
   }
 
