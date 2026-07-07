@@ -42,13 +42,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '사업장을 먼저 등록해 주세요.' }, { status: 404 })
     }
 
-    if (ctx.business.submitterKind === 'corporation' && !body.representativeId) {
-      return NextResponse.json(
-        { error: '법인 사업장은 법인등록번호(13자리) 입력이 필요합니다.', field: 'representativeId' },
-        { status: 400 },
-      )
-    }
-
     const buildInput = assembleBuildInput(ctx, body)
     const result = buildSimplifiedWageRecords(buildInput)
 
