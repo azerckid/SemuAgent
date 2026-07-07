@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-07 04:10 KST
+> Last Updated: 2026-07-07 19:45 KST
 
 ## 0. Purpose
 
@@ -14,7 +14,7 @@ Rule: an open backlog item may not start implementation unless its completion co
 |---|---|---|
 | 신고 준비 기능 | Prepares reviewable data for any filing path | JC-025, JC-026, JC-028 |
 | 공통 검증 | Validates confirmed data against official layout (Path 1 & 2) | JC-030 Validation |
-| Path 1 제출 준비물 | Plain e-filing files + Hometax upload guide for self-filing | JC-030 Path 1, JC-013 |
+| Path 1 제출 준비물 | 홈택스 업로드용 양식·파일 작성 지원 | JC-030 Path 1, JC-013 |
 | Path 2 사무소 handoff | ZIP/package for JARYO-GIWA (자료기와) | JC-034 |
 | Path 3 인증 제출 준비물 | Encrypted Hometax-uploadable files after certification | JC-030 Path 3 |
 | 제출 자동화 | Attempts submission after explicit user approval | JC-023 |
@@ -148,14 +148,14 @@ Non-goals before done:
 
 Type: 공통 검증 + Path 1 plain files + Path 3 encrypted files (future).
 
-Current gate: **JC-030 v1** (Slices 1a–2a, 3) **complete** on main — plain·검증·홈택스 안내 실사용 가능. **Slice 2b** (fcrypt·윈도우 microservice) is a **separate deferred track** per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md); Windows DLL execution + Hometax round-trip before code. **Open risk (2026-07-07):** the file-conversion path itself may require [software conformance certification](./32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) that SemuAgent has not obtained — NTS inquiry pending. Alternate direct-input path: [JC-033](./33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md).
+Current gate: **JC-030 v1** (Slices 1a–2a, 3) **complete** on main — plain·검증·홈택스 업로드 안내 실사용 가능. **Slice 2b** (fcrypt·윈도우 microservice) is a **separate deferred track** per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md); Windows DLL execution + Hometax round-trip before code. **Open risk (2026-07-07):** the file-conversion path itself may require [software conformance certification](./32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) that SemuAgent has not obtained — NTS inquiry pending. Hometax screen transcription guidance is explicitly excluded from Path 1 and from JC-030 follow-up scope.
 
 **3 Filing Paths (2026-07-07):** JC-030 is **not closed**. It has three layers:
 
 | Layer | Filing Path | Status |
 |---|---|---|
 | **Validation** | Path 1 & 2 공통 | Implemented (Slices 1a–2a·3) |
-| **Path 1** | 양식 파일 + 홈택스 안내 | Implemented (plain SC·guide UI) |
+| **Path 1** | 홈택스 업로드용 양식·파일 작성 | Implemented (plain SC·upload guide UI) |
 | **Path 3** | 인증·암호화 업로드 파일 | Deferred (Slice 2b·적합성 검정) |
 
 #### Validation — 공통 검증 (Path 1 & 2)
@@ -173,16 +173,16 @@ Remaining:
 - [ ] JC-034 v1 consumes validation output in ZIP
 - [ ] UI shows Path 1·2·3 boundaries clearly (separate UI PR)
 
-#### Path 1 — 양식 파일 + 홈택스 업로드 안내
+#### Path 1 — 홈택스 업로드용 양식·파일 작성 지원
 
 Current state: plain SC download + Hometax conversion upload guide on main.
 
 Done means (Path 1, per tax type v1):
 
 - User can download plain e-filing file candidates from validated preparation data.
-- Hometax step-by-step upload guide is shown (JC-013 alignment).
+- Hometax upload guide is shown for the prepared artifact.
 - UI states plain-file limits until Path 3 certification exists.
-- User uploads and submits directly; SemuAgent does not log in or submit.
+- User uploads the prepared form/file and submits directly; SemuAgent does not log in, copy-type values into Hometax, or submit.
 
 #### Path 3 — 인증 후 암호화 파일 (future)
 
@@ -203,6 +203,7 @@ Non-goals (all JC-030 layers):
 - User-approved auto-submit (JC-023).
 - Tax-representative marketplace positioning.
 - File types without an official current layout.
+- Hometax screen transcription guide.
 
 ### JC-034 — GIWA handoff package (Path 2 · ZIP Export v1)
 

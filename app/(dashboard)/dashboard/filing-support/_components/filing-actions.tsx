@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import type { FilingItemType, FilingReceiptRow } from '@/lib/filing-support/summary'
 import { cn } from '@/lib/utils'
 
-export function FilingGuideCopyButton({ payload }: { readonly payload: string }) {
+export function FilingPreparationValueCopyButton({ payload }: { readonly payload: string }) {
   const [copied, setCopied] = useState(false)
 
   return (
@@ -16,11 +16,11 @@ export function FilingGuideCopyButton({ payload }: { readonly payload: string })
       onClick={async () => {
         await navigator.clipboard.writeText(payload)
         setCopied(true)
-        toast.success('가이드 값을 복사했습니다.')
+        toast.success('준비값을 복사했습니다.')
         window.setTimeout(() => setCopied(false), 1500)
       }}
     >
-      {copied ? '복사됨' : '가이드 값 복사'}
+      {copied ? '복사됨' : '준비값 복사'}
     </button>
   )
 }

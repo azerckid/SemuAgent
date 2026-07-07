@@ -93,7 +93,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 |:---|:---|:---|:---|:---:|
 | S-70 | VAT 화면 컴포넌트 | 정적 분석 | `/dashboard/reviews` 워크스페이스 컴포넌트 미import | PASS·단위 |
 | S-71 | VAT 화면 문구 | 렌더 | "자동 제출", "자동 납부", "외부 세무사" 흐름 없음 | PASS·단위 |
-| S-72 | package CTA | 렌더 | 홈택스 제출 버튼이 아니라 패키지 생성/입력 가이드 경계 | PASS·단위 |
+| S-72 | package CTA | 렌더 | 홈택스 제출 버튼이 아니라 패키지 생성/준비값 확인 경계 | PASS·단위 |
 | S-73 | 파일/패키지 표시 | 렌더 | private storage key·blob URL 미노출 | Pending |
 
 ### 2.9 상태(State) 커버리지

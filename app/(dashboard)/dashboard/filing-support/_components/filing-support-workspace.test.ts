@@ -21,7 +21,7 @@ describe('filing support workspace static contract (JC-013)', () => {
     const sectionOrder = [
       'ResponsibilityBanner',
       'FilingItemsSection',
-      'InputGuideCard',
+      'PreparationValuesCard',
       'ReceiptsCard',
       'ChecklistSection',
       'StateCoverageSection',
@@ -122,8 +122,8 @@ describe('filing support workspace static contract (JC-013)', () => {
 
     for (const token of [
       '신고 항목 · 첨부 패키지',
-      '홈택스 입력 가이드 · 원천세',
-      '가이드 값 복사',
+      '신고 준비값 확인 · 원천세',
+      '준비값 복사',
       '제출 접수증 보관',
       '사후 체크리스트',
       '화면 상태 예시',

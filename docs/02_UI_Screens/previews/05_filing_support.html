@@ -99,13 +99,13 @@
   .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
   .btn.is-disabled { background: #f1f1f2; color: var(--fg-subtle); border-color: var(--border); cursor: not-allowed; }
 
-  /* Two column: input guide + receipts */
+  /* Two column: preparation values + receipts */
   .two-col { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
   .card h3 { font-size: 13px; font-weight: 650; margin-bottom: 4px; }
   .card .sub { font-size: 12px; color: var(--fg-subtle); margin-bottom: 14px; }
 
-  /* Hometax input guide steps */
+  /* Preparation value steps */
   .steps { display: flex; flex-direction: column; }
   .step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .step:last-child { border-bottom: 0; }
@@ -236,7 +236,7 @@
       <!-- Responsibility boundary banner -->
       <div class="banner">
         <div class="b-ico">↧</div>
-        <div class="b-t"><b>세무 에이전트는 신고서 제출을 대행하지 않습니다.</b> 첨부 패키지 생성과 홈택스 단계별 입력 가이드까지 지원하며, 실제 제출과 납부는 회사가 홈택스에서 직접 진행하고 접수증만 보관합니다.</div>
+        <div class="b-t"><b>세무 에이전트는 신고서 제출을 대행하지 않습니다.</b> 첨부 패키지 생성과 신고 준비값 확인까지 지원하며, 실제 제출과 납부는 회사가 홈택스에서 직접 진행하고 접수증만 보관합니다.</div>
       </div>
 
       <!-- Filing package status -->
@@ -272,7 +272,7 @@
             <span class="chip ok">패키지 준비됨</span>
             <div class="f-actions">
               <button class="btn primary">패키지 열기</button>
-              <button class="btn">입력 가이드</button>
+              <button class="btn">준비값 확인</button>
             </div>
           </div>
         </div>
@@ -326,7 +326,7 @@
           <div class="fg-box">
             <h4>사전검증 결과 (예시)</h4>
             <ul class="fg-list">
-              <li class="ok">A01 ④⑤⑥ — JC-013 입력 가이드와 일치</li>
+              <li class="ok">A01 ④⑤⑥ — JC-013 준비값 확인와 일치</li>
               <li class="warn">바이너리 전자신고 레이아웃 미입수 — 다운로드 대기</li>
               <li class="warn">세무서코드·담당자 연락처 — 파일 생성 시 입력 필요</li>
             </ul>
@@ -342,28 +342,28 @@
       <!-- Input guide + receipts -->
       <div class="two-col">
         <div class="card">
-          <h3>홈택스 입력 가이드 · 원천세</h3>
-          <div class="sub">아래 값을 홈택스 해당 항목에 그대로 입력하세요. (자동 제출 아님)</div>
+          <h3>신고 준비값 확인 · 원천세</h3>
+          <div class="sub">원천세 신고 전 확인해야 할 확정 값을 한곳에 모았습니다. (자동 제출 아님)</div>
           <div class="steps">
             <div class="step done">
               <div class="n">1</div>
-              <div class="st-main"><div class="st-t">홈택스 로그인 → 원천세 신고 메뉴 이동</div><div class="st-d">국세청 홈택스에서 회사 공동인증서로 로그인</div></div>
+              <div class="st-main"><div class="st-t">홈택스 업로드·제출 전 준비값 확인</div><div class="st-d">회사 담당자가 홈택스에서 최종 업로드·제출하기 전 확인</div></div>
             </div>
             <div class="step">
               <div class="n">2</div>
-              <div class="st-main"><div class="st-t">인원·총지급액 입력</div><div class="st-d">간이세액 대상 <span class="val">12명</span> · 총지급액 <span class="val">42,600,000원</span></div></div>
+              <div class="st-main"><div class="st-t">인원·총지급액 확인</div><div class="st-d">간이세액 대상 <span class="val">12명</span> · 총지급액 <span class="val">42,600,000원</span> 확인</div></div>
             </div>
             <div class="step">
               <div class="n">3</div>
-              <div class="st-main"><div class="st-t">소득세액 입력</div><div class="st-d">징수세액 <span class="val">1,910,000원</span> (지방소득세는 위택스 별도)</div></div>
+              <div class="st-main"><div class="st-t">소득세액 확인</div><div class="st-d">징수세액 <span class="val">1,910,000원</span> · 지방소득세 확인</div></div>
             </div>
             <div class="step">
               <div class="n">4</div>
-              <div class="st-main"><div class="st-t">신고서 제출 → 접수증 저장</div><div class="st-d">제출 후 접수증을 아래 "제출 접수증"에 업로드</div></div>
+              <div class="st-main"><div class="st-t">업로드·제출 후 접수증 저장</div><div class="st-d">제출 후 접수증을 아래 "제출 접수증"에 업로드</div></div>
             </div>
           </div>
           <div class="foot-cta">
-            <button class="btn primary">가이드 값 복사</button>
+            <button class="btn primary">준비값 복사</button>
             <button class="btn">지급명세서 다운로드</button>
           </div>
         </div>
@@ -435,8 +435,8 @@
 
       <div class="note">
         <b>Preview 안내</b> — 이 화면은 <b>신고지원</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
-        <b>책임 경계</b>: 신고서 자동 제출·세금 자동 납부는 제공하지 않습니다. 첨부 패키지 생성 · 홈택스 단계별 입력 가이드 · 제출 접수증 보관 · 사후 체크리스트까지 지원하며, 제출/납부는 회사가 홈택스에서 직접 수행합니다.
-        구성: 신고 항목·첨부 패키지(부가세/원천세/4대보험) · 홈택스 입력 가이드 · 제출 접수증 보관 · 사후 체크리스트 · 상태(로딩/빈/오류) 예시. 각 항목은 부가세·급여 화면과 연동됩니다.
+        <b>책임 경계</b>: 신고서 자동 제출·세금 자동 납부는 제공하지 않습니다. 첨부 패키지 생성 · 신고 준비값 확인 · 제출 접수증 보관 · 사후 체크리스트까지 지원하며, 제출/납부는 회사가 홈택스에서 직접 수행합니다.
+        구성: 신고 항목·첨부 패키지(부가세/원천세/4대보험) · 신고 준비값 확인 · 제출 접수증 보관 · 사후 체크리스트 · 상태(로딩/빈/오류) 예시. 각 항목은 부가세·급여 화면과 연동됩니다.
       </div>
     </div>
   </div>

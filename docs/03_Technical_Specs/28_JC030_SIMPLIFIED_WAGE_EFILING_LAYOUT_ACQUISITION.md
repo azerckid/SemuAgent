@@ -90,7 +90,7 @@ JC-030 생성 파일의 사용자 제출 관문(자동 제출 아님):
 - 제출 방법: https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=239045&mi=40990
 - 홈택스 바로가기(간이지급): https://www.hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=44&tm2lIdx=4401000000&tm3lIdx=4401100000
 
-직접작성 제출(홈택스 화면 입력)은 JC-013 가이드 범주이며, JC-030은 **변환제출용 파일 생성**에 초점을 둔다.
+홈택스 화면에 값을 옮겨 적는 방식은 SemuAgent 범위가 아니다. JC-030은 **업로드용 파일·양식 작성**에 초점을 둔다.
 
 ## 5. File Format Overview (Pre-Code Brief 입력용)
 
@@ -106,7 +106,7 @@ JC-030 생성 파일의 사용자 제출 관문(자동 제출 아님):
 | 인코딩·줄바꿈 | HWP 명시 따름 | [미확인 — HWP 필요] |
 | 월별 구분 | 2022~ 급여·인정상여 **월별** 수록 | CFO 2021 하반기 안내 [확실] |
 | 원천징수세액 | 간이지급명세서에는 **기재하지 않음**(소득금액·근무기간 중심) | 국세청 Q&A·세정일보 인용 [확실] |
-| 소득자 식별 | 주민등록번호(또는 외국인등록번호) — 파일에 포함 | 실무·직접작성 항목 [확실]; PII는 [PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md) |
+| 소득자 식별 | 주민등록번호(또는 외국인등록번호) — 파일에 포함 | 공식 레이아웃 필수 항목 [확실]; PII는 [PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md) |
 
 ## 6. JC-024 Data → File (초기 가설, Pre-Code Brief에서 검증)
 

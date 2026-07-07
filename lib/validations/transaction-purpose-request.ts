@@ -10,7 +10,7 @@ export const TRANSACTION_PURPOSE_CODE_LABEL = {
   shipping_delivery: '배송/운반',
   vehicle_transport: '차량/교통',
   personal_not_company: '개인 사용/회사 비용 아님',
-  other: '기타/직접 입력',
+  other: '기타/수동 작성',
   unknown: '잘 모르겠습니다',
 } as const
 

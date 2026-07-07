@@ -123,7 +123,7 @@ export function LocalIncomeTaxReview({ summary }: { readonly summary: LocalIncom
         </section>
 
         <section className="rounded-xl border border-[#ddd6fe] bg-[#f5f3ff] px-[18px] py-4 text-[12.5px] text-[#4c1d95]">
-          <b className="text-[#2e1065]">신고지원과 동일한 값</b> — 이 지방소득세 값은 신고지원의 원천세 항목 입력 가이드에 표시되는 지방소득세와 같은 실제 급여 기록에서 옵니다. 두 화면에서 다른 숫자가 보이지 않습니다.
+          <b className="text-[#2e1065]">신고지원과 동일한 값</b> — 이 지방소득세 값은 신고지원의 원천세 준비값 확인에 표시되는 지방소득세와 같은 실제 급여 기록에서 옵니다. 두 화면에서 다른 숫자가 보이지 않습니다.
         </section>
 
         <section className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-4 text-[12.5px] text-[#1e3a8a]">

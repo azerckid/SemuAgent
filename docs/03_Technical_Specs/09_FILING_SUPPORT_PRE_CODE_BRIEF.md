@@ -20,13 +20,13 @@ JC-013 신고지원 구현 직전 계약. 다음 화면 단위를 제공한다.
 
 1. 신고 항목·첨부 패키지(부가세, 원천세, 4대보험)
 2. 선행 화면 연동 상태(부가세 공제 검토, 원천징수 지급명세서, 4대보험 자료)
-3. 홈택스 입력 가이드와 값 복사
+3. 신고 준비값 확인과 접수증 보관
 4. 제출 접수증 업로드·보관
 5. 사후 체크리스트
 6. 로딩, 빈 상태, 오류 상태
 
 JC-013 구현은 `filing_item`, `filing_receipt`, `filing_checklist_item` 테이블을 먼저 추가한 뒤
-read model과 화면을 구현한다. 입력 가이드 값은 선행 화면의 확정 값에서 파생하고, 실제 제출/납부 결과는
+read model과 화면을 구현한다. 신고 준비값은 선행 화면의 확정 값에서 파생하고, 실제 제출/납부 결과는
 사용자가 업로드한 접수증과 체크리스트 상태로만 기록한다.
 
 ## 2. Route and Component Boundary
@@ -121,7 +121,7 @@ type FilingSupportSummary = {
 | 인증·조직·사업장 | Better Auth session, `tenant`, `client` | tenantId, businessEntityId | 미인증 `/sign-in`, 사업장 없으면 빈 상태 |
 | 기간 | URL `period`, `buildCompanyHomePeriod`, 최신 payroll period | filingPeriodKey, payrollPeriodKey | 부가세 1기/2기 + 해당 급여 귀속월 |
 | 부가세 항목 | `vat_period_summary` | pendingDeductionCount, payableTaxKrw, packageStatus, packageStorageKey | pending > 0이면 패키지 잠금 |
-| 원천세 항목 | `payroll_period_summary` | employeeCount, grossPayKrw, withholdingTaxKrw, withholdingStatementStatus, closeStatus | 지급명세서 생성 상태와 홈택스 입력 가이드 |
+| 원천세 항목 | `payroll_period_summary` | employeeCount, grossPayKrw, withholdingTaxKrw, withholdingStatementStatus, closeStatus | 지급명세서 생성 상태와 신고 준비값 확인 |
 | 4대보험 항목 | `payroll_period_summary` | socialInsuranceKrw, noticeImportStatus, insuranceStatementStatus, issueCount | 고지액 매칭·자료 생성 필요 여부 |
 | 신고 항목 상태 | `filing_item` | itemType, status, packageStatus, lockReason, sourceRefId | 화면 카드의 상태칩·CTA |
 | 제출 접수증 | `filing_receipt` | receiptType, originalFilename, storageKey, uploadedAt | 보관 완료/업로드 대기 |
@@ -171,7 +171,7 @@ type FilingSupportSummary = {
 - 부가세 항목은 `vat_period_summary.pendingDeductionCount > 0`이면 `locked`이며, CTA는 "패키지 · 잠김"이다.
 - 부가세 `pendingDeductionCount = 0`이고 `packageStatus`가 `ready` 또는 `generated`이면 패키지 열기/생성이 가능하다.
 - 원천세 항목은 `payroll_period_summary.withholdingStatementStatus`가 `ready` 또는 `generated`이고 `closeStatus='closed'`이면 `ready`다.
-- 원천세 홈택스 입력 가이드는 급여 summary에서 `employeeCount`, `grossPayKrw`, `withholdingTaxKrw`를 읽어 만든다.
+- 원천세 신고 준비값 확인은 급여 summary에서 `employeeCount`, `grossPayKrw`, `withholdingTaxKrw`를 읽어 만든다.
 - 4대보험 항목은 `insuranceStatementStatus`가 생성되지 않았거나 `noticeImportStatus!='matched'`이면 `needs_review`다.
 - 접수증은 사용자가 직접 제출 후 업로드한 파일만 보관한다. 시스템이 홈택스/EDI 제출 여부를 자동 확인하지 않는다.
 - private `storageKey`, Blob URL, 자격증명, 공동인증서 관련 값은 화면과 로그에 노출하지 않는다.
@@ -185,7 +185,7 @@ type FilingSupportSummary = {
 | 접수증 업로드 | O | `POST /api/filing/receipts` |
 | 접수증 삭제 | O | `DELETE /api/filing/receipts/[receiptId]` |
 | 체크리스트 완료 토글 | O | `PATCH /api/filing/checklist-items/[itemId]` |
-| 가이드 값 복사 | O | 클라이언트 clipboard, DB mutation 없음 |
+| 준비값 복사 | O | 클라이언트 clipboard, DB mutation 없음 |
 | 홈택스 신고서 제출 | X | v1 범위 밖 |
 | 세금 납부/이체 | X | v1 범위 밖 |
 | 홈택스/EDI 로그인·스크래핑 | X | v1 범위 밖 |
@@ -198,7 +198,7 @@ type FilingSupportSummary = {
 
 | 상태 | 조건 | UI |
 |:---|:---|:---|
-| Default | 선행 산출물 일부 준비 | 책임 경계 배너, 신고 항목 3개, 입력 가이드, 접수증, 체크리스트 |
+| Default | 선행 산출물 일부 준비 | 책임 경계 배너, 신고 항목 3개, 준비값 확인, 접수증, 체크리스트 |
 | Loading | Server Component 지연 | `loading.tsx` 스켈레톤 |
 | Empty | VAT/payroll 산출물 없음 | "부가세·급여 먼저 확정" 안내와 선행 화면 CTA |
 | Error | read model 실패 | `error.tsx` "신고 항목을 불러오지 못했습니다" + 다시 시도 |
@@ -221,7 +221,7 @@ type FilingSupportSummary = {
 
 1. 신고 항목(부가세/원천세/4대보험)이 선행 화면 산출물과 연동되어 상태와 함께 표시된다.
 2. 부가세 패키지는 공제 검토 완료 전 잠금이며, 잠금 사유가 visible locknote와 `aria-disabled`로 노출된다.
-3. 홈택스 단계별 입력 가이드가 원천세 확정 값(인원, 총지급액, 징수세액)을 표시하고 값 복사가 가능하다.
+3. 신고 준비값 확인 영역이 원천세 확정 값(인원, 총지급액, 징수세액)을 표시한다.
 4. 제출 접수증을 업로드·보관하고 미제출 항목은 업로드 대기로 표시한다.
 5. 사후 체크리스트로 납부·접수증 보관 확인 상태를 저장한다.
 6. 자동 홈택스 제출·자동 납부·자격증명 서버 저장은 제공하지 않으며, 화면에 책임 경계가 반복 노출된다.
@@ -237,7 +237,7 @@ type FilingSupportSummary = {
 ## 11. Open Items
 
 - 실제 PDF/ZIP 패키지 생성 포맷은 JC-013 구현 중 최소 산출물로 결정한다.
-- 홈택스 입력 가이드는 원천세부터 v1으로 구현하고, 부가세 입력 가이드는 VAT package 상태가 generated가 된 뒤 확장한다.
+- 신고 준비값 확인은 원천세부터 v1으로 구현하고, 부가세 준비값 확인은 VAT package 상태가 generated가 된 뒤 확장한다.
 - JC-014에서 실제 Blob·AI 파싱·정규화 저장은 검증 완료했다. 실제 EDI/홈택스 접수증 파일 포맷별 파싱은 별도 fixture 확보 후 검증한다.
 
 ## 12. Related Documents

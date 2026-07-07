@@ -708,7 +708,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
       itemType: 'withholding',
       sourceModule: 'payroll',
       sourceRefId: payrollSummaryId,
-      title: '원천세 신고 입력 가이드',
+      title: '원천세 신고 준비값 확인',
       description: '급여대장 기준 원천세 입력 값이 준비되었습니다.',
       status: 'ready',
       packageStatus: 'ready',

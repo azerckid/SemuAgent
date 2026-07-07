@@ -107,10 +107,10 @@ const withholdingTaxKrw = params.payroll?.withholdingTaxKrw ?? 0
 const { incomeTaxKrw, localIncomeTaxKrw } = splitWithholdingTax(withholdingTaxKrw)
 ```
 
-**변경 후**: `buildFilingInputGuide`가 §2의 공유 로더와 `buildLocalIncomeTaxTotals`로 얻은 실제 `incomeTaxKrw`·`localIncomeTaxKrw` 확정 라인 합계를 직접 받는다(파라미터로 전달). `splitWithholdingTax()`는 이 교체 이후 호출부가 없으면 **삭제**한다(사용처·테스트 확인 후 dead code 정리 — YAGNI, 백업용으로 남기지 않는다).
+**변경 후**: `buildFilingPreparationValues`가 §2의 공유 로더와 `buildLocalIncomeTaxTotals`로 얻은 실제 `incomeTaxKrw`·`localIncomeTaxKrw` 확정 라인 합계를 직접 받는다(파라미터로 전달). `splitWithholdingTax()`는 이 교체 이후 호출부가 없으면 **삭제**한다(사용처·테스트 확인 후 dead code 정리 — YAGNI, 백업용으로 남기지 않는다).
 
 - `loadFilingSupportSummary`가 `payrollPeriodSummary`를 조회해 `periodSummaryId`를 얻는 지점(기존 쿼리, `summary.ts:655` 부근)에서 §2의 `loadLocalIncomeTaxLines`와 `buildLocalIncomeTaxTotals`(또는 그 합산 결과)를 함께 로드해 `PayrollFilingSource`에 `incomeTaxKrw`·`localIncomeTaxKrw` 필드를 추가한다.
-- `buildFilingInputGuide`는 이 두 값을 그대로 사용(파생 계산 없음). 결과적으로 신고지원 화면과 JC-027 화면이 같은 기간에 대해 항상 같은 숫자를 표시한다.
+- `buildFilingPreparationValues`는 이 두 값을 그대로 사용(파생 계산 없음). 결과적으로 신고지원 화면과 JC-027 화면이 같은 기간에 대해 항상 같은 숫자를 표시한다.
 - 기간에 `needs_review` 라인이 있으면 신고지원도 해당 기간에 확인 필요 상태가 있음을 유지/표시한다. 미확정 행의 금액을 신고지원 입력값에 조용히 섞지 않는다.
 
 ## 5. 허브 트랙 live 전환

@@ -126,7 +126,7 @@ const features = [
   {
     icon: Network,
     title: '신고지원 패키지',
-    description: '홈택스 입력 가이드, 첨부 패키지, 접수증 보관, 사후 체크리스트를 연결합니다.',
+    description: '업로드용 신고 준비값, 첨부 패키지, 접수증 보관, 사후 체크리스트를 연결합니다.',
   },
 ]
 

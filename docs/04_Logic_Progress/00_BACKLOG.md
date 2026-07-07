@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-07 04:10 KST
+> Last Updated: 2026-07-07 19:45 KST
 
 ## Status Legend
 
@@ -24,8 +24,8 @@
 | JC-009 | done | Build source collection workspace | `app/(dashboard)/dashboard/direct-upload`, `lib/source-collection`, `components/ui` | Company-internal upload → parse → normalize flow matches approved 자료수집 UI; external client portal excluded (PR #4 머지) |
 | JC-010 | done | Build bookkeeping review workspace | `lib/bookkeeping`, `lib/ai`, `components/ui` | Transaction classification queue with AI-suggested accounts, confidence, journal-entry preview, and company approval matches approved 기장검토 UI |
 | JC-011 | done | Build VAT workspace | `lib/bookkeeping`, `components/ui` | VAT summary (output−input tax), taxable/zero/exempt grouping, purchase-deduction review, schedules, and filing-package preview (generation locked until deduction review complete) match approved 부가세 UI; no auto Hometax submission |
-| JC-012 | done | Build payroll workspace | `lib/payroll-workspace`, `app/(dashboard)/dashboard/payroll`, `app/api/payroll` | Payroll register with derived totals, withholding/4-insurance deduction, insurance notice manual input/match, payslip/statement preview, and close guard match approved 급여 UI; PII raw fields/storage keys not exposed |
-| JC-013 | done | Build filing support workspace | `lib/filing-support`, `app/(dashboard)/dashboard/filing-support`, `app/api/filing` | Filing items (VAT/withholding/insurance) with packages, Hometax step-by-step input guide, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
+| JC-012 | done | Build payroll workspace | `lib/payroll-workspace`, `app/(dashboard)/dashboard/payroll`, `app/api/payroll` | Payroll register with derived totals, withholding/4-insurance deduction, insurance notice upload/manual confirmation, payslip/statement preview, and close guard match approved 급여 UI; PII raw fields/storage keys not exposed |
+| JC-013 | done | Build filing support workspace | `lib/filing-support`, `app/(dashboard)/dashboard/filing-support`, `app/api/filing` | Filing items (VAT/withholding/insurance) with packages, filing preparation values, receipt storage, and post-filing checklist match approved 신고지원 UI; no auto submission/payment |
 | JC-014 | done | Provision env secrets and verify upload→parse E2E | `.env`, Vercel Blob, AI providers | 착수 전 정리 완료: `.env.local`의 Blob 토큰 중복 제거·`JARYO_ADMIN_EMAILS` 실운영자값·`EMAIL_FROM` 브랜드(SemuAgent). 실제 자격증명 E2E 통과(2026-07-03): 파일→Vercel Blob(private) put/get 바이트 일치→텍스트추출→AI 파싱→`analysis_run` 3건 정규화 저장→상태 전이(needs_review). Gemini·Claude는 "급여대장" high confidence 합의(consensus=medium), 파일 매칭용 checklist 미보유로 material_match 0. **미해결: OPENAI_API_KEY 429(quota/billing) — 3-provider 합의 복구하려면 OpenAI 결제 충전 필요(파이프라인은 2/3로 graceful 동작 확인).** |
 | JC-015 | done | Build employee directory | `lib/employee-directory`, `app/(dashboard)/dashboard/employees`, `app/api/employees` | 직원 명부를 급여 실행 결과와 분리된 마스터로 관리. read model·화면·추가/수정 API·0056 migration 구현 완료. 급여 line은 `employee_code` 읽기 전용 최근 귀속월 매칭으로 연결한다. 리마인드 직원 수신자 연동은 JC-018에서 완료. |
 | JC-016 | done | Build internal reminder mail | `lib/internal-reminders`, `app/(dashboard)/dashboard/reminders`, `app/api/internal-reminders` | 내부 staff/본인 수신 기반 리마인드 read model·화면·토글/테스트 발송/즉시 발송 API·0057 migration 구현 완료. Vercel Cron 자동 예약은 JC-017에서 완료했고, 직원 명부 기반 급여 도메인 직원 수신은 JC-018에서 완료. |
@@ -35,7 +35,7 @@
 | JC-020 | done | Fix signup-to-onboarding routing | `app/(auth)/sign-up`, `app/(auth)/sign-in`, `app/(dashboard)/layout.tsx`, `app/onboarding` | 신규 가입자가 tenant/organization이 없는 상태에서 깨진 dashboard/clients 화면으로 이동하지 않고 `/onboarding`으로 안내된다. 기존 tenant가 있는 사용자는 기존 대시보드 진입을 유지한다. **구현(2026-07-04)**: sign-up→`/onboarding`, sign-in은 org 있으면 setActive 후 dashboard·없으면 `/onboarding`, dashboard layout은 활성 테넌트 없으면 `/onboarding` redirect(깨진 children 렌더 제거), onboarding은 이미 org 있는 사용자를 setActive 후 dashboard로 자기교정. |
 | JC-021 | done | Remove remaining JARYO brand residue from first-run UX | `app/(auth)/_components/public-welcome-modal.tsx`, `app/onboarding/page.tsx` | 프로덕션 첫 가입 흐름에서 `JARYO beta` 모달·`.jaryo.kr` 서브도메인 접미사 등 잔여 브랜드가 SemuAgent 문맥으로 정리된다. 상류 JARYO-GIWA 이력 문구와 운영자 콘솔 식별자는 범위 밖이다. **구현(2026-07-04)**: 환영 모달을 "회계사무소/고객사" 포지셔닝→"작은 회사 세무신고 준비(SemuAgent)"로 카피 재구성, 배지 `JARYO 베타`→`SemuAgent 베타`. 온보딩 `.jaryo.kr` 접미사 제거. 홈/문서의 JARYO-GIWA 이력·jaryo-admin·localStorage 내부키는 보존. |
 | JC-022 | done | Refine settings screen product language | `app/(dashboard)/dashboard/settings/_components/settings-panel.tsx`, `app/(dashboard)/dashboard/settings/page.tsx` | 설정 화면의 개발자/상류 용어(`테넌트`, `.jaryo.kr`)를 사용자가 이해하는 회사/사업자 문맥으로 정리한다. **구현(2026-07-04)**: 탭 `테넌트 설정`→`회사 설정`, 부제 `테넌트 정보…`→`회사 정보…`, 저장 토스트 문구, 서브도메인 읽기전용 필드 `{sub}.jaryo.kr`→`{sub}`(가짜 도메인 제거), 담당자 추가 설명 `JARYO`→`SemuAgent`. 내부 식별자(`tenant_id`)·코드 주석은 보존. 서브도메인 최종 도메인 정책은 실도메인 확정 후 재적용(후속). |
-| JC-023 | todo | Strategic Direction: 사용자 승인 기반 홈택스 자동제출 | `lib/filing-support`, Hometax e-filing 규격, 인증·감사 로그 | **MVP 밖 로드맵/전략 방향** — [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) 참조. 사용자가 신고 내용을 최종 확인·승인하면 SemuAgent가 사용자 권한 범위 안에서 홈택스 제출을 자동 진행하고 접수증까지 자동 회수·보관한다. 현행 "홈택스 입력 가이드/신고지원(JC-013)"은 중간 단계. 원칙: 사용자 최종 승인 필수·자격증명 원문 저장 금지·감사 로그 필수·접수증 자동 보관. 착수 전 조사 필요(전자신고 파일 규격·파일변환신고·인증 기반 제출 자동화 가능성·공식 API vs 비공개 연동). 구현 착수 전 별도 technical brief·법무/보안 검토 필수. |
+| JC-023 | todo | Strategic Direction: 사용자 승인 기반 홈택스 자동제출 | `lib/filing-support`, Hometax e-filing 규격, 인증·감사 로그 | **MVP 밖 로드맵/전략 방향** — [Product Baseline Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) 참조. 사용자가 신고 내용을 최종 확인·승인하면 SemuAgent가 사용자 권한 범위 안에서 홈택스 제출을 자동 진행하고 접수증까지 자동 회수·보관한다. 현행 신고지원(JC-013)은 준비값 확인·접수증 보관 단계. 원칙: 사용자 최종 승인 필수·자격증명 원문 저장 금지·감사 로그 필수·접수증 자동 보관. 착수 전 조사 필요(전자신고 파일 규격·파일변환신고·인증 기반 제출 자동화 가능성·공식 API vs 비공개 연동). 구현 착수 전 별도 technical brief·법무/보안 검토 필수. |
 | JC-024 | done | 연말정산·지급명세서 지원 (급여/원천 확장) | `lib/payment-statements`, `app/(dashboard)/dashboard/filing-preparation/payment-statements`, 급여·원천세·직원명부 데이터 | **구현 완료(2026-07-05).** 근로소득 간이지급명세서 반기 집계와 연말정산 준비·검토 read-only 화면을 제공한다. 지급총액·원천징수세액(근로소득세)·연간 지급합계·기납부 원천세·누락 월/인적사항 확인을 직원 중심으로 검토하며, 정산액 계산·전자신고 파일 생성·자동제출은 범위 밖(JC-030/JC-023). 신고 준비 허브의 지급명세서/연말정산 트랙은 roadmap→live 전환 완료. 신규 DB/마이그레이션 없음. |
 | JC-025 | todo | 종합소득세 신고 지원 (개인사업자, self-filing 보조) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 중 · 법적 리스크: 주의.** 개인사업자 종합소득세(5월) 신고서 계산·초안·검증을 self-filing 보조로 제공한다. 기장검토(JC-010) output을 사용한다. ⚠️ 세무조정이 개입하면 세무사법 제2조("세무서류 작성")에 저촉 소지가 있어, "계산·초안·사용자 최종 확인" 수준으로 한정하고 세무조정계산서 자동작성은 신중히 다룬다. 착수 전 법무 검토 게이트. |
 | JC-026 | todo | 법인세 신고 지원 (법인) | `lib/bookkeeping`, 기장 output, `lib/filing-support` | **우선순위: 낮음(안정화·저위험 항목 후) · 법적 리스크: 높음.** 법인세(사업연도 종료 후 3개월) 신고 보조. 기장 output 사용. ⚠️ **세무조정계산서 작성이 핵심 = 세무사 직무(세무사법 제2조)** → 자동작성은 무자격 세무대리 리스크가 가장 크다. self-filing 보조 경계를 엄격히 지키고, 착수 전 **법무 검토를 필수 게이트**로 둔다. 복잡도 높음. |
@@ -43,10 +43,9 @@
 | JC-028 | done | 사업장현황신고 지원 (면세 개인사업자) | `lib/business-status-report`, `app/(dashboard)/dashboard/filing-preparation/business-status-report`, `lib/filing-preparation` | **구현 완료(2026-07-05).** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고 준비 데이터를 검토한다. 수입금액·매입/경비 자료는 자료수집·기장검토의 확정 거래 데이터로 구성하며, 신고 준비 허브의 `business_status` 트랙은 roadmap→live 전환 완료. 홈택스 제출·전자신고 파일·자동제출은 범위 밖. |
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-034 | todo | GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1) | `lib/giwa-handoff`, `lib/filing-preparation`, JC-030 Validation | **우선순위: Path 1 세목 확대 후.** 문서·Preview 완료, **구현 착수 보류**. ZIP(manifest + CSV + README). [Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [Pre-Code Brief](../03_Technical_Specs/35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md) |
-| JC-030 | todo | 전자신고 검증 및 파일 생성 (Validation / Path 1 / Path 3) | `lib/efiling-*`, JC-024·013 | **최우선 — Path 1 세목 확대.** 간이지급 Path 1 완료. **다음: 원천세** layout acquisition → 기입·안내. Path 3 미래. [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) |
+| JC-030 | todo | 전자신고 검증 및 파일 생성 (Validation / Path 1 / Path 3) | `lib/efiling-*`, JC-024·013 | **최우선 — Path 1 세목 확대.** 간이지급 Path 1 완료. **다음: 원천세** layout acquisition → 업로드용 양식·파일 작성 지원. Path 3 미래. [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
-| JC-033 | todo | 간이지급명세서 홈택스 직접입력 가이드 (JC-030 대안 경로) | `lib/payment-statements`, `app/(dashboard)/dashboard/filing-preparation/payment-statements`, JC-013 홈택스 입력 가이드 패턴 | **우선순위: 검토 중 · 저위험(read-only 가이드).** JC-030의 파일변환신고 경로가 암호화 필수([NTS Crypto Spec §4.1](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md))·적합성 검정 미확정([Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md))으로 지금 당장 제출까지 이어지지 않을 수 있어, 홈택스 **"(일용·간이·용역)직접작성 제출"** 화면에 직접 타이핑하는 대안 경로를 가이드한다. 파일 생성·자동입력 없음 — JC-013 스타일의 "무엇을 어떤 순서로 입력할지" 안내만 제공. [Scope Gate](../03_Technical_Specs/33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md) 참조. |
 
 ## Implementation Rule
 
@@ -184,7 +183,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 불공제 후보·공통매입 안분 대상이 표시되고 사용자가 공제/불공제/안분을 확정한다.
   - [ ] 부속 명세 준비 상태가 표시된다.
   - [ ] 신고 패키지 생성 버튼은 공제 검토 완료 전까지 잠금(disabled + aria-disabled)이며, 사유가 함께 노출된다. React 구현 시 disabled 버튼을 래퍼로 감싸 툴팁을 접근성 있게 처리한다.
-  - [ ] 자동 홈택스 제출은 제공하지 않는다(패키지 + 입력 가이드까지). 세액은 검토 완료 전 "예정" 표기.
+  - [ ] 자동 홈택스 제출은 제공하지 않는다(패키지 + 준비값 확인까지). 세액은 검토 완료 전 "예정" 표기.
   - [ ] 로딩·빈·오류 상태가 화면에 구현된다.
 - Document Sync Check: Screen Flow 4d / UI Design 4.4 / Prototype Review / Preview / Component Plan 7.4 / VAT Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일(1~9단계): `lib/db/schema.ts`, `drizzle/0053_add_vat_tables.sql`, `lib/vat/summary.ts`, `lib/vat/summary.test.ts`, `lib/validations/vat.ts`, `lib/validations/vat.test.ts`, `app/api/vat/deduction-reviews/[reviewId]/route.ts`, `app/api/vat/periods/[periodKey]/package/route.ts`, `app/(dashboard)/dashboard/vat/page.tsx`, `app/(dashboard)/dashboard/vat/_components/vat-workspace.tsx`, `app/(dashboard)/dashboard/vat/_components/vat-actions.tsx`, `app/(dashboard)/dashboard/vat/_components/vat-workspace.test.ts`, `app/(dashboard)/dashboard/vat/loading.tsx`, `app/(dashboard)/dashboard/vat/error.tsx`, `app/(dashboard)/_components/sidebar.tsx`, `lib/company-home/summary.ts`.
 
@@ -220,18 +219,18 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related UI Docs: [Screen Flow 4f](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.6](../02_UI_Screens/01_UI_DESIGN.md)
 - Related HTML Preview: [05_filing_support.html](../02_UI_Screens/previews/05_filing_support.html)
 - Related Technical Docs: [Component & Library Plan 7.6](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md) · [DB Schema 4.3](../03_Technical_Specs/03_DB_SCHEMA.md) · [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) · [Development Setup](../03_Technical_Specs/01_DEVELOPMENT_SETUP.md)
-- Related QA Docs: [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md) — 신고 항목 연동·패키지 잠금·입력 가이드·접수증 보관·책임 경계(자동 제출 없음)
+- Related QA Docs: [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md) — 신고 항목 연동·패키지 잠금·준비값 확인·접수증 보관·책임 경계(자동 제출 없음)
 - Prototype Review / 승인: [Filing Support Review](../02_UI_Screens/07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) — 확인자 프로젝트 오너, 2026-07-01 승인
 - Implementation Preconditions:
   - [x] UI-First Gate 통과 (사용자 확인 완료)
-  - [x] Component & Library Plan에 신고지원 전용 컴포넌트(Filing Item Card·Input Guide·Receipts·Checklist) 반영 — [Component Plan 7.6](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
+  - [x] Component & Library Plan에 신고지원 전용 컴포넌트(Filing Item Card·Preparation Values·Receipts·Checklist) 반영 — [Component Plan 7.6](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
   - [x] Pre-Code Technical Brief(신고 항목 연동·패키지 생성·접수증 보관·체크리스트 mutation) 정리 — [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)
   - [x] 부가세(JC-011)·급여(JC-012) 산출물 데이터 모델 선행 — `vat_period_summary`, `payroll_period_summary`
   - [x] QA 테스트 시나리오 작성 (Layer 5) — [Filing Support Test Scenarios](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md)
 - Acceptance Criteria:
   - [x] 신고 항목(부가세/원천세/4대보험)이 선행 화면 산출물과 연동되어 상태와 함께 표시된다. (`loadFilingSupportSummary`, `FilingItemsSection`)
   - [x] 부가세 패키지는 공제 검토 완료 전 잠금이다. (`pendingDeductionCount` 기반 locknote + disabled CTA)
-  - [x] 홈택스 단계별 입력 가이드가 확정 값과 함께 제공되고 값 복사가 가능하다. (`buildFilingInputGuide`, `FilingGuideCopyButton`)
+  - [x] 신고 준비값 확인 영역이 확정 값과 함께 제공되고 준비값 복사가 가능하다. (`buildFilingPreparationValues`, `FilingPreparationValueCopyButton`)
   - [x] 제출 접수증을 업로드·보관하고 미제출 항목은 대기로 표시된다. (`filing_receipt`, `/api/filing/receipts`)
   - [x] 사후 체크리스트로 납부·보관을 확인한다. (`filing_checklist_item`, `/api/filing/checklist-items/[itemId]`)
   - [x] **자동 홈택스 제출·자동 납부·자격증명 서버 저장은 제공하지 않는다**(책임 경계를 화면에 반복 노출).
@@ -442,7 +441,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-023 · Strategic Direction: 사용자 승인 기반 홈택스 자동제출 — 로드맵/전략 방향 (MVP 밖)
 
 - Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — MVP는 자동제출 없음(Non-Scope), 최종 목표는 사용자 승인 기반 홈택스 자동제출
-- Related Domain: [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) — 현행 신고지원(JC-013)은 홈택스 입력 가이드까지의 중간 단계
+- Related Domain: [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) — 현행 신고지원(JC-013)은 준비값 확인·접수증 보관 단계
 - Related Research: [JC-023 Hometax Auto-submit Research](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 2026-07-04 조사 브리프(파일 규격·공식 API·법적 경계·인증 자동화·실무 SW 제출 흐름 통합)
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-023](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 자동제출 구현 착수 게이트와 done 조건
 - Related HTML Preview: N/A - 로드맵/전략 항목. 구현 착수 시 별도 UI·technical brief 필요.
@@ -527,7 +526,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-027 · 지방소득세 연동 지원 — 원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙 (우선순위 높음 · 저위험)
 
 - Related Concept: [Product Baseline — Target Tax Coverage](../01_Concept_Design/01_PRODUCT_BASELINE.md)
-- Related Domain: 급여(JC-012, `payrollEmployeeLine.localIncomeTaxKrw`), 신고지원(JC-013, 원천세 입력 가이드 정합성 수정), 신고 준비 허브(JC-029, `local_income` 트랙)
+- Related Domain: 급여(JC-012, `payrollEmployeeLine.localIncomeTaxKrw`), 신고지원(JC-013, 원천세 준비값 정합성 수정), 신고 준비 허브(JC-029, `local_income` 트랙)
 - Related UI Docs: [Screen Flow 4j](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.12](../02_UI_Screens/01_UI_DESIGN.md) — 지방소득세 화면 흐름·컴포넌트(UI-First Gate 승인 2026-07-05).
 - Related HTML Preview: [10_local_income_tax.html](../02_UI_Screens/previews/10_local_income_tax.html) — 지방소득세 준비 전용 화면(JC-024 `09_payment_year_end.html`과 유사한 read-only 집계 패턴 재사용).
 - Related Technical Docs: [Local Income Tax Pre-Code Brief](../03_Technical_Specs/18_LOCAL_INCOME_TAX_PRE_CODE_BRIEF.md) — 확정 라인 실제값 집계 계약·splitWithholdingTax 교체 계약·허브 트랙 live 전환 계약.
@@ -600,7 +599,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-030 · 전자신고 검증 및 파일 생성 — Validation / Path 1 / Path 3
 
-- Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 3단계 다리(입력 가이드 → 전자신고 파일 생성·검증 → 사용자 승인 자동제출)의 중간 단계. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 확정 데이터 준비→handoff 경계. [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) — **세목 확대 최우선**.
+- Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 경로 중 **홈택스 업로드용 양식·파일 작성 지원** 단계. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 확정 데이터 준비→handoff 경계. [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) — **세목 확대 최우선**.
 - Related Domain: 신고지원(JC-013) 확정 산출물 · 부가세(JC-011)·급여/원천세(JC-012) read model. JC-034(Path 2 ZIP)는 Path 1 세목 확대 후순위. 자동제출 후속은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
 - Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상·Gate. [PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md). [Layout Acquisition](../03_Technical_Specs/28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md). [Field Mapping](../03_Technical_Specs/29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md). [Pre-Code Brief](../03_Technical_Specs/30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md). [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) — Slice 2b 별도 트랙.
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-030](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 전자신고 파일 생성·검증의 착수 게이트와 done 조건
@@ -625,35 +624,13 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 부가세 Path 1 (원천세 다음)
   - [ ] JC-034 Path 2 ZIP이 Validation 출력 소비 (Path 1 세목 확대 후)
 - Acceptance Criteria:
-  - [ ] 확정된 신고 데이터로 홈택스 파일변환신고에 업로드 가능한 전자신고 파일을 생성한다
+  - [ ] 확정된 신고 데이터로 홈택스 업로드용 양식·파일을 생성한다
   - [ ] 생성 파일의 형식·정합성을 검증하고 오류/경고를 사용자에게 표시한다
   - [ ] 사용자가 파일을 내려받아 **직접** 홈택스에 업로드·제출한다(자동 제출 아님)
   - [ ] 자격증명 저장·자동 로그인·자동 제출은 하지 않는다(JC-023 원칙 유지)
   - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
-- Document Sync Check: 2026-07-07 **JC-030 v1 완결** — Slices 1a–2a·3 on main(#126·#127). Path 1 세목 확대 최우선·**원천세 다음**. [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md)(#128) — fcrypt 입수·트랙 분리. **Slice 2b** = 윈도우 microservice 별도 트랙·보류(DLL 실행 검증 선행). 2026-07-07 [SW Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) 착수 — 파일변환신고가 적합성 검정 통과 SW만 받을 가능성 확인, 국세청 문의 대기. 대안 경로는 [JC-033](#jc-033--간이지급명세서-홈택스-직접입력-가이드-jc-030-대안-경로).
+- Document Sync Check: 2026-07-07 **JC-030 v1 완결** — Slices 1a–2a·3 on main(#126·#127). Path 1 세목 확대 최우선·**원천세 다음**. [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md)(#128) — fcrypt 입수·트랙 분리. **Slice 2b** = 윈도우 microservice 별도 트랙·보류(DLL 실행 검증 선행). 2026-07-07 [SW Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) 착수 — 파일변환신고가 적합성 검정 통과 SW만 받을 가능성 확인, 국세청 문의 대기. **홈택스 화면에 값을 옮겨 적도록 안내하는 경로는 제외**하고, Path 1은 홈택스 업로드용 양식·파일 작성 지원으로 고정한다.
 
-### JC-033 · 간이지급명세서 홈택스 직접입력 가이드 (JC-030 대안 경로)
-
-- Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 3단계 다리 중 "입력 가이드" 축. JC-030(파일 생성)과 대체·병행 관계.
-- Related Domain: 지급명세서·연말정산(JC-024) 반기 집계 데이터. 기존 "홈택스 입력 가이드" 패턴은 신고지원(JC-013).
-- Related Technical Docs: [Simplified Wage Direct Input Guide Scope Gate](../03_Technical_Specs/33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md) — 메뉴 경로·데이터 매핑 후보·Non-goals.
-- Related Completion Contract: N/A - 착수 시 Completion Contract §3에 항목 추가 검토.
-- Related Research: [SW Conformance Certification Research](../03_Technical_Specs/32_JC030_SW_CONFORMANCE_CERTIFICATION_RESEARCH.md) — 이 항목이 필요해진 배경(JC-030 파일변환신고 경로 불확실성).
-- Related UI Docs: N/A - 착수 시 payment-statements 화면에 가이드 패널 추가로 정의(JC-030 패널과 병기). UI-First Gate 대상.
-- Related HTML Preview: N/A - 착수 시 `09_payment_year_end.html`에 직접입력 가이드 패널 추가.
-- Related QA Docs: N/A - 착수 시 정의.
-- Prototype Review / 승인: N/A - Scope Gate 단계.
-- Implementation Preconditions (조사·설계 과제):
-  - [x] 홈택스 직접입력 메뉴 진입 경로 확인 — [Scope Gate §2](../03_Technical_Specs/33_JC033_SIMPLIFIED_WAGE_DIRECT_INPUT_GUIDE_SCOPE_GATE.md)(2026-07-07, 웹 검색)
-  - [ ] 화면별 정확한 필드명·순서·필수여부 확인(로그인 후 실화면 확인 또는 국세청 매뉴얼)
-  - [ ] 소득세·지방소득세 자동계산 여부 확인
-  - [ ] UI Preview(HTML) 작성
-- Acceptance Criteria:
-  - [ ] JC-024 반기 집계 데이터를 홈택스 직접입력 화면 필드 순서에 맞춰 안내한다
-  - [ ] 주민등록번호는 저장하지 않고 홈택스 화면에서 사용자가 직접 입력하도록 안내한다(PII 원칙 유지)
-  - [ ] 자동입력·브라우저 자동화는 하지 않는다(수동 타이핑 가이드까지만)
-  - [ ] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
-- Document Sync Check: 2026-07-07 Scope Gate 작성 — 메뉴 경로 확인, 화면 필드 상세는 미확인. **구현 금지 유지** — 화면 필드 확인·UI Preview·승인 전.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

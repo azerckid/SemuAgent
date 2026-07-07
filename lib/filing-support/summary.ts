@@ -48,7 +48,7 @@ export type FilingSupportItem = {
   tone: FilingTone
 }
 
-export type FilingGuideStep = {
+export type FilingPreparationStep = {
   number: number
   title: string
   description: string
@@ -56,11 +56,11 @@ export type FilingGuideStep = {
   done: boolean
 }
 
-export type FilingInputGuide = {
+export type FilingPreparationValues = {
   title: string
   description: string
   targetItemType: FilingItemType
-  steps: FilingGuideStep[]
+  steps: FilingPreparationStep[]
   copyPayload: string
   downloadActionLabel: string | null
 }
@@ -93,7 +93,7 @@ export type FilingSupportSummary = {
     description: string
   }
   items: FilingSupportItem[]
-  guide: FilingInputGuide
+  guide: FilingPreparationValues
   receipts: FilingReceiptRow[]
   checklist: FilingChecklistRow[]
   hasSourceArtifacts: boolean
@@ -153,7 +153,7 @@ const DEFAULT_TZ = 'Asia/Seoul'
 
 export const FILING_RESPONSIBILITY = {
   title: '세무 에이전트는 신고서 제출을 대행하지 않습니다.',
-  description: '첨부 패키지 생성과 홈택스 단계별 입력 가이드까지 지원하며, 실제 제출과 납부는 회사가 홈택스에서 직접 진행하고 접수증만 보관합니다.',
+  description: '첨부 패키지 생성과 신고 준비값 확인까지 지원하며, 실제 업로드·제출과 납부는 회사가 홈택스에서 직접 진행하고 접수증만 보관합니다.',
 } as const
 
 const CHECKLIST_DEFINITIONS: Array<{
@@ -390,17 +390,17 @@ export function buildFilingItems(params: {
   }))
 }
 
-export function buildFilingInputGuide(params: {
+export function buildFilingPreparationValues(params: {
   period: FilingPeriod
   payroll: PayrollFilingSource | null
   withholdingItem: FilingSupportItem
-}): FilingInputGuide {
+}): FilingPreparationValues {
   const employeeCount = params.payroll?.employeeCount ?? 0
   const grossPayKrw = params.payroll?.grossPayKrw ?? 0
   const incomeTaxKrw = params.payroll?.incomeTaxKrw ?? 0
   const localIncomeTaxKrw = params.payroll?.localIncomeTaxKrw ?? 0
   const copyPayload = [
-    `${params.period.payrollLabel} 원천세 신고 입력값`,
+    `${params.period.payrollLabel} 원천세 신고 준비값`,
     `간이세액 대상: ${employeeCount.toLocaleString('ko-KR')}명`,
     `총지급액: ${formatKrw(grossPayKrw)}`,
     `징수세액: ${formatKrw(incomeTaxKrw)}`,
@@ -408,21 +408,21 @@ export function buildFilingInputGuide(params: {
   ].join('\n')
 
   return {
-    title: '홈택스 입력 가이드 · 원천세',
-    description: '아래 값을 홈택스 해당 항목에 그대로 입력하세요. (자동 제출 아님)',
+    title: '신고 준비값 확인 · 원천세',
+    description: '원천세 신고 전 확인해야 할 확정 값을 한곳에 모았습니다. (자동 제출 아님)',
     targetItemType: 'withholding',
     steps: [
       {
         number: 1,
-        title: '홈택스 로그인 → 원천세 신고 메뉴 이동',
-        description: '국세청 홈택스에서 회사 공동인증서로 로그인',
+        title: '홈택스 업로드·제출 전 준비값 확인',
+        description: '회사 담당자가 홈택스에서 최종 업로드·제출하기 전 확인',
         values: [],
         done: true,
       },
       {
         number: 2,
-        title: '인원·총지급액 입력',
-        description: '간이세액 대상과 총지급액을 입력',
+        title: '인원·총지급액 확인',
+        description: '간이세액 대상과 총지급액 확인',
         values: [
           { label: '간이세액 대상', value: `${employeeCount.toLocaleString('ko-KR')}명` },
           { label: '총지급액', value: formatKrw(grossPayKrw) },
@@ -431,8 +431,8 @@ export function buildFilingInputGuide(params: {
       },
       {
         number: 3,
-        title: '소득세액 입력',
-        description: '징수세액을 입력하고 지방소득세는 위택스에서 별도 확인',
+        title: '소득세액 확인',
+        description: '징수세액과 지방소득세를 신고 전 확인',
         values: [
           { label: '징수세액', value: formatKrw(incomeTaxKrw) },
           { label: '지방소득세', value: formatKrw(localIncomeTaxKrw) },
@@ -441,7 +441,7 @@ export function buildFilingInputGuide(params: {
       },
       {
         number: 4,
-        title: '신고서 제출 → 접수증 저장',
+        title: '업로드·제출 후 접수증 저장',
         description: '제출 후 접수증을 제출 접수증 보관 영역에 업로드',
         values: [],
         done: false,
@@ -610,7 +610,7 @@ export async function loadFilingSupportSummary({
     return {
       ...base,
       items: [],
-      guide: buildFilingInputGuide({
+      guide: buildFilingPreparationValues({
         period,
         payroll: null,
         withholdingItem: {
@@ -750,7 +750,7 @@ export async function loadFilingSupportSummary({
   return {
     ...base,
     items,
-    guide: buildFilingInputGuide({
+    guide: buildFilingPreparationValues({
       period,
       payroll,
       withholdingItem: items.find((item) => item.type === 'withholding') ?? items[1],

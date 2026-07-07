@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildChecklistItemId,
   buildDefaultFilingItemRecord,
-  buildFilingInputGuide,
+  buildFilingPreparationValues,
   buildFilingItems,
   buildFilingPeriod,
   buildPayrollFilingSource,
@@ -179,7 +179,7 @@ describe('filing support item derivation', () => {
   })
 })
 
-describe('filing input guide', () => {
+describe('filing preparation values', () => {
   it('keeps payroll summary totals while injecting actual income/local taxes (S-30~34)', () => {
     const merged = buildPayrollFilingSource(
       { ...payrollSource, withholdingTaxKrw: 9_999_999 },
@@ -195,7 +195,7 @@ describe('filing input guide', () => {
 
   it('uses actual payroll income/local tax values without 10/11 approximation (S-30~34)', () => {
     const [, withholdingItem] = buildPreviewItems()
-    const guide = buildFilingInputGuide({
+    const guide = buildFilingPreparationValues({
       period,
       payroll: { ...payrollSource, withholdingTaxKrw: 9_999_999 },
       withholdingItem,

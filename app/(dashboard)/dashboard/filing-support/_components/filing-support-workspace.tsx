@@ -10,7 +10,7 @@ import {
 import type { ComponentType, ReactNode } from 'react'
 import type {
   FilingChecklistRow,
-  FilingInputGuide,
+  FilingPreparationValues,
   FilingReceiptRow,
   FilingSupportItem,
   FilingSupportSummary,
@@ -19,7 +19,7 @@ import type {
 import { cn } from '@/lib/utils'
 import {
   FilingChecklistToggle,
-  FilingGuideCopyButton,
+  FilingPreparationValueCopyButton,
   FilingReceiptDeleteButton,
   FilingReceiptUploadButton,
 } from './filing-actions'
@@ -58,7 +58,7 @@ export function FilingSupportWorkspace({ summary, withholdingEfiling }: FilingSu
             <FilingItemsSection items={summary.items} />
             {withholdingEfiling ? <WithholdingEfilingPanel efiling={withholdingEfiling} /> : null}
             <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
-              <InputGuideCard guide={summary.guide} periodKey={summary.period.payrollPeriodKey} />
+              <PreparationValuesCard guide={summary.guide} periodKey={summary.period.payrollPeriodKey} />
               <ReceiptsCard periodKey={summary.period.filingPeriodKey} receipts={summary.receipts} />
             </div>
             <ChecklistSection periodKey={summary.period.filingPeriodKey} checklist={summary.checklist} />
@@ -185,18 +185,18 @@ function FilingItemCard({ item }: { readonly item: FilingSupportItem }) {
   )
 }
 
-function InputGuideCard({ guide, periodKey }: { readonly guide: FilingInputGuide; readonly periodKey: string }) {
+function PreparationValuesCard({ guide, periodKey }: { readonly guide: FilingPreparationValues; readonly periodKey: string }) {
   return (
     <section className={cn(panelClass, 'p-[18px]')}>
       <h2 className="text-[13px] font-semibold text-foreground">{guide.title}</h2>
       <p className="mt-1 text-xs text-company-fg-subtle">{guide.description}</p>
       <div className="mt-3 grid">
         {guide.steps.map((step) => (
-          <GuideStep key={step.number} step={step} />
+          <PreparationStep key={step.number} step={step} />
         ))}
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <FilingGuideCopyButton payload={guide.copyPayload} />
+        <FilingPreparationValueCopyButton payload={guide.copyPayload} />
         <Link
           href={`/dashboard/payroll?period=${periodKey}`}
           className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-2 text-center text-[12px] font-semibold text-foreground hover:bg-company-nav-hover"
@@ -208,7 +208,7 @@ function InputGuideCard({ guide, periodKey }: { readonly guide: FilingInputGuide
   )
 }
 
-function GuideStep({ step }: { readonly step: FilingInputGuide['steps'][number] }) {
+function PreparationStep({ step }: { readonly step: FilingPreparationValues['steps'][number] }) {
   return (
     <div className="flex gap-3 border-b border-company-border py-2.5 last:border-b-0">
       <div className={cn(
@@ -378,7 +378,7 @@ function PreviewNote() {
     <div className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
       <strong className="font-semibold text-company-fg-muted">책임 경계</strong>
       {' '}
-      신고서 자동 제출·세금 자동 납부는 제공하지 않습니다. 첨부 패키지 생성 · 홈택스 단계별 입력 가이드 · 제출 접수증 보관 · 사후 체크리스트까지 지원하며, 제출/납부는 회사가 홈택스에서 직접 수행합니다.
+      신고서 자동 제출·세금 자동 납부는 제공하지 않습니다. 첨부 패키지 생성 · 신고 준비값 확인 · 제출 접수증 보관 · 사후 체크리스트까지 지원하며, 업로드·제출/납부는 회사가 홈택스에서 직접 수행합니다.
     </div>
   )
 }
@@ -389,7 +389,7 @@ function FilingSupportEmptyState() {
       <div>
         <ClipboardList className="mx-auto size-8 text-company-fg-subtle" />
         <h2 className="mt-3 text-base font-semibold text-foreground">아직 신고할 항목이 없습니다</h2>
-        <p className="mt-1 text-[12.5px] text-company-fg-muted">부가세·급여를 먼저 확정하면 신고 항목과 입력 가이드가 채워집니다.</p>
+        <p className="mt-1 text-[12.5px] text-company-fg-muted">부가세·급여를 먼저 확정하면 신고 항목과 준비값 확인 영역이 채워집니다.</p>
         <div className="mt-4 flex justify-center gap-2">
           <Link href="/dashboard/vat" className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[12px] font-semibold text-foreground">부가세 열기</Link>
           <Link href="/dashboard/payroll" className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[12px] font-semibold text-foreground">급여 열기</Link>
