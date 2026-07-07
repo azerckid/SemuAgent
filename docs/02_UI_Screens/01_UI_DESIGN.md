@@ -128,7 +128,7 @@
 |:---|:---|:---|
 | Responsibility Banner | 자동 제출·납부 없음(책임 경계) 상단 고지 | accent 배너, 하단 안내와 반복 |
 | Filing Item Card | 신고 항목별(부가세/원천세/4대보험) 패키지 상태 + CTA | 준비됨(ok)/패키지 대기(warn)/확인 필요, 부가세 패키지는 검토 전 잠금 |
-| Filing Preparation Values | 홈택스 단계별 입력 값 안내 | 단계 리스트(done/대기) + 입력 값 강조 + "준비값 복사" |
+| Filing Preparation Values | 신고 준비값·양식 파일 준비 상태 확인 | 단계 리스트(done/대기) + 확정 값 강조 + JC-030 파일 패널 링크 |
 | Receipts Storage | 제출 접수증 업로드·보관 | 접수증 목록 + 빈 항목(제출 후 업로드 대기) |
 | Post-filing Checklist | 납부·보관 사후 확인 | 체크박스(완료 취소선) |
 | State Card | 로딩/빈/오류 표준 (공용) | 스켈레톤·빈안내(부가세·급여 먼저 확정)·오류+재시도 |
@@ -186,17 +186,18 @@
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
-| Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·Path 2 handoff 가능 여부 | 진행률 + blocker 카운트 |
-| **3 Filing Paths** | Path 1(양식 파일)·Path 2(사무소 ZIP)·Path 3(미래) 카드 | Path 1 최우선; Path 2 패널은 Preview만(구현 보류) |
-| **JC-034 Export Panel** | Path 2 handoff ZIP — 트랙 선택·manifest·README | UI Preview 승인; 코드는 Path 1 세목 확대 후 |
+| Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·Path 1 양식 확인 준비 상태 | 진행률 + blocker 카운트 |
+| **Path 1 Completion Flow** | 홈택스 업로드용 양식·파일 작성, 양식 채움 확인, 업로드 안내 | 베타 중심 경로 |
+| **Deferred Paths Notice** | Path 2(사무소 ZIP)·Path 3(미래 인증) 보류 안내 | Path 1 베타 이후 |
 | Next Action List | 신고 전 blocker와 해당 워크스페이스 CTA | danger/warn/ok dot + 라우팅 |
 | Common Foundation Cards | 자료수집 -> 기장검토 공통 기반의 입력·산출 상태 | 누락/검토대기/원장 준비 상태칩 |
-| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/Path 1·2 handoff |
+| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/Path 1 양식·파일 상태 |
 | Schedule Strip | 다가오는 마감·D-day | 일정은 보조 정보, 중심 프레임 아님 |
-| Responsibility Boundary | 3 Filing Paths 책임 경계·자동제출 제외 | accent 안내 박스 |
+| Responsibility Boundary | Path 1 책임 경계·자동제출·직접입력 경로 제외 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
 
-- 화면의 중심 질문은 "홈택스·위택스에 넣을 확정 데이터가 준비됐는가"이며, **실행 우선순위는 Path 1(홈택스 양식 기입)** 이다 ([Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)).
+- 화면의 중심 질문은 "홈택스·위택스에 넣을 확정 데이터가 준비됐는가"이며, **실행 우선순위는 Path 1(홈택스 업로드용 양식·파일 작성)** 이다 ([Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)).
+- 홈택스 화면에 값을 옮겨 적도록 안내하는 직접입력 경로는 제공하지 않는다.
 - 세무 일정은 하단 보조 섹션으로만 둔다.
 - 자동제출·신규 산출 엔진·신규 DB는 JC-029 Preview 범위 밖이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
@@ -250,7 +251,7 @@
 | Summary Cards | 수입금액·매입/경비·미확정 거래·누락 자료 요약 | 숫자 카드 + 상태칩 |
 | Revenue Table | 수입금액 분류별 금액·상태 + 합계 행 | 준비완료/확인필요 상태칩 |
 | Source Material Table | 매입·경비 자료 유형별 합계·누락 상태 + 합계 행 | 준비완료/누락 상태칩 |
-| Hometax Handoff Table | 홈택스 입력 전 확인할 항목·상태·담당 화면 | 준비완료/확인필요 상태칩 |
+| Hometax Handoff Table | 홈택스 업로드·신고 전 확인할 항목·상태·담당 화면 | 준비완료/확인필요 상태칩 |
 | Responsibility Boundary | 홈택스 제출·전자신고 파일(JC-030)·자동제출(JC-023) 제외 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음/해당 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
 
@@ -303,7 +304,7 @@
 
 **신고지원**
 1. 신고 항목 "패키지 열기"(준비됨) / "부가세·급여 열기"(선행 화면 연동)
-2. "준비값 복사" (홈택스 업로드 전 준비값 확인, 자동 제출 아님)
+2. 신고 준비값 확인 및 JC-030 양식·파일 생성 패널로 이동
 3. 접수증 업로드, 사후 체크리스트 체크
 
 **First-run Sample**
