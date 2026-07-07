@@ -67,7 +67,7 @@ export function ReconciliationLedgerView({ activeFilter, summary }: Reconciliati
             <MetricCard label="원장 준비율" value={`${readinessPercent}%`} />
             <MetricCard label="확정 거래" value={`${confirmedCount}건`} />
             <MetricCard label="확인 필요" value={`${pendingCount}건`} />
-            <MetricCard label="증빙 없음" value={`${evidenceMissingCount}건`} />
+            <MetricCard label="증빙 필요" value={`${evidenceMissingCount}건`} />
           </div>
         </section>
 
@@ -80,7 +80,7 @@ export function ReconciliationLedgerView({ activeFilter, summary }: Reconciliati
           <SourceSummaryCard label="카드 승인" count={sourceCounts.card} sub="계정·거래처 확인" />
           <SourceSummaryCard label="세금계산서" count={sourceCounts.tax_invoice} sub="매출·매입 증빙" />
           <SourceSummaryCard label="현금영수증" count={sourceCounts.receipt} sub="공제·제외 검토" />
-          <SourceSummaryCard label="제외 검토" count={exclusionReviewCount} sub="업무무관·중복 후보" />
+          <SourceSummaryCard label="제외 검토" count={exclusionReviewCount} sub="업무무관·중복 의심" />
         </section>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -90,7 +90,7 @@ export function ReconciliationLedgerView({ activeFilter, summary }: Reconciliati
             <TabChip active={activeFilter === 'card'} count={sourceCounts.card} filter="card" label="카드" periodKey={summary.period.key} />
             <TabChip active={activeFilter === 'tax_invoice'} count={sourceCounts.tax_invoice} filter="tax_invoice" label="세금계산서" periodKey={summary.period.key} />
             <TabChip active={activeFilter === 'receipt'} count={sourceCounts.receipt} filter="receipt" label="현금영수증" periodKey={summary.period.key} />
-            <TabChip active={activeFilter === 'missing_evidence'} count={evidenceMissingCount} filter="missing_evidence" label="증빙 없음" periodKey={summary.period.key} />
+            <TabChip active={activeFilter === 'missing_evidence'} count={evidenceMissingCount} filter="missing_evidence" label="증빙 필요" periodKey={summary.period.key} />
             <TabChip active={activeFilter === 'exclusion_review'} count={exclusionReviewCount} filter="exclusion_review" label="제외 검토" periodKey={summary.period.key} />
           </div>
           <input
@@ -311,16 +311,15 @@ function reconciliationStatus(row: BookkeepingReviewQueueRow): { label: string; 
   if (row.requiresManualAccount) return { label: '계정 확인', tone: 'danger', actionLabel: '계정 지정' }
   if (row.status === 'unclassified') return { label: '분류 필요', tone: 'danger', actionLabel: '분류' }
   if (hasMissingEvidenceBlocker(row)) return { label: '증빙 확인', tone: 'danger', actionLabel: '확인' }
-  if (row.reconciliation.matchState === 'ambiguous') return { label: '후보 확인', tone: 'warn', actionLabel: '확인' }
-  if (row.reconciliation.matchState === 'candidate') return { label: '후보 있음', tone: 'warn', actionLabel: '확인' }
+  if (row.reconciliation.matchState === 'ambiguous') return { label: '대조 필요', tone: 'warn', actionLabel: '확인' }
+  if (row.reconciliation.matchState === 'candidate') return { label: 'AI 증빙 확인', tone: 'warn', actionLabel: '확인' }
   if (row.status === 'confirmed') return { label: '확정', tone: 'ok', actionLabel: '보기' }
   return { label: '확인 필요', tone: 'warn', actionLabel: '확인' }
 }
 
 function evidenceStatus(row: BookkeepingReviewQueueRow): { label: string; tone: Tone } {
-  if (row.reconciliation.candidates.length > 1) return { label: `후보 ${row.reconciliation.candidates.length}건`, tone: 'warn' }
-  if (row.reconciliation.candidates.length === 1) return { label: '후보 1건', tone: 'warn' }
-  if (hasMissingEvidenceBlocker(row)) return { label: '증빙 없음', tone: 'danger' }
+  if (row.reconciliation.candidates.length > 0) return { label: 'AI 증빙 확인', tone: 'warn' }
+  if (hasMissingEvidenceBlocker(row)) return { label: '증빙 필요', tone: 'danger' }
   if (row.status === 'confirmed') return { label: '확정 자료', tone: 'ok' }
   return { label: '원천 자료 확인', tone: 'warn' }
 }

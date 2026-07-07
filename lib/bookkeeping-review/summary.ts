@@ -264,10 +264,10 @@ export function buildReconciliationInfo(row: BookkeepingReviewQueueRow, allRows:
     blockers.push({ code: 'explanation_required', label: '사용내역 소명 필요' })
   }
   if ((row.sourceType === 'bank' || row.sourceType === 'tax_invoice' || row.sourceType === 'other') && candidates.length === 0) {
-    blockers.push({ code: 'missing_evidence', label: '연결 증빙 후보 없음' })
+    blockers.push({ code: 'missing_evidence', label: '연결 증빙 필요' })
   }
   if (candidates.length > 1) {
-    blockers.push({ code: 'ambiguous_match', label: `매칭 후보 ${candidates.length}건` })
+    blockers.push({ code: 'ambiguous_match', label: `대조 필요 ${candidates.length}건` })
   }
 
   let matchState: ReconciliationMatchState = 'confirmed'

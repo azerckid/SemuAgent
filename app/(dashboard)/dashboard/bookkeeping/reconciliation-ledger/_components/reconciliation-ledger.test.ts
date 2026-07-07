@@ -31,7 +31,7 @@ describe('reconciliation ledger filters', () => {
     row({ id: 'bank_confirmed', sourceType: 'bank' }),
     row({ id: 'card_confirmed', sourceType: 'card' }),
     row({ id: 'tax_invoice_confirmed', sourceType: 'tax_invoice' }),
-    row({ id: 'missing_evidence', sourceType: 'other', status: 'needs_decision', reconciliation: { matchState: 'missing_evidence', candidates: [], blockers: [{ code: 'missing_evidence', label: '연결 증빙 후보 없음' }] } }),
+    row({ id: 'missing_evidence', sourceType: 'other', status: 'needs_decision', reconciliation: { matchState: 'missing_evidence', candidates: [], blockers: [{ code: 'missing_evidence', label: '연결 증빙 필요' }] } }),
     row({ id: 'account_unconfirmed_only', sourceType: 'bank', status: 'suggested', reconciliation: { matchState: 'candidate', candidates: [], blockers: [{ code: 'account_unconfirmed', label: '계정항목 미확정' }] } }),
     row({ id: 'low_confidence', sourceType: 'receipt', confidence: 'low', status: 'suggested', requiresManualAccount: true, reconciliation: { matchState: 'candidate', candidates: [], blockers: [{ code: 'account_unconfirmed', label: '계정항목 미확정' }, { code: 'explanation_required', label: '사용내역 소명 필요' }] } }),
   ]

@@ -154,7 +154,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
       },
       rowConclusion: rowConclusion({
         headline: '매출 + 세금계산서 연결 권장',
-        basisLabel: '같은 금액·같은 일자 세금계산서 후보 1건',
+        basisLabel: 'AI가 찾은 같은 금액·같은 일자 세금계산서 1건',
         primaryAction: 'connect_evidence',
       }),
       blockers: [{ code: 'account_unconfirmed', label: '계정항목 미확정' }],
@@ -223,7 +223,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
         basisLabel: '세금계산서만 존재 · 통장/카드 미연결',
         primaryAction: 'connect_evidence',
       }),
-      blockers: [{ code: 'missing_evidence', label: '연결 증빙 없음' }],
+      blockers: [{ code: 'missing_evidence', label: '연결 증빙 필요' }],
       actions: disabledActions,
     },
     {
@@ -249,14 +249,14 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
         suggestedEvidenceSource: null,
         suggestedExclusionReason: 'personal_private',
         confidence: 'medium',
-        basisLabel: '주말 식대 · 사적 사용 후보',
+        basisLabel: '주말 식대 · 사적 사용 의심',
         matchedCount: 2,
         lastSeenPeriod: '2026-04',
         reason: 'prior_exclusion_pattern',
       },
       rowConclusion: rowConclusion({
         headline: '사적 사용 제외 검토',
-        basisLabel: '주말 식대 · 업무무관 후보',
+        basisLabel: '주말 식대 · 업무무관 의심',
         primaryAction: 'exclude',
       }),
       blockers: [{ code: 'exclude_reason_required', label: '제외 사유 확인 필요' }],
@@ -295,7 +295,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
       patternSuggestion: null,
       rowConclusion: rowConclusion({
         headline: '카드 정산 합계와 62,140원 차이',
-        basisLabel: '금액 불일치 · 후보 1건',
+        basisLabel: '금액 불일치 · AI 대조 추천 1건',
         primaryAction: 'review_only',
       }),
       blockers: [{ code: 'ambiguous_match', label: '금액 대조 필요' }],
@@ -412,7 +412,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
         basisLabel: '통장 출금만 존재 · 세금계산서/현금영수증 미연결',
         primaryAction: 'connect_evidence',
       }),
-      blockers: [{ code: 'missing_evidence', label: '연결 증빙 없음' }],
+      blockers: [{ code: 'missing_evidence', label: '연결 증빙 필요' }],
       actions: disabledActions,
     },
     {
