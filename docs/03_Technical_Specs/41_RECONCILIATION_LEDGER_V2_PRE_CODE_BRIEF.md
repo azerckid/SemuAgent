@@ -79,6 +79,8 @@ Known existing behavior:
 
 ## 4. Data Contract
 
+Implementation must move these contracts into Zod schemas at the module boundary so route params, query filters, and mutation payloads fail closed instead of drifting from this document.
+
 ```ts
 type ReconciliationSource =
   | 'bank'
@@ -216,6 +218,8 @@ This gate feeds filing-preparation tracks, but the gate itself belongs under
 기장검토.
 
 ## 8. UI Contract
+
+Route: `/dashboard/bookkeeping/reconciliation-ledger` (introduced by PR #139).
 
 The approved Preview remains
 [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html).
