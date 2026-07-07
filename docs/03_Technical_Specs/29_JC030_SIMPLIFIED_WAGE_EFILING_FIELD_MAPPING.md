@@ -1,6 +1,6 @@
 # JC-030 — 근로소득 간이지급명세서 전자신고 필드 매핑
 > Created: 2026-07-07 00:30 KST
-> Last Updated: 2026-07-07 00:30 KST
+> Last Updated: 2026-07-07 18:30 KST
 
 ## 0. Flow Status
 
@@ -100,7 +100,7 @@ v1: **B레코드 1건**(자기 사업장 = 제출자).
 | B5 | X(40) 상호 | `client.name` | |
 | B6 | X(30) 대표자명 | billing 대표자 [갭] | profile 필드 확인 |
 | B7 | X(10) 사업자등록번호 | A9와 동일 | |
-| B8 | X(13) 주민/법인번호 | 법인: 법인등록번호 [갭] / 개인: 대표 주민번호 일회성 | PII |
+| B8 | X(13) 주민/법인번호 | 법인등록번호 또는 개인사업자 대표 주민번호 일회성 입력 | PII · 서버/DB 저장 금지 |
 | B9 | 9(4) 귀속연도 | `ReportingContext.year` | JC-024 context |
 | B10 | 9(1) 반기 | `1`=상반기, `2`=하반기 | `ReportingContext.half` |
 | B11 | 9(10) C레코드 수 | 생성한 C레코드 건수 | 퇴사·재입사 분리 시 1인 다건 |
@@ -152,6 +152,7 @@ FOR each employee_group IN payment-statements simplified rows (status = ready):
 |-------|------|------|
 | `employeePii[employeeKey].residentId` | C6 | Zod 13자리·체크섬 [구현 시] |
 | `submission.taxOfficeCode` | A3, B3, C3 | Zod 3자리 |
+| `submission.representativeId` | B8 | Zod 13자리 · 법인/개인 모두 필수 |
 | `submission.contactPhone` | A13 | 선택 |
 
 요청 종료 시 메모리 폐기. 서버·로그·DB 저장 금지 ([PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)).
@@ -168,7 +169,7 @@ FOR each employee_group IN payment-statements simplified rows (status = ready):
 | V-06 | C12 ≤ C13 | error |
 | V-07 | JC-024 `needs_review` / `missing_months` 직원 포함 | error (파일 생성 차단) |
 | V-08 | C6 미입력 직원 | error |
-| V-09 | A3/B3 세무서코드 미입력 | error |
+| V-09 | A3/B3 세무서코드 또는 B8 주민/법인번호 미입력 | error |
 | V-10 | 반기 6개월 중 급여 period 누락 | warn → error (정책: Brief §7) |
 | V-11 | Σ(월별 gross) ≠ C14 | error |
 
@@ -180,7 +181,7 @@ FOR each employee_group IN payment-statements simplified rows (status = ready):
 |----|---------|------|
 | 세무서코드 | 제출 폼 일회성 입력 | 회사 설정 필드 |
 | 담당자 부서/성명/전화 | 일회성 또는 세션 기본값 | 설정 화면 |
-| 법인등록번호/대표 주민번호(B8) | 법인 시 일회성 | billing 확장 |
+| 법인등록번호/대표 주민번호(B8) | 법인/개인 모두 일회성 필수 입력 | 설정 저장 없이 요청 body에서만 사용 |
 | 인정상여(C15) | 0 고정 | payroll 비과세/상여 분리 |
 | 월별 금액 필드(2022+ 변경 가능성) | 반기 합계만 C14 | 최신 HWP 대조 |
 | fcrypt 암호화 | Brief §4.2 · [NTS Crypto Spec](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) | 구현 슬라이스 2b |

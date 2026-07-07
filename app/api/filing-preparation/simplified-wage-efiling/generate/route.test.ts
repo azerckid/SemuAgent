@@ -26,6 +26,7 @@ const validBody = {
   taxOfficeCode: '114',
   contactName: 'KimRep',
   contactPhone: '0212345678',
+  representativeId: '7001011234567',
   employeePii: { 'code:E-001': { residentId: '8001011234567' } },
 }
 
@@ -77,6 +78,14 @@ describe('POST /api/filing-preparation/simplified-wage-efiling/generate', () => 
     expect(response.status).toBe(400)
     const text = await response.text()
     expect(text).not.toContain('800101')
+  })
+
+  it('rejects missing obligor id without echoing PII', async () => {
+    const { representativeId: _representativeId, ...body } = validBody
+    const response = await POST(postRequest(body))
+    expect(response.status).toBe(400)
+    const text = await response.text()
+    expect(text).not.toContain(validBody.employeePii['code:E-001'].residentId)
   })
 
   it('returns octet-stream for valid request', async () => {

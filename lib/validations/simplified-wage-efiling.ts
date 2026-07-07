@@ -11,7 +11,7 @@ export const simplifiedWageEfilingGenerateSchema = z
     contactName: z.string().min(1, '담당자 성명이 필요합니다.').max(30),
     contactPhone: z.string().min(1, '담당자 연락처가 필요합니다.').max(15),
     hometaxId: z.string().max(20).optional(),
-    representativeId: residentIdSchema.optional(),
+    representativeId: residentIdSchema,
     employeePii: z.record(z.string().min(1), z.object({ residentId: residentIdSchema })),
     encryptionPassword: z.string().min(8).max(15).optional(),
   })

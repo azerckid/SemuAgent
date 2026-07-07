@@ -18,7 +18,8 @@ export function SimplifiedWageEfilingUploadGuide() {
         <div>
           <h4 className="text-[13px] font-semibold">홈택스 변환제출 안내</h4>
           <p className="mt-1 max-w-[640px] text-[12px] text-company-fg-muted">
-            파일 다운로드 후 아래 순서로 홈택스에서 직접 업로드·검증·제출합니다.
+            plain 파일은 암호화 전 검증용 후보입니다.
+            홈택스 제출은 NTS-CRYPTO 암호화·적합성 검정 확인 후 사용자가 직접 진행합니다.
             SemuAgent는 홈택스에 로그인하거나 제출하지 않습니다.
           </p>
         </div>
@@ -63,7 +64,7 @@ export function SimplifiedWageEfilingUploadGuide() {
       </div>
 
       <p className="mt-3 text-[11px] text-company-fg-subtle">
-        v1은 plain 레코드 파일을 제공합니다. 홈택스가 암호화(NTS-CRYPTO) 파일을 요구하면 슬라이스 2b 스펙 확보 후 지원합니다.
+        v1은 plain 레코드 파일 후보를 제공합니다. 홈택스가 암호화(NTS-CRYPTO) 파일 또는 적합성 검정 통과 파일만 허용하면 제출에는 사용할 수 없습니다.
       </p>
     </section>
   )

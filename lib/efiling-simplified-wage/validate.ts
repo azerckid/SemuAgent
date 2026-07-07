@@ -18,6 +18,10 @@ export function validateInputBeforeBuild(input: BuildSimplifiedWageInput): Valid
     issues.push(issue('V-09', 'error', '세무서코드(3자리)가 필요합니다.'))
   }
 
+  if (!input.obligorRegistrationId || !/^\d{13}$/.test(input.obligorRegistrationId)) {
+    issues.push(issue('V-09', 'error', '원천징수의무자 주민/법인등록번호(13자리)가 필요합니다.'))
+  }
+
   for (const month of input.missingPayrollMonths ?? []) {
     issues.push(issue('V-10', 'error', `반기 급여 자료 누락: ${month}`))
   }

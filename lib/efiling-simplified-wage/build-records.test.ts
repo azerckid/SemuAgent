@@ -126,6 +126,13 @@ describe('validation V-07 ~ V-11 (input)', () => {
     expect(issues.some((i) => i.ruleId === 'V-09')).toBe(true)
   })
 
+  it('V-09 blocks missing obligor registration id', () => {
+    const issues = validateInputBeforeBuild(baseInput({ obligorRegistrationId: '' }))
+    expect(
+      issues.some((i) => i.ruleId === 'V-09' && i.message.includes('주민/법인등록번호')),
+    ).toBe(true)
+  })
+
   it('V-10 blocks missing payroll months', () => {
     const issues = validateInputBeforeBuild(baseInput({ missingPayrollMonths: ['2026-03'] }))
     expect(issues.some((i) => i.ruleId === 'V-10')).toBe(true)
