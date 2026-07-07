@@ -35,6 +35,8 @@ export type BookkeepingReviewQueueRow = {
   confidence: BookkeepingReviewConfidence
   confidenceTone: BookkeepingReviewTone
   status: BookkeepingReviewRowStatus
+  sourceType: 'bank' | 'card' | 'receipt' | 'tax_invoice' | 'other'
+  direction: 'income' | 'expense' | 'unknown'
   requiresManualAccount: boolean
 }
 
@@ -77,6 +79,8 @@ type ClassificationRowInput = {
   finalAccount: string | null
   recommendationConfidence: string
   status: string
+  sourceType: 'bank' | 'card' | 'receipt' | 'tax_invoice' | 'other'
+  direction: 'income' | 'expense' | 'unknown'
 }
 
 type VoucherLineInput = { side: string; accountName: string | null; accountCode: string | null; amountKrw: number }
@@ -136,6 +140,8 @@ export function mapClassificationRow(row: ClassificationRowInput): BookkeepingRe
     confidence,
     confidenceTone: confidenceTone(confidence),
     status: (row.status as BookkeepingReviewRowStatus) ?? 'suggested',
+    sourceType: row.sourceType,
+    direction: row.direction,
     requiresManualAccount: requiresManualAccount(confidence, row.status),
   }
 }
@@ -295,6 +301,8 @@ export async function loadBookkeepingReviewSummary({
       finalAccount: bookkeepingTransactionClassification.finalAccount,
       recommendationConfidence: bookkeepingTransactionClassification.recommendationConfidence,
       status: bookkeepingTransactionClassification.status,
+      sourceType: bookkeepingTransactionClassification.sourceType,
+      direction: bookkeepingTransactionClassification.direction,
     })
     .from(bookkeepingTransactionClassification)
     .where(and(

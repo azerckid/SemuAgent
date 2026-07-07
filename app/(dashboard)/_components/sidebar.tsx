@@ -17,7 +17,7 @@ const FLOW_NAV = [
 ] as const
 
 const BOOKKEEPING_CHILD_NAV = [
-  { href: '/dashboard/bookkeeping', label: '자료대조원장' },
+  { href: '/dashboard/bookkeeping/reconciliation-ledger', label: '자료대조원장' },
 ] as const
 
 const FILING_PREPARATION_CHILD_NAV = [

@@ -73,7 +73,7 @@ describe('buildCompanyHomeActionItems', () => {
       'source-missing',
       'payroll-issue',
     ])
-    expect(items[0]).toMatchObject({ tone: 'danger', count: 18, ctaLabel: '자료대조원장 열기' })
+    expect(items[0]).toMatchObject({ tone: 'danger', count: 18, href: '/dashboard/bookkeeping/reconciliation-ledger', ctaLabel: '자료대조원장 열기' })
     expect(items[1]).toMatchObject({ ctaLabel: '자료수집 열기' })
   })
 

@@ -96,7 +96,7 @@ const READINESS_DOMAINS: InternalReminderDomain[] = [
 
 const BLOCKER_META: Record<InternalReminderDomain, { href: string; ctaLabel: string } | null> = {
   source_collection: { href: '/dashboard/direct-upload', ctaLabel: '자료수집 열기' },
-  bookkeeping_review: { href: '/dashboard/bookkeeping', ctaLabel: '자료대조원장 열기' },
+  bookkeeping_review: { href: '/dashboard/bookkeeping/reconciliation-ledger', ctaLabel: '자료대조원장 열기' },
   vat: { href: '/dashboard/vat', ctaLabel: '부가세 열기' },
   payroll: { href: '/dashboard/payroll', ctaLabel: '급여 열기' },
   filing_support: { href: '/dashboard/filing-support', ctaLabel: '신고지원 열기' },

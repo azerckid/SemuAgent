@@ -78,7 +78,7 @@ describe('buildBusinessStatusBlockers', () => {
     expect(blockers.map((b) => [b.id, b.href])).toEqual([
       ['business-type-missing', '/dashboard/settings'],
       ['source-collection', '/dashboard/direct-upload'],
-      ['bookkeeping-review', '/dashboard/bookkeeping'],
+      ['bookkeeping-review', '/dashboard/bookkeeping/reconciliation-ledger'],
     ])
     expect(blockers.find((b) => b.id === 'bookkeeping-review')?.title).toContain('2건')
   })
