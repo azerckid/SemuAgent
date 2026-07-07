@@ -103,7 +103,7 @@ type BusinessStatusReportSummary = {
     description: string
     tone: 'warn' | 'danger'
     href: '/dashboard/direct-upload' | '/dashboard/bookkeeping' | '/dashboard/settings'
-    ctaLabel: '자료수집 열기' | '기장검토 열기' | '설정 열기'
+    ctaLabel: '자료수집 열기' | '자료대조원장 열기' | '설정 열기'
   }>
   revenueRows: BusinessStatusAmountRow[]
   expenseRows: BusinessStatusAmountRow[]
@@ -152,7 +152,7 @@ function buildBusinessStatusExpenseRows(rows: BusinessStatusClassificationRow[])
 |:---|:---|:---|
 | 사업자 유형 미지정 | `taxEntityType === null` | 설정 열기 |
 | 자료 누락/정규화 대기 | `YYYY-H1` + `YYYY-H2` `loadSourceCollectionSummary()`의 `missingItems.length`와 `normalizationPendingCount` 합산값 > 0 | 자료수집 열기 |
-| 기장 미확정 | classification row `status`가 `suggested`·`needs_decision`·`unclassified` | 기장검토 열기 |
+| 기장 미확정 | classification row `status`가 `suggested`·`needs_decision`·`unclassified` | 자료대조원장 열기 |
 
 준비율은 저장하지 않는 파생값이다.
 

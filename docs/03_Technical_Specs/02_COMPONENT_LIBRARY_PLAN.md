@@ -52,7 +52,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 | 컴포넌트 | 경로 | 재사용 조건 |
 |:---|:---|:---|
-| Sidebar | `app/(dashboard)/_components/sidebar.tsx` | 네비 항목을 회사용(홈·자료수집·기장검토·부가세·급여·신고지원·설정)으로 정리. "고객 요청/회계사" 문구 제거(JC-004 연계) |
+| Sidebar | `app/(dashboard)/_components/sidebar.tsx` | 네비 항목을 회사용(홈·자료수집·기장검토/자료대조원장·부가세·급여·신고지원·설정)으로 정리. "고객 요청/회계사" 문구 제거(JC-004 연계) |
 | Sidebar nav link | `app/(dashboard)/_components/sidebar-nav-link.tsx` | 활성 상태·라우팅 그대로 사용 |
 | Sign-out button | `app/(dashboard)/_components/sidebar-sign-out-button.tsx` | 사용자 영역에 재사용 |
 | shadcn `table` | `components/ui/table.tsx` | 최근 제출·영수증(홈), 수집 상태(자료수집) |
@@ -94,7 +94,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 | 화면 컴포넌트 | 구현 방식 | 기반 |
 |:---|:---|:---|
-| Classification Header | 커스텀 `BookkeepingClassificationHeader` | `card` + `progress` |
+| Classification Header | 커스텀 `BookkeepingClassificationHeader` - 자료대조원장 제목·신고 전 거래 대조/계정확정 설명 | `card` + `progress` |
 | Queue Tabs | 커스텀 `BookkeepingReviewTabs` | 세그먼트 탭(`button`) + 건수 배지 |
 | Bulk Action Bar | 커스텀 `BookkeepingBulkActions` | `button`(선택 N건 승인/일괄 변경) |
 | Classification Queue Table | 커스텀 `BookkeepingClassificationQueue` | `table` + `badge`(AI 배지) + `Confidence Bar` + 행 액션(승인/수정/계정 지정) |

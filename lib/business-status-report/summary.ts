@@ -47,7 +47,7 @@ export type BusinessStatusBlocker = {
   description: string
   tone: 'warn' | 'danger'
   href: '/dashboard/direct-upload' | '/dashboard/bookkeeping' | '/dashboard/settings'
-  ctaLabel: '자료수집 열기' | '기장검토 열기' | '설정 열기'
+  ctaLabel: '자료수집 열기' | '자료대조원장 열기' | '설정 열기'
 }
 
 export type BusinessStatusHandoffRow = {
@@ -189,7 +189,7 @@ export function buildBusinessStatusBlockers(params: {
       description: '수입금액과 매입·경비 계정분류를 확정해야 합계에 반영됩니다.',
       tone: 'danger',
       href: '/dashboard/bookkeeping',
-      ctaLabel: '기장검토 열기',
+      ctaLabel: '자료대조원장 열기',
     })
   }
   return blockers

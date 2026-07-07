@@ -14,7 +14,8 @@ describe('bookkeeping review UI boundaries (JC-010)', () => {
   const companyHomeSummarySource = readFileSync(join(workspaceRoot, 'lib/company-home/summary.ts'), 'utf8')
 
   it('renders the approved preview section order and core labels (S-01)', () => {
-    expect(source).toContain('거래 분류 현황')
+    expect(source).toContain('자료대조원장')
+    expect(source).toContain('신고 전 거래 대조·계정확정')
     expect(source).toContain('검토 대기')
     expect(source).toContain('신뢰도 낮음')
     expect(source).toContain('거래내용 / 상대처')
@@ -52,6 +53,7 @@ describe('bookkeeping review UI boundaries (JC-010)', () => {
     expect(sidebarSource).toContain("href: '/dashboard/bookkeeping'")
     expect(sidebarSource).toContain('자료대조원장')
     expect(companyHomeSummarySource).toContain("bookkeeping: '/dashboard/bookkeeping'")
+    expect(companyHomeSummarySource).toContain('자료대조원장 열기')
   })
 
   it('renders the pending-count sidebar badge from the server layout for Preview parity', () => {

@@ -71,11 +71,11 @@
 - 상태칩 색상 규약은 두 화면 공통(ok/warn/danger/muted/blue). 표·카드·상태 예시(State Card)는 화면 간 재사용한다.
 - 자료수집은 mutation(업로드·정규화)이 발생하므로, 업로드/재시도 CTA에 진행(mini-progress)·오류(danger) 상태를 명시적으로 노출한다.
 
-### 4.3 기장검토 (02_bookkeeping_review.html)
+### 4.3 기장검토 / 자료대조원장 (02_bookkeeping_review.html)
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
-| Classification Header | 거래 분류 현황(확정/대기)·진행률 강조 | 진행률 바 + 우측 대기 카운트(danger) |
+| Classification Header | 신고 전 거래 대조·계정확정 현황(확정/대기)·진행률 강조 | 진행률 바 + 우측 대기 카운트(danger) |
 | Queue Tabs | 검토 대기 / 신뢰도 낮음 / 확정 / 전체 필터 | 세그먼트 탭(active 강조) + 건수 배지 |
 | Bulk Action Bar | 다중 선택 일괄 승인·계정 변경 | primary "선택 N건 승인" + ghost "일괄 변경" |
 | Classification Queue Table | 거래별 AI 추천 계정과목·신뢰도·처리 | 체크박스 + AI 배지 + Confidence Bar + 행 액션(승인/수정/계정 지정) |

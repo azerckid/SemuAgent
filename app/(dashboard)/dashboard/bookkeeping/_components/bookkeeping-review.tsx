@@ -179,8 +179,10 @@ function BookkeepingReviewTopbar({ summary }: BookkeepingReviewTopbarProps) {
           <Link href="/dashboard" className="hover:text-company-fg-muted hover:underline">회사 홈</Link>
           <span aria-hidden="true"> › </span>
           <span>기장검토</span>
+          <span aria-hidden="true"> › </span>
+          <span>자료대조원장</span>
         </p>
-        <h1 className="text-base font-semibold tracking-tight text-foreground">기장검토</h1>
+        <h1 className="text-base font-semibold tracking-tight text-foreground">자료대조원장</h1>
       </div>
       <span className="text-[13px] font-medium text-company-fg-muted">{companyName}</span>
       <div className="ml-auto">
@@ -211,7 +213,7 @@ function ClassificationProgressHeader({ summary }: ClassificationProgressHeaderP
   return (
     <div className={cn(panelClass, 'grid items-center gap-5 px-6 py-5 md:grid-cols-[minmax(0,1fr)_auto]')}>
       <div>
-        <p className="text-xs font-semibold text-company-fg-muted">거래 분류 현황 · {formatPeriodEyebrow(summary.period.key)}</p>
+        <p className="text-xs font-semibold text-company-fg-muted">신고 전 거래 대조·계정확정 · {formatPeriodEyebrow(summary.period.key)}</p>
         <h2 className="mt-1 text-[20px] font-bold tracking-[-0.02em] text-foreground">
           {summary.counts.confirmed} / {summary.counts.total}건 계정과목 확정
         </h2>
@@ -219,7 +221,7 @@ function ClassificationProgressHeader({ summary }: ClassificationProgressHeaderP
           <div className="h-full rounded-full bg-[#2563eb]" style={{ width: `${progress}%` }} />
         </div>
         <p className="mt-2 text-[12.5px] text-company-fg-muted">
-          AI 자동 분류 후 검토 대기 {summary.counts.pending}건 · {lowHint}
+          홈택스 양식 생성 전에 계정항목·업무무관 제외 여부를 확정합니다. 검토 대기 {summary.counts.pending}건 · {lowHint}
         </p>
       </div>
       <div className="text-left md:text-right">
@@ -762,7 +764,7 @@ function PreviewNote() {
     <p className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
       <span className="font-semibold text-company-fg-muted">Preview 안내</span>
       {' — '}
-      이 화면은 기장검토 UI입니다. 거래 분류 현황, 분류 큐, 선택 거래 상세, 로딩·빈·오류 상태를 승인된 Preview 구조에 맞춰 제공합니다.
+      이 화면은 자료대조원장 UI입니다. 신고 전 거래 대조·계정확정 현황, 분류 큐, 선택 거래 상세, 로딩·빈·오류 상태를 승인된 Preview 구조에 맞춰 제공합니다.
       AI 추천은 초안이며 최종 확정 책임은 사용자에게 있습니다.
     </p>
   )

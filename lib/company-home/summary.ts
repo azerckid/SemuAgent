@@ -272,11 +272,11 @@ export function buildCompanyHomeActionItems(counts: Pick<
     items.push({
       id: 'bookkeeping-unclassified',
       title: `미검토 거래 ${counts.unclassifiedTransactionCount}건 분류 필요`,
-      description: '기장검토에서 계정과목이 확정되지 않은 거래가 있습니다.',
+      description: '자료대조원장에서 신고 전 계정항목을 확정해야 합니다.',
       tone: 'danger',
       count: counts.unclassifiedTransactionCount,
       href: ROUTES.bookkeeping,
-      ctaLabel: '기장검토 열기',
+      ctaLabel: '자료대조원장 열기',
     })
   }
 

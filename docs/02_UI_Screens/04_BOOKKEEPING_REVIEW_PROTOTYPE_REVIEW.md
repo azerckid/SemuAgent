@@ -4,7 +4,7 @@
 
 ## 1. HTML UI Preview
 - Preview: [기장검토](./previews/02_bookkeeping_review.html)
-- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 회사 홈 "기장검토 열기"(다음 할 일) 또는 사이드바 "기장검토"로 진입.
+- 확인 방식: 브라우저에서 HTML 파일 직접 열람. 회사 홈 "자료대조원장 열기"(다음 할 일) 또는 사이드바 "기장검토"로 진입.
 - 확인 목적: 거래 분류·계정과목 확정·승인 흐름의 화면 구조, 동선, 상태별 UI
 
 ## 2. Prototype Link/Screenshot
