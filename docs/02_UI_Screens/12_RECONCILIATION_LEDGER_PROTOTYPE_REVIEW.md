@@ -32,6 +32,10 @@ The adopted direction is **ledger table + right work panel**. The Clobe-style lo
 - Previous-period pattern recommendation means the UI can say why it suggests an account/evidence/exclusion, for example last month or recent months had the same counterparty, amount pattern, evidence source, or exclusion decision.
 - "후보 N건" is not enough. The panel must show the actual evidence rows and let the user connect, reject, search manually, unlink, or replace.
 - On mobile/narrow screens, the same panel may become a drawer, but the interaction contract stays the same.
+- Convenience should come from prioritization, not more modes: next-action queue first, tabs second.
+- The work panel starts with a one-line conclusion before detailed evidence and AI/pattern rationale.
+- Batch suggestion acceptance is allowed only for safe repeated groups and always requires user confirmation.
+- Missing-source issues should link back to 자료수집 with source type and period context; recent apply/confirm actions should support shallow undo.
 - Period scope must be explicit: month, quarter, half-year, year, and custom range. The default follows the filing context rather than forcing one global period.
 - "증빙없음" is not a completed state. The UI must show action-oriented states such as 증빙 필요, 소명 필요, 소명 완료, 증빙 예외, or 제외됨.
 
@@ -55,7 +59,7 @@ The current app screen is still an initial slice. It should not be treated as th
 - Source summary: bank, card, tax invoice, cash receipt, evidence/explanation-needed, exclusion-review counts.
 - Ledger table: one row per reconciled transaction candidate.
 - Key columns: transaction date, source, counterparty, memo/item, supply amount, tax amount, linked evidence, account, counterparty master, status, action.
-- Required actions: connect evidence, explain usage, confirm evidence exception, apply or reject prior-period pattern recommendation, assign account, confirm transaction, exclude private/business-unrelated use, resolve amount mismatch.
+- Required actions: start from next-action queue, connect evidence, explain usage, confirm evidence exception, apply or reject prior-period pattern recommendation, batch-accept safe repeated suggestions, assign account, confirm transaction, exclude private/business-unrelated use, resolve amount mismatch, use source back link, and undo the latest apply/confirm action.
 - Gate panel: tax-type file generation readiness reads this confirmed ledger.
 - States: loading, empty, error, no permission.
 

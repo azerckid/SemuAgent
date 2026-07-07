@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-08 04:02 KST
+> Last Updated: 2026-07-08 04:51 KST
 
 ## 0. Purpose
 
@@ -78,6 +78,32 @@ Until these are implemented, the screen must be described as an initial read-onl
 
 Path 1 file generation must read the resolved completion state, not a candidate count.
 
+## 0.4 Convenience Contract
+
+자료대조원장은 모든 정보를 한꺼번에 보여주는 화면이 아니라, 사용자가 Path 1 파일 생성을 막는 문제부터 빠르게 해소하도록 돕는 작업대다. The interface should reduce decision load, not add more modes or tabs for the same information.
+
+Phase 2 convenience features are limited to these contracts:
+
+| Convenience contract | Purpose | Boundary |
+|:---|:---|:---|
+| Next-action queue | Show the most important unresolved items first, ordered by filing blocker, amount, and due-date impact | This is a queue over existing blockers, not a new workflow engine |
+| Batch suggestion acceptance | Let the user confirm a safe group of repeated suggestions once | Not automatic confirmation; group must show eligibility and require explicit user acceptance |
+| One-line panel conclusion | Put the recommended account/evidence/exclusion decision and its basis at the top of the work panel | Details stay available below; do not hide uncertainty |
+| Source-collection back link | If the issue requires missing source data, link directly to 자료수집 with period and source type context | Do not pretend the reconciliation screen can solve missing uploads |
+| Tax-type blocker reasons | Show which Path 1 file is blocked and why, such as VAT evidence, account, or exclusion blockers | Same readiness data, clearer reason display |
+| Closing checklist | Show whether evidence, explanation, account, exclusion reason, and tax blockers are at zero | Checklist is a completion view over the same gate, not a separate approval layer |
+| Shallow undo | Let the user undo the most recent apply/confirm action from the current session | Full audit-log UI is deferred; backend audit remains separate |
+
+Batch suggestion groups are only allowed when all grouped rows share the same `patternSuggestion.reason`, suggested account, suggested evidence source or exclusion reason, and a visible basis such as same counterparty, prior confirmed count, and amount/date range. If the group contains mixed reasons, it must not be offered as one-click acceptance.
+
+Explicitly deferred from Phase 2 convenience scope:
+
+- Full split/merge transaction editor. Only amount-difference resolution may be introduced before a separate durable-link brief.
+- Long-form AI explanation drafts. Phase 2 may show a short hint, but the user writes or confirms the memo.
+- Separate saved-rule engine. Prior-period pattern learning remains the single repeated-behavior mechanism.
+- Separate fast-mode/full-mode product modes. Default view may prioritize blocking items, with an "전체 보기" toggle.
+- Full audit log UI. Use shallow undo and compact recent-change hints only.
+
 ## 1. Scope
 
 ### Included
@@ -112,9 +138,9 @@ Path 1 file generation must read the resolved completion state, not a candidate 
 
 | Slice | Goal | DB change | User-visible result |
 |:---|:---|:---:|:---|
-| 2a | Reconciliation read model and candidate display | No | Rows show source, linked evidence candidates, previous-period pattern suggestions, match state, and blockers |
-| 2b | Account/exclusion/explanation actions | No preferred | Existing classification and attribution APIs are reused where possible |
-| 2c | Persisted reconciliation links, only if required | Additive only | User-confirmed bank-to-evidence links survive reloads and audits |
+| 2a | Reconciliation read model and candidate display | No | Rows show source, linked evidence candidates, previous-period pattern suggestions, match state, blockers, next-action queue, tax blocker reasons, and closing checklist |
+| 2b | Account/exclusion/explanation actions | No preferred | Existing classification and attribution APIs are reused where possible; work panel supports one-line conclusion, source-collection back links, batch suggestion acceptance, and shallow undo |
+| 2c | Persisted reconciliation links, only if required | Additive only | User-confirmed bank-to-evidence links survive reloads and audits; split/merge editor remains a separate brief if needed |
 
 Slice 2a must not invent a new table. If Slice 2b discovers that confirmed
 matches need a durable pair/link model, Slice 2c must get a separate migration
@@ -189,6 +215,32 @@ type ReconciliationExclusionReason =
   | 'internal_transfer'
   | 'refund_or_cancellation'
   | 'unsupported_needs_review'
+
+type ReconciliationNextAction = {
+  id: string
+  label: string
+  reason: string
+  priority: 'filing_blocker' | 'high_amount' | 'due_date' | 'manual_review'
+  targetRowId: string | null
+  targetRoute: string
+}
+
+type ReconciliationTaxBlockerSummary = {
+  taxTrack: 'vat' | 'business_status' | 'withholding' | 'local_income' | 'payment_statement'
+  label: string
+  blockerCount: number
+  topReasons: Array<{ code: ReconciliationBlockerCode; label: string; count: number }>
+  canGeneratePath1File: boolean
+}
+
+type ReconciliationBatchSuggestionGroup = {
+  id: string
+  rowIds: string[]
+  suggestedAction: 'apply_account' | 'connect_evidence' | 'exclude' | 'mark_exception'
+  basisLabel: string
+  eligibility: 'safe_to_offer' | 'mixed_reasons_blocked'
+  requiresUserConfirmation: true
+}
 
 type ReconciliationMatchCandidate = {
   id: string
@@ -394,12 +446,15 @@ Phase 2 implementation should keep that layout:
 1. Readiness hero.
 2. Source summary cards.
 3. Period scope control: month, quarter, half-year, year, and custom range. The default must follow the filing context, but the user can switch scope for review.
-4. Source/action tabs: all, bank, card, tax invoice, cash receipt, evidence needed, explanation needed, exclusion review.
-5. Unified ledger table. The linked-evidence column must show either an actual linked evidence item, an actionable concrete candidate, or an action state such as "증빙 필요", "소명 필요", "증빙 예외", or "제외됨". It must not stop at "후보 N건" or render "증빙없음" as a completed state.
-6. Previous-period pattern chip or panel row: show the historical basis such as last month/recent months, matched count, prior account/evidence/exclusion decision, and confidence.
-7. Right work panel for the selected row. It handles match candidates, evidence search, account confirmation, explanation, and exclusion while keeping the ledger table visible. On narrow screens this may collapse into a drawer.
-8. Evidence finder inside the work panel opened from "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, add/select action, selected total, remaining difference, save/cancel.
-9. Tax-file readiness panel.
+4. Next-action queue: unresolved items ordered by filing blocker, amount, and due-date impact. The queue should let the user start work without hunting through tabs.
+5. Source/action tabs: all, bank, card, tax invoice, cash receipt, evidence needed, explanation needed, exclusion review. Tabs are secondary to the queue.
+6. Unified ledger table. The linked-evidence column must show either an actual linked evidence item, an actionable concrete candidate, or an action state such as "증빙 필요", "소명 필요", "증빙 예외", or "제외됨". It must not stop at "후보 N건" or render "증빙없음" as a completed state.
+7. Previous-period pattern chip or panel row: show the historical basis such as last month/recent months, matched count, prior account/evidence/exclusion decision, and confidence.
+8. Right work panel for the selected row. Its first line must be a one-line conclusion such as recommended account + evidence/exclusion decision + basis + primary action. Details remain below. On narrow screens this may collapse into a drawer.
+9. Evidence finder inside the work panel opened from "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, add/select action, selected total, remaining difference, save/cancel.
+10. Tax-type blocker reason panel: show which Path 1 files are blocked and the top reasons.
+11. Closing checklist: show zero/remaining state for evidence, explanation, account, exclusion reason, and tax blockers.
+12. Source-collection back link and shallow undo affordance where applicable.
 
 The table may initially be read-only in Slice 2a, but the labels must be honest:
 inactive search or settings controls must look disabled until implemented.
@@ -409,9 +464,12 @@ inactive search or settings controls must look disabled until implemented.
 - The user can see which bank movements match or fail to match tax invoices,
   card approvals, cash receipts, or receipts.
 - The user can see why a match candidate was suggested.
+- The user can start from a next-action queue that prioritizes Path 1 blockers before lower-impact rows.
 - The user can switch review scope between month, quarter, half-year, year, and custom range, with sensible defaults from the current filing context.
 - The user can see previous-period pattern recommendations with their basis, and those recommendations do not auto-confirm rows.
 - From a bank row, the user can open "증빙 찾기", choose 세금계산서/현금영수증/체크카드, search rows, select evidence, and see the remaining difference before saving.
+- The work panel starts with a one-line conclusion and primary action before showing detailed evidence/AI/pattern rationale.
+- Safe repeated suggestions can be accepted as a batch only when the group eligibility is visible and the user explicitly confirms the group.
 - The final UI does not use candidate counts as the main answer; it shows concrete candidate rows and actions.
 - Ambiguous matches are not auto-confirmed.
 - The user can confirm or change the account category for filing-relevant rows.
@@ -419,6 +477,9 @@ inactive search or settings controls must look disabled until implemented.
 - The user can exclude a row only with an explicit reason and memo.
 - Excluded or held rows are visible and auditable.
 - The final UI does not present "증빙없음" as a finished state; it shows action states such as 증빙 필요, 소명 필요, 소명 완료, 증빙 예외, or 제외됨.
+- Missing-source problems link back to 자료수집 with period/source context instead of becoming dead ends.
+- The user can see tax-type blocker reasons and a closing checklist that reaches zero before Path 1 file generation is enabled.
+- The user can undo the most recent apply/confirm action from the current session without opening a full audit-log UI.
 - Filing-preparation tracks read blocker counts from this gate instead of
   pretending the tax form is ready.
 - The screen does not provide Hometax direct-entry guidance.
@@ -433,6 +494,7 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Existing classification and attribution schemas inspected.
 - [x] AI escalation and non-blocking runtime rules documented for 자료대조원장.
 - [x] Period scope and evidence action-state terminology documented for 자료대조원장.
+- [x] Convenience contract documented for next-action queue, batch acceptance, one-line panel conclusion, source-collection back link, tax blocker reasons, closing checklist, and shallow undo.
 - [ ] Slice 2a read model reviewed before code.
 - [ ] Slice 2b mutation mapping reviewed before code.
 - [ ] Slice 2c durable match-link schema approved if needed.
