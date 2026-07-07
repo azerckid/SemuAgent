@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-08 03:25 KST
+> Last Updated: 2026-07-08 04:02 KST
 
 ## 0. Purpose
 
@@ -54,6 +54,8 @@ The current implementation is only the first read-only step. The following funct
 |:---|:---|:---|:---|
 | Bank deposit/withdrawal ↔ tax invoice matching | Match bank movements with issued/received tax invoices by amount, date, and counterparty | Missing/partial | Auto-suggest concrete matches; allow user confirm/unlink/manual search |
 | Card payment ↔ evidence connection | Connect card approvals to tax invoices, cash receipts, or other proof | Missing/partial | Evidence finder source tabs and row-level connect actions |
+| Period scope selector | Let the user review the ledger by filing-relevant period unit: month, quarter, half-year, year, or custom range | Missing/partial | Default from the current filing context, but allow user switch without changing filing data |
+| Evidence action status taxonomy | Replace final-looking "증빙없음" labels with action states such as 증빙 필요, 소명 필요, 소명 완료, 증빙 예외, 제외됨 | Missing/partial | Treat missing evidence as a blocker cause, not a completed row state |
 | Evidence finder | From a bank/card row, choose 세금계산서/현금영수증/체크카드 and select evidence rows | Missing | Right work panel with source selector, search, date/amount filters, add/select, remaining difference |
 | Explanation memo | Let user explain unclear business use for a transaction | Missing | Row-level modal/panel field saved as memo in v1 |
 | Bank usage-description memo | Let user write what a bank movement was for when evidence is weak or context is unclear | Missing | Same work panel memo area; make it visible in audit/readiness |
@@ -149,6 +151,8 @@ type ReconciliationSource =
   | 'cash_receipt'
   | 'other'
 
+type ReconciliationPeriodMode = 'month' | 'quarter' | 'half_year' | 'year' | 'custom'
+
 type ReconciliationMatchState =
   | 'matched'
   | 'candidate'
@@ -157,6 +161,15 @@ type ReconciliationMatchState =
   | 'duplicate_candidate'
   | 'excluded'
   | 'confirmed'
+
+type ReconciliationEvidenceActionState =
+  | 'linked'
+  | 'candidate'
+  | 'evidence_required'
+  | 'explanation_required'
+  | 'explained_no_evidence'
+  | 'evidence_exception'
+  | 'excluded'
 
 type ReconciliationBlockerCode =
   | 'missing_evidence'
@@ -213,6 +226,8 @@ type ReconciliationPatternSuggestion = {
 
 type ReconciliationLedgerRow = {
   id: string
+  periodMode: ReconciliationPeriodMode
+  periodLabel: string
   source: ReconciliationSource
   transactionDate: string | null
   counterparty: string | null
@@ -225,6 +240,7 @@ type ReconciliationLedgerRow = {
   explanationMemo: string | null
   exclusionReason: ReconciliationExclusionReason | null
   matchState: ReconciliationMatchState
+  evidenceActionState: ReconciliationEvidenceActionState
   candidates: ReconciliationMatchCandidate[]
   patternSuggestion: ReconciliationPatternSuggestion | null
   blockers: Array<{ code: ReconciliationBlockerCode; label: string }>
@@ -255,7 +271,33 @@ Slice 2a shows candidates; it does not silently confirm them. A candidate count 
 Amounts and dates are matching signals, not legal conclusions. The UI must show
 why a candidate was suggested.
 
-## 5.1 Previous-Period Pattern Learning Rules
+## 5.1 Period Scope and Evidence Action State Rules
+
+자료대조원장은 신고 기간의 성격에 맞는 기간 단위를 가져야 한다. The UI must support these period modes:
+
+- `month`: 원천세 and ordinary monthly bookkeeping checks.
+- `quarter`: VAT-style quarterly review where needed.
+- `half_year`: 간이지급명세서 and 반기납부/반기 신고 contexts.
+- `year`: 사업장현황신고, 종합소득세, and annual review contexts.
+- `custom`: user-selected date range for investigation, correction, or unusual filing periods.
+
+The default period comes from the current filing context when the user enters from a tax track. Examples: 원천세 opens the relevant month, 부가세 opens the active VAT period such as 2026년 1기, 간이지급명세서 opens the half-year, and 사업장현황신고 opens the fiscal year. Entering from 기장검토 without a tax context may default to the current bookkeeping month.
+
+"증빙없음" must not be rendered as if it were a final accepted state. It is an underlying cause or blocker. User-facing labels must be action/resolution oriented:
+
+| User-facing state | Meaning | Expected user action |
+|:---|:---|:---|
+| 증빙 연결됨 | A concrete tax invoice, cash receipt, card approval, or other proof is linked | Review or replace if wrong |
+| 증빙 후보 있음 | Concrete candidate evidence exists | Select, reject, or search manually |
+| 증빙 필요 | Evidence is normally required but not linked | Open evidence finder |
+| 소명 필요 | Evidence may not exist or is weak, but business purpose must be explained | Enter explanation memo |
+| 소명 완료 | User explained why the row can remain without normal evidence | Reviewable, auditable state |
+| 증빙 예외 처리 | Internal transfer, loan, tax payment, refund/cancellation, or similar row where normal evidence matching is not the right test | Confirm exception type and memo |
+| 제외됨 | Personal/private, business-unrelated, duplicate, wrong-period, or reference-only row | Must have reason and memo |
+
+Internal `missing_evidence` remains a blocker code/match state, but UI copy should say what the user must do: 증빙을 찾으세요, 소명을 입력하세요, 제외 사유를 선택하세요, 내부이체로 확인하세요, or 계정항목을 확정하세요.
+
+## 5.2 Previous-Period Pattern Learning Rules
 
 자료대조원장은 사용자가 전월 또는 최근 기간에 확정한 거래 처리 패턴을 다음 기간의 추천 근거로 사용할 수 있다. 이 기능의 목적은 반복 거래의 추론 확률을 높이는 것이며, 사용자의 최종 확인을 대체하지 않는다.
 
@@ -278,7 +320,7 @@ The UI must show the basis, for example:
 
 A pattern recommendation can raise confidence, preselect a likely account, suggest an evidence source, or flag likely exclusion review. It must not automatically confirm the row, create a durable evidence link, or exclude the row without user action. If the user changes the suggestion, the changed decision becomes the newer learning signal for future periods.
 
-## 5.2 AI Escalation and Non-Blocking Runtime Rules
+## 5.3 AI Escalation and Non-Blocking Runtime Rules
 
 자료대조원장의 AI 판단은 단계형으로 실행한다. 목적은 정확도를 높이는 것이며, 화면을 멈추거나 사용자가 확정 작업을 못 하게 만드는 것이 아니다.
 
@@ -351,13 +393,13 @@ Phase 2 implementation should keep that layout:
 
 1. Readiness hero.
 2. Source summary cards.
-3. Source tabs: all, bank, card, tax invoice, cash receipt, missing evidence,
-   exclusion review.
-4. Unified ledger table. The linked-evidence column must show either an actual linked evidence item, an actionable concrete candidate, or "증빙 찾기". It must not stop at "후보 N건".
-5. Previous-period pattern chip or panel row: show the historical basis such as last month/recent months, matched count, prior account/evidence/exclusion decision, and confidence.
-6. Right work panel for the selected row. It handles match candidates, evidence search, account confirmation, explanation, and exclusion while keeping the ledger table visible. On narrow screens this may collapse into a drawer.
-7. Evidence finder inside the work panel opened from "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, add/select action, selected total, remaining difference, save/cancel.
-8. Tax-file readiness panel.
+3. Period scope control: month, quarter, half-year, year, and custom range. The default must follow the filing context, but the user can switch scope for review.
+4. Source/action tabs: all, bank, card, tax invoice, cash receipt, evidence needed, explanation needed, exclusion review.
+5. Unified ledger table. The linked-evidence column must show either an actual linked evidence item, an actionable concrete candidate, or an action state such as "증빙 필요", "소명 필요", "증빙 예외", or "제외됨". It must not stop at "후보 N건" or render "증빙없음" as a completed state.
+6. Previous-period pattern chip or panel row: show the historical basis such as last month/recent months, matched count, prior account/evidence/exclusion decision, and confidence.
+7. Right work panel for the selected row. It handles match candidates, evidence search, account confirmation, explanation, and exclusion while keeping the ledger table visible. On narrow screens this may collapse into a drawer.
+8. Evidence finder inside the work panel opened from "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, add/select action, selected total, remaining difference, save/cancel.
+9. Tax-file readiness panel.
 
 The table may initially be read-only in Slice 2a, but the labels must be honest:
 inactive search or settings controls must look disabled until implemented.
@@ -367,6 +409,7 @@ inactive search or settings controls must look disabled until implemented.
 - The user can see which bank movements match or fail to match tax invoices,
   card approvals, cash receipts, or receipts.
 - The user can see why a match candidate was suggested.
+- The user can switch review scope between month, quarter, half-year, year, and custom range, with sensible defaults from the current filing context.
 - The user can see previous-period pattern recommendations with their basis, and those recommendations do not auto-confirm rows.
 - From a bank row, the user can open "증빙 찾기", choose 세금계산서/현금영수증/체크카드, search rows, select evidence, and see the remaining difference before saving.
 - The final UI does not use candidate counts as the main answer; it shows concrete candidate rows and actions.
@@ -375,6 +418,7 @@ inactive search or settings controls must look disabled until implemented.
 - The user can open a row-level explanation modal and save a memo.
 - The user can exclude a row only with an explicit reason and memo.
 - Excluded or held rows are visible and auditable.
+- The final UI does not present "증빙없음" as a finished state; it shows action states such as 증빙 필요, 소명 필요, 소명 완료, 증빙 예외, or 제외됨.
 - Filing-preparation tracks read blocker counts from this gate instead of
   pretending the tax form is ready.
 - The screen does not provide Hometax direct-entry guidance.
@@ -388,6 +432,7 @@ inactive search or settings controls must look disabled until implemented.
   [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html).
 - [x] Existing classification and attribution schemas inspected.
 - [x] AI escalation and non-blocking runtime rules documented for 자료대조원장.
+- [x] Period scope and evidence action-state terminology documented for 자료대조원장.
 - [ ] Slice 2a read model reviewed before code.
 - [ ] Slice 2b mutation mapping reviewed before code.
 - [ ] Slice 2c durable match-link schema approved if needed.

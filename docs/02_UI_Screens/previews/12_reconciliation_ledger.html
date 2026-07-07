@@ -175,7 +175,7 @@
     <div class="topbar">
       <div><div class="crumb"><a href="00_company_home.html">회사 홈</a> › 기장검토 › 자료대조원장</div><h1>자료대조원장</h1></div>
       <span class="co">샘플컴퍼니(주)</span>
-      <div class="right"><span class="pill">기준 기간 <span class="tag">2026년 1기</span></span><span class="pill">보기 <span class="tag">전체 자료</span></span></div>
+      <div class="right"><span class="pill">기간 단위 <span class="tag">월 · 분기 · 반기 · 연 · 사용자 지정</span></span><span class="pill">기준 기간 <span class="tag">2026년 1기</span></span></div>
     </div>
 
     <main class="content">
@@ -190,11 +190,11 @@
           <div class="metric"><div class="label">원장 준비율</div><div class="value">81%</div></div>
           <div class="metric"><div class="label">확정 거래</div><div class="value">324건</div></div>
           <div class="metric"><div class="label">확인 필요</div><div class="value">18건</div></div>
-          <div class="metric"><div class="label">증빙 없음</div><div class="value">6건</div></div>
+          <div class="metric"><div class="label">증빙·소명 필요</div><div class="value">6건</div></div>
         </div>
       </section>
 
-      <div class="notice">자료대조원장은 신고 준비 화면이 아니라 기장검토 하위 관문입니다. 여기서 확정된 거래원장을 부가세·사업장현황신고·지방소득세 등 Path 1 양식 생성 화면이 읽습니다.</div>
+      <div class="notice">자료대조원장은 신고 준비 화면이 아니라 기장검토 하위 관문입니다. 월·분기·반기·연·사용자 지정 기간으로 대조 범위를 바꾸며, 여기서 확정된 거래원장을 부가세·사업장현황신고·지방소득세 등 Path 1 양식 생성 화면이 읽습니다.</div>
       <div class="notice">이 Preview는 자료대조원장의 목표 UX 방향을 보여줍니다. 현재 앱의 1차 slice와 다를 수 있으며, 우측 작업 패널 등 완성 기준은 Prototype Review와 Brief 41을 따릅니다.</div>
 
       <section class="summary-grid">
@@ -213,7 +213,8 @@
           <span class="tab">카드 <span class="badge">88</span></span>
           <span class="tab">세금계산서 <span class="badge">64</span></span>
           <span class="tab">현금영수증 <span class="badge">31</span></span>
-          <span class="tab">증빙 없음 <span class="badge">6</span></span>
+          <span class="tab">증빙 필요 <span class="badge">4</span></span>
+          <span class="tab">소명 필요 <span class="badge">2</span></span>
           <span class="tab">제외 검토 <span class="badge">9</span></span>
         </div>
         <div class="search">거래처, 금액, 적요, 증빙번호 검색</div>
@@ -247,7 +248,7 @@
               <td><div class="main-text">AI POWERED INC USA</div><div class="sub">국민카드 5524****2651</div></td>
               <td><div class="main-text">해외 SaaS 결제</div><div class="sub">USD 80.00 · 해외 여부 확인</div></td>
               <td class="amt">112,000</td><td class="amt">0</td>
-              <td><span class="chip muted">카드 승인만 있음</span></td>
+              <td><span class="chip warn">소명 필요</span></td>
               <td><span class="select-like">소프트웨어비 <span>▾</span></span></td>
               <td><span class="select-like">거래처 없음 <span>▾</span></span></td>
               <td><span class="chip warn">계정/거래처 확인</span></td>
@@ -259,7 +260,7 @@
               <td><div class="main-text">주식회사 하드슨에이아이</div><div class="sub">전자세금계산서</div></td>
               <td><div class="main-text">Managed Cloud_NAS 추가</div><div class="sub">입금 또는 카드 결제 연결 필요</div></td>
               <td class="amt">6,303,000</td><td class="amt">630,300</td>
-              <td><span class="chip danger">연결 거래 없음</span></td>
+              <td><span class="chip danger">증빙 필요</span></td>
               <td><span class="select-like">매출 <span>▾</span></span></td>
               <td><span class="select-like">하드슨AI <span>▾</span></span></td>
               <td><span class="chip danger">대조 필요</span></td>
@@ -283,7 +284,7 @@
               <td><div class="main-text">무신사페이먼츠</div><div class="sub">입금 내역</div></td>
               <td><div class="main-text">매출 정산 입금</div><div class="sub">카드 승인 합계와 62,140원 차이</div></td>
               <td class="amt">3,829,500</td><td class="amt">0</td>
-              <td><span class="chip warn">카드 합계 차이</span></td>
+              <td><span class="chip warn">증빙 후보 있음</span></td>
               <td><span class="select-like">매출 <span>▾</span></span></td>
               <td><span class="select-like">무신사페이먼츠 <span>▾</span></span></td>
               <td><span class="chip warn">금액 대조</span></td>
@@ -298,7 +299,7 @@
           <h3>확정 조건</h3>
           <div class="check-list">
             <div class="line"><span class="k">자료 수집</span><span class="chip ok">완료</span></div>
-            <div class="line"><span class="k">증빙 연결</span><span class="chip warn">13건 확인</span></div>
+            <div class="line"><span class="k">증빙·소명 상태</span><span class="chip warn">13건 처리 필요</span></div>
             <div class="line"><span class="k">계정항목</span><span class="chip warn">18건 미확정</span></div>
             <div class="line"><span class="k">업무무관/사적 사용 제외</span><span class="chip warn">9건 검토</span></div>
             <div class="line"><span class="k">중복 제거</span><span class="chip danger">2건 의심</span></div>
