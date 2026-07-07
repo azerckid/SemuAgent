@@ -50,19 +50,20 @@ function baseContext(): SimplifiedWageEfilingContext {
 }
 
 describe('assembleBuildInput', () => {
-  it('maps request PII into ready employee segments only', () => {
+  it('maps request PII into ready employee segments and B8 obligor id', () => {
     const input = assembleBuildInput(baseContext(), {
       year: 2026,
       half: 1,
       taxOfficeCode: '114',
       contactName: 'KimRep',
       contactPhone: '0212345678',
+      representativeId: '7001011234567',
       employeePii: { 'code:E-001': { residentId: '8001011234567' } },
     })
 
     expect(input.employees[0].residentId).toBe('8001011234567')
     expect(input.taxOfficeCode).toBe('114')
-    expect(input.obligorRegistrationId).toBe('')
+    expect(input.obligorRegistrationId).toBe('7001011234567')
   })
 
   it('sets obligor registration id from representativeId', () => {
