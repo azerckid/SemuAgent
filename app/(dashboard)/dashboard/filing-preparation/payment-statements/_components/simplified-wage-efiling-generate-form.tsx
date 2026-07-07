@@ -158,7 +158,7 @@ export function SimplifiedWageEfilingGenerateForm({ efiling }: Props) {
                 onChange={(e) => setForm((f) => ({ ...f, hometaxId: e.target.value }))}
               />
             </Field>
-            <Field label={needsCorpId ? '법인등록번호 (13자리)' : '대표자 주민번호 (13자리, 선택)'}>
+            <Field label={needsCorpId ? '법인등록번호 (13자리)' : '대표자 주민번호 (13자리)'}>
               <input
                 className={inputClass}
                 inputMode="numeric"
@@ -219,10 +219,10 @@ export function SimplifiedWageEfilingGenerateForm({ efiling }: Props) {
               onClick={() => void handleDownload()}
               className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {busy ? '생성 중…' : 'plain 파일 다운로드'}
+              {busy ? '생성 중…' : 'plain 검증용 파일 다운로드'}
             </button>
             <span className="self-center text-[11px] text-company-fg-subtle">
-              NTS-CRYPTO 암호화 파일은 슬라이스 2b에서 지원 예정입니다.
+              암호화·적합성 검정 전까지 홈택스 제출 가능 파일이라고 보장하지 않습니다.
             </span>
           </div>
         </div>
