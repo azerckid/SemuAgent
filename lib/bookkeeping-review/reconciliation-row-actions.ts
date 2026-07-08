@@ -109,6 +109,13 @@ export function resolveEvidenceFinderRowMatch(
   return candidates.find((candidate) => candidate.rowId === browseRowId) ?? null
 }
 
+export function hasEvidenceFinderAiMatch(
+  candidates: ReconciliationMatchCandidate[],
+  browseRows: ReconciliationLedgerRow[],
+): boolean {
+  return browseRows.some((browseRow) => resolveEvidenceFinderRowMatch(candidates, browseRow.id) !== null)
+}
+
 export function resolveLinkedEvidenceDisplay(row: ReconciliationLedgerRow): LinkedEvidenceDisplay[] {
   if (row.evidenceActionState !== 'linked') {
     return []

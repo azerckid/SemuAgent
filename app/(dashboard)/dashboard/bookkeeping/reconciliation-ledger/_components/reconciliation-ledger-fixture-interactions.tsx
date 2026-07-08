@@ -28,6 +28,7 @@ import {
   filterEvidenceFinderBrowseRows,
   formatKrwAmount,
   formatRemainingDifferenceLabel,
+  hasEvidenceFinderAiMatch,
   listEvidenceFinderBrowseRows,
   matchCandidateReasonLabel,
   resolveEvidenceFinderRowMatch,
@@ -319,7 +320,10 @@ export function ReconciliationEvidencePickerModal({
     [row],
   )
   const sourceLabel = evidenceFinderSourceOptions.find((option) => option.source === source)?.label ?? '증빙'
-  const hasAiCandidates = (row?.candidates.length ?? 0) > 0
+  const hasAiCandidates = useMemo(
+    () => (row ? hasEvidenceFinderAiMatch(row.candidates, browseRows) : false),
+    [browseRows, row],
+  )
 
   return (
     <Dialog

@@ -8,6 +8,7 @@ import {
   evidenceRowHighlightTone,
   filterEvidenceFinderBrowseRows,
   hasAiEvidenceSuggestion,
+  hasEvidenceFinderAiMatch,
   listEvidenceFinderBrowseRows,
   matchesEvidenceFinderSource,
   resolveEvidenceFinderRowMatch,
@@ -153,5 +154,18 @@ describe('reconciliation-row-actions', () => {
     expect(resolveEvidenceFinderRowMatch(row!.candidates, matchedCandidateRowId)).toEqual(row!.candidates[0])
     expect(resolveEvidenceFinderRowMatch(row!.candidates, 'no-such-row-id')).toBeNull()
     expect(resolveEvidenceFinderRowMatch([], matchedCandidateRowId)).toBeNull()
+  })
+
+  it('only reports an AI match when the candidate is in the currently browsed source list', () => {
+    const rows = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows
+    const row = rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankToTaxInvoice)
+    expect(row).toBeDefined()
+    expect(row!.candidates.every((candidate) => candidate.source === 'tax_invoice')).toBe(true)
+
+    const taxInvoiceBrowseRows = listEvidenceFinderBrowseRows(rows, 'tax_invoice', row!.id)
+    expect(hasEvidenceFinderAiMatch(row!.candidates, taxInvoiceBrowseRows)).toBe(true)
+
+    const cashReceiptBrowseRows = listEvidenceFinderBrowseRows(rows, 'cash_receipt', row!.id)
+    expect(hasEvidenceFinderAiMatch(row!.candidates, cashReceiptBrowseRows)).toBe(false)
   })
 })
