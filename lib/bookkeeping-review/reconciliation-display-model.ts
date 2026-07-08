@@ -240,6 +240,7 @@ export type ReconciliationNextAction = z.infer<typeof reconciliationNextActionSc
 export type ReconciliationTaxBlockerSummary = z.infer<typeof reconciliationTaxBlockerSummarySchema>
 export type ReconciliationBatchSuggestionGroup = z.infer<typeof reconciliationBatchSuggestionGroupSchema>
 export type ReconciliationClosingChecklist = z.infer<typeof reconciliationClosingChecklistSchema>
+export type ReconciliationRowPrimaryAction = z.infer<typeof reconciliationRowPrimaryActionSchema>
 export type ReconciliationRowConclusion = z.infer<typeof reconciliationRowConclusionSchema>
 export type ReconciliationMatchCandidate = z.infer<typeof reconciliationMatchCandidateSchema>
 export type ReconciliationPatternSuggestion = z.infer<typeof reconciliationPatternSuggestionSchema>
