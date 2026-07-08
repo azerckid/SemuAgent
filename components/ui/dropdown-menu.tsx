@@ -55,7 +55,7 @@ function DropdownMenuItem({
   return (
     <Menu.Item
       className={cn(
-        "flex cursor-default select-none items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+        "flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
         variant === "destructive" &&
           "text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive",
         className,
