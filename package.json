@@ -12,7 +12,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "sample:regenerate": "NODE_OPTIONS='--import ./scripts/stub-server-only.mjs' tsx scripts/regenerate-first-run-sample.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.1",

@@ -29,4 +29,11 @@ describe('reconciliation display filters', () => {
     expect(filtered.length).toBeGreaterThan(0)
     expect(filtered.every((row) => row.source === 'cash_receipt' || row.source === 'receipt')).toBe(true)
   })
+
+  it('sorts filtered rows by transaction date descending', () => {
+    const cardRows = filterReconciliationDisplayRows(rows, 'card')
+    const dates = cardRows.map((row) => row.transactionDate)
+    const sortedDates = [...dates].sort((left, right) => (right ?? '').localeCompare(left ?? ''))
+    expect(dates).toEqual(sortedDates)
+  })
 })

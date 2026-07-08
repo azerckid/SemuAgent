@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { ReconciliationLedgerRow, ReconciliationSource } from './reconciliation-display-model'
+import { sortReconciliationRowsByTransactionDateDesc } from './reconciliation-row-sort'
 
 export const reconciliationDisplayFilterValues = [
   'all',
@@ -34,24 +35,26 @@ export function filterReconciliationDisplayRows(
   rows: ReconciliationLedgerRow[],
   filter: ReconciliationDisplayFilter,
 ): ReconciliationLedgerRow[] {
-  if (filter === 'all') return rows
-  if (filter === 'evidence_required') {
-    return rows.filter((row) => row.evidenceActionState === 'evidence_required')
-  }
-  if (filter === 'explanation_required') {
-    return rows.filter((row) => row.evidenceActionState === 'explanation_required')
-  }
-  if (filter === 'exclusion_review') {
-    return rows.filter(
+  let filtered: ReconciliationLedgerRow[]
+  if (filter === 'all') {
+    filtered = rows
+  } else if (filter === 'evidence_required') {
+    filtered = rows.filter((row) => row.evidenceActionState === 'evidence_required')
+  } else if (filter === 'explanation_required') {
+    filtered = rows.filter((row) => row.evidenceActionState === 'explanation_required')
+  } else if (filter === 'exclusion_review') {
+    filtered = rows.filter(
       (row) =>
         row.evidenceActionState === 'excluded'
         || row.blockers.some((blocker) => blocker.code === 'exclude_reason_required'),
     )
+  } else if (filter === 'cash_receipt') {
+    filtered = rows.filter((row) => isCashReceiptDisplaySource(row.source))
+  } else {
+    filtered = rows.filter((row) => row.source === filter)
   }
-  if (filter === 'cash_receipt') {
-    return rows.filter((row) => isCashReceiptDisplaySource(row.source))
-  }
-  return rows.filter((row) => row.source === filter)
+
+  return sortReconciliationRowsByTransactionDateDesc(filtered)
 }
 
 export function buildReconciliationDisplaySourceCounts(

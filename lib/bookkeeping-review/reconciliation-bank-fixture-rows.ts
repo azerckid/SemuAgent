@@ -1,11 +1,14 @@
 import {
   BANK_SAMPLE_DEFINITIONS,
+  CARD_SAMPLE_DEFINITIONS,
   ORPHAN_TAX_INVOICE_DEFINITIONS,
 } from '@/lib/bookkeeping-review/reconciliation-bank-sample-data'
 import type { ReconciliationLedgerRow } from './reconciliation-display-model'
 
 const PERIOD_LABEL = '2026년 1기 (부가세)'
 const PERIOD_MODE = 'quarter' as const
+
+const JULY_FIXTURE_SUFFIX = '202607'
 
 const disabledActions = {
   canConfirmAccount: false,
@@ -33,8 +36,10 @@ type BankFixtureOverride = Partial<Pick<
   'matchState' | 'evidenceActionState' | 'candidates' | 'blockers' | 'patternSuggestion' | 'rowConclusion'
 >>
 
+type CardFixtureOverride = BankFixtureOverride
+
 const BANK_FIXTURE_OVERRIDES: Record<string, BankFixtureOverride> = {
-  '025': {
+  [`${JULY_FIXTURE_SUFFIX}_b25`]: {
     matchState: 'matched',
     evidenceActionState: 'linked',
     rowConclusion: rowConclusion({
@@ -44,7 +49,7 @@ const BANK_FIXTURE_OVERRIDES: Record<string, BankFixtureOverride> = {
     }),
     blockers: [],
   },
-  '028': {
+  [`${JULY_FIXTURE_SUFFIX}_b28`]: {
     matchState: 'ambiguous',
     evidenceActionState: 'candidate',
     candidates: [
@@ -68,7 +73,7 @@ const BANK_FIXTURE_OVERRIDES: Record<string, BankFixtureOverride> = {
     }),
     blockers: [{ code: 'ambiguous_match', label: '금액 대조 필요' }],
   },
-  '029': {
+  [`${JULY_FIXTURE_SUFFIX}_b29`]: {
     matchState: 'missing_evidence',
     evidenceActionState: 'explanation_required',
     candidates: [],
@@ -82,7 +87,7 @@ const BANK_FIXTURE_OVERRIDES: Record<string, BankFixtureOverride> = {
       { code: 'account_unconfirmed', label: '계정항목 미확정' },
     ],
   },
-  '027': {
+  [`${JULY_FIXTURE_SUFFIX}_b27`]: {
     matchState: 'missing_evidence',
     evidenceActionState: 'evidence_required',
     candidates: [],
@@ -94,7 +99,7 @@ const BANK_FIXTURE_OVERRIDES: Record<string, BankFixtureOverride> = {
     }),
     blockers: [{ code: 'missing_evidence', label: '연결 증빙 필요' }],
   },
-  '034': {
+  [`${JULY_FIXTURE_SUFFIX}_b34`]: {
     matchState: 'matched',
     evidenceActionState: 'linked',
     candidates: [],
@@ -106,7 +111,7 @@ const BANK_FIXTURE_OVERRIDES: Record<string, BankFixtureOverride> = {
     }),
     blockers: [],
   },
-  '047': {
+  [`${JULY_FIXTURE_SUFFIX}_b35`]: {
     matchState: 'missing_evidence',
     evidenceActionState: 'evidence_required',
     candidates: [],
@@ -117,26 +122,30 @@ const BANK_FIXTURE_OVERRIDES: Record<string, BankFixtureOverride> = {
     }),
     blockers: [{ code: 'missing_evidence', label: '연결 증빙 필요' }],
   },
-  '048': {
+}
+
+const CARD_FIXTURE_OVERRIDES: Record<string, CardFixtureOverride> = {
+  [`${JULY_FIXTURE_SUFFIX}_c15`]: {
     matchState: 'missing_evidence',
-    evidenceActionState: 'evidence_required',
+    evidenceActionState: 'explanation_required',
     candidates: [],
     rowConclusion: rowConclusion({
-      headline: '정기적금 · 내부 이체 확인 필요',
-      basisLabel: '통장 간 이체 · 증빙 불필요 후보',
-      primaryAction: 'mark_exception',
+      headline: '업무무관 의심 · 소명 필요',
+      basisLabel: '영화관 결제 · 사적 사용 의심',
+      primaryAction: 'write_explanation',
     }),
-    blockers: [{ code: 'missing_evidence', label: '연결 증빙 필요' }],
+    blockers: [{ code: 'explanation_required', label: '사용내역 소명 필요' }],
   },
 }
 
 function buildMatchedTaxCandidate(
-  sample: (typeof BANK_SAMPLE_DEFINITIONS)[number],
+  sample: (typeof BANK_SAMPLE_DEFINITIONS)[number] | (typeof CARD_SAMPLE_DEFINITIONS)[number],
+  taxRowIdPrefix: 'preview-tax' | 'preview-tax-card',
 ): NonNullable<ReconciliationLedgerRow['candidates']>[number] {
   return {
     id: `candidate-tax-${sample.suffix}`,
     source: 'tax_invoice',
-    rowId: `preview-tax-${sample.suffix}`,
+    rowId: `${taxRowIdPrefix}-${sample.suffix}`,
     date: sample.transactionDate,
     counterparty: sample.taxCounterparty ?? sample.counterparty,
     amountKrw: sample.amountKrw,
@@ -148,8 +157,9 @@ function buildMatchedTaxCandidate(
 
 function buildBankFixtureRow(sample: (typeof BANK_SAMPLE_DEFINITIONS)[number]): ReconciliationLedgerRow {
   const override = BANK_FIXTURE_OVERRIDES[sample.suffix]
-  const matched = sample.matched && sample.suffix !== '027'
-  const taxCandidate = matched ? buildMatchedTaxCandidate(sample) : null
+  const skipPairedTax = sample.suffix === `${JULY_FIXTURE_SUFFIX}_b27`
+  const matched = sample.matched && !skipPairedTax
+  const taxCandidate = matched ? buildMatchedTaxCandidate(sample, 'preview-tax') : null
   const linkedCandidates = override && 'candidates' in override
     ? (override.candidates ?? [])
     : override?.evidenceActionState === 'linked' && taxCandidate
@@ -200,8 +210,79 @@ function buildBankFixtureRow(sample: (typeof BANK_SAMPLE_DEFINITIONS)[number]): 
   }
 }
 
-function buildPairedTaxFixtureRow(sample: (typeof BANK_SAMPLE_DEFINITIONS)[number]): ReconciliationLedgerRow | null {
-  if (!sample.matched || sample.suffix === '027') {
+function buildCardFixtureRow(sample: (typeof CARD_SAMPLE_DEFINITIONS)[number]): ReconciliationLedgerRow {
+  const override = CARD_FIXTURE_OVERRIDES[sample.suffix]
+  const matched = sample.matched
+  const taxCandidate = matched ? buildMatchedTaxCandidate(sample, 'preview-tax-card') : null
+
+  return {
+    id: `preview-card-${sample.suffix}`,
+    periodMode: PERIOD_MODE,
+    periodLabel: PERIOD_LABEL,
+    source: 'card',
+    transactionDate: sample.transactionDate,
+    counterparty: sample.counterparty,
+    description: sample.description,
+    direction: sample.direction,
+    amountKrw: sample.amountKrw,
+    taxAmountKrw: estimateTaxAmountKrw(sample.amountKrw),
+    recommendedAccount: sample.recommendedAccount,
+    finalAccount: null,
+    explanationMemo: null,
+    exclusionReason: null,
+    matchState: override?.matchState ?? (matched ? 'candidate' : 'missing_evidence'),
+    evidenceActionState: override?.evidenceActionState ?? (
+      sample.personalUse ? 'explanation_required' : matched ? 'candidate' : 'evidence_required'
+    ),
+    candidates: override?.candidates ?? (taxCandidate ? [taxCandidate] : []),
+    patternSuggestion: override?.patternSuggestion ?? (sample.personalUse ? {
+      suggestedAccount: null,
+      suggestedEvidenceSource: null,
+      suggestedExclusionReason: 'personal_private',
+      confidence: 'medium',
+      basisLabel: '업무무관 결제 의심',
+      matchedCount: 2,
+      lastSeenPeriod: '2026-04',
+      reason: 'prior_exclusion_pattern',
+    } : matched ? {
+      suggestedAccount: sample.recommendedAccount,
+      suggestedEvidenceSource: 'tax_invoice',
+      suggestedExclusionReason: null,
+      confidence: 'high',
+      basisLabel: '같은 금액·일자 세금계산서를 찾았습니다',
+      matchedCount: 1,
+      lastSeenPeriod: '2026-05',
+      reason: 'same_counterparty_prior_evidence',
+    } : null),
+    rowConclusion: override?.rowConclusion ?? rowConclusion({
+      headline: sample.personalUse
+        ? `${sample.recommendedAccount} · 업무무관 의심`
+        : matched
+          ? `${sample.recommendedAccount} · 증빙있음`
+          : `${sample.recommendedAccount} · 증빙 연결 필요`,
+      basisLabel: sample.personalUse
+        ? '영화관·PC방·미용실 등 업무무관 패턴'
+        : matched
+          ? '같은 금액·같은 일자 세금계산서 1건'
+          : '카드 내역만 존재 · 증빙 미연결',
+      primaryAction: sample.personalUse ? 'write_explanation' : 'connect_evidence',
+    }),
+    blockers: override?.blockers ?? (
+      sample.personalUse
+        ? [{ code: 'explanation_required', label: '사용내역 소명 필요' }]
+        : matched
+          ? [{ code: 'account_unconfirmed', label: '계정항목 미확정' }]
+          : [{ code: 'missing_evidence', label: '연결 증빙 필요' }]
+    ),
+    actions: disabledActions,
+  }
+}
+
+function buildPairedTaxFixtureRow(
+  sample: (typeof BANK_SAMPLE_DEFINITIONS)[number],
+  bankRowId: string,
+): ReconciliationLedgerRow | null {
+  if (!sample.matched || sample.suffix === `${JULY_FIXTURE_SUFFIX}_b27`) {
     return null
   }
 
@@ -226,7 +307,7 @@ function buildPairedTaxFixtureRow(sample: (typeof BANK_SAMPLE_DEFINITIONS)[numbe
       {
         id: `candidate-bank-${sample.suffix}`,
         source: 'bank',
-        rowId: `preview-bank-${sample.suffix}`,
+        rowId: bankRowId,
         date: sample.transactionDate,
         counterparty: sample.counterparty,
         amountKrw: sample.amountKrw,
@@ -239,6 +320,50 @@ function buildPairedTaxFixtureRow(sample: (typeof BANK_SAMPLE_DEFINITIONS)[numbe
     rowConclusion: rowConclusion({
       headline: sample.direction === 'income' ? '매출 세금계산서 · 통장 입금 대조' : '매입 세금계산서 · 통장 출금 대조',
       basisLabel: 'AI가 같은 금액·일자 통장 내역을 찾았습니다',
+      primaryAction: 'connect_evidence',
+    }),
+    blockers: [{ code: 'account_unconfirmed', label: '계정항목 미확정' }],
+    actions: disabledActions,
+  }
+}
+
+function buildPairedCardTaxFixtureRow(sample: (typeof CARD_SAMPLE_DEFINITIONS)[number]): ReconciliationLedgerRow | null {
+  if (!sample.matched) return null
+
+  return {
+    id: `preview-tax-card-${sample.suffix}`,
+    periodMode: PERIOD_MODE,
+    periodLabel: PERIOD_LABEL,
+    source: 'tax_invoice',
+    transactionDate: sample.transactionDate,
+    counterparty: sample.taxCounterparty ?? sample.counterparty,
+    description: sample.taxItem ?? sample.description,
+    direction: sample.direction,
+    amountKrw: sample.amountKrw,
+    taxAmountKrw: estimateTaxAmountKrw(sample.amountKrw),
+    recommendedAccount: sample.recommendedAccount,
+    finalAccount: null,
+    explanationMemo: null,
+    exclusionReason: null,
+    matchState: 'candidate',
+    evidenceActionState: 'candidate',
+    candidates: [
+      {
+        id: `candidate-card-${sample.suffix}`,
+        source: 'card',
+        rowId: `preview-card-${sample.suffix}`,
+        date: sample.transactionDate,
+        counterparty: sample.counterparty,
+        amountKrw: sample.amountKrw,
+        taxAmountKrw: estimateTaxAmountKrw(sample.amountKrw),
+        confidence: 'high',
+        reason: 'same_amount_same_day',
+      },
+    ],
+    patternSuggestion: null,
+    rowConclusion: rowConclusion({
+      headline: '매입 세금계산서 · 카드 승인 대조',
+      basisLabel: 'AI가 같은 금액·일자 카드 내역을 찾았습니다',
       primaryAction: 'connect_evidence',
     }),
     blockers: [{ code: 'account_unconfirmed', label: '계정항목 미확정' }],
@@ -278,18 +403,23 @@ function buildOrphanTaxFixtureRow(orphan: (typeof ORPHAN_TAX_INVOICE_DEFINITIONS
 
 export function buildReconciliationBankFixtureRows(): ReconciliationLedgerRow[] {
   const bankRows = BANK_SAMPLE_DEFINITIONS.map(buildBankFixtureRow)
-  const pairedTaxRows = BANK_SAMPLE_DEFINITIONS
-    .map(buildPairedTaxFixtureRow)
+  const cardRows = CARD_SAMPLE_DEFINITIONS.map(buildCardFixtureRow)
+  const pairedBankTaxRows = BANK_SAMPLE_DEFINITIONS
+    .map((sample) => buildPairedTaxFixtureRow(sample, `preview-bank-${sample.suffix}`))
+    .filter((row): row is ReconciliationLedgerRow => row !== null)
+  const pairedCardTaxRows = CARD_SAMPLE_DEFINITIONS
+    .map(buildPairedCardTaxFixtureRow)
     .filter((row): row is ReconciliationLedgerRow => row !== null)
   const orphanTaxRows = ORPHAN_TAX_INVOICE_DEFINITIONS.map(buildOrphanTaxFixtureRow)
 
-  return [...bankRows, ...pairedTaxRows, ...orphanTaxRows]
+  return [...bankRows, ...cardRows, ...pairedBankTaxRows, ...pairedCardTaxRows, ...orphanTaxRows]
 }
 
 export const RECONCILIATION_BANK_FIXTURE_ROW_IDS = {
-  bankToTaxInvoice: 'preview-bank-030',
-  bankLinked: 'preview-bank-025',
-  bankExplanation: 'preview-bank-029',
-  bankAmbiguous: 'preview-bank-028',
-  bankInterestLinked: 'preview-bank-034',
+  bankToTaxInvoice: `preview-bank-${JULY_FIXTURE_SUFFIX}_b30`,
+  bankLinked: `preview-bank-${JULY_FIXTURE_SUFFIX}_b25`,
+  bankExplanation: `preview-bank-${JULY_FIXTURE_SUFFIX}_b29`,
+  bankAmbiguous: `preview-bank-${JULY_FIXTURE_SUFFIX}_b28`,
+  bankInterestLinked: `preview-bank-${JULY_FIXTURE_SUFFIX}_b34`,
+  cardPersonal: `preview-card-${JULY_FIXTURE_SUFFIX}_c15`,
 } as const

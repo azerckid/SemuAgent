@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto'
-import { and, asc, eq } from 'drizzle-orm'
+import { and, asc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import {
   bookkeepingClassificationRun,
+  bookkeepingJournalEntryRow,
   bookkeepingJournalEntryRun,
   bookkeepingJournalEntryVoucher,
   bookkeepingJournalEntryVoucherLine,
@@ -34,7 +35,7 @@ import {
   buildReconciliationBankSampleRows,
 } from './reconciliation-bank-sample'
 
-export const FIRST_RUN_SAMPLE_SEED_VERSION = '2026-07-08.v1'
+export const FIRST_RUN_SAMPLE_SEED_VERSION = '2026-07-08.v2'
 export const FIRST_RUN_SAMPLE_PERIOD_KEY = '2026-H1'
 export const FIRST_RUN_SAMPLE_PAYROLL_PERIOD_KEY = '2026-06'
 
@@ -103,6 +104,14 @@ type SampleRefPlan = {
 
 function hashPart(value: string) {
   return createHash('sha256').update(value).digest('hex').slice(0, 12)
+}
+
+function chunkRows<T>(rows: T[], size: number) {
+  const chunks: T[][] = []
+  for (let index = 0; index < rows.length; index += size) {
+    chunks.push(rows.slice(index, index + size))
+  }
+  return chunks
 }
 
 export function firstRunSampleId(tenantId: string, suffix: string) {
@@ -242,67 +251,8 @@ function buildValidationFileLinks(params: SeedParams, validationRows: Array<type
   return links
 }
 
-function buildSupplementalBookkeepingRows(
-  params: SeedParams,
-  sessionId: string,
-  sourceBatchId: string,
-  runId: string,
-  startIndex: number,
-  targetTotal: number,
-) {
-  const rows: Array<typeof bookkeepingTransactionClassification.$inferInsert> = []
-  const accounts = ['지급수수료', '소모품비', '여비교통비', '접대비', '통신비', '매출']
-  const reservedAmounts = new Set<number>()
-
-  for (let i = startIndex; i <= targetTotal; i += 1) {
-    const isConfirmed = i <= 324
-    const isLowPending = i > 337
-    const id = firstRunSampleId(params.tenantId, `bk_tx_${String(i).padStart(3, '0')}`)
-    let amount = 900_000 + i * 13_371
-    while (reservedAmounts.has(amount)) {
-      amount += 1_009
-    }
-    reservedAmounts.add(amount)
-    rows.push({
-      id,
-      tenantId: params.tenantId,
-      classificationRunId: runId,
-      uploadSessionId: sessionId,
-      sourceBatchId,
-      uploadFileId: null,
-      sourceType: i % 4 === 0 ? 'card' : i % 4 === 1 ? 'receipt' : 'other',
-      transactionDate: `2026-05-${String((i % 27) + 1).padStart(2, '0')}`,
-      merchantName: isConfirmed ? `샘플거래처 ${i}` : i % 2 === 0 ? '카페 샘플' : '문구 샘플',
-      description: isConfirmed ? '계정과목 확정 샘플 거래' : '검토가 필요한 샘플 거래',
-      amountKrw: amount,
-      direction: i % 6 === 0 ? 'income' : 'expense',
-      recommendedAccount: accounts[i % accounts.length],
-      recommendationConfidence: isConfirmed ? 'high' : isLowPending ? 'low' : 'medium',
-      recommendationReason: '승인 Preview 재현을 위한 샘플 분류 결과입니다.',
-      evidenceJson: null,
-      finalAccount: isConfirmed ? accounts[i % accounts.length] : null,
-      staffMemo: null,
-      status: isConfirmed ? 'confirmed' : isLowPending ? 'needs_decision' : 'suggested',
-      confirmedByStaffId: isConfirmed ? params.staffId : null,
-      confirmedAt: isConfirmed ? params.timestamp : null,
-      createdAt: params.timestamp,
-      updatedAt: params.timestamp,
-    })
-  }
-  return rows
-}
-
 function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, sourceBatchId: string, runId: string) {
-  const reconciliationRows = buildReconciliationBankSampleRows(params, sessionId, sourceBatchId, runId)
-  const supplementalRows = buildSupplementalBookkeepingRows(
-    params,
-    sessionId,
-    sourceBatchId,
-    runId,
-    reconciliationRows.length + 1,
-    342,
-  )
-  return [...reconciliationRows, ...supplementalRows]
+  return buildReconciliationBankSampleRows(params, sessionId, sourceBatchId, runId)
 }
 
 function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
@@ -416,7 +366,6 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
   const payrollSourceBatchId = firstRunSampleId(params.tenantId, 'source_batch_payroll_202606')
   const runId = firstRunSampleId(params.tenantId, 'bookkeeping_run_2026h1')
   const journalRunId = firstRunSampleId(params.tenantId, 'journal_run_2026h1')
-  const firstPendingTxId = firstRunSampleId(params.tenantId, 'bk_tx_325')
   const voucherId = firstRunSampleId(params.tenantId, 'journal_voucher_001')
   const payrollSummaryId = firstRunSampleId(params.tenantId, 'payroll_summary_202606')
   const payrollBatchId = firstRunSampleId(params.tenantId, 'payroll_batch_202606')
@@ -445,7 +394,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
       accountingPeriod: '2026-06',
       bookkeepingPeriodType: 'monthly',
       bookkeepingPeriodStart: '2026-01',
-      bookkeepingPeriodEnd: '2026-06',
+      bookkeepingPeriodEnd: '2026-07',
       tokenHash: firstRunSampleId(params.tenantId, 'token_source'),
       uploadUrl: null,
       expiresAt: '2026-07-25T23:59:59.000+09:00',
@@ -464,7 +413,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
       accountingPeriod: '2026-06',
       bookkeepingPeriodType: 'monthly',
       bookkeepingPeriodStart: '2026-06',
-      bookkeepingPeriodEnd: '2026-06',
+      bookkeepingPeriodEnd: '2026-07',
       tokenHash: firstRunSampleId(params.tenantId, 'token_payroll'),
       uploadUrl: null,
       expiresAt: '2026-07-10T23:59:59.000+09:00',
@@ -487,7 +436,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
       accountingPeriod: '2026-06',
       bookkeepingPeriodType: 'monthly',
       bookkeepingPeriodStart: '2026-01',
-      bookkeepingPeriodEnd: '2026-06',
+      bookkeepingPeriodEnd: '2026-07',
       displayLabel: '2026년 부가세 1기 샘플 자료수집',
       legacyUploadSessionId: sessionId,
       createdAt: params.timestamp,
@@ -502,7 +451,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
       accountingPeriod: '2026-06',
       bookkeepingPeriodType: 'monthly',
       bookkeepingPeriodStart: '2026-06',
-      bookkeepingPeriodEnd: '2026-06',
+      bookkeepingPeriodEnd: '2026-07',
       displayLabel: '2026년 6월 급여 샘플',
       legacyUploadSessionId: payrollSessionId,
       createdAt: params.timestamp,
@@ -516,6 +465,9 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
   const bookkeepingRows = buildSampleBookkeepingRows(params, sessionId, sourceBatchId, runId)
   const confirmedBookkeepingCount = bookkeepingRows.filter((row) => row.status === 'confirmed').length
   const pendingBookkeepingCount = bookkeepingRows.filter((row) => row.status !== 'confirmed' && row.status !== 'excluded').length
+  const firstPendingTxId = bookkeepingRows.find((row) => row.status !== 'confirmed')?.id
+    ?? bookkeepingRows[0]?.id
+    ?? firstRunSampleId(params.tenantId, 'bk_bank_202601_b01')
   const payrollLines = buildSamplePayrollLines(params, payrollSummaryId)
   const employeeRows = buildSampleEmployees(params)
   const reminderRules = buildSampleReminderRules(params)
@@ -1082,6 +1034,269 @@ export async function ensureFirstRunSampleDataset({
     }
     console.error('[first-run-sample] seed failed', err)
     return { datasetId, clientId, status: 'failed', created: false, errorMessage: message }
+  }
+}
+
+export type RefreshFirstRunSampleBookkeepingResult = {
+  refreshed: boolean
+  rowCount: number
+  seedVersion: string
+  errorMessage?: string
+}
+
+export async function refreshFirstRunSampleBookkeepingData({
+  tenantId,
+  userId,
+}: {
+  tenantId: string
+  userId: string
+}): Promise<RefreshFirstRunSampleBookkeepingResult> {
+  const [activeDataset] = await db
+    .select({
+      id: sampleDataset.id,
+      clientId: sampleDataset.clientId,
+      status: sampleDataset.status,
+    })
+    .from(sampleDataset)
+    .where(and(eq(sampleDataset.tenantId, tenantId), eq(sampleDataset.status, 'active')))
+    .orderBy(asc(sampleDataset.createdAt), asc(sampleDataset.id))
+    .limit(1)
+
+  if (!activeDataset) {
+    return {
+      refreshed: false,
+      rowCount: 0,
+      seedVersion: FIRST_RUN_SAMPLE_SEED_VERSION,
+      errorMessage: 'active sample dataset not found',
+    }
+  }
+
+  const staffRecord = await findFirstStaff(tenantId, userId)
+  if (!staffRecord) {
+    return {
+      refreshed: false,
+      rowCount: 0,
+      seedVersion: FIRST_RUN_SAMPLE_SEED_VERSION,
+      errorMessage: '담당자 정보를 찾을 수 없습니다.',
+    }
+  }
+
+  const sessionId = firstRunSampleId(tenantId, 'upload_session_2026h1')
+  const sourceBatchId = firstRunSampleId(tenantId, 'source_batch_2026h1')
+  const runId = firstRunSampleId(tenantId, 'bookkeeping_run_2026h1')
+  const journalRunId = firstRunSampleId(tenantId, 'journal_run_2026h1')
+  const voucherId = firstRunSampleId(tenantId, 'journal_voucher_001')
+  const timestamp = toDBString(now())
+  const sampleParams: SeedParams = {
+    tenantId,
+    clientId: activeDataset.clientId,
+    staffId: staffRecord.id,
+    userId,
+    datasetId: activeDataset.id,
+    timestamp,
+    createdClient: false,
+  }
+  const bookkeepingRows = buildReconciliationBankSampleRows(
+    sampleParams,
+    sessionId,
+    sourceBatchId,
+    runId,
+  )
+  const confirmedBookkeepingCount = bookkeepingRows.filter((row) => row.status === 'confirmed').length
+  const pendingBookkeepingCount = bookkeepingRows.filter((row) => row.status !== 'confirmed' && row.status !== 'excluded').length
+
+  try {
+    await db.transaction(async (tx) => {
+      const oldRows = await tx
+        .select({ id: bookkeepingTransactionClassification.id })
+        .from(bookkeepingTransactionClassification)
+        .where(and(
+          eq(bookkeepingTransactionClassification.tenantId, tenantId),
+          eq(bookkeepingTransactionClassification.classificationRunId, runId),
+        ))
+      const oldRowIds = oldRows.map((row) => row.id)
+
+      if (oldRowIds.length > 0) {
+        await tx
+          .delete(bookkeepingJournalEntryVoucherLine)
+          .where(and(
+            eq(bookkeepingJournalEntryVoucherLine.tenantId, tenantId),
+            eq(bookkeepingJournalEntryVoucherLine.voucherId, voucherId),
+          ))
+
+        await tx
+          .delete(bookkeepingJournalEntryVoucher)
+          .where(and(
+            eq(bookkeepingJournalEntryVoucher.tenantId, tenantId),
+            eq(bookkeepingJournalEntryVoucher.id, voucherId),
+          ))
+
+        await tx
+          .delete(vatDeductionReview)
+          .where(and(
+            eq(vatDeductionReview.tenantId, tenantId),
+            inArray(vatDeductionReview.classificationRowId, oldRowIds),
+          ))
+
+        await tx
+          .delete(bookkeepingJournalEntryRow)
+          .where(and(
+            eq(bookkeepingJournalEntryRow.tenantId, tenantId),
+            inArray(bookkeepingJournalEntryRow.classificationRowId, oldRowIds),
+          ))
+      }
+
+      await tx
+        .delete(sampleEntityRef)
+        .where(and(
+          eq(sampleEntityRef.tenantId, tenantId),
+          eq(sampleEntityRef.clientId, activeDataset.clientId),
+          eq(sampleEntityRef.sampleDatasetId, activeDataset.id),
+          eq(sampleEntityRef.entityTable, 'bookkeeping_transaction_classification'),
+        ))
+
+      await tx
+        .delete(bookkeepingTransactionClassification)
+        .where(and(
+          eq(bookkeepingTransactionClassification.tenantId, tenantId),
+          eq(bookkeepingTransactionClassification.classificationRunId, runId),
+        ))
+
+      const rowsToInsert = bookkeepingRows.map((row) => ({
+        ...row,
+        sourceBatchId: null,
+      }))
+
+      if (rowsToInsert.length > 0) {
+        for (const chunk of chunkRows(rowsToInsert, 40)) {
+          await tx.insert(bookkeepingTransactionClassification).values(chunk)
+        }
+      }
+
+      const firstPendingResolvedId = rowsToInsert.find((row) => row.status !== 'confirmed')?.id
+        ?? rowsToInsert[0]?.id
+        ?? null
+
+      if (firstPendingResolvedId) {
+        await tx.insert(bookkeepingJournalEntryVoucher).values({
+          id: voucherId,
+          tenantId,
+          journalEntryRunId: journalRunId,
+          uploadSessionId: sessionId,
+          sourceBatchId: null,
+          classificationRowId: firstPendingResolvedId,
+          sourceClassificationRowIds: JSON.stringify([firstPendingResolvedId]),
+          voucherNumber: 'SAMPLE-001',
+          entryDate: '2026-07-08',
+          requestedPeriod: '2026-07',
+          attributedPeriod: '2026-07',
+          closePeriod: '2026-07',
+          status: 'draft',
+          reason: '샘플 분개 미리보기',
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        }).onConflictDoNothing()
+
+        await tx.insert(bookkeepingJournalEntryVoucherLine).values([
+          {
+            id: firstRunSampleId(tenantId, 'journal_voucher_001_debit'),
+            tenantId,
+            voucherId,
+            lineSequence: 1,
+            side: 'debit',
+            accountName: '소모품비',
+            accountCode: '831',
+            amountKrw: 120_000,
+            counterparty: '문구 샘플',
+            memo: '샘플 거래 차변',
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+          {
+            id: firstRunSampleId(tenantId, 'journal_voucher_001_credit'),
+            tenantId,
+            voucherId,
+            lineSequence: 2,
+            side: 'credit',
+            accountName: '보통예금',
+            accountCode: '103',
+            amountKrw: 120_000,
+            counterparty: '문구 샘플',
+            memo: '샘플 거래 대변',
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]).onConflictDoNothing()
+      }
+
+      await tx
+        .update(bookkeepingClassificationRun)
+        .set({
+          extractedRowCount: bookkeepingRows.length,
+          confirmedRowCount: confirmedBookkeepingCount,
+          unclassifiedRowCount: pendingBookkeepingCount,
+          updatedAt: timestamp,
+        })
+        .where(and(
+          eq(bookkeepingClassificationRun.tenantId, tenantId),
+          eq(bookkeepingClassificationRun.id, runId),
+        ))
+
+      await tx
+        .update(bookkeepingJournalEntryRun)
+        .set({ updatedAt: timestamp })
+        .where(and(
+          eq(bookkeepingJournalEntryRun.tenantId, tenantId),
+          eq(bookkeepingJournalEntryRun.id, journalRunId),
+        ))
+
+      await tx
+        .update(sourceBatch)
+        .set({
+          bookkeepingPeriodEnd: '2026-07',
+          updatedAt: timestamp,
+        })
+        .where(and(
+          eq(sourceBatch.tenantId, tenantId),
+          eq(sourceBatch.id, sourceBatchId),
+        ))
+
+      await tx
+        .update(sampleDataset)
+        .set({
+          seedVersion: FIRST_RUN_SAMPLE_SEED_VERSION,
+          updatedAt: timestamp,
+        })
+        .where(and(eq(sampleDataset.id, activeDataset.id), eq(sampleDataset.tenantId, tenantId)))
+
+      for (const refChunk of chunkRows(bookkeepingRows.map((row) => ({
+        id: firstRunSampleId(tenantId, `ref_bookkeeping_transaction_classification_${row.id}`),
+        tenantId,
+        clientId: activeDataset.clientId,
+        sampleDatasetId: activeDataset.id,
+        entityTable: 'bookkeeping_transaction_classification' as const,
+        entityId: row.id,
+        deleteOrder: 810,
+        createdAt: timestamp,
+      })), 80)) {
+        await tx.insert(sampleEntityRef).values(refChunk).onConflictDoNothing()
+      }
+    })
+
+    return {
+      refreshed: true,
+      rowCount: bookkeepingRows.length,
+      seedVersion: FIRST_RUN_SAMPLE_SEED_VERSION,
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : '샘플 기장 데이터 갱신 중 오류가 발생했습니다.'
+    console.error('[first-run-sample] bookkeeping refresh failed', err)
+    return {
+      refreshed: false,
+      rowCount: 0,
+      seedVersion: FIRST_RUN_SAMPLE_SEED_VERSION,
+      errorMessage: message,
+    }
   }
 }
 

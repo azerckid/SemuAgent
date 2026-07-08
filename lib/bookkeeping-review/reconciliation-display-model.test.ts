@@ -63,7 +63,7 @@ describe('reconciliation display model', () => {
     expect(exclusionRow?.patternSuggestion?.suggestedExclusionReason).toBe('personal_private')
 
     const bankCount = model.rows.filter((row) => row.source === 'bank').length
-    expect(bankCount).toBe(50)
+    expect(bankCount).toBe(245)
 
     const safeBatch = model.batchSuggestionGroups.find((group) => group.eligibility === 'safe_to_offer')
     expect(safeBatch?.requiresUserConfirmation).toBe(true)

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { RECONCILIATION_BANK_FIXTURE_ROW_IDS } from './reconciliation-bank-fixture-rows'
 import { RECONCILIATION_LEDGER_DISPLAY_FIXTURE } from './reconciliation-display-fixture'
 import {
   computeRemainingDifferenceKrw,
@@ -14,10 +15,10 @@ import {
 
 describe('reconciliation-row-actions', () => {
   it('computes remaining difference from row amount and candidate totals', () => {
-    const row = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-028')
+    const row = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankAmbiguous)
     expect(row).toBeDefined()
 
-    expect(computeRemainingDifferenceKrw(row!.amountKrw, row!.candidates)).toBe(62_140)
+    expect(computeRemainingDifferenceKrw(row!.amountKrw, row!.candidates)).toBe(row!.amountKrw! - 3_767_360)
   })
 
   it('returns full row amount when no candidates exist', () => {
@@ -28,7 +29,7 @@ describe('reconciliation-row-actions', () => {
   })
 
   it('shows 증빙있음 for rows with found evidence and still offers the evidence finder', () => {
-    const row = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-030')
+    const row = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankToTaxInvoice)
     expect(row).toBeDefined()
     expect(hasAiEvidenceSuggestion(row!)).toBe(true)
     expect(evidenceActionChipLabel(row!.evidenceActionState)?.label).toBe('증빙있음')
@@ -68,7 +69,7 @@ describe('reconciliation-row-actions', () => {
   })
 
   it('uses danger row highlight only for evidence or explanation blockers', () => {
-    const foundEvidenceRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-030')
+    const foundEvidenceRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankToTaxInvoice)
     const evidenceRequiredRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-tax-hardson')
     const explanationRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-card-saas')
 
@@ -81,8 +82,8 @@ describe('reconciliation-row-actions', () => {
   })
 
   it('resolves linked evidence from candidates or row fallback', () => {
-    const rentRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-025')
-    const interestRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === 'preview-bank-034')
+    const rentRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankLinked)
+    const interestRow = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankInterestLinked)
     expect(rentRow).toBeDefined()
     expect(interestRow).toBeDefined()
 
@@ -92,7 +93,7 @@ describe('reconciliation-row-actions', () => {
 
   it('lists browse rows for evidence finder by source', () => {
     const rows = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows
-    const selectedRowId = 'preview-bank-030'
+    const selectedRowId = RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankToTaxInvoice
 
     const taxInvoiceRows = listEvidenceFinderBrowseRows(rows, 'tax_invoice', selectedRowId)
     expect(taxInvoiceRows.every((row) => row.source === 'tax_invoice')).toBe(true)
