@@ -17,10 +17,8 @@ import {
   usesTaxInvoiceLedgerLayout,
 } from '@/lib/bookkeeping-review/reconciliation-tax-invoice-display'
 import type {
-  ReconciliationBatchSuggestionGroup,
   ReconciliationLedgerDisplayModel,
   ReconciliationLedgerRow,
-  ReconciliationNextAction,
   ReconciliationPeriodMode,
   ReconciliationSource,
   ReconciliationTaxBlockerSummary,
@@ -134,68 +132,11 @@ export function ReconciliationLedgerDisplayFixtureView({
   const taxInvoiceLayout = usesTaxInvoiceLedgerLayout(activeFilter)
   const tableVariant = resolveReconciliationLedgerTableVariant({ taxInvoiceLayout, surface: 'fixture' })
   const tableColumnCount = reconciliationLedgerColumnCount(tableVariant)
-  const readinessPercent = checklist.isReadyForPath1
-    ? 100
-    : Math.max(
-        0,
-        100
-          - checklist.evidenceRequiredCount
-          - checklist.explanationRequiredCount
-          - Math.min(checklist.accountUnconfirmedCount, 30),
-      )
-
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <FixtureTopbar companyName={companyName} isFixtureMode={isFixtureMode} />
       <div className="flex w-full max-w-[1320px] flex-col gap-5 px-7 pt-6 pb-12">
         <PeriodScopeControl activeMode={periodMode} periodLabel={periodLabel} />
-
-        <section className={cn(panelClass, 'grid gap-6 px-6 py-5 lg:grid-cols-[minmax(0,1fr)_360px]')}>
-          <div>
-            <p className="text-xs font-semibold text-company-fg-muted">
-              Path 1 데이터 준비 관문{isFixtureMode ? ' · Fixture' : ''}
-            </p>
-            <h2 className="mt-2 text-[23px] font-bold text-foreground">
-              통장·카드·세금계산서·현금영수증을 한 원장으로 대조하고 확정합니다
-            </h2>
-            <p className="mt-2 max-w-[720px] text-[13px] text-company-fg-muted">
-              {isFixtureMode
-                ? 'Preview 12 display model로 렌더하는 Slice 2a-3 workbench입니다. 증빙·계정은 테이블 셀에서 바로 처리합니다.'
-                : '증빙·계정은 테이블 셀에서 바로 처리합니다.'}
-            </p>
-            <div className="mt-4 h-2 max-w-[520px] overflow-hidden rounded-full bg-[#e4e4e7]">
-              <div className="h-full rounded-full bg-[#2563eb]" style={{ width: `${readinessPercent}%` }} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <MetricCard label="원장 준비율" value={`${readinessPercent}%`} />
-            <MetricCard label="증빙 필요" value={`${checklist.evidenceRequiredCount}건`} />
-            <MetricCard label="소명 필요" value={`${checklist.explanationRequiredCount}건`} />
-            <MetricCard label="계정 미확정" value={`${checklist.accountUnconfirmedCount}건`} />
-          </div>
-        </section>
-
-        <div className="rounded-[10px] border border-[#bfdbfe] bg-[#eff6ff] px-3.5 py-3 text-[12.5px] text-[#1e40af]">
-          {isFixtureMode ? 'Fixture workbench: ' : ''}증빙 상태 셀에서 소명 입력·제외 처리, 계정 셀에서 계정을 확정합니다. 증빙 연결은 아직 준비 중입니다.
-        </div>
-
-        <NextActionQueue actions={displayModel.nextActions} isFixtureMode={isFixtureMode} />
-
-        {displayModel.batchSuggestionGroups.length > 0 ? (
-          <BatchSuggestionBar groups={displayModel.batchSuggestionGroups} />
-        ) : null}
-
-        <section className="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
-          <SourceSummaryCard label="통장 내역" count={sourceCounts.bank} sub="입출금 대조" />
-          <SourceSummaryCard label="카드 승인" count={sourceCounts.card} sub="계정·거래처 확인" />
-          <SourceSummaryCard label="세금계산서" count={sourceCounts.tax_invoice} sub="매출·매입 증빙" />
-          <SourceSummaryCard label="현금영수증" count={cashReceiptCount} sub="공제·제외 검토" />
-          <SourceSummaryCard
-            label="제외 검토"
-            count={countReconciliationDisplayRows(rows, (row) => row.evidenceActionState === 'excluded' || row.blockers.some((b) => b.code === 'exclude_reason_required'))}
-            sub="업무무관·중복"
-          />
-        </section>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex flex-wrap gap-0.5 rounded-[9px] bg-[#f1f1f2] p-[3px]">
@@ -304,7 +245,7 @@ export function ReconciliationLedgerDisplayFixtureView({
           ) : (
             reconciliationLedgerEmptyRow(
               tableColumnCount,
-              '선택한 조건에 해당하는 거래가 없습니다. 다음 할 일 큐 또는 전체 탭을 확인하세요.',
+              '선택한 조건에 해당하는 거래가 없습니다. 전체 탭을 확인하세요.',
             )
           )}
         </ReconciliationLedgerTableShell>
@@ -455,62 +396,6 @@ function PeriodScopeControl({
           기간 적용
         </button>
       </div>
-    </section>
-  )
-}
-
-function NextActionQueue({
-  actions,
-  isFixtureMode,
-}: {
-  readonly actions: ReconciliationNextAction[]
-  readonly isFixtureMode: boolean
-}) {
-  return (
-    <section className={cn(panelClass, 'p-4')}>
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-[13.5px] font-semibold text-foreground">다음 할 일</h3>
-        <span className="text-[12px] text-company-fg-muted">세목 파일 생성을 막는 항목부터 처리합니다</span>
-      </div>
-      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-        {actions.map((action, index) => (
-          <Link
-            key={action.id}
-            className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-3 transition-colors hover:border-[#93c5fd] hover:bg-[#eff6ff]"
-            href={withFixtureModeParam(
-              action.targetRoute.startsWith('/') ? action.targetRoute : reconciliationDisplayFilterHref('all'),
-              isFixtureMode,
-            )}
-          >
-            <p className="text-[11px] font-semibold text-company-fg-subtle">
-              {index + 1}순위 · {priorityLabel(action.priority)}
-            </p>
-            <p className="mt-1 text-[14px] font-bold text-foreground">{action.label}</p>
-            <p className="mt-1 text-[12px] text-company-fg-muted">{action.reason}</p>
-          </Link>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function BatchSuggestionBar({ groups }: { readonly groups: ReconciliationBatchSuggestionGroup[] }) {
-  return (
-    <section className={cn(panelClass, 'flex flex-wrap items-center justify-between gap-3 p-4')}>
-      <div>
-        <h3 className="text-[13.5px] font-semibold text-foreground">반복 패턴 일괄 제안</h3>
-        <p className="mt-1 text-[12px] text-company-fg-muted">
-          {groups[0]?.basisLabel ?? '동일 근거·동일 추천 그룹'} · {groups[0]?.rowIds.length ?? 0}건
-        </p>
-      </div>
-      <button
-        className="cursor-not-allowed rounded-lg border border-company-border bg-company-nav-hover px-3 py-2 text-xs font-semibold text-company-fg-subtle"
-        disabled
-        title={disabledActionNote}
-        type="button"
-      >
-        일괄 확인 (준비 중)
-      </button>
     </section>
   )
 }
@@ -671,25 +556,6 @@ function TaxBlockerPanel({ summaries }: { readonly summaries: ReconciliationTaxB
   )
 }
 
-function MetricCard({ label, value }: { readonly label: string; readonly value: string }) {
-  return (
-    <div className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-2.5">
-      <p className="text-[11px] text-company-fg-subtle">{label}</p>
-      <p className="mt-0.5 text-lg font-bold text-foreground">{value}</p>
-    </div>
-  )
-}
-
-function SourceSummaryCard({ label, count, sub }: { readonly label: string; readonly count: number; readonly sub: string }) {
-  return (
-    <div className={cn(panelClass, 'p-3.5')}>
-      <p className="text-[11.5px] font-semibold text-company-fg-subtle">{label}</p>
-      <p className="mt-1 text-xl font-bold text-foreground">{count}건</p>
-      <p className="mt-0.5 text-xs text-company-fg-muted">{sub}</p>
-    </div>
-  )
-}
-
 function DisplayTabChip({
   active = false,
   count,
@@ -728,13 +594,6 @@ function ChecklistLine({ label, chip }: { readonly label: string; readonly chip:
       {chip}
     </div>
   )
-}
-
-function priorityLabel(priority: ReconciliationNextAction['priority']) {
-  if (priority === 'filing_blocker') return '세목 차단'
-  if (priority === 'high_amount') return '반복 패턴'
-  if (priority === 'due_date') return '마감 임박'
-  return '수동 검토'
 }
 
 function TradeTypeChip({ direction }: { readonly direction: ReconciliationLedgerRow['direction'] }) {
