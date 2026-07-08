@@ -47,6 +47,37 @@ describe('buildCompanyHomePeriod', () => {
 
     expect(period.key).toBe('2026-H1')
   })
+
+  it('derives a single-month period with a next-month-10th filing deadline', () => {
+    const period = buildCompanyHomePeriod({
+      periodKey: '2026-07',
+      today: DateTime.fromISO('2026-07-15', { zone: 'Asia/Seoul' }),
+    })
+
+    expect(period).toMatchObject({
+      key: '2026-07',
+      label: '2026년 7월 기장검토',
+      startMonth: '2026-07',
+      endMonth: '2026-07',
+      filingDeadline: '2026-08-10',
+    })
+    expect(period.progressPercent).toBeGreaterThan(0)
+    expect(period.progressPercent).toBeLessThanOrEqual(100)
+  })
+
+  it('rolls a December month period deadline into the next year', () => {
+    const period = buildCompanyHomePeriod({
+      periodKey: '2026-12',
+      today: DateTime.fromISO('2026-12-15', { zone: 'Asia/Seoul' }),
+    })
+
+    expect(period).toMatchObject({
+      key: '2026-12',
+      startMonth: '2026-12',
+      endMonth: '2026-12',
+      filingDeadline: '2027-01-10',
+    })
+  })
 })
 
 describe('buildCompanyHomeActionItems', () => {

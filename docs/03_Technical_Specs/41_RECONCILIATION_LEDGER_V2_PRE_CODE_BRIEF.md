@@ -572,6 +572,8 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Slice 2a-0 display contract + fixture implementation started (§2.1 step 2a-0) — landed on main (`01971b1`).
 - [x] Slice 2a-2 UI shell and honest labels implemented (§2.1 step 2a-2) — landed on main (`169ade8`).
 - [x] Slice 2a-3 table-cell evidence/account actions implemented (§2.1 step 2a-3) — PR #150, merged to main (`7b0ba25`). Product wording update (PR #153): `candidate` remains an internal match state only. If concrete evidence rows were found, the user-facing status is **증빙있음** and the action is **증빙 확인**. If no evidence was found, the user-facing action is **증빙 찾기** or **증빙 필요**. Do not add AI-style evidence states or candidate-count labels.
+- [x] Slice 2a-4 evidence finder browse + AI display shell implemented (§2.1 step 2a-4) — PR #160, merged to main (`9277a4c`). Search/date filter connected in the evidence picker modal; AI-matched candidates show an **AI 추천** badge with `matchCandidateReasonLabel` basis inside the currently browsed source list only; save/connect stays disabled until 2b-2.
+- [ ] Slice 2a-5 full read model wiring in progress (§2.1 step 2a-5). Known gap found while scoping: `CompanyHomePeriod`/`buildCompanyHomePeriod` (shared with the company-home dashboard) only parses `half_year` and `quarter` period keys at runtime; plain month keys previously fell through to the current-half-year default. Month parsing was added as part of 2a-5 groundwork. **`year` and `custom` period modes from §5.1 are still not implemented** — deferred to a follow-up task, tracked separately from this slice's completion.
 - [ ] Slice 2b mutation mapping reviewed before code.
 - [ ] Slice 2c durable match-link schema approved if needed.
 
