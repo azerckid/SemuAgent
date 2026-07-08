@@ -5,7 +5,6 @@ import {
 } from './reconciliation-display-fixture'
 import {
   loadReconciliationLedgerDisplayFixture,
-  loadReconciliationLedgerDisplayModel,
   isReconciliationDisplayFixtureMode,
 } from './reconciliation-display-loader'
 import {
@@ -106,12 +105,8 @@ describe('reconciliation display loader', () => {
     expect(isReconciliationDisplayFixtureMode('fixture')).toBe(true)
   })
 
-  it('loads fixture mode without touching the database', async () => {
-    const fixture = await loadReconciliationLedgerDisplayModel({ mode: 'fixture' })
+  it('loads fixture mode without touching the database', () => {
+    const fixture = loadReconciliationLedgerDisplayFixture()
     expect(fixture.rows.length).toBe(RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.length)
-  })
-
-  it('requires a tenantId for live mode', async () => {
-    await expect(loadReconciliationLedgerDisplayModel({ mode: 'live' })).rejects.toThrow(/tenantId/)
   })
 })

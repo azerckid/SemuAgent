@@ -36,6 +36,9 @@ export default async function ReconciliationLedgerPage({ searchParams }: PagePro
     tenantId,
     periodKey: period,
     tab: 'all',
+    // 자료대조원장은 제외 처리된 거래도 보이고 감사·되돌릴 수 있어야
+    // 한다(분류 큐와 달리). filterRowsByTab의 excluded 숨김을 우회한다.
+    includeExcluded: true,
   })
 
   if (!isFixtureMode && !summary.businessEntity) {

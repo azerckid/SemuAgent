@@ -143,6 +143,10 @@ type LoadBookkeepingReviewSummaryParams = {
   tab?: string | null
   selectedRowId?: string | null
   today?: DateTime
+  // 분류 큐(기장검토)는 excluded 행을 항상 숨긴다(filterRowsByTab).
+  // 자료대조원장은 제외 처리를 감사·되돌릴 수 있어야 하므로 excluded
+  // 행도 rows에 남겨야 한다 — 이 플래그가 그 갈림길이다.
+  includeExcluded?: boolean
 }
 
 const DEFAULT_TZ = 'Asia/Seoul'
@@ -368,6 +372,7 @@ export async function loadBookkeepingReviewSummary({
   tab,
   selectedRowId,
   today,
+  includeExcluded = false,
 }: LoadBookkeepingReviewSummaryParams): Promise<BookkeepingReviewSummary> {
   const { db } = await import('@/lib/db')
   const resolvedTab = resolveBookkeepingReviewTab(tab)
@@ -468,9 +473,9 @@ export async function loadBookkeepingReviewSummary({
 
   const rows = attachReconciliationInfo(classificationRows.map(mapClassificationRow))
   const counts = buildBookkeepingReviewCounts(rows)
-  const tabRows = filterRowsByTab(rows, resolvedTab)
+  const finalRows = includeExcluded ? rows : filterRowsByTab(rows, resolvedTab)
 
-  const selectedRow = selectBookkeepingReviewRowForDetail(tabRows, selectedRowId)
+  const selectedRow = selectBookkeepingReviewRowForDetail(finalRows, selectedRowId)
 
   let selected: BookkeepingReviewSummary['selected'] = null
   if (selectedRow) {
@@ -507,7 +512,7 @@ export async function loadBookkeepingReviewSummary({
     }
   }
 
-  return { ...base, counts, rows: tabRows, selected }
+  return { ...base, counts, rows: finalRows, selected }
 }
 
 export async function loadBookkeepingReviewPendingCount(tenantId: string): Promise<number> {
