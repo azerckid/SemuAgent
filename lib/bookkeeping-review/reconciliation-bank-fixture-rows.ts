@@ -9,6 +9,7 @@ const PERIOD_LABEL = '2026년 1기 (부가세)'
 const PERIOD_MODE = 'quarter' as const
 
 const JULY_FIXTURE_SUFFIX = '202607'
+const FIXTURE_UPLOAD_SESSION_ID = 'fixture-session'
 
 const disabledActions = {
   canConfirmAccount: false,
@@ -168,6 +169,7 @@ function buildBankFixtureRow(sample: (typeof BANK_SAMPLE_DEFINITIONS)[number]): 
 
   return {
     id: `preview-bank-${sample.suffix}`,
+    uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
     periodMode: PERIOD_MODE,
     periodLabel: PERIOD_LABEL,
     source: 'bank',
@@ -217,6 +219,7 @@ function buildCardFixtureRow(sample: (typeof CARD_SAMPLE_DEFINITIONS)[number]): 
 
   return {
     id: `preview-card-${sample.suffix}`,
+    uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
     periodMode: PERIOD_MODE,
     periodLabel: PERIOD_LABEL,
     source: 'card',
@@ -288,6 +291,7 @@ function buildPairedTaxFixtureRow(
 
   return {
     id: `preview-tax-${sample.suffix}`,
+    uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
     periodMode: PERIOD_MODE,
     periodLabel: PERIOD_LABEL,
     source: 'tax_invoice',
@@ -332,6 +336,7 @@ function buildPairedCardTaxFixtureRow(sample: (typeof CARD_SAMPLE_DEFINITIONS)[n
 
   return {
     id: `preview-tax-card-${sample.suffix}`,
+    uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
     periodMode: PERIOD_MODE,
     periodLabel: PERIOD_LABEL,
     source: 'tax_invoice',
@@ -374,6 +379,7 @@ function buildPairedCardTaxFixtureRow(sample: (typeof CARD_SAMPLE_DEFINITIONS)[n
 function buildOrphanTaxFixtureRow(orphan: (typeof ORPHAN_TAX_INVOICE_DEFINITIONS)[number]): ReconciliationLedgerRow {
   return {
     id: `preview-tax-${orphan.suffix}`,
+    uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
     periodMode: PERIOD_MODE,
     periodLabel: PERIOD_LABEL,
     source: 'tax_invoice',

@@ -103,6 +103,7 @@ export function buildLiveReconciliationLedgerRow(
 
   return {
     id: row.id,
+    uploadSessionId: row.uploadSessionId,
     periodMode: period.mode,
     periodLabel: period.label,
     source: row.sourceType,
@@ -123,7 +124,7 @@ export function buildLiveReconciliationLedgerRow(
     rowConclusion: buildLiveRowConclusion(row, evidenceActionState),
     blockers: row.reconciliation.blockers,
     actions: {
-      canConfirmAccount: false,
+      canConfirmAccount: evidenceActionState !== 'excluded',
       canExplain: false,
       canExclude: false,
       canConfirmMatch: false,

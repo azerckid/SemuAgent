@@ -157,7 +157,7 @@ describe('buildLiveReconciliationLedgerRow', () => {
 
     expect(() => reconciliationLedgerRowSchema.parse(ledgerRow)).not.toThrow()
     expect(ledgerRow.actions).toEqual({
-      canConfirmAccount: false,
+      canConfirmAccount: true,
       canExplain: false,
       canExclude: false,
       canConfirmMatch: false,
@@ -179,5 +179,19 @@ describe('buildLiveReconciliationLedgerRow', () => {
       { mode: 'month', label: '2026년 7월 기장검토' },
     )
     expect(() => reconciliationLedgerRowSchema.parse(evidenceRequiredRow)).not.toThrow()
+  })
+
+  it('disallows account confirmation for excluded rows so canConfirmAccount matches the UI guard', () => {
+    const excludedRow = buildLiveReconciliationLedgerRow(
+      buildRow({ status: 'excluded' }),
+      { mode: 'month', label: '2026년 7월 기장검토' },
+    )
+    expect(excludedRow.actions.canConfirmAccount).toBe(false)
+
+    const activeRow = buildLiveReconciliationLedgerRow(
+      buildRow({ status: 'suggested' }),
+      { mode: 'month', label: '2026년 7월 기장검토' },
+    )
+    expect(activeRow.actions.canConfirmAccount).toBe(true)
   })
 })
