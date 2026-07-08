@@ -322,7 +322,7 @@ export function ReconciliationLedgerDisplayFixtureView({
         />
 
         <ReconciliationExplanationModal
-          key={explanationRowId ?? 'closed'}
+          key={`explanation-${explanationRowId ?? 'closed'}`}
           isFixtureMode={isFixtureMode}
           onOpenChange={(open) => {
             if (!open) {
@@ -344,7 +344,7 @@ export function ReconciliationLedgerDisplayFixtureView({
         />
 
         <ReconciliationExclusionModal
-          key={exclusionRowId ?? 'closed'}
+          key={`exclusion-${exclusionRowId ?? 'closed'}`}
           isFixtureMode={isFixtureMode}
           onOpenChange={(open) => {
             if (!open) {

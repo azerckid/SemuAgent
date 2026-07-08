@@ -39,7 +39,7 @@ export async function PATCH(
       return NextResponse.json({ error: result.error }, { status: result.status })
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, previous: result.previous })
   } catch (err) {
     console.error('[PATCH /api/sessions/[id]/account-classification/rows/[rowId]]', err)
     if (err instanceof Error && err.message === 'Unauthorized') {

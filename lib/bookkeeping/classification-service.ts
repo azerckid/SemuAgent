@@ -1028,7 +1028,17 @@ export async function updateBookkeepingClassificationRow(params: {
   })
 
   await refreshRunCounts({ runId: row.classificationRunId, tenantId: params.tenantId })
-  return { ok: true as const }
+  return {
+    ok: true as const,
+    // Snapshot of the row before this update, for shallow undo (Brief 41
+    // §0.4): the caller can PATCH these values straight back to revert the
+    // most recent apply/confirm action without a separate audit-log store.
+    previous: {
+      finalAccount: row.finalAccount,
+      staffMemo: row.staffMemo,
+      status: row.status,
+    },
+  }
 }
 
 export async function bulkConfirmBookkeepingRows(params: {

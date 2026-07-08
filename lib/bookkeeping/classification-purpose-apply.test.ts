@@ -358,3 +358,58 @@ describe('updateBookkeepingClassificationRow purpose answer apply', () => {
     })
   })
 })
+
+describe('updateBookkeepingClassificationRow shallow undo snapshot (Brief 41 §0.4)', () => {
+  it('returns the pre-update finalAccount/staffMemo/status so the caller can revert', async () => {
+    const result = await updateBookkeepingClassificationRow({
+      rowId: CLASSIFICATION_ROW_ID,
+      sessionId: SESSION_ID,
+      tenantId: TENANT,
+      staffRecord,
+      finalAccount: 'employee_welfare',
+      staffMemo: '확정 메모',
+      status: 'confirmed',
+    })
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      // beforeEach seeds this row with finalAccount/staffMemo unset and
+      // status: 'needs_decision' — the snapshot must reflect that pre-update
+      // state, not the values just written.
+      expect(result.previous).toEqual({
+        finalAccount: null,
+        staffMemo: null,
+        status: 'needs_decision',
+      })
+    }
+  })
+
+  it('captures the immediately-prior state across two sequential updates, not the original seed', async () => {
+    await updateBookkeepingClassificationRow({
+      rowId: CLASSIFICATION_ROW_ID,
+      sessionId: SESSION_ID,
+      tenantId: TENANT,
+      staffRecord,
+      finalAccount: 'employee_welfare',
+      status: 'confirmed',
+    })
+
+    const second = await updateBookkeepingClassificationRow({
+      rowId: CLASSIFICATION_ROW_ID,
+      sessionId: SESSION_ID,
+      tenantId: TENANT,
+      staffRecord,
+      staffMemo: '제외 사유: 업무무관',
+      status: 'excluded',
+    })
+
+    expect(second.ok).toBe(true)
+    if (second.ok) {
+      expect(second.previous).toEqual({
+        finalAccount: 'employee_welfare',
+        staffMemo: null,
+        status: 'confirmed',
+      })
+    }
+  })
+})
