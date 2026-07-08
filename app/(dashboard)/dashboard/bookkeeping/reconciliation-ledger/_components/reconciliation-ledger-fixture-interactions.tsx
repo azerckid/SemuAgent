@@ -29,6 +29,7 @@ import {
   evidenceFinderActionLabel,
   evidenceFinderSourceOptions,
   filterEvidenceFinderBrowseRows,
+  formatExclusionReasonMemo,
   formatKrwAmount,
   formatRemainingDifferenceLabel,
   hasEvidenceFinderAiMatch,
@@ -41,6 +42,7 @@ import {
 } from '@/lib/bookkeeping-review/reconciliation-row-actions'
 import {
   confirmReconciliationRowAccount,
+  saveReconciliationRowExclusion,
   saveReconciliationRowExplanation,
 } from '@/lib/bookkeeping-review/reconciliation-row-mutations'
 import { cn } from '@/lib/utils'
@@ -148,10 +150,11 @@ function EvidenceFinderDropdown({
 
 export interface ReconciliationAccountSelectorProps {
   readonly isFixtureMode: boolean
+  readonly onOpenExclusion: () => void
   readonly row: ReconciliationLedgerRow
 }
 
-export function ReconciliationAccountSelector({ isFixtureMode, row }: ReconciliationAccountSelectorProps) {
+export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, row }: ReconciliationAccountSelectorProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
@@ -255,6 +258,27 @@ export function ReconciliationAccountSelector({ isFixtureMode, row }: Reconcilia
             거래내역 분할
           </button>
         </div>
+        {isExcluded ? null : (
+          <div className="border-t border-company-border p-2">
+            <button
+              className={cn(
+                'w-full rounded-md border px-2 py-1.5 text-[11.5px] font-semibold',
+                isFixtureMode
+                  ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
+                  : 'border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2]',
+              )}
+              disabled={isFixtureMode}
+              onClick={() => {
+                setOpen(false)
+                onOpenExclusion()
+              }}
+              title={isFixtureMode ? disabledActionNote : undefined}
+              type="button"
+            >
+              제외 처리
+            </button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   )
@@ -598,6 +622,109 @@ export function ReconciliationExplanationModal({
                 type="button"
               >
                 저장
+              </button>
+            </DialogFooter>
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export interface ReconciliationExclusionModalProps {
+  readonly isFixtureMode: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly open: boolean
+  readonly row: ReconciliationLedgerRow | null
+}
+
+export function ReconciliationExclusionModal({
+  isFixtureMode,
+  onOpenChange,
+  open,
+  row,
+}: ReconciliationExclusionModalProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [draft, setDraft] = useState('')
+  const saveDisabled = isFixtureMode || isPending || draft.trim().length === 0
+
+  function saveExclusion() {
+    if (!row) return
+    startTransition(async () => {
+      const result = await saveReconciliationRowExclusion({
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        memo: formatExclusionReasonMemo(draft),
+      })
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('거래를 제외 처리했습니다.')
+      onOpenChange(false)
+      router.refresh()
+    })
+  }
+
+  return (
+    <Dialog
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) {
+          setDraft('')
+        }
+        onOpenChange(nextOpen)
+      }}
+      open={open}
+    >
+      <DialogContent className="flex w-full max-w-lg flex-col gap-0 overflow-hidden border-company-border bg-company-surface p-0 sm:max-w-lg">
+        {row ? (
+          <>
+            <DialogHeader className="border-b border-company-border px-5 py-4 pr-12">
+              <DialogTitle className="text-base font-semibold text-foreground">제외 처리</DialogTitle>
+              <DialogDescription className="text-[13px] text-company-fg-muted">
+                {row.counterparty ?? '거래처 미정'} · {formatKrwAmount(row.amountKrw)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 px-5 py-4">
+              <div className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-2 text-[12px] text-company-fg-muted">
+                <p className="font-medium text-foreground">{row.description}</p>
+                <p className="mt-1">이 거래를 장부 대조 대상에서 제외합니다. 사유는 감사·되돌리기를 위해 함께 저장됩니다.</p>
+              </div>
+              <label className="block">
+                <span className="text-[12px] font-semibold text-foreground">제외 사유</span>
+                <textarea
+                  className="mt-1.5 min-h-[100px] w-full resize-y rounded-lg border border-company-border bg-company-surface px-3 py-2 text-[13px] outline-none focus:border-[#93c5fd]"
+                  onChange={(event) => setDraft(event.target.value)}
+                  placeholder="예: 개인 사용 - 영화 관람"
+                  value={draft}
+                />
+                <span className="mt-1 block text-[11.5px] text-company-fg-subtle">
+                  저장 시 &quot;제외 사유: {draft.trim() || '...'}&quot; 형식으로 기록됩니다.
+                </span>
+              </label>
+            </div>
+            <DialogFooter className="border-t border-company-border bg-[#fcfcfd] px-5 py-3 sm:justify-between">
+              <button
+                className="rounded-lg border border-company-border px-3 py-2 text-[12px] font-semibold text-company-fg-muted"
+                onClick={() => onOpenChange(false)}
+                type="button"
+              >
+                취소
+              </button>
+              <button
+                className={cn(
+                  'rounded-lg border px-3 py-2 text-[12px] font-semibold',
+                  saveDisabled
+                    ? 'cursor-not-allowed border-company-border bg-company-nav-hover text-company-fg-subtle'
+                    : 'border-[#fecaca] bg-[#dc2626] text-white hover:opacity-90',
+                )}
+                disabled={saveDisabled}
+                onClick={saveExclusion}
+                title={isFixtureMode ? disabledActionNote : undefined}
+                type="button"
+              >
+                제외 처리
               </button>
             </DialogFooter>
           </>

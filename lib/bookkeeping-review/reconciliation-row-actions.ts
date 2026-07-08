@@ -179,6 +179,15 @@ export function rowPrimaryActionLabel(action: ReconciliationRowPrimaryAction): s
   return '검토'
 }
 
+// v1은 정식 exclusionReason 컬럼 없이 staffMemo에 제외 사유를 저장한다
+// (2b-1 결정). "제외 사유: ..." 접두사로 형식을 통일해 나중에 구조화된
+// 필드로 마이그레이션할 때 문자열에서 사유만 안전하게 분리할 수 있게 한다.
+const EXCLUSION_REASON_PREFIX = '제외 사유: '
+
+export function formatExclusionReasonMemo(reason: string): string {
+  return `${EXCLUSION_REASON_PREFIX}${reason.trim()}`
+}
+
 export function formatKrwAmount(value: number | null): string {
   return value === null ? '-' : `${value.toLocaleString('ko-KR')}원`
 }

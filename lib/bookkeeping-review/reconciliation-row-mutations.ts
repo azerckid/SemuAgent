@@ -53,3 +53,16 @@ export async function saveReconciliationRowExplanation(params: {
     fallbackErrorMessage: '소명 메모 저장에 실패했습니다.',
   })
 }
+
+export async function saveReconciliationRowExclusion(params: {
+  uploadSessionId: string
+  rowId: string
+  memo: string
+}): Promise<ReconciliationRowMutationResult> {
+  return patchClassificationRow({
+    uploadSessionId: params.uploadSessionId,
+    rowId: params.rowId,
+    body: { status: 'excluded', staffMemo: params.memo },
+    fallbackErrorMessage: '제외 처리에 실패했습니다.',
+  })
+}

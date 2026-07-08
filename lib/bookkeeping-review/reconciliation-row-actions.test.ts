@@ -7,6 +7,7 @@ import {
   evidenceFinderActionLabel,
   evidenceRowHighlightTone,
   filterEvidenceFinderBrowseRows,
+  formatExclusionReasonMemo,
   hasAiEvidenceSuggestion,
   hasEvidenceFinderAiMatch,
   listEvidenceFinderBrowseRows,
@@ -174,5 +175,15 @@ describe('reconciliation-row-actions', () => {
 
     const cashReceiptBrowseRows = listEvidenceFinderBrowseRows(rows, 'cash_receipt', row!.id)
     expect(hasEvidenceFinderAiMatch(row!.candidates, cashReceiptBrowseRows)).toBe(false)
+  })
+})
+
+describe('formatExclusionReasonMemo', () => {
+  it('prefixes the reason with a consistent "제외 사유: " label', () => {
+    expect(formatExclusionReasonMemo('개인 사용 - 영화 관람')).toBe('제외 사유: 개인 사용 - 영화 관람')
+  })
+
+  it('trims surrounding whitespace from the reason', () => {
+    expect(formatExclusionReasonMemo('  업무무관  ')).toBe('제외 사유: 업무무관')
   })
 })

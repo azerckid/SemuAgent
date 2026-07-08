@@ -151,7 +151,7 @@ export function buildLiveReconciliationLedgerRow(
     actions: {
       canConfirmAccount: evidenceActionState !== 'excluded',
       canExplain: evidenceActionState === 'explanation_required' || evidenceActionState === 'explained_no_evidence',
-      canExclude: false,
+      canExclude: evidenceActionState !== 'excluded',
       canConfirmMatch: false,
     },
   }

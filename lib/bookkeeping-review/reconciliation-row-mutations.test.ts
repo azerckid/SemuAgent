@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { confirmReconciliationRowAccount, saveReconciliationRowExplanation } from './reconciliation-row-mutations'
+import {
+  confirmReconciliationRowAccount,
+  saveReconciliationRowExclusion,
+  saveReconciliationRowExplanation,
+} from './reconciliation-row-mutations'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -93,5 +97,43 @@ describe('saveReconciliationRowExplanation', () => {
     })
 
     expect(result).toEqual({ ok: false, message: '메모가 너무 깁니다.' })
+  })
+})
+
+describe('saveReconciliationRowExclusion', () => {
+  it('PATCHes the classification row endpoint with status excluded and the memo', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await saveReconciliationRowExclusion({
+      uploadSessionId: 'session-1',
+      rowId: 'row-1',
+      memo: '제외 사유: 개인 사용 - 영화 관람',
+    })
+
+    expect(result).toEqual({ ok: true })
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sessions/session-1/account-classification/rows/row-1',
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'excluded', staffMemo: '제외 사유: 개인 사용 - 영화 관람' }),
+      },
+    )
+  })
+
+  it('returns the server error message on failure', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: '제외하려면 메모가 필요합니다.' }),
+    }))
+
+    const result = await saveReconciliationRowExclusion({
+      uploadSessionId: 'session-1',
+      rowId: 'row-1',
+      memo: '',
+    })
+
+    expect(result).toEqual({ ok: false, message: '제외하려면 메모가 필요합니다.' })
   })
 })
