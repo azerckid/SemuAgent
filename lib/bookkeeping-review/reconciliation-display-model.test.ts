@@ -100,7 +100,8 @@ describe('reconciliation display model', () => {
 })
 
 describe('reconciliation display loader', () => {
-  it('loads fixture mode and blocks live mode until Slice 2a-5', () => {
+  it('loads fixture mode by default and blocks live mode until Slice 2a-5', () => {
+    expect(isReconciliationDisplayFixtureMode(undefined)).toBe(true)
     expect(isReconciliationDisplayFixtureMode('fixture')).toBe(true)
     expect(isReconciliationDisplayFixtureMode('live')).toBe(false)
 

@@ -41,7 +41,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
       reason: '부가세 Path 1 파일 생성 차단',
       priority: 'filing_blocker',
       targetRowId: 'preview-tax-hardson',
-      targetRoute: '/dashboard/bookkeeping/reconciliation-ledger?display=fixture&source=evidence_required',
+      targetRoute: '/dashboard/bookkeeping/reconciliation-ledger?source=evidence_required',
     },
     {
       id: 'next-batch-pattern',
@@ -49,7 +49,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
       reason: '반복 패턴 일괄 확인 가능',
       priority: 'high_amount',
       targetRowId: null,
-      targetRoute: '/dashboard/bookkeeping/reconciliation-ledger?display=fixture',
+      targetRoute: '/dashboard/bookkeeping/reconciliation-ledger',
     },
     {
       id: 'next-explanation',
@@ -57,7 +57,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
       reason: '통장·카드 사용내역 소명',
       priority: 'manual_review',
       targetRowId: 'preview-card-saas',
-      targetRoute: '/dashboard/bookkeeping/reconciliation-ledger?display=fixture&source=explanation_required',
+      targetRoute: '/dashboard/bookkeeping/reconciliation-ledger?source=explanation_required',
     },
   ],
   taxBlockerSummaries: [

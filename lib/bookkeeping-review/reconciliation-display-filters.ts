@@ -81,7 +81,8 @@ export function countReconciliationDisplayRows(
 }
 
 export function reconciliationDisplayFilterHref(filter: ReconciliationDisplayFilter): string {
-  const params = new URLSearchParams({ display: 'fixture' })
+  const params = new URLSearchParams()
   if (filter !== 'all') params.set('source', filter)
-  return `/dashboard/bookkeeping/reconciliation-ledger?${params.toString()}`
+  const query = params.toString()
+  return query ? '/dashboard/bookkeeping/reconciliation-ledger?' + query : '/dashboard/bookkeeping/reconciliation-ledger'
 }

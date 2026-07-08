@@ -19,9 +19,9 @@ describe('reconciliation display filters', () => {
     expect(filterReconciliationDisplayRows(rows, 'explanation_required').length).toBeGreaterThan(0)
   })
 
-  it('builds fixture href with display=fixture', () => {
-    expect(reconciliationDisplayFilterHref('evidence_required')).toContain('display=fixture')
-    expect(reconciliationDisplayFilterHref('evidence_required')).toContain('source=evidence_required')
+  it('builds default route href without fixture query', () => {
+    expect(reconciliationDisplayFilterHref('all')).toBe('/dashboard/bookkeeping/reconciliation-ledger')
+    expect(reconciliationDisplayFilterHref('evidence_required')).toBe('/dashboard/bookkeeping/reconciliation-ledger?source=evidence_required')
   })
 
   it('filters cash_receipt tab across cash_receipt and receipt sources', () => {

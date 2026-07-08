@@ -11,7 +11,7 @@ export function loadReconciliationLedgerDisplayFixture(): ReconciliationLedgerDi
 }
 
 export function isReconciliationDisplayFixtureMode(display: string | undefined): boolean {
-  return display === 'fixture'
+  return display !== 'live'
 }
 
 export function loadReconciliationLedgerDisplayModel(input: {
