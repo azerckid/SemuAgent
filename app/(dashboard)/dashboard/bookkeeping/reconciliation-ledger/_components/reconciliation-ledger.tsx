@@ -3,6 +3,19 @@ import type { ReactNode } from 'react'
 import { z } from 'zod'
 import type { BookkeepingReviewQueueRow, BookkeepingReviewSummary } from '@/lib/bookkeeping-review/summary'
 import { sortReconciliationRowsByTransactionDateDesc } from '@/lib/bookkeeping-review/reconciliation-row-sort'
+import {
+  resolveTaxInvoiceAmountBreakdown,
+  TAX_INVOICE_LEDGER_TAX_TYPE_LABEL,
+  taxInvoiceTradeTypeLabel,
+  usesTaxInvoiceLedgerLayout,
+} from '@/lib/bookkeeping-review/reconciliation-tax-invoice-display'
+import {
+  LedgerCellText,
+  reconciliationLedgerColumnCount,
+  reconciliationLedgerEmptyRow,
+  ReconciliationLedgerTableShell,
+  resolveReconciliationLedgerTableVariant,
+} from './reconciliation-ledger-table-layout'
 import { cn } from '@/lib/utils'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
@@ -46,6 +59,9 @@ export function ReconciliationLedgerView({ activeFilter, summary }: Reconciliati
   const readinessPercent = summary.counts.total > 0
     ? Math.round((readyLedgerCount / summary.counts.total) * 100)
     : 0
+  const taxInvoiceLayout = usesTaxInvoiceLedgerLayout(activeFilter)
+  const tableVariant = resolveReconciliationLedgerTableVariant({ taxInvoiceLayout, surface: 'live' })
+  const tableColumnCount = reconciliationLedgerColumnCount(tableVariant)
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
@@ -109,11 +125,27 @@ export function ReconciliationLedgerView({ activeFilter, summary }: Reconciliati
           </button>
         </div>
 
-        <section className={panelClass}>
-          <div className="max-h-[520px] overflow-auto">
-            <table className="w-full border-collapse text-left text-[12.5px]">
-              <thead className="sticky top-0 z-[1] bg-[#fafafa] text-[11.5px] font-semibold text-company-fg-subtle uppercase">
-                <tr className="border-b border-company-border">
+        <ReconciliationLedgerTableShell
+          variant={tableVariant}
+          header={(
+            <tr className="border-b border-company-border">
+              {taxInvoiceLayout ? (
+                <>
+                  <th className="px-3 py-3">거래일</th>
+                  <th className="px-3 py-3">매입/매출</th>
+                  <th className="px-3 py-3">거래처</th>
+                  <th className="px-3 py-3">품목</th>
+                  <th className="px-3 py-3 text-right">공급가액</th>
+                  <th className="px-3 py-3 text-right">세액</th>
+                  <th className="px-3 py-3 text-right">합계금액</th>
+                  <th className="px-3 py-3">과세유형</th>
+                  <th className="px-3 py-3">연결 증빙</th>
+                  <th className="px-3 py-3">계정항목</th>
+                  <th className="px-3 py-3">상태</th>
+                  <th className="px-3 py-3">처리</th>
+                </>
+              ) : (
+                <>
                   <th className="px-3 py-3">거래일</th>
                   <th className="px-3 py-3">출처</th>
                   <th className="px-3 py-3">거래처/가맹점</th>
@@ -123,22 +155,20 @@ export function ReconciliationLedgerView({ activeFilter, summary }: Reconciliati
                   <th className="px-3 py-3">계정항목</th>
                   <th className="px-3 py-3">상태</th>
                   <th className="px-3 py-3">처리</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.length > 0 ? filteredRows.slice(0, 80).map((row) => (
-                  <ReconciliationRow key={row.id} row={row} periodKey={summary.period.key} />
-                )) : (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-10 text-center text-company-fg-muted">
-                      선택한 조건에 해당하는 거래가 없습니다. 전체 탭에서 원장 상태를 다시 확인하세요.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                </>
+              )}
+            </tr>
+          )}
+        >
+          {filteredRows.length > 0 ? filteredRows.slice(0, 80).map((row) => (
+            <ReconciliationRow key={row.id} periodKey={summary.period.key} row={row} taxInvoiceLayout={taxInvoiceLayout} />
+          )) : (
+            reconciliationLedgerEmptyRow(
+              tableColumnCount,
+              '선택한 조건에 해당하는 거래가 없습니다. 전체 탭에서 원장 상태를 다시 확인하세요.',
+            )
+          )}
+        </ReconciliationLedgerTableShell>
 
         <section className="grid gap-4 lg:grid-cols-2">
           <ReadinessChecklist rows={rows} />
@@ -172,11 +202,69 @@ function ReconciliationTopbar({ summary }: { readonly summary: BookkeepingReview
   )
 }
 
-function ReconciliationRow({ row, periodKey }: { readonly row: BookkeepingReviewQueueRow; readonly periodKey: string }) {
+function ReconciliationRow({
+  row,
+  periodKey,
+  taxInvoiceLayout,
+}: {
+  readonly row: BookkeepingReviewQueueRow
+  readonly periodKey: string
+  readonly taxInvoiceLayout: boolean
+}) {
   const source = sourceLabels[row.sourceType]
   const status = reconciliationStatus(row)
   const evidence = evidenceStatus(row)
   const href = `/dashboard/bookkeeping?period=${encodeURIComponent(periodKey)}&tab=all&rowId=${encodeURIComponent(row.id)}`
+  const amounts = resolveTaxInvoiceAmountBreakdown({
+    amountKrw: row.amountKrw,
+    direction: row.direction,
+  })
+
+  if (taxInvoiceLayout) {
+    return (
+      <tr className={cn('border-b border-company-border last:border-b-0 hover:bg-[#fafafa]', status.tone === 'danger' ? 'bg-[#fff7f7]' : status.tone === 'warn' ? 'bg-[#fffaf0]' : '')}>
+        <td className="px-3 py-3 font-mono text-company-fg-muted">{formatDate(row.transactionDate)}</td>
+        <td className="px-3 py-3">
+          <TradeTypeChip direction={row.direction} />
+        </td>
+        <td className="overflow-hidden px-3 py-3">
+          <LedgerCellText className="font-semibold text-foreground" fallback="거래처 미정" value={row.counterparty} />
+        </td>
+        <td className="overflow-hidden px-3 py-3 align-top">
+          <LedgerCellText className="font-semibold text-foreground" value={row.description} />
+        </td>
+        <td className="px-3 py-3 text-right font-mono whitespace-nowrap text-foreground">{formatKrw(amounts.supplyAmountKrw)}</td>
+        <td className="px-3 py-3 text-right font-mono whitespace-nowrap text-foreground">{formatKrw(amounts.taxAmountKrw)}</td>
+        <td className="px-3 py-3 text-right font-mono whitespace-nowrap font-semibold text-foreground">{formatKrw(amounts.totalAmountKrw)}</td>
+        <td className="px-3 py-3">
+          <span className="inline-flex rounded-full border border-company-border bg-company-nav-hover px-2.5 py-0.5 text-[11.5px] font-semibold text-company-fg-muted">
+            {TAX_INVOICE_LEDGER_TAX_TYPE_LABEL}
+          </span>
+        </td>
+        <td className="px-3 py-3">
+          <div className="flex flex-col gap-1">
+            <StatusChip tone={evidence.tone}>{evidence.label}</StatusChip>
+            {row.reconciliation.candidates[0] ? (
+              <span className="max-w-[180px] truncate text-[11px] text-company-fg-subtle">
+                {candidateSummary(row.reconciliation.candidates[0])}
+              </span>
+            ) : null}
+          </div>
+        </td>
+        <td className="px-3 py-3">
+          <span className="inline-flex min-w-[112px] items-center justify-between gap-2 rounded-md border border-company-border bg-[#fcfcfd] px-2 py-1 text-[12px]">
+            {row.finalAccount ?? row.recommendedAccount ?? '계정 미정'} <span className="text-company-fg-subtle">▾</span>
+          </span>
+        </td>
+        <td className="px-3 py-3"><StatusChip tone={status.tone}>{status.label}</StatusChip></td>
+        <td className="px-3 py-3">
+          <Link href={href} className="rounded-md border border-company-border-strong bg-company-surface px-2.5 py-1 text-[11.5px] font-semibold text-foreground">
+            {status.actionLabel}
+          </Link>
+        </td>
+      </tr>
+    )
+  }
 
   return (
     <tr className={cn('border-b border-company-border last:border-b-0 hover:bg-[#fafafa]', status.tone === 'danger' ? 'bg-[#fff7f7]' : status.tone === 'warn' ? 'bg-[#fffaf0]' : '')}>
@@ -187,12 +275,12 @@ function ReconciliationRow({ row, periodKey }: { readonly row: BookkeepingReview
           {source.label}
         </span>
       </td>
-      <td className="px-3 py-3">
-        <div className="font-semibold text-foreground">{row.counterparty ?? '거래처 미정'}</div>
+      <td className="overflow-hidden px-3 py-3">
+        <LedgerCellText className="font-semibold text-foreground" fallback="거래처 미정" value={row.counterparty} />
         <div className="mt-0.5 text-[11.5px] text-company-fg-subtle">{directionLabel(row.direction)}</div>
       </td>
-      <td className="max-w-[260px] px-3 py-3">
-        <div className="truncate font-semibold text-foreground">{row.description}</div>
+      <td className="overflow-hidden px-3 py-3">
+        <LedgerCellText className="font-semibold text-foreground" value={row.description} />
         <div className="mt-0.5 text-[11.5px] text-company-fg-subtle">AI 신뢰도 {confidenceLabel(row.confidence)}</div>
       </td>
       <td className="px-3 py-3 text-right font-mono font-semibold text-foreground">{formatKrw(row.amountKrw)}</td>
@@ -327,6 +415,21 @@ function evidenceStatus(row: BookkeepingReviewQueueRow): { label: string; tone: 
 
 function confidenceLabel(confidence: BookkeepingReviewQueueRow['confidence']) {
   return confidence === 'high' ? '높음' : confidence === 'medium' ? '중간' : '낮음'
+}
+
+function TradeTypeChip({ direction }: { readonly direction: BookkeepingReviewQueueRow['direction'] }) {
+  const label = taxInvoiceTradeTypeLabel(direction)
+  const className = direction === 'income'
+    ? 'border-[#ddd6fe] bg-[#f5f3ff] text-[#7c3aed]'
+    : direction === 'expense'
+      ? 'border-[#bfdbfe] bg-[#eff6ff] text-[#1d4ed8]'
+      : 'border-company-border bg-company-nav-hover text-company-fg-muted'
+
+  return (
+    <span className={cn('inline-flex rounded-full border px-2.5 py-0.5 text-[11.5px] font-semibold', className)}>
+      {label}
+    </span>
+  )
 }
 
 function directionLabel(direction: BookkeepingReviewQueueRow['direction']) {

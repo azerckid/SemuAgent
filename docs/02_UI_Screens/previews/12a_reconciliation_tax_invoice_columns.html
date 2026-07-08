@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SemuAgent · 자료대조원장 세금계산서 탭 (수정안)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; }
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .brand .name { font-weight: 650; font-size: 15px; }
+  .nav-item { padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-size: 13.5px; }
+  .nav-item.sub { padding-left: 28px; font-size: 12.5px; }
+  .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 600; }
+  .main { display: flex; flex-direction: column; }
+  .topbar { padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .topbar h1 { font-size: 16px; font-weight: 650; }
+  .crumb { font-size: 12.5px; color: var(--fg-subtle); margin-bottom: 4px; }
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tabs { display: inline-flex; background: #f1f1f2; border-radius: 9px; padding: 3px; gap: 2px; }
+  .tab { font-size: 12.5px; font-weight: 600; color: var(--fg-muted); padding: 6px 11px; border-radius: 7px; }
+  .tab.active { background: var(--surface); color: var(--fg); box-shadow: var(--shadow); }
+  .tab .badge { font-size: 11px; color: var(--fg-subtle); margin-left: 4px; }
+  .search { margin-left: auto; min-width: 240px; border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; color: var(--fg-subtle); font-size: 12.5px; }
+  .btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+  thead th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--fg-subtle); padding: 11px 12px; border-bottom: 1px solid var(--border); background: #fafafa; white-space: nowrap; }
+  thead th.right { text-align: right; }
+  tbody td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafafa; }
+  tbody tr.danger-row { background: #fff7f7; }
+  .mono { font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+  .amt { font-variant-numeric: tabular-nums; font-weight: 650; text-align: right; white-space: nowrap; }
+  .main-text { font-weight: 650; }
+  .chip { font-size: 11.5px; font-weight: 650; padding: 3px 9px; border-radius: 999px; display: inline-flex; white-space: nowrap; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .chip.purchase { color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; }
+  .chip.sales { color: #7c3aed; background: #f5f3ff; border: 1px solid #ddd6fe; }
+  .chip.taxtype { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+  .select-like { min-width: 96px; border: 1px solid var(--border); background: #fcfcfd; border-radius: 7px; padding: 5px 8px; display: inline-flex; justify-content: space-between; gap: 8px; }
+  .mini-btn { font-size: 11.5px; font-weight: 650; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 7px; padding: 4px 9px; margin-top: 4px; display: inline-block; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="logo">S</div><div class="name">SemuAgent</div></div>
+      <div class="nav-item">회사 홈</div>
+      <div class="nav-item active-parent">기장검토</div>
+      <div class="nav-item sub">기장검토 분류</div>
+      <div class="nav-item sub active">자료대조원장</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <p class="crumb">회사 홈 › 기장검토 › 자료대조원장</p>
+        <h1>자료대조원장 · 샘플컴퍼니</h1>
+      </header>
+      <div class="content">
+        <div class="toolbar">
+          <div class="tabs">
+            <span class="tab">전체 <span class="badge">705</span></span>
+            <span class="tab">통장 <span class="badge">245</span></span>
+            <span class="tab">카드 <span class="badge">109</span></span>
+            <span class="tab active">세금계산서 <span class="badge">350</span></span>
+            <span class="tab">현금영수증 <span class="badge">1</span></span>
+            <span class="tab">증빙 필요 <span class="badge">12</span></span>
+          </div>
+          <div class="search">거래처, 금액, 적요, 증빙번호 검색</div>
+          <button class="btn" type="button">표시 설정</button>
+          <button class="btn" type="button">선택 건 확정</button>
+        </div>
+
+        <section class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>거래일</th>
+                <th>매입/매출</th>
+                <th>거래처</th>
+                <th>품목</th>
+                <th class="right">공급가액</th>
+                <th class="right">세액</th>
+                <th class="right">합계금액</th>
+                <th>과세유형</th>
+                <th>증빙 상태</th>
+                <th>계정항목</th>
+                <th>한 줄 결론</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">07-28</td>
+                <td><span class="chip purchase">매입</span></td>
+                <td><div class="main-text">우아한형제들</div></td>
+                <td><div class="main-text">회식비</div></td>
+                <td class="amt">378,370원</td>
+                <td class="amt">37,837원</td>
+                <td class="amt">416,207원</td>
+                <td><span class="chip taxtype">일반</span></td>
+                <td><span class="chip ok">증빙있음</span><br /><span class="mini-btn">증빙 확인 ▾</span></td>
+                <td><span class="select-like">복리후생비 <span>▾</span></span></td>
+                <td>매입 세금계산서 · 카드 승인 대조</td>
+              </tr>
+              <tr>
+                <td class="mono">07-28</td>
+                <td><span class="chip purchase">매입</span></td>
+                <td><div class="main-text">Microsoft</div></td>
+                <td><div class="main-text">오피스 구독</div></td>
+                <td class="amt">236,584원</td>
+                <td class="amt">23,659원</td>
+                <td class="amt">260,243원</td>
+                <td><span class="chip taxtype">일반</span></td>
+                <td><span class="chip ok">증빙있음</span><br /><span class="mini-btn">증빙 확인 ▾</span></td>
+                <td><span class="select-like">도메인/호스팅비 <span>▾</span></span></td>
+                <td>매입 세금계산서 · 카드 승인 대조</td>
+              </tr>
+              <tr>
+                <td class="mono">07-27</td>
+                <td><span class="chip purchase">매입</span></td>
+                <td><div class="main-text">Adobe</div></td>
+                <td><div class="main-text">Creative Cloud</div></td>
+                <td class="amt">224,758원</td>
+                <td class="amt">22,476원</td>
+                <td class="amt">247,234원</td>
+                <td><span class="chip taxtype">일반</span></td>
+                <td><span class="chip ok">증빙있음</span><br /><span class="mini-btn">증빙 확인 ▾</span></td>
+                <td><span class="select-like">소프트웨어비 <span>▾</span></span></td>
+                <td>매입 세금계산서 · 카드 승인 대조</td>
+              </tr>
+              <tr class="danger-row">
+                <td class="mono">07-27</td>
+                <td><span class="chip sales">매출</span></td>
+                <td><div class="main-text">글로벌테크코리아</div></td>
+                <td><div class="main-text">해외 라이선스 매출 (미수금)</div></td>
+                <td class="amt">1,275,046원</td>
+                <td class="amt">127,505원</td>
+                <td class="amt">1,402,551원</td>
+                <td><span class="chip taxtype">일반</span></td>
+                <td><span class="chip danger">증빙 필요</span><br /><span class="mini-btn">증빙 찾기 ▾</span></td>
+                <td><span class="select-like">매출 <span>▾</span></span></td>
+                <td>매출 세금계산서 · 입금 미연결</td>
+              </tr>
+              <tr class="danger-row">
+                <td class="mono">07-26</td>
+                <td><span class="chip purchase">매입</span></td>
+                <td><div class="main-text">코리아생명보험(주)</div></td>
+                <td><div class="main-text">AI 세미나 연수료 (미입금)</div></td>
+                <td class="amt">1,283,455원</td>
+                <td class="amt">128,345원</td>
+                <td class="amt">1,411,800원</td>
+                <td><span class="chip taxtype">일반</span></td>
+                <td><span class="chip danger">증빙 필요</span><br /><span class="mini-btn">증빙 찾기 ▾</span></td>
+                <td><span class="select-like">보험료 <span>▾</span></span></td>
+                <td>매입 세금계산서 · 출금 미연결</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -10,6 +10,12 @@ import {
   reconciliationDisplayFilterHref,
   type ReconciliationDisplayFilter,
 } from '@/lib/bookkeeping-review/reconciliation-display-filters'
+import {
+  resolveTaxInvoiceAmountBreakdown,
+  TAX_INVOICE_LEDGER_TAX_TYPE_LABEL,
+  taxInvoiceTradeTypeLabel,
+  usesTaxInvoiceLedgerLayout,
+} from '@/lib/bookkeeping-review/reconciliation-tax-invoice-display'
 import type {
   ReconciliationBatchSuggestionGroup,
   ReconciliationLedgerDisplayModel,
@@ -28,6 +34,13 @@ import {
   ReconciliationExplanationModal,
   ReconciliationLinkedEvidenceModal,
 } from './reconciliation-ledger-fixture-interactions'
+import {
+  reconciliationLedgerColumnCount,
+  reconciliationLedgerEmptyRow,
+  ReconciliationLedgerTableShell,
+  resolveReconciliationLedgerTableVariant,
+  LedgerCellText,
+} from './reconciliation-ledger-table-layout'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 const disabledActionNote = 'Slice 2b 전까지 저장·확정이 비활성화됩니다.'
@@ -102,6 +115,9 @@ export function ReconciliationLedgerDisplayFixtureView({
   const periodLabel = rows[0]?.periodLabel ?? '기간 미정'
   const periodMode = rows[0]?.periodMode ?? 'quarter'
   const checklist = displayModel.closingChecklist
+  const taxInvoiceLayout = usesTaxInvoiceLedgerLayout(activeFilter)
+  const tableVariant = resolveReconciliationLedgerTableVariant({ taxInvoiceLayout, surface: 'fixture' })
+  const tableColumnCount = reconciliationLedgerColumnCount(tableVariant)
   const readinessPercent = checklist.isReadyForPath1
     ? 100
     : Math.max(
@@ -216,11 +232,25 @@ export function ReconciliationLedgerDisplayFixtureView({
           </button>
         </div>
 
-        <section className={panelClass}>
-          <div className="max-h-[520px] overflow-auto">
-            <table className="w-full border-collapse text-left text-[12.5px]">
-              <thead className="sticky top-0 z-[1] bg-[#fafafa] text-[11.5px] font-semibold text-company-fg-subtle uppercase">
-                <tr className="border-b border-company-border">
+        <ReconciliationLedgerTableShell
+          variant={tableVariant}
+          header={(
+            <tr className="border-b border-company-border">
+              {taxInvoiceLayout ? (
+                <>
+                  <th className="px-3 py-3">거래일</th>
+                  <th className="px-3 py-3">매입/매출</th>
+                  <th className="px-3 py-3">거래처</th>
+                  <th className="px-3 py-3">품목</th>
+                  <th className="px-3 py-3 text-right">공급가액</th>
+                  <th className="px-3 py-3 text-right">세액</th>
+                  <th className="px-3 py-3 text-right">합계금액</th>
+                  <th className="px-3 py-3">과세유형</th>
+                  <th className="px-3 py-3">증빙 상태</th>
+                  <th className="px-3 py-3">계정항목</th>
+                </>
+              ) : (
+                <>
                   <th className="px-3 py-3">거래일</th>
                   <th className="px-3 py-3">출처</th>
                   <th className="px-3 py-3">거래처/가맹점</th>
@@ -229,30 +259,29 @@ export function ReconciliationLedgerDisplayFixtureView({
                   <th className="px-3 py-3">증빙 상태</th>
                   <th className="px-3 py-3">계정항목</th>
                   <th className="px-3 py-3">한 줄 결론</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.length > 0 ? (
-                  filteredRows.map((row) => (
-                    <FixtureRow
-                      key={row.id}
-                      onOpenEvidencePicker={(source) => setEvidencePicker({ rowId: row.id, source })}
-                      onOpenExplanation={() => setExplanationRowId(row.id)}
-                      onViewLinkedEvidence={() => setLinkedEvidenceRowId(row.id)}
-                      row={row}
-                    />
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-10 text-center text-company-fg-muted">
-                      선택한 조건에 해당하는 거래가 없습니다. 다음 할 일 큐 또는 전체 탭을 확인하세요.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                </>
+              )}
+            </tr>
+          )}
+        >
+          {filteredRows.length > 0 ? (
+            filteredRows.map((row) => (
+              <FixtureRow
+                key={row.id}
+                onOpenEvidencePicker={(source) => setEvidencePicker({ rowId: row.id, source })}
+                onOpenExplanation={() => setExplanationRowId(row.id)}
+                onViewLinkedEvidence={() => setLinkedEvidenceRowId(row.id)}
+                row={row}
+                taxInvoiceLayout={taxInvoiceLayout}
+              />
+            ))
+          ) : (
+            reconciliationLedgerEmptyRow(
+              tableColumnCount,
+              '선택한 조건에 해당하는 거래가 없습니다. 다음 할 일 큐 또는 전체 탭을 확인하세요.',
+            )
+          )}
+        </ReconciliationLedgerTableShell>
 
         <ReconciliationEvidencePickerModal
           allRows={rows}
@@ -435,14 +464,62 @@ function FixtureRow({
   onOpenExplanation,
   onViewLinkedEvidence,
   row,
+  taxInvoiceLayout,
 }: {
   readonly onOpenEvidencePicker: (source: EvidenceFinderSource) => void
   readonly onOpenExplanation: () => void
   readonly onViewLinkedEvidence: () => void
   readonly row: ReconciliationLedgerRow
+  readonly taxInvoiceLayout: boolean
 }) {
   const source = sourceLabels[row.source]
   const tone = evidenceRowHighlightTone(row)
+  const amounts = resolveTaxInvoiceAmountBreakdown({
+    amountKrw: row.amountKrw,
+    taxAmountKrw: row.taxAmountKrw,
+    direction: row.direction,
+  })
+
+  if (taxInvoiceLayout) {
+    return (
+      <tr
+        className={cn(
+          'border-b border-company-border last:border-b-0 hover:bg-[#fafafa]',
+          tone === 'danger' ? 'bg-[#fff7f7]' : '',
+        )}
+      >
+        <td className="px-3 py-3 font-mono text-company-fg-muted">{formatDate(row.transactionDate)}</td>
+        <td className="px-3 py-3">
+          <TradeTypeChip direction={row.direction} />
+        </td>
+        <td className="overflow-hidden px-3 py-3">
+          <LedgerCellText className="font-semibold text-foreground" fallback="거래처 미정" value={row.counterparty} />
+        </td>
+        <td className="overflow-hidden px-3 py-3 align-top">
+          <LedgerCellText className="font-semibold text-foreground" value={row.description} />
+        </td>
+        <td className="px-3 py-3 text-right font-mono whitespace-nowrap text-foreground">{formatKrw(amounts.supplyAmountKrw)}</td>
+        <td className="px-3 py-3 text-right font-mono whitespace-nowrap text-foreground">{formatKrw(amounts.taxAmountKrw)}</td>
+        <td className="px-3 py-3 text-right font-mono whitespace-nowrap font-semibold text-foreground">{formatKrw(amounts.totalAmountKrw)}</td>
+        <td className="px-3 py-3">
+          <span className="inline-flex rounded-full border border-company-border bg-company-nav-hover px-2.5 py-0.5 text-[11.5px] font-semibold text-company-fg-muted">
+            {TAX_INVOICE_LEDGER_TAX_TYPE_LABEL}
+          </span>
+        </td>
+        <td className="px-3 py-3">
+          <ReconciliationEvidenceCell
+            onOpenEvidencePicker={onOpenEvidencePicker}
+            onOpenExplanation={onOpenExplanation}
+            onViewLinkedEvidence={onViewLinkedEvidence}
+            row={row}
+          />
+        </td>
+        <td className="px-3 py-3">
+          <ReconciliationAccountSelector row={row} />
+        </td>
+      </tr>
+    )
+  }
 
   return (
     <tr
@@ -458,12 +535,12 @@ function FixtureRow({
           {source.label}
         </span>
       </td>
-      <td className="px-3 py-3">
-        <div className="font-semibold text-foreground">{row.counterparty ?? '거래처 미정'}</div>
+      <td className="overflow-hidden px-3 py-3">
+        <LedgerCellText className="font-semibold text-foreground" fallback="거래처 미정" value={row.counterparty} />
         <div className="mt-0.5 text-[11.5px] text-company-fg-subtle">{directionLabel(row.direction)}</div>
       </td>
-      <td className="max-w-[220px] px-3 py-3">
-        <div className="truncate font-semibold text-foreground">{row.description}</div>
+      <td className="overflow-hidden px-3 py-3 align-top">
+        <LedgerCellText className="font-semibold text-foreground" value={row.description} />
         {row.patternSuggestion ? (
           <div className="mt-0.5 truncate text-[11.5px] text-company-fg-subtle">{row.patternSuggestion.basisLabel}</div>
         ) : null}
@@ -596,6 +673,21 @@ function priorityLabel(priority: ReconciliationNextAction['priority']) {
   if (priority === 'high_amount') return '반복 패턴'
   if (priority === 'due_date') return '마감 임박'
   return '수동 검토'
+}
+
+function TradeTypeChip({ direction }: { readonly direction: ReconciliationLedgerRow['direction'] }) {
+  const label = taxInvoiceTradeTypeLabel(direction)
+  const className = direction === 'income'
+    ? 'border-[#ddd6fe] bg-[#f5f3ff] text-[#7c3aed]'
+    : direction === 'expense'
+      ? 'border-[#bfdbfe] bg-[#eff6ff] text-[#1d4ed8]'
+      : 'border-company-border bg-company-nav-hover text-company-fg-muted'
+
+  return (
+    <span className={cn('inline-flex rounded-full border px-2.5 py-0.5 text-[11.5px] font-semibold', className)}>
+      {label}
+    </span>
+  )
 }
 
 function directionLabel(direction: ReconciliationLedgerRow['direction']) {
