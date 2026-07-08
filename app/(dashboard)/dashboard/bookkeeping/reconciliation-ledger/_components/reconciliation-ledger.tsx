@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { z } from 'zod'
 import type { BookkeepingReviewQueueRow, BookkeepingReviewSummary } from '@/lib/bookkeeping-review/summary'
+import { sortReconciliationRowsByTransactionDateDesc } from '@/lib/bookkeeping-review/reconciliation-row-sort'
 import { cn } from '@/lib/utils'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
@@ -348,10 +349,18 @@ export function normalizeReconciliationFilter(value: string | undefined): Reconc
 }
 
 export function filterReconciliationRows(rows: BookkeepingReviewQueueRow[], filter: ReconciliationFilter) {
-  if (filter === 'all') return rows
-  if (filter === 'missing_evidence') return rows.filter(hasMissingEvidenceBlocker)
-  if (filter === 'exclusion_review') return rows.filter(hasExclusionReviewBlocker)
-  return rows.filter((row) => row.sourceType === filter)
+  let filtered: BookkeepingReviewQueueRow[]
+  if (filter === 'all') {
+    filtered = rows
+  } else if (filter === 'missing_evidence') {
+    filtered = rows.filter(hasMissingEvidenceBlocker)
+  } else if (filter === 'exclusion_review') {
+    filtered = rows.filter(hasExclusionReviewBlocker)
+  } else {
+    filtered = rows.filter((row) => row.sourceType === filter)
+  }
+
+  return sortReconciliationRowsByTransactionDateDesc(filtered)
 }
 
 function hasMissingEvidenceBlocker(row: BookkeepingReviewQueueRow) {

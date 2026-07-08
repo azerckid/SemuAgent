@@ -49,6 +49,16 @@ describe('reconciliation ledger filters', () => {
     expect(filterReconciliationRows(rows, 'tax_invoice').map((item) => item.id)).toEqual(['tax_invoice_confirmed'])
   })
 
+  it('sorts filtered rows by transaction date descending', () => {
+    const unsorted = [
+      row({ id: 'older', sourceType: 'card', transactionDate: '2026-06-12' }),
+      row({ id: 'newer', sourceType: 'card', transactionDate: '2026-07-10' }),
+      row({ id: 'middle', sourceType: 'card', transactionDate: '2026-06-28' }),
+    ]
+
+    expect(filterReconciliationRows(unsorted, 'card').map((item) => item.id)).toEqual(['newer', 'middle', 'older'])
+  })
+
   it('filters missing evidence and exclusion review tabs by review criteria', () => {
     expect(filterReconciliationRows(rows, 'missing_evidence').map((item) => item.id)).toEqual(['missing_evidence'])
     expect(filterReconciliationRows(rows, 'exclusion_review').map((item) => item.id)).toEqual(['low_confidence'])

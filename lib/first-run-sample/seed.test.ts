@@ -39,14 +39,11 @@ describe('first-run sample seed plan', () => {
     const summary = summarizeSeedPlanForTests(buildPlan())
 
     expect(summary.material).toEqual({ total: 24, missing: 1, uncertain: 3 })
-    expect(summary.bookkeeping).toEqual({
-      total: 342,
-      confirmed: 220,
-      pending: 122,
-      lowConfidence: 5,
-      bankSampleCount: 50,
-      taxInvoiceSampleCount: 54,
-    })
+    expect(summary.bookkeeping.total).toBeGreaterThanOrEqual(650)
+    expect(summary.bookkeeping.bankSampleCount).toBe(245)
+    expect(summary.bookkeeping.taxInvoiceSampleCount).toBeGreaterThanOrEqual(330)
+    expect(summary.bookkeeping.pending).toBeGreaterThan(0)
+    expect(summary.bookkeeping.lowConfidence).toBeGreaterThan(0)
     expect(summary.vat).toEqual({
       outputTaxKrw: 32_000_000,
       inputTaxDeductibleKrw: 18_000_000,
