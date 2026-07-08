@@ -42,12 +42,52 @@ import {
 } from '@/lib/bookkeeping-review/reconciliation-row-actions'
 import {
   confirmReconciliationRowAccount,
+  revertReconciliationRowState,
   saveReconciliationRowExclusion,
   saveReconciliationRowExplanation,
+  type ReconciliationRowPreviousState,
 } from '@/lib/bookkeeping-review/reconciliation-row-mutations'
 import { cn } from '@/lib/utils'
 
 const disabledActionNote = 'Slice 2b 전까지 저장·확정이 비활성화됩니다.'
+
+// Shallow undo (Brief 41 §0.4): the toast's own action button is the undo
+// affordance — no separate audit-log UI. Only the most recently shown
+// undo toast is actionable, which naturally limits this to "the latest
+// apply/confirm action in the current session."
+function showUndoableSuccessToast(params: {
+  message: string
+  uploadSessionId: string
+  rowId: string
+  previous: ReconciliationRowPreviousState | null
+  router: { refresh: () => void }
+}) {
+  if (!params.previous) {
+    toast.success(params.message)
+    return
+  }
+
+  const previous = params.previous
+  toast.success(params.message, {
+    action: {
+      label: '되돌리기',
+      onClick: () => {
+        void revertReconciliationRowState({
+          uploadSessionId: params.uploadSessionId,
+          rowId: params.rowId,
+          previous,
+        }).then((result) => {
+          if (!result.ok) {
+            toast.error(result.message)
+            return
+          }
+          toast.success('되돌렸습니다.')
+          params.router.refresh()
+        })
+      },
+    },
+  })
+}
 
 type Tone = 'ok' | 'warn' | 'danger' | 'muted'
 
@@ -180,7 +220,13 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
         toast.error(result.message)
         return
       }
-      toast.success('계정항목을 확정했습니다.')
+      showUndoableSuccessToast({
+        message: '계정항목을 확정했습니다.',
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        previous: result.previous,
+        router,
+      })
       setOpen(false)
       router.refresh()
     })
@@ -561,7 +607,13 @@ export function ReconciliationExplanationModal({
         toast.error(result.message)
         return
       }
-      toast.success('소명 내용을 저장했습니다.')
+      showUndoableSuccessToast({
+        message: '소명 내용을 저장했습니다.',
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        previous: result.previous,
+        router,
+      })
       onOpenChange(false)
       router.refresh()
     })
@@ -661,7 +713,13 @@ export function ReconciliationExclusionModal({
         toast.error(result.message)
         return
       }
-      toast.success('거래를 제외 처리했습니다.')
+      showUndoableSuccessToast({
+        message: '거래를 제외 처리했습니다.',
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        previous: result.previous,
+        router,
+      })
       onOpenChange(false)
       router.refresh()
     })
