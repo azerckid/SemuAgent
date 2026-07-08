@@ -72,8 +72,8 @@ export function buildLiveRowConclusion(
 
   const headline = (() => {
     if (evidenceActionState === 'excluded') return '제외된 거래입니다'
-    if (evidenceActionState === 'candidate' && topCandidate) return `${matchCandidateReasonLabel(topCandidate.reason)} 후보를 확인하세요`
-    if (evidenceActionState === 'candidate') return '증빙 후보를 확인하세요'
+    if (evidenceActionState === 'candidate' && topCandidate) return `AI가 증빙을 찾았습니다 (${matchCandidateReasonLabel(topCandidate.reason)}) — 확인해주세요`
+    if (evidenceActionState === 'candidate') return '증빙을 확인해주세요'
     if (evidenceActionState === 'evidence_required') return '증빙을 연결해야 합니다'
     if (row.status !== 'confirmed') return '계정항목을 확정해야 합니다'
     return '검토가 완료된 거래입니다'

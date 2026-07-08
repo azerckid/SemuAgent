@@ -114,6 +114,31 @@ describe('buildLiveRowConclusion', () => {
     expect(conclusion.headline).toContain('같은 금액·같은 일자')
     expect(conclusion.basisLabel).toBe('같은 금액·같은 일자')
   })
+
+  it('never uses forbidden candidate-count wording (Brief 41 §0.3)', () => {
+    const withCandidate = buildRow({
+      reconciliation: {
+        matchState: 'candidate',
+        candidates: [{
+          id: 'c1', sourceType: 'tax_invoice', rowId: 'other-row', date: '2026-07-08',
+          counterparty: '테스트 거래처', amountKrw: 100_000, confidence: 'high', reason: 'same_amount_same_day',
+        }],
+        blockers: [],
+      },
+    })
+    const withoutCandidate = buildRow()
+
+    for (const conclusion of [
+      buildLiveRowConclusion(withCandidate, 'candidate'),
+      buildLiveRowConclusion(withoutCandidate, 'candidate'),
+      buildLiveRowConclusion(withoutCandidate, 'evidence_required'),
+      buildLiveRowConclusion(withoutCandidate, 'linked'),
+      buildLiveRowConclusion(withoutCandidate, 'excluded'),
+    ]) {
+      expect(conclusion.headline).not.toContain('후보')
+      expect(conclusion.basisLabel).not.toContain('후보')
+    }
+  })
 })
 
 describe('buildLiveReconciliationLedgerRow', () => {
