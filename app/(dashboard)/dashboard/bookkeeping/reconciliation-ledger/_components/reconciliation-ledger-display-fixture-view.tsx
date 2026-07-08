@@ -19,7 +19,7 @@ import type {
   ReconciliationSource,
   ReconciliationTaxBlockerSummary,
 } from '@/lib/bookkeeping-review/reconciliation-display-model'
-import type { EvidenceFinderSource } from '@/lib/bookkeeping-review/reconciliation-row-actions'
+import { evidenceRowHighlightTone, type EvidenceFinderSource } from '@/lib/bookkeeping-review/reconciliation-row-actions'
 import { cn } from '@/lib/utils'
 import {
   ReconciliationAccountSelector,
@@ -442,17 +442,13 @@ function FixtureRow({
   readonly row: ReconciliationLedgerRow
 }) {
   const source = sourceLabels[row.source]
-  const tone = row.blockers.some((blocker) => blocker.code === 'missing_evidence' || blocker.code === 'ambiguous_match')
-    ? 'danger'
-    : row.blockers.length > 0
-      ? 'warn'
-      : 'ok'
+  const tone = evidenceRowHighlightTone(row)
 
   return (
     <tr
       className={cn(
         'border-b border-company-border last:border-b-0 hover:bg-[#fafafa]',
-        tone === 'danger' ? 'bg-[#fff7f7]' : tone === 'warn' ? 'bg-[#fffaf0]' : '',
+        tone === 'danger' ? 'bg-[#fff7f7]' : '',
       )}
     >
       <td className="px-3 py-3 font-mono text-company-fg-muted">{formatDate(row.transactionDate)}</td>

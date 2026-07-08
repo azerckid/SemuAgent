@@ -30,8 +30,11 @@ import {
   vatPeriodSummary,
 } from '@/lib/db/schema'
 import { now, toDBString } from '@/lib/time'
+import {
+  buildReconciliationBankSampleRows,
+} from './reconciliation-bank-sample'
 
-export const FIRST_RUN_SAMPLE_SEED_VERSION = '2026-07-04.v1'
+export const FIRST_RUN_SAMPLE_SEED_VERSION = '2026-07-08.v1'
 export const FIRST_RUN_SAMPLE_PERIOD_KEY = '2026-H1'
 export const FIRST_RUN_SAMPLE_PAYROLL_PERIOD_KEY = '2026-06'
 
@@ -239,14 +242,27 @@ function buildValidationFileLinks(params: SeedParams, validationRows: Array<type
   return links
 }
 
-function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, sourceBatchId: string, runId: string) {
+function buildSupplementalBookkeepingRows(
+  params: SeedParams,
+  sessionId: string,
+  sourceBatchId: string,
+  runId: string,
+  startIndex: number,
+  targetTotal: number,
+) {
   const rows: Array<typeof bookkeepingTransactionClassification.$inferInsert> = []
   const accounts = ['지급수수료', '소모품비', '여비교통비', '접대비', '통신비', '매출']
-  for (let i = 1; i <= 342; i += 1) {
+  const reservedAmounts = new Set<number>()
+
+  for (let i = startIndex; i <= targetTotal; i += 1) {
     const isConfirmed = i <= 324
     const isLowPending = i > 337
     const id = firstRunSampleId(params.tenantId, `bk_tx_${String(i).padStart(3, '0')}`)
-    const amount = i % 7 === 0 ? 320_000 : 48_000 + (i % 12) * 7_500
+    let amount = 900_000 + i * 13_371
+    while (reservedAmounts.has(amount)) {
+      amount += 1_009
+    }
+    reservedAmounts.add(amount)
     rows.push({
       id,
       tenantId: params.tenantId,
@@ -254,8 +270,8 @@ function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, sourc
       uploadSessionId: sessionId,
       sourceBatchId,
       uploadFileId: null,
-      sourceType: i % 4 === 0 ? 'card' : i % 4 === 1 ? 'bank' : i % 4 === 2 ? 'tax_invoice' : 'receipt',
-      transactionDate: `2026-06-${String((i % 27) + 1).padStart(2, '0')}`,
+      sourceType: i % 4 === 0 ? 'card' : i % 4 === 1 ? 'receipt' : 'other',
+      transactionDate: `2026-05-${String((i % 27) + 1).padStart(2, '0')}`,
       merchantName: isConfirmed ? `샘플거래처 ${i}` : i % 2 === 0 ? '카페 샘플' : '문구 샘플',
       description: isConfirmed ? '계정과목 확정 샘플 거래' : '검토가 필요한 샘플 거래',
       amountKrw: amount,
@@ -274,6 +290,19 @@ function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, sourc
     })
   }
   return rows
+}
+
+function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, sourceBatchId: string, runId: string) {
+  const reconciliationRows = buildReconciliationBankSampleRows(params, sessionId, sourceBatchId, runId)
+  const supplementalRows = buildSupplementalBookkeepingRows(
+    params,
+    sessionId,
+    sourceBatchId,
+    runId,
+    reconciliationRows.length + 1,
+    342,
+  )
+  return [...reconciliationRows, ...supplementalRows]
 }
 
 function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
@@ -485,6 +514,8 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
   const uploadFiles = buildSampleUploadFiles(params, sessionId, sourceBatchId)
   const validationFileLinks = buildValidationFileLinks(params, validationRows, uploadFiles)
   const bookkeepingRows = buildSampleBookkeepingRows(params, sessionId, sourceBatchId, runId)
+  const confirmedBookkeepingCount = bookkeepingRows.filter((row) => row.status === 'confirmed').length
+  const pendingBookkeepingCount = bookkeepingRows.filter((row) => row.status !== 'confirmed' && row.status !== 'excluded').length
   const payrollLines = buildSamplePayrollLines(params, payrollSummaryId)
   const employeeRows = buildSampleEmployees(params)
   const reminderRules = buildSampleReminderRules(params)
@@ -496,9 +527,9 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     sourceBatchId,
     status: 'completed',
     sourceFileCount: uploadFiles.length,
-    extractedRowCount: 342,
-    confirmedRowCount: 324,
-    unclassifiedRowCount: 18,
+    extractedRowCount: bookkeepingRows.length,
+    confirmedRowCount: confirmedBookkeepingCount,
+    unclassifiedRowCount: pendingBookkeepingCount,
     modelProvider: 'sample',
     modelName: 'first-run-preview',
     appliedCategoryNotes: '승인 Preview 기준 샘플 계정과목 분류입니다.',
@@ -1069,6 +1100,8 @@ export function summarizeSeedPlanForTests(plan: ReturnType<typeof buildFirstRunS
       confirmed: bookkeepingRows.filter((row) => row.status === 'confirmed').length,
       pending: bookkeepingRows.filter((row) => row.status !== 'confirmed' && row.status !== 'excluded').length,
       lowConfidence: bookkeepingRows.filter((row) => row.recommendationConfidence === 'low' && row.status !== 'confirmed').length,
+      bankSampleCount: bookkeepingRows.filter((row) => row.sourceType === 'bank').length,
+      taxInvoiceSampleCount: bookkeepingRows.filter((row) => row.sourceType === 'tax_invoice').length,
     },
     vat: {
       outputTaxKrw: plan.vatSummaries[0]?.outputTaxKrw ?? 0,

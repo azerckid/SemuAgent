@@ -151,19 +151,28 @@ export function hasAiEvidenceSuggestion(row: ReconciliationLedgerRow): boolean {
 }
 
 export function shouldShowEvidenceFinder(row: ReconciliationLedgerRow): boolean {
-  if (row.rowConclusion.primaryAction === 'open_source_collection') {
+  if (row.rowConclusion.primaryAction === 'write_explanation') {
     return false
   }
 
-  if (row.evidenceActionState === 'linked') {
-    return false
+  return row.evidenceActionState !== 'explanation_required'
+    && row.evidenceActionState !== 'explained_no_evidence'
+}
+
+export function evidenceFinderActionLabel(row: ReconciliationLedgerRow): '증빙 확인' | '증빙 찾기' {
+  if (row.evidenceActionState === 'candidate' || row.evidenceActionState === 'linked') {
+    return '증빙 확인'
   }
 
-  return (
-    row.evidenceActionState === 'evidence_required'
-    || hasAiEvidenceSuggestion(row)
-    || row.rowConclusion.primaryAction === 'connect_evidence'
-  )
+  return '증빙 찾기'
+}
+
+export function evidenceRowHighlightTone(row: ReconciliationLedgerRow): 'danger' | 'default' {
+  if (row.evidenceActionState === 'evidence_required' || row.evidenceActionState === 'explanation_required') {
+    return 'danger'
+  }
+
+  return 'default'
 }
 
 export function evidenceActionChipLabel(
@@ -180,7 +189,7 @@ export function evidenceActionChipLabel(
     return { label: '증빙 필요', tone: 'danger' }
   }
   if (state === 'explanation_required') {
-    return { label: '소명 필요', tone: 'warn' }
+    return { label: '소명 필요', tone: 'danger' }
   }
   if (state === 'explained_no_evidence') {
     return { label: '소명 완료', tone: 'ok' }
