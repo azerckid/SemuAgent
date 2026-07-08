@@ -54,7 +54,7 @@ export const RECONCILIATION_FIXTURE_ACCOUNT_GROUPS: ReconciliationFixtureAccount
   },
   {
     label: '기타',
-    accounts: accountOptions('card_payment', 'unclassified'),
+    accounts: accountOptions('card_payment'),
   },
 ]
 

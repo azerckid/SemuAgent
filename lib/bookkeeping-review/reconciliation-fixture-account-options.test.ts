@@ -6,12 +6,19 @@ import {
 } from './reconciliation-fixture-account-options'
 
 describe('RECONCILIATION_FIXTURE_ACCOUNT_GROUPS', () => {
-  it('covers every real bookkeeping account category key exactly once, with no invented labels', () => {
+  it('covers every real bookkeeping account category key exactly once, except unclassified, with no invented labels', () => {
     const allKeys = RECONCILIATION_FIXTURE_ACCOUNT_GROUPS.flatMap((group) => group.accounts.map((account) => account.key))
-    const realKeys = BOOKKEEPING_ACCOUNT_CATEGORIES.map((category) => category.key)
+    const realKeys = BOOKKEEPING_ACCOUNT_CATEGORIES
+      .map((category) => category.key)
+      .filter((key) => key !== 'unclassified')
 
     expect(new Set(allKeys).size).toBe(allKeys.length)
     expect([...allKeys].sort()).toEqual([...realKeys].sort())
+  })
+
+  it('excludes unclassified, matching the existing classification queue picker', () => {
+    const allKeys = RECONCILIATION_FIXTURE_ACCOUNT_GROUPS.flatMap((group) => group.accounts.map((account) => account.key))
+    expect(allKeys).not.toContain('unclassified')
   })
 
   it('pairs each key with its real label', () => {

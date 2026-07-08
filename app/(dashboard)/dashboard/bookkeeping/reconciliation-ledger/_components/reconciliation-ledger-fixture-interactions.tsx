@@ -157,7 +157,11 @@ export function ReconciliationAccountSelector({ isFixtureMode, row }: Reconcilia
   const displayAccount = labelForBookkeepingAccountCategory(accountKey) || '계정 미정'
   const hasRecommendation = Boolean(row.recommendedAccount) && !row.finalAccount
   const groups = useMemo(() => filterReconciliationFixtureAccountGroups(query), [query])
-  const confirmDisabled = isFixtureMode || isPending
+  const isExcluded = row.evidenceActionState === 'excluded'
+  const confirmDisabled = isFixtureMode || isPending || isExcluded
+  const confirmDisabledTitle = isExcluded
+    ? '제외된 거래입니다. 계정 확정 전에 제외를 먼저 해제해주세요.'
+    : disabledActionNote
 
   function confirmAccount(selectedKey: string) {
     startTransition(async () => {
@@ -220,7 +224,7 @@ export function ReconciliationAccountSelector({ isFixtureMode, row }: Reconcilia
                     )}
                     disabled={confirmDisabled}
                     onClick={() => confirmAccount(account.key)}
-                    title={isFixtureMode ? disabledActionNote : undefined}
+                    title={confirmDisabled ? confirmDisabledTitle : undefined}
                     type="button"
                   >
                     {account.label}
