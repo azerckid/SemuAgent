@@ -145,7 +145,7 @@ function deadlineProgress(start: DateTime, deadline: DateTime, today: DateTime) 
 }
 
 function normalizePeriodKey(periodKey: string | null | undefined, today: DateTime): CompanyHomePeriodKey {
-  if (periodKey && /^\d{4}-(H[12]|Q[1-4])$/.test(periodKey)) {
+  if (periodKey && /^\d{4}-(H[12]|Q[1-4]|0[1-9]|1[0-2])$/.test(periodKey)) {
     return periodKey as CompanyHomePeriodKey
   }
 
@@ -193,6 +193,23 @@ export function buildCompanyHomePeriod(params: {
       startMonth: monthKey(year, 7),
       endMonth: monthKey(year, 12),
       filingDeadline: deadline.toISODate() ?? `${year + 1}-01-25`,
+      dDay: Math.ceil(deadline.startOf('day').diff(today.startOf('day'), 'days').days),
+      progressPercent: deadlineProgress(start, deadline, today),
+    }
+  }
+
+  if (/^\d{2}$/.test(periodToken)) {
+    const month = Number(periodToken)
+    const start = LuxonDateTime.fromObject({ year, month, day: 1 }, { zone: timezone })
+    const deadlineYear = month === 12 ? year + 1 : year
+    const deadlineMonth = month === 12 ? 1 : month + 1
+    const deadline = LuxonDateTime.fromObject({ year: deadlineYear, month: deadlineMonth, day: 10 }, { zone: timezone })
+    return {
+      key,
+      label: `${year}년 ${month}월 기장검토`,
+      startMonth: monthKey(year, month),
+      endMonth: monthKey(year, month),
+      filingDeadline: deadline.toISODate() ?? monthKey(deadlineYear, deadlineMonth),
       dDay: Math.ceil(deadline.startOf('day').diff(today.startOf('day'), 'days').days),
       progressPercent: deadlineProgress(start, deadline, today),
     }
