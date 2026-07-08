@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ChevronDown, Search, Sparkles } from 'lucide-react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, useTransition, type ReactNode } from 'react'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -18,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { labelForBookkeepingAccountCategory } from '@/lib/bookkeeping/account-categories'
 import { filterReconciliationFixtureAccountGroups } from '@/lib/bookkeeping-review/reconciliation-fixture-account-options'
 import type { ReconciliationLedgerRow } from '@/lib/bookkeeping-review/reconciliation-display-model'
 import {
@@ -36,6 +39,7 @@ import {
   shouldShowEvidenceFinder,
   type EvidenceFinderSource,
 } from '@/lib/bookkeeping-review/reconciliation-row-actions'
+import { confirmReconciliationRowAccount } from '@/lib/bookkeeping-review/reconciliation-row-mutations'
 import { cn } from '@/lib/utils'
 
 const disabledActionNote = 'Slice 2b 전까지 저장·확정이 비활성화됩니다.'
@@ -140,15 +144,37 @@ function EvidenceFinderDropdown({
 }
 
 export interface ReconciliationAccountSelectorProps {
+  readonly isFixtureMode: boolean
   readonly row: ReconciliationLedgerRow
 }
 
-export function ReconciliationAccountSelector({ row }: ReconciliationAccountSelectorProps) {
+export function ReconciliationAccountSelector({ isFixtureMode, row }: ReconciliationAccountSelectorProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const displayAccount = row.finalAccount ?? row.recommendedAccount ?? '계정 미정'
+  const accountKey = row.finalAccount ?? row.recommendedAccount
+  const displayAccount = labelForBookkeepingAccountCategory(accountKey) || '계정 미정'
   const hasRecommendation = Boolean(row.recommendedAccount) && !row.finalAccount
   const groups = useMemo(() => filterReconciliationFixtureAccountGroups(query), [query])
+  const confirmDisabled = isFixtureMode || isPending
+
+  function confirmAccount(selectedKey: string) {
+    startTransition(async () => {
+      const result = await confirmReconciliationRowAccount({
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        accountKey: selectedKey,
+      })
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('계정항목을 확정했습니다.')
+      setOpen(false)
+      router.refresh()
+    })
+  }
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
@@ -186,16 +212,18 @@ export function ReconciliationAccountSelector({ row }: ReconciliationAccountSele
               <div className="grid gap-0.5">
                 {group.accounts.map((account) => (
                   <button
-                    key={`${group.label}-${account}`}
+                    key={`${group.label}-${account.key}`}
                     className={cn(
                       'rounded-md px-2 py-1.5 text-left text-[12.5px] hover:bg-company-nav-hover',
-                      account === displayAccount ? 'bg-[#eff6ff] font-semibold text-[#1d4ed8]' : 'text-foreground',
+                      account.key === accountKey ? 'bg-[#eff6ff] font-semibold text-[#1d4ed8]' : 'text-foreground',
+                      confirmDisabled ? 'cursor-not-allowed opacity-60' : '',
                     )}
-                    disabled
-                    title={disabledActionNote}
+                    disabled={confirmDisabled}
+                    onClick={() => confirmAccount(account.key)}
+                    title={isFixtureMode ? disabledActionNote : undefined}
                     type="button"
                   >
-                    {account}
+                    {account.label}
                   </button>
                 ))}
               </div>

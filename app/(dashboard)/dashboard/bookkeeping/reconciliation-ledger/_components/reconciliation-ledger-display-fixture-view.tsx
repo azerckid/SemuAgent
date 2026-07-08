@@ -286,6 +286,7 @@ export function ReconciliationLedgerDisplayFixtureView({
             filteredRows.map((row) => (
               <FixtureRow
                 key={row.id}
+                isFixtureMode={isFixtureMode}
                 onOpenEvidencePicker={(source) => setEvidencePicker({ rowId: row.id, source })}
                 onOpenExplanation={() => setExplanationRowId(row.id)}
                 onViewLinkedEvidence={() => setLinkedEvidenceRowId(row.id)}
@@ -495,12 +496,14 @@ function BatchSuggestionBar({ groups }: { readonly groups: ReconciliationBatchSu
 }
 
 function FixtureRow({
+  isFixtureMode,
   onOpenEvidencePicker,
   onOpenExplanation,
   onViewLinkedEvidence,
   row,
   taxInvoiceLayout,
 }: {
+  readonly isFixtureMode: boolean
   readonly onOpenEvidencePicker: (source: EvidenceFinderSource) => void
   readonly onOpenExplanation: () => void
   readonly onViewLinkedEvidence: () => void
@@ -550,7 +553,7 @@ function FixtureRow({
           />
         </td>
         <td className="px-3 py-3">
-          <ReconciliationAccountSelector row={row} />
+          <ReconciliationAccountSelector isFixtureMode={isFixtureMode} row={row} />
         </td>
       </tr>
     )
@@ -590,7 +593,7 @@ function FixtureRow({
         />
       </td>
       <td className="px-3 py-3">
-        <ReconciliationAccountSelector row={row} />
+        <ReconciliationAccountSelector isFixtureMode={isFixtureMode} row={row} />
       </td>
       <td className="max-w-[200px] px-3 py-3 text-[12px] text-company-fg-muted">{row.rowConclusion.headline}</td>
     </tr>

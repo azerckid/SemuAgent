@@ -157,7 +157,7 @@ describe('buildLiveReconciliationLedgerRow', () => {
 
     expect(() => reconciliationLedgerRowSchema.parse(ledgerRow)).not.toThrow()
     expect(ledgerRow.actions).toEqual({
-      canConfirmAccount: false,
+      canConfirmAccount: true,
       canExplain: false,
       canExclude: false,
       canConfirmMatch: false,

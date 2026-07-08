@@ -10,6 +10,7 @@ import {
 
 const PERIOD_LABEL = '2026년 1기 (부가세)'
 const PERIOD_MODE = 'quarter' as const
+const FIXTURE_UPLOAD_SESSION_ID = 'fixture-session'
 
 const disabledActions = {
   canConfirmAccount: false,
@@ -119,6 +120,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
     ...buildReconciliationBankFixtureRows(),
     {
       id: 'preview-card-saas',
+      uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
       periodMode: PERIOD_MODE,
       periodLabel: PERIOD_LABEL,
       source: 'card',
@@ -158,6 +160,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
     },
     {
       id: 'preview-tax-hardson',
+      uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
       periodMode: PERIOD_MODE,
       periodLabel: PERIOD_LABEL,
       source: 'tax_invoice',
@@ -185,6 +188,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
     },
     {
       id: 'preview-cash-personal',
+      uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
       periodMode: PERIOD_MODE,
       periodLabel: PERIOD_LABEL,
       source: 'cash_receipt',
@@ -221,6 +225,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
     },
     {
       id: 'preview-card-settlement-group',
+      uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
       periodMode: PERIOD_MODE,
       periodLabel: PERIOD_LABEL,
       source: 'card',
@@ -248,6 +253,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
     },
     {
       id: 'preview-batch-saas-02',
+      uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
       periodMode: PERIOD_MODE,
       periodLabel: PERIOD_LABEL,
       source: 'card',
@@ -284,6 +290,7 @@ export const RECONCILIATION_LEDGER_DISPLAY_FIXTURE: ReconciliationLedgerDisplayM
     },
     {
       id: 'preview-batch-saas-03',
+      uploadSessionId: FIXTURE_UPLOAD_SESSION_ID,
       periodMode: PERIOD_MODE,
       periodLabel: PERIOD_LABEL,
       source: 'card',

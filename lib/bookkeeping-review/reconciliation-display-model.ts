@@ -195,6 +195,7 @@ export const reconciliationLedgerRowActionsSchema = z.object({
 
 export const reconciliationLedgerRowSchema = z.object({
   id: z.string().min(1),
+  uploadSessionId: z.string().min(1),
   periodMode: reconciliationPeriodModeSchema,
   periodLabel: z.string().min(1),
   source: reconciliationSourceSchema,
