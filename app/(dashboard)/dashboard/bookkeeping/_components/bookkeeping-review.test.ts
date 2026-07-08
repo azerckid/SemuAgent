@@ -62,8 +62,9 @@ describe('bookkeeping review UI boundaries (JC-010)', () => {
 
   it('renders the reconciliation ledger route as a dedicated Path 1 gate', () => {
     expect(reconciliationPageSource).toContain('ReconciliationLedgerDisplayFixtureView')
-    expect(reconciliationViewSource).toContain('Path 1 데이터 준비 관문')
-    expect(reconciliationViewSource).toContain('통장·카드·세금계산서·현금영수증')
+    expect(reconciliationViewSource).toContain('자료대조원장')
+    expect(reconciliationViewSource).toContain('PeriodScopeControl')
+    expect(reconciliationViewSource).not.toContain('Path 1 데이터 준비 관문')
     expect(reconciliationViewSource).toContain('filter="bank"')
     expect(reconciliationPageSource).toContain('normalizeReconciliationDisplayFilter(source)')
   })
