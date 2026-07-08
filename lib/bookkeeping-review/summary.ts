@@ -80,6 +80,7 @@ export type BookkeepingReviewQueueRow = {
   sourceType: BookkeepingSourceType
   direction: 'income' | 'expense' | 'unknown'
   requiresManualAccount: boolean
+  staffMemo: string | null
   reconciliation: ReconciliationInfo
 }
 
@@ -124,6 +125,7 @@ type ClassificationRowInput = {
   status: string
   sourceType: BookkeepingSourceType
   direction: 'income' | 'expense' | 'unknown'
+  staffMemo: string | null
 }
 
 type VoucherLineInput = { side: string; accountName: string | null; accountCode: string | null; amountKrw: number }
@@ -194,6 +196,7 @@ export function mapClassificationRow(row: ClassificationRowInput): BookkeepingRe
     sourceType: row.sourceType,
     direction: row.direction,
     requiresManualAccount: requiresManualAccount(confidence, row.status),
+    staffMemo: row.staffMemo,
     reconciliation: emptyReconciliationInfo(),
   }
 }
@@ -450,6 +453,7 @@ export async function loadBookkeepingReviewSummary({
       status: bookkeepingTransactionClassification.status,
       sourceType: bookkeepingTransactionClassification.sourceType,
       direction: bookkeepingTransactionClassification.direction,
+      staffMemo: bookkeepingTransactionClassification.staffMemo,
     })
     .from(bookkeepingTransactionClassification)
     .where(and(

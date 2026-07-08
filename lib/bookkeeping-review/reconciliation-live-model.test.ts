@@ -25,6 +25,7 @@ function buildRow(overrides: Partial<BookkeepingReviewQueueRow> = {}): Bookkeepi
     sourceType: 'bank',
     direction: 'expense',
     requiresManualAccount: false,
+    staffMemo: null,
     reconciliation: { matchState: 'confirmed', candidates: [], blockers: [] },
     ...overrides,
   }
@@ -60,6 +61,26 @@ describe('mapLiveEvidenceActionState', () => {
     expect(mapLiveEvidenceActionState(buildRow({ sourceType: 'receipt' }))).toBe('linked')
     expect(mapLiveEvidenceActionState(buildRow({ sourceType: 'tax_invoice' }))).toBe('linked')
   })
+
+  it('routes personal-use-suspicious card rows to explanation_required instead of linked', () => {
+    const row = buildRow({ sourceType: 'card', counterparty: '헤어살롱', description: '미용실' })
+    expect(mapLiveEvidenceActionState(row)).toBe('explanation_required')
+  })
+
+  it('moves a personal-use-suspicious row to explained_no_evidence once a memo is saved', () => {
+    const row = buildRow({
+      sourceType: 'card',
+      counterparty: '헤어살롱',
+      description: '미용실',
+      staffMemo: '직원 단체 이미지 촬영을 위한 헤어 스타일링, 업무용',
+    })
+    expect(mapLiveEvidenceActionState(row)).toBe('explained_no_evidence')
+  })
+
+  it('does not route personal-use-suspicious bank/other rows to explanation_required (evidence_required takes priority)', () => {
+    const row = buildRow({ sourceType: 'bank', counterparty: '헤어살롱', description: '미용실 결제' })
+    expect(mapLiveEvidenceActionState(row)).toBe('evidence_required')
+  })
 })
 
 describe('mapLiveMatchCandidate', () => {
@@ -90,6 +111,10 @@ describe('resolveLivePrimaryAction', () => {
     expect(resolveLivePrimaryAction(buildRow({ status: 'confirmed' }), 'linked')).toBe('review_only')
     expect(resolveLivePrimaryAction(buildRow({ status: 'excluded' }), 'excluded')).toBe('review_only')
   })
+
+  it('uses write_explanation for explanation_required', () => {
+    expect(resolveLivePrimaryAction(buildRow(), 'explanation_required')).toBe('write_explanation')
+  })
 })
 
 describe('buildLiveRowConclusion', () => {
@@ -113,6 +138,14 @@ describe('buildLiveRowConclusion', () => {
     const conclusion = buildLiveRowConclusion(row, 'candidate')
     expect(conclusion.headline).toContain('같은 금액·같은 일자')
     expect(conclusion.basisLabel).toBe('같은 금액·같은 일자')
+  })
+
+  it('explains the personal-use-suspicion basis for explanation_required rows', () => {
+    const row = buildRow({ sourceType: 'card', counterparty: '헤어살롱', description: '미용실' })
+    const conclusion = buildLiveRowConclusion(row, 'explanation_required')
+    expect(conclusion.headline).toBe('업무 관련성 소명이 필요합니다')
+    expect(conclusion.basisLabel).toContain('업무무관 의심')
+    expect(conclusion.primaryAction).toBe('write_explanation')
   })
 
   it('never uses forbidden candidate-count wording (Brief 41 §0.3)', () => {

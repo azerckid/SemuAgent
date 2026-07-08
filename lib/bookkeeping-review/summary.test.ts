@@ -31,6 +31,7 @@ function row(partial: Partial<BookkeepingReviewQueueRow>): BookkeepingReviewQueu
     confidenceTone: 'ok',
     status: 'suggested',
     requiresManualAccount: false,
+    staffMemo: null,
     reconciliation: emptyReconciliationInfo(),
     ...partial,
     sourceType: partial.sourceType ?? 'other',
@@ -178,6 +179,7 @@ describe('mapClassificationRow', () => {
       status: 'needs_decision',
       sourceType: 'card',
       direction: 'expense',
+      staffMemo: null,
     })
     expect(mapped.description).toBe('오피스디포') // description null → merchantName
     expect(mapped.counterparty).toBe('오피스디포')

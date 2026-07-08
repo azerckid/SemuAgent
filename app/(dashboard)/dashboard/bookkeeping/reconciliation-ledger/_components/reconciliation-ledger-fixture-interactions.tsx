@@ -39,7 +39,10 @@ import {
   shouldShowEvidenceFinder,
   type EvidenceFinderSource,
 } from '@/lib/bookkeeping-review/reconciliation-row-actions'
-import { confirmReconciliationRowAccount } from '@/lib/bookkeeping-review/reconciliation-row-mutations'
+import {
+  confirmReconciliationRowAccount,
+  saveReconciliationRowExplanation,
+} from '@/lib/bookkeeping-review/reconciliation-row-mutations'
 import { cn } from '@/lib/utils'
 
 const disabledActionNote = 'Slice 2b 전까지 저장·확정이 비활성화됩니다.'
@@ -505,17 +508,40 @@ export function ReconciliationEvidencePickerModal({
 }
 
 export interface ReconciliationExplanationModalProps {
+  readonly isFixtureMode: boolean
   readonly onOpenChange: (open: boolean) => void
   readonly open: boolean
   readonly row: ReconciliationLedgerRow | null
 }
 
 export function ReconciliationExplanationModal({
+  isFixtureMode,
   onOpenChange,
   open,
   row,
 }: ReconciliationExplanationModalProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const [draft, setDraft] = useState(row?.explanationMemo ?? '')
+  const saveDisabled = isFixtureMode || isPending || draft.trim().length === 0
+
+  function saveExplanation() {
+    if (!row) return
+    startTransition(async () => {
+      const result = await saveReconciliationRowExplanation({
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        memo: draft.trim(),
+      })
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('소명 내용을 저장했습니다.')
+      onOpenChange(false)
+      router.refresh()
+    })
+  }
 
   return (
     <Dialog
@@ -560,9 +586,15 @@ export function ReconciliationExplanationModal({
                 취소
               </button>
               <button
-                className="cursor-not-allowed rounded-lg border border-company-border bg-company-nav-hover px-3 py-2 text-[12px] font-semibold text-company-fg-subtle"
-                disabled
-                title={disabledActionNote}
+                className={cn(
+                  'rounded-lg border border-company-border px-3 py-2 text-[12px] font-semibold',
+                  saveDisabled
+                    ? 'cursor-not-allowed bg-company-nav-hover text-company-fg-subtle'
+                    : 'bg-foreground text-background hover:opacity-90',
+                )}
+                disabled={saveDisabled}
+                onClick={saveExplanation}
+                title={isFixtureMode ? disabledActionNote : undefined}
                 type="button"
               >
                 저장

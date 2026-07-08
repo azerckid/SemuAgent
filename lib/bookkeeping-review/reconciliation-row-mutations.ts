@@ -40,3 +40,16 @@ export async function confirmReconciliationRowAccount(params: {
     fallbackErrorMessage: '계정항목 확정에 실패했습니다.',
   })
 }
+
+export async function saveReconciliationRowExplanation(params: {
+  uploadSessionId: string
+  rowId: string
+  memo: string
+}): Promise<ReconciliationRowMutationResult> {
+  return patchClassificationRow({
+    uploadSessionId: params.uploadSessionId,
+    rowId: params.rowId,
+    body: { staffMemo: params.memo },
+    fallbackErrorMessage: '소명 메모 저장에 실패했습니다.',
+  })
+}

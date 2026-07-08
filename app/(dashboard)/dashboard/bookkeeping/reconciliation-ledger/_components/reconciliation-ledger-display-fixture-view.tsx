@@ -316,6 +316,7 @@ export function ReconciliationLedgerDisplayFixtureView({
 
         <ReconciliationExplanationModal
           key={explanationRowId ?? 'closed'}
+          isFixtureMode={isFixtureMode}
           onOpenChange={(open) => {
             if (!open) {
               setExplanationRowId(null)

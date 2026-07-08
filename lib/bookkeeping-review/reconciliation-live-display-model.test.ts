@@ -27,6 +27,7 @@ function buildRow(overrides: Partial<BookkeepingReviewQueueRow> = {}): Bookkeepi
     sourceType: 'bank',
     direction: 'expense',
     requiresManualAccount: false,
+    staffMemo: null,
     reconciliation: { matchState: 'confirmed', candidates: [], blockers: [] },
     ...overrides,
   }
