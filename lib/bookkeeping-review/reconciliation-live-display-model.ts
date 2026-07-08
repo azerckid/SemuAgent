@@ -19,15 +19,23 @@ export function inferReconciliationPeriodMode(periodKey: string): Reconciliation
   return 'custom'
 }
 
+// v1 has no structured exclusionReason column (2b-1 decision) — the reason
+// text is saved into the same staffMemo column explanationMemo already
+// reads (see buildLiveReconciliationLedgerRow). row.exclusionReason itself
+// stays permanently null for live rows, so "has a reason been recorded"
+// must be read from explanationMemo instead, or a saved reason would never
+// clear the "제외 사유 필요" blocker.
+function rowNeedsExclusionReason(row: ReconciliationLedgerRow): boolean {
+  return row.evidenceActionState === 'excluded' && !row.explanationMemo?.trim()
+}
+
 export function buildLiveClosingChecklist(rows: ReconciliationLedgerRow[]): ReconciliationClosingChecklist {
   const evidenceRequiredCount = rows.filter((row) => row.evidenceActionState === 'evidence_required').length
   const explanationRequiredCount = rows.filter((row) => row.evidenceActionState === 'explanation_required').length
   const accountUnconfirmedCount = rows.filter(
     (row) => row.blockers.some((blocker) => blocker.code === 'account_unconfirmed'),
   ).length
-  const exclusionReasonRequiredCount = rows.filter(
-    (row) => row.evidenceActionState === 'excluded' && row.exclusionReason === null,
-  ).length
+  const exclusionReasonRequiredCount = rows.filter(rowNeedsExclusionReason).length
   const taxBlockerCount = evidenceRequiredCount + explanationRequiredCount + accountUnconfirmedCount + exclusionReasonRequiredCount
 
   return {
@@ -106,9 +114,7 @@ export function buildLiveNextActions(rows: ReconciliationLedgerRow[]): Reconcili
     })
   }
 
-  const exclusionReasonRequiredRows = sortByAmountDesc(
-    rows.filter((row) => row.evidenceActionState === 'excluded' && row.exclusionReason === null),
-  )
+  const exclusionReasonRequiredRows = sortByAmountDesc(rows.filter(rowNeedsExclusionReason))
   if (exclusionReasonRequiredRows.length > 0) {
     actions.push({
       id: 'live-exclusion-reason-required',

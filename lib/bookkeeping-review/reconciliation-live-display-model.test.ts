@@ -58,7 +58,7 @@ describe('buildLiveClosingChecklist', () => {
 
     expect(checklist.evidenceRequiredCount).toBe(2) // a, b are both bank with no candidates
     expect(checklist.accountUnconfirmedCount).toBe(1) // b is not confirmed
-    expect(checklist.exclusionReasonRequiredCount).toBe(1) // c is excluded, exclusionReason always null today
+    expect(checklist.exclusionReasonRequiredCount).toBe(1) // c is excluded with no staffMemo recorded yet
     expect(checklist.explanationRequiredCount).toBe(0) // not derivable yet
     expect(checklist.taxBlockerCount).toBe(4)
     expect(checklist.isReadyForPath1).toBe(false)
@@ -69,6 +69,22 @@ describe('buildLiveClosingChecklist', () => {
       buildLiveReconciliationLedgerRow(buildRow({ id: 'a', sourceType: 'card', status: 'confirmed' }), { mode: 'month', label: 'label' }),
     ]
     expect(buildLiveClosingChecklist(rows).isReadyForPath1).toBe(true)
+  })
+
+  it('clears exclusionReasonRequiredCount once a reason is saved into staffMemo (PR #169 review P1)', () => {
+    // saveReconciliationRowExclusion writes the reason into staffMemo (v1
+    // has no structured exclusionReason column) — row.exclusionReason
+    // itself stays permanently null for live rows, so the checklist must
+    // read explanationMemo (staffMemo) to notice a saved reason.
+    const rows = [
+      buildLiveReconciliationLedgerRow(
+        buildRow({ id: 'c', sourceType: 'card', status: 'excluded', staffMemo: '제외 사유: 개인 사용 - 영화 관람' }),
+        { mode: 'month', label: 'label' },
+      ),
+    ]
+    const checklist = buildLiveClosingChecklist(rows)
+    expect(checklist.exclusionReasonRequiredCount).toBe(0)
+    expect(checklist.isReadyForPath1).toBe(true)
   })
 })
 
@@ -119,6 +135,16 @@ describe('buildLiveNextActions', () => {
     expect(actions[0]!.targetRowId).toBe('excluded-large')
     expect(actions[0]!.label).toBe('제외 사유 필요 2건')
     expect(actions[0]!.targetRoute).toBe('/dashboard/bookkeeping/reconciliation-ledger?source=exclusion_review')
+  })
+
+  it('excludes rows that already have a saved reason from the queue (PR #169 review P1)', () => {
+    const rows = [
+      buildLiveReconciliationLedgerRow(
+        buildRow({ id: 'excluded-with-reason', sourceType: 'card', status: 'excluded', staffMemo: '제외 사유: 중복 결제' }),
+        { mode: 'month', label: 'label' },
+      ),
+    ]
+    expect(buildLiveNextActions(rows)).toEqual([])
   })
 })
 

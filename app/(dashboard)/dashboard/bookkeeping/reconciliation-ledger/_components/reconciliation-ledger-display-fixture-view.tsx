@@ -176,7 +176,7 @@ export function ReconciliationLedgerDisplayFixtureView({
         </section>
 
         <div className="rounded-[10px] border border-[#bfdbfe] bg-[#eff6ff] px-3.5 py-3 text-[12.5px] text-[#1e40af]">
-          {isFixtureMode ? 'Fixture workbench: ' : ''}증빙 상태 셀에서 증빙 찾기(3종) 또는 소명 입력, 계정 셀에서 계정을 선택합니다. 저장·연결은 아직 준비 중입니다.
+          {isFixtureMode ? 'Fixture workbench: ' : ''}증빙 상태 셀에서 소명 입력·제외 처리, 계정 셀에서 계정을 확정합니다. 증빙 연결은 아직 준비 중입니다.
         </div>
 
         <NextActionQueue actions={displayModel.nextActions} isFixtureMode={isFixtureMode} />
@@ -226,7 +226,7 @@ export function ReconciliationLedgerDisplayFixtureView({
             />
             <DisplayTabChip
               active={activeFilter === 'exclusion_review'}
-              count={checklist.exclusionReasonRequiredCount}
+              count={countReconciliationDisplayRows(rows, (row) => row.evidenceActionState === 'excluded' || row.blockers.some((b) => b.code === 'exclude_reason_required'))}
               filter="exclusion_review"
               isFixtureMode={isFixtureMode}
               label="제외 검토"
