@@ -160,8 +160,10 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 자료대조원장 Slice 2a-2 UI shell 착수 — Brief §2.1 step 2a-2, landed on main (`169ade8`)
   - [x] 자료대조원장 Slice 2a-3 table-cell 증빙/계정 액션 착수 — Brief §2.1 step 2a-3, PR #150·#152·#156·#157·#158 merged
   - [x] 자료대조원장 Slice 2a-4 evidence finder browse + AI display shell 착수 — Brief §2.1 step 2a-4, PR #160 merged (`9277a4c`)
-  - [ ] 자료대조원장 Slice 2a-5 full read model wiring 착수 — Brief §2.1 step 2a-5 (기간, action-state, 매칭, blocker, nextActions, taxBlockerSummaries, closingChecklist) — 진행 중
+  - [x] 자료대조원장 Slice 2a-5 full read model wiring 완료 — Brief §2.1 step 2a-5, PR #161·#162·#163·#164 merged(`ae2a94b`). 사이드바 기본 경로가 live 데이터로 전환됨(`display=fixture` 명시할 때만 fixture)
   - [ ] 자료대조원장 기간 모드 연/사용자 지정 실제 구현 — 2a-5 범위에서 제외, 월/분기/반기만 우선 지원(`buildCompanyHomePeriod`), 후속 작업으로 별도 진행
+  - [ ] 자료대조원장 explanation_required·explained_no_evidence·evidence_exception 상태 실 데이터 도출 — 소명 메모·개인/업무무관 탐지·예외 유형 태그용 DB 필드·로직이 아직 없음(§0.2 Missing), 2b 이후 별도 작업
+  - [ ] `ReconciliationLedgerDisplayFixtureView`/`reconciliation-ledger-display-fixture-view.tsx` 이름 정리 — live 데이터도 렌더하는데 이름에 Fixture가 남아있음, 동작엔 문제없어 비차단 후속 작업
   - [x] 자료대조원장 반복 패턴 추천 계약 검토 — 전월/최근 확정 이력 기반 추천, 확정 row 정의, AI 추천과 패턴 추천 관계, 자동 확정 금지
   - [x] 자료대조원장 AI escalation/fallback 계약 검토 — 규칙→패턴→단일 AI→multi-provider consensus→수동 검토, LLM 실패·타임아웃 시 화면 비차단
   - [x] 자료대조원장 기간 단위·증빙 상태 용어 계약 검토 — 월/분기/반기/연/사용자 지정, "증빙없음"은 최종 상태가 아니라 증빙 필요·소명 필요·소명 완료·증빙 예외·제외됨으로 표시
