@@ -322,7 +322,7 @@ function ClassificationQueueTable({
                 <tr
                   key={row.id}
                   className={cn(
-                    'border-b border-company-border last:border-b-0 hover:bg-[#fafafa]',
+                    'cursor-pointer border-b border-company-border last:border-b-0 hover:bg-[#fafafa]',
                     selectedRowId === row.id && 'bg-[#eff6ff] hover:bg-[#e7f0ff]',
                   )}
                   onClick={() => onSelectRow(row)}
