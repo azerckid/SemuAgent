@@ -50,6 +50,7 @@ import {
 import { cn } from '@/lib/utils'
 
 const disabledActionNote = 'Slice 2b 전까지 저장·확정이 비활성화됩니다.'
+let latestUndoToastSequence = 0
 
 // Shallow undo (Brief 41 §0.4): the toast's own action button is the undo
 // affordance — no separate audit-log UI. Only the most recently shown
@@ -62,6 +63,9 @@ function showUndoableSuccessToast(params: {
   previous: ReconciliationRowPreviousState | null
   router: { refresh: () => void }
 }) {
+  const undoSequence = latestUndoToastSequence + 1
+  latestUndoToastSequence = undoSequence
+
   if (!params.previous) {
     toast.success(params.message)
     return
@@ -72,6 +76,11 @@ function showUndoableSuccessToast(params: {
     action: {
       label: '되돌리기',
       onClick: () => {
+        if (undoSequence !== latestUndoToastSequence) {
+          toast.error('가장 최근 작업만 되돌릴 수 있습니다.')
+          return
+        }
+
         void revertReconciliationRowState({
           uploadSessionId: params.uploadSessionId,
           rowId: params.rowId,
@@ -81,6 +90,7 @@ function showUndoableSuccessToast(params: {
             toast.error(result.message)
             return
           }
+          latestUndoToastSequence += 1
           toast.success('되돌렸습니다.')
           params.router.refresh()
         })
