@@ -18,7 +18,7 @@ describe('reconciliation-row-actions', () => {
     const row = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankAmbiguous)
     expect(row).toBeDefined()
 
-    expect(computeRemainingDifferenceKrw(row!.amountKrw, row!.candidates)).toBe(row!.amountKrw - 3_767_360)
+    expect(computeRemainingDifferenceKrw(row!.amountKrw, row!.candidates)).toBe(row!.amountKrw! - 3_767_360)
   })
 
   it('returns full row amount when no candidates exist', () => {

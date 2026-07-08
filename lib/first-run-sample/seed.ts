@@ -1087,16 +1087,17 @@ export async function refreshFirstRunSampleBookkeepingData({
   const journalRunId = firstRunSampleId(tenantId, 'journal_run_2026h1')
   const voucherId = firstRunSampleId(tenantId, 'journal_voucher_001')
   const timestamp = toDBString(now())
+  const sampleParams: SeedParams = {
+    tenantId,
+    clientId: activeDataset.clientId,
+    staffId: staffRecord.id,
+    userId,
+    datasetId: activeDataset.id,
+    timestamp,
+    createdClient: false,
+  }
   const bookkeepingRows = buildReconciliationBankSampleRows(
-    {
-      tenantId,
-      clientId: activeDataset.clientId,
-      staffId: staffRecord.id,
-      userId,
-      datasetId: activeDataset.id,
-      timestamp,
-      createdClient: false,
-    },
+    sampleParams,
     sessionId,
     sourceBatchId,
     runId,
