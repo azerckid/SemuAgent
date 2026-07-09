@@ -1,9 +1,8 @@
 # Test Scenarios: Bookkeeping Review
 > Created: 2026-07-02 09:10
-> Last Updated: 2026-07-03 20:24
+> Last Updated: 2026-07-10 08:17 KST
 
-기장검토(JC-010) Layer 5 QA 시나리오. [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)의
-Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
+기장검토(JC-010) Layer 5 QA 시나리오. [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)와 [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)의 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
 
 핵심: **Preview UI 계약 준수**(GIWA reviews 워크스페이스 미노출), 분류 큐 집계 정확성,
 신뢰도 낮음 계정지정 강제, 기존 세션 API 재사용 승인, tenant/사업장 범위 격리.
@@ -94,14 +93,49 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-90 | 미인증 | 접근 | `/sign-in` redirect | PASS·구현 |
 | S-91 | tenant 없음 | 진입 | 회사용 접근 안내 | PASS·구현 |
 
+### 2.11 자료대조원장 Phase 2
+
+| # | Given | When | Then | Result |
+|:---|:---|:---|:---|:---:|
+| S-100 | live 회사 데이터 | `/dashboard/bookkeeping/reconciliation-ledger` 진입 | fixture가 아닌 tenant/기간 scoped 원장 행이 기본 렌더 | PASS·구현 |
+| S-101 | 통장 행과 동일 금액의 세금계산서/현금영수증/카드 행 | 증빙 상태 파생 | 실제 증빙 행을 찾고 `증빙있음` + `증빙 확인` 표시 | PASS·단위 |
+| S-102 | `증빙있음` 통장 행 | `증빙 확인` → `찾은 증빙` 한 줄 클릭 | 해당 출처 목록이 열리고 실제 증빙 행이 강조 | PASS·구현 |
+| S-103 | 거래처/일자가 유사하나 금액이 다른 행 | 증빙 찾기 | `금액 차이` 표시, `증빙 필요` 유지, 연결 저장 차단 | PASS·단위 |
+| S-104 | 사용자가 구체 증빙 행 선택 | 연결 저장 후 reload | `linked_evidence_row_id` 기반으로 동일 행이 다시 `증빙있음` | PASS·구현 |
+| S-105 | 저장된 exact 1:1 증빙 링크 | 해제 또는 다른 증빙 선택 | 링크가 null/교체되고 최신 액션 undo 가능 | PASS·구현 |
+| S-106 | 개인/업무무관 의심 행 | 소명 입력 | `staffMemo` 저장 후 소명 완료 상태로 전환 | PASS·구현 |
+| S-107 | 제외 대상 행 | 사유 입력 후 제외 | `status='excluded'` + 사유 memo 저장, 감사 가능한 제외 행 유지 | PASS·구현 |
+| S-108 | 내부이체/대출/세금납부 등 | 증빙 예외 저장 | `증빙 예외: ...` memo 저장, 증빙 링크 clear, 예외 상태 표시 | PASS·구현 |
+| S-109 | 미확정 계정 행 | 계정 selector에서 확정 | 실제 account key로 저장되고 카운트 즉시 갱신 | PASS·구현 |
+| S-110 | 같은 거래처/방향의 과거 확정 계정 | 다음 기간 행 렌더 | 반복 패턴 근거 표시, 적용/무시 가능, 자동 확정 없음 | PASS·단위 |
+| S-111 | 과거 증빙/제외 패턴 | 다음 기간 행 렌더 | 단건 확인 진입점만 표시, 자동 연결/제외 없음 | PASS·단위 |
+| S-112 | 동일 거래처·근거·추천 계정의 안전 그룹 | 계정 일괄 수락 | 대상 행 확인 후에만 저장, mixed group은 미노출 | PASS·단위 |
+| S-113 | 증빙/제외 패턴 그룹 | 화면 렌더 | v1 일괄 수락 없음, 단건 확인만 유지 | PASS·구현 |
+| S-114 | 원장 table-first 화면 | 첫 화면 렌더 | 기간/행동 필터와 원장 표가 먼저 보이고 제거된 hero/source-summary/다음 할 일 카드가 재등장하지 않음 | PASS·구현 |
+
+### 2.12 Slice 2d Path 1 Gate (Pending)
+
+| # | Given | When | Then | Result |
+|:---|:---|:---|:---|:---:|
+| S-120 | tenant A/B와 같은 period key | shared gate load for tenant A | tenant B 행은 blocker/count에 포함되지 않음 | Pending |
+| S-121 | 증빙·소명·계정·제외 blocker가 섞인 동일 기간 | gate derivation | `closingChecklist`와 gate count/reason이 일치 | Pending |
+| S-122 | 신고 준비 허브 | common bookkeeping readiness render | 별도 규칙 복사 없이 shared gate count와 자료대조원장 route 사용 | Pending |
+| S-123 | source collection 또는 reconciliation 미완 | VAT package UI | 생성 버튼 disabled + 정확한 사유와 이동 경로 표시 | Pending |
+| S-124 | source/reconciliation/VAT deduction 중 하나라도 미완 | VAT package POST | API가 conflict 응답으로 거부하고 reason/count/target route 반환 | Pending |
+| S-125 | 세 gate가 모두 ready이나 VAT snapshot provenance 미확인 | VAT package POST | 생성 거부; confirmed-ledger provenance 확인 전 잠금 유지 | Pending |
+| S-126 | 같은 tenant/period의 confirmed filing rows로 VAT 값 rebuild 완료 | VAT package POST | gate 통과 후에만 package status 전환 | Pending |
+| S-127 | 원천세·간이지급명세서·지방소득세 payroll route | bookkeeping blocker 존재 | payroll 전용 validation만 적용되고 reconciliation gate로 차단되지 않음 | Pending |
+| S-128 | shared gate load | 실행 | classification/VAT/filing DB에 write side effect 없음 | Pending |
+
 ## 3. 자동화 현황 및 후속
 - **자동 단위 완료**(`lib/bookkeeping-review/summary.test.ts`): 탭 집계(S-20~23), 신뢰도·계정지정(S-30~32), 분개 균형(S-42), 제외 테이블(S-61), 기간 필터(S-10).
 - **정적 검증 완료**(`bookkeeping-review.test.ts`): Preview 구조(S-01), GIWA 워크스페이스 미import(S-60), 문구(S-62), 라우트(S-02).
 - **구현 검증 완료**: `tsc --noEmit`, `npm run lint`, `npm run test`, `npm run build`.
-- **후속**: JC-014에서 실제 Blob·AI 파싱·`analysis_run` 저장 E2E는 통과했다. 기장검토 화면의 실제 분류 큐 반영·전표 생성까지의 도메인 E2E는 별도 시드/세션 준비 후 검증한다.
+- **자료대조원장 완료 범위**: Slice 2a/2b의 live read, row mutation, exact 1:1 evidence lifecycle, pattern display/account batch acceptance는 unit + browser E2E로 검증됐다.
+- **후속**: Slice 2d는 S-120~S-128을 먼저 자동화한 뒤 filing-preparation/VAT UI와 API를 연결한다. 공식 Hometax 파일 assembly 검증은 JC-030 범위다.
 
 ## 4. Related Documents
-- **UI_Screens**: [Bookkeeping Review Prototype Review](../02_UI_Screens/04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/02_bookkeeping_review.html)
-- **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md)
+- **UI_Screens**: [Bookkeeping Review Prototype Review](../02_UI_Screens/04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) · [Bookkeeping HTML Preview](../02_UI_Screens/previews/02_bookkeeping_review.html) · [Reconciliation Prototype Review](../02_UI_Screens/12_RECONCILIATION_LEDGER_PROTOTYPE_REVIEW.md) · [Reconciliation HTML Preview](../02_UI_Screens/previews/12_reconciliation_ledger.html)
+- **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) · [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md) · [Path 1 Readiness Audit](../03_Technical_Specs/40_PATH1_END_TO_END_FILING_READINESS_AUDIT.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md)
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-010 Context Lock
 - **QA_Validation**: [Source Collection Test Scenarios](./03_SOURCE_COLLECTION_TEST_SCENARIOS.md) - 동일 패턴 참조

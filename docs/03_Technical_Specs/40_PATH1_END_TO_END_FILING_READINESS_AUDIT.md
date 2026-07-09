@@ -1,6 +1,6 @@
 # Path 1 End-to-End Filing Readiness Audit
 > Created: 2026-07-07 23:29 KST
-> Last Updated: 2026-07-08 02:01 KST
+> Last Updated: 2026-07-10 08:17 KST
 
 ## 0. Purpose
 
@@ -88,25 +88,17 @@ generated only from data that passed these gates:
 
 ## 5. What Is Not Yet Strong Enough
 
-### 5.1 Cross-source reconciliation is not yet a first-class Path 1 gate
+### 5.1 Cross-source reconciliation is live; downstream gate consumption remains
 
-The code has source types, attribution, duplicate handling, and extracted
-transaction candidates. But the product still needs an explicit checklist for:
+The **기장검토 하위 "자료대조원장"** workbench now provides live tenant/period rows, exact 1:1 bank-to-tax-invoice/cash-receipt/card evidence discovery and connection, evidence review/unlink/replace, amount-difference blocking, account confirmation, explanation, exclusion, evidence exceptions, prior-pattern guidance, and the closing checklist.
 
-- bank deposit/withdrawal vs tax invoice/card/receipt rows,
-- duplicate payment vs duplicate evidence,
-- card payment settlement vs individual card purchases,
-- missing evidence for a bank movement,
-- tax-invoice-only evidence that has not appeared in bank/card records.
+The remaining gap is downstream enforcement: filing preparation and the applicable tax-package route do not yet consume one shared reconciliation decision. Slice 2d in [Reconciliation Ledger Phase 2 Pre-Code Brief §2.2](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md) fixes that boundary. VAT is the first consumer. Payroll-based withholding, simplified wage/payment statements, and local-income paths must not be blocked by unrelated bookkeeping rows.
 
-This is now positioned as the **기장검토 하위 "자료대조원장"** gate before a tax form can be marked ready, not as a 신고 준비 child screen. The dedicated UI Preview is approved in `docs/02_UI_Screens/previews/12_reconciliation_ledger.html` (2026-07-08), using bank/card/tax-invoice/cash-receipt source-ledger references as inspiration. The detailed Phase 2 contract is fixed in [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md): bank-to-evidence candidates, account confirmation, explanation memo, exclusion reason taxonomy, and Path 1 blockers.
+### 5.2 Private or business-unrelated exclusion has a v1 shared language
 
-### 5.2 Private or business-unrelated exclusion needs one shared language
+Bookkeeping rows can be `excluded` only with a user-visible reason/memo, while VAT deduction decisions remain a separate tax-specific review. The v1 memo convention is sufficient for the current workbench; dedicated exclusion/exception columns are deferred until audit requirements justify a migration.
 
-Today, bookkeeping rows can be `excluded` with a memo, and VAT deduction rows can
-be non-deductible. That is useful but fragmented.
-
-Path 1 should standardize exclusion reasons such as:
+Path 1 uses the following shared exclusion language in v1:
 
 - personal/private use,
 - business-unrelated,
@@ -136,19 +128,17 @@ considered beta-ready.
 
 The next product work should be Path 1 completion, not Path 2 and not Path 3.
 
-1. **Path 1 data readiness gate — 자료대조원장**
-   - Add a single readiness contract under 기장검토 that every tax-type file checks before
-     download: source completeness, reconciliation, exclusion reasons, account
-     confirmation, tax-specific review.
-   - Implement against the Phase 2 contract in
-     [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md).
+1. **Slice 2d — consume the 자료대조원장 gate**
+   - Implement one tenant/period-scoped read-only reconciliation gate.
+   - Show the gate in filing preparation and enforce it in both VAT package UI and API.
+   - Verify VAT values came from confirmed filing-relevant rows before generation is unlocked.
+   - Do not apply this bookkeeping gate to payroll-only filing routes.
 2. **원천세 Path 1 complete**
    - Finish official layout acquisition.
    - Add filled-form preview for the withholding form.
    - Enable file download only after validation passes.
-3. **Reconciliation/exclusion UX**
-   - Make bank/card/tax-invoice matching and private-use exclusion visible and
-     actionable instead of leaving them as scattered lower-level statuses.
+3. **Finish deferred reconciliation edges only when required**
+   - Year/custom period scope, exception edit/remove, and partial/many-to-one split/merge remain explicit follow-ups, not prerequisites for exact 1:1 Slice 2d consumption.
 4. **Apply the same filled-form preview pattern to each tax type**
    - VAT, local income tax, business status report, and later annual statements.
 

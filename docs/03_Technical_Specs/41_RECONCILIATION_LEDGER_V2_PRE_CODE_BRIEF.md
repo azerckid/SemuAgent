@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-09 21:05 KST
+> Last Updated: 2026-07-10 08:17 KST
 
 ## 0. Purpose
 
@@ -46,27 +46,27 @@ The row-level interaction must include:
 
 Terminology note: the UI may label the evidence source as **체크카드/카드** for user clarity, but implementation reuses the existing `card` source type. No separate `check_card` DB enum or source type is introduced in this slice.
 
-## 0.2 Required Functions Not Yet Present in the Current Screen
+## 0.2 Required Functions and Current Implementation State
 
-The current implementation is only the first read-only step. The following functions are required for 자료대조원장 to become the real Path 1 workbench, but they are not all present yet. Future work must treat them as product requirements, not optional polish.
+The row-level workbench is now implemented through Slice 2b. The remaining work is not another reconciliation UI rebuild; it is period-completeness, AI runtime hardening, and downstream Path 1 gate consumption. Future work must preserve the requirements below instead of reopening already completed interaction decisions.
 
 | Required function | Meaning | Current status | Implementation direction |
 |:---|:---|:---|:---|
-| Bank deposit/withdrawal ↔ tax invoice matching | Match bank movements with issued/received tax invoices by amount, date, and counterparty | Missing/partial | Auto-suggest concrete matches; allow user confirm/unlink/manual search |
-| Bank movement ↔ evidence connection | Connect bank deposits/withdrawals to tax invoices, cash receipts, or card rows when those rows explain the bank movement | Missing/partial | Evidence finder source tabs and row-level connect actions. Card rows are evidence candidates for bank movements, not evidence-search starting points by default; card rows focus on account, explanation, and exclusion. |
+| Bank deposit/withdrawal ↔ tax invoice matching | Match bank movements with issued/received tax invoices by amount, date, and counterparty | Implemented for exact 1:1; amount-difference rows stay blocked | Found evidence can be reviewed, connected, replaced, or unlinked; partial/many-to-one remains deferred |
+| Bank movement ↔ evidence connection | Connect bank deposits/withdrawals to tax invoices, cash receipts, or card rows when those rows explain the bank movement | Implemented for exact 1:1 | Card rows are evidence targets for bank movements, not evidence-search starting points by default; card rows focus on account, explanation, and exclusion |
 | Period scope selector | Let the user review the ledger by filing-relevant period unit: month, quarter, half-year, year, or custom range | Missing/partial | Default from the current filing context, but allow user switch without changing filing data |
-| Evidence action status taxonomy | Replace final-looking "증빙없음" labels with action states such as 증빙 필요, 소명 필요, 소명 완료, 증빙 예외, 제외됨 | Missing/partial | Treat missing evidence as a blocker cause, not a completed row state |
-| Evidence finder | From a bank row, choose 세금계산서/현금영수증/체크카드 and select evidence rows | Missing | Evidence-status cell opens source selector and evidence browse modal with search, date/amount filters, add/select, remaining difference. Card rows themselves focus on account/explanation/exclusion and must not require another evidence-search step by default. |
-| Explanation memo | Let user explain unclear business use for a transaction | Missing | Row-level modal/panel field saved as memo in v1 |
-| Bank usage-description memo | Let user write what a bank movement was for when evidence is weak or context is unclear | Missing | Same row-level explanation modal; make it visible in audit/readiness |
-| Previous-period pattern recommendation | Learn from prior confirmed rows such as same counterparty, memo, amount range, evidence type, account, or exclusion decision | Missing | Show the prior-period basis and let the user accept, change, or reject; never auto-confirm |
+| Evidence action status taxonomy | Replace final-looking "증빙없음" labels with action states such as 증빙 필요, 소명 필요, 소명 완료, 증빙 예외, 제외됨 | Implemented | Treat missing evidence as a blocker cause, not a completed row state |
+| Evidence finder | From a bank row, choose 세금계산서/현금영수증/체크카드 and select evidence rows | Implemented for exact 1:1 | Evidence-status cell opens source selector and evidence browse modal with search/date filters and connect/unlink/replace actions |
+| Explanation memo | Let user explain unclear business use for a transaction | Implemented | Row-level modal saves the v1 memo convention |
+| Bank usage-description memo | Let user write what a bank movement was for when evidence is weak or context is unclear | Implemented | Same row-level explanation modal; included in readiness derivation |
+| Previous-period pattern recommendation | Learn from prior confirmed rows such as same counterparty, memo, amount range, evidence type, account, or exclusion decision | Implemented for account/evidence/exclusion display; account apply/batch only | Show the prior-period basis and let the user accept, change, or reject; never auto-confirm evidence or exclusion |
 | AI account recommendation | AI/rules first assign likely account category | Partial/existing source | Show recommended account and confidence; do not hide uncertainty |
-| User account selection | If AI cannot decide or confidence is low, user chooses account | Partial/existing source | Highlight uncertain rows and expose searchable account selector in this screen |
-| Private/business-unrelated detection | Flag likely personal or low-business-use payments, e.g. cinema, beauty salon, PC room, leisure-like spending | Missing | Heuristic/AI review flag; user must confirm business use or exclude |
-| Exclusion reason selection | Exclude personal/private, business-unrelated, duplicate, wrong-period, internal transfer, etc. | Missing/partial memo only | Required reason taxonomy plus memo before row can be considered resolved |
-| Inline account edit | Change account category directly from 자료대조원장 | Partial/existing route elsewhere | Reuse account classification mutation from the account cell |
+| User account selection | If AI cannot decide or confidence is low, user chooses account | Implemented | Searchable account selector saves through the existing classification API |
+| Private/business-unrelated detection | Flag likely personal or low-business-use payments, e.g. cinema, beauty salon, PC room, leisure-like spending | Implemented as conservative keyword heuristic | User must explain business use or exclude; future AI may add reasons but must not auto-decide |
+| Exclusion reason selection | Exclude personal/private, business-unrelated, duplicate, wrong-period, internal transfer, etc. | Implemented with v1 memo convention | Required reason and memo before the row is resolved |
+| Inline account edit | Change account category directly from 자료대조원장 | Implemented | Existing account-classification mutation is reused from the account cell |
 
-Until these are implemented, the screen must be described as an initial read-only/readiness slice, not as the finished 자료대조원장.
+The screen may be described as the live reconciliation workbench. It must not be described as a completed Path 1 gate until Slice 2d is implemented and the downstream tax route consumes the same readiness decision.
 
 ## 0.3 Candidate Count Rule
 
@@ -86,15 +86,15 @@ Phase 2 convenience features are limited to these contracts:
 
 | Convenience contract | Purpose | Boundary |
 |:---|:---|:---|
-| Next-action queue | Show the most important unresolved items first, ordered by filing blocker, amount, and due-date impact | This is a queue over existing blockers, not a new workflow engine |
-| Batch suggestion acceptance | Let the user confirm a safe group of repeated suggestions once | Not automatic confirmation; group must show eligibility and require explicit user acceptance |
+| Table-first action navigation | Put period scope, action-state filters, search, and the ledger table first so work starts without duplicated summary cards | The removed hero/source-summary/next-action cards must not be reintroduced unless a new UI approval explicitly requires them |
+| Batch account-pattern acceptance | Let the user confirm a safe group of repeated account suggestions once | Account only in v1; evidence connection and exclusion remain single-row decisions |
 | One-line row conclusion | Put the recommended account/evidence/exclusion decision and its basis directly in the ledger row | Details stay available in modals; do not hide uncertainty |
 | Source-collection back link | If the issue requires missing source data, link directly to 자료수집 with period and source type context | Do not pretend the reconciliation screen can solve missing uploads |
 | Tax-type blocker reasons | Show which Path 1 file is blocked and why, such as VAT evidence, account, or exclusion blockers | Same readiness data, clearer reason display |
 | Closing checklist | Show whether evidence, explanation, account, exclusion reason, and tax blockers are at zero | Checklist is a completion view over the same gate, not a separate approval layer |
 | Shallow undo | Let the user undo the most recent apply/confirm action from the current session | Full audit-log UI is deferred; backend audit remains separate |
 
-Batch suggestion groups are only allowed when all grouped rows share the same `patternSuggestion.reason`, suggested account, suggested evidence source or exclusion reason, and a visible basis such as same counterparty, prior confirmed count, and amount/date range. If the group contains mixed reasons, it must not be offered as one-click acceptance.
+Batch account-pattern groups are only allowed when all grouped rows share the same `patternSuggestion.reason`, suggested account, and visible basis such as same counterparty, prior confirmed count, and amount/date range. If the group contains mixed reasons, it must not be offered as one-click acceptance. Evidence-link and exclusion pattern groups are intentionally not batch-applied in v1 because a wrong bulk decision can alter audit lineage or remove filing-relevant rows.
 
 Explicitly deferred from Phase 2 convenience scope:
 
@@ -139,15 +139,12 @@ Explicitly deferred from Phase 2 convenience scope:
 | Slice | Goal | DB change | User-visible result |
 |:---|:---|:---:|:---|
 | 2a-lite | Display contract + fixture-first UI validation | No | The workbench layout can be reviewed from a stable display model before full read wiring |
-| 2a | Reconciliation read model and evidence-action display | No | Rows show source, concrete evidence rows when found, previous-period pattern suggestions, match state, blockers, next-action queue, tax blocker reasons, and closing checklist |
-| 2b | Account/exclusion/explanation actions | No preferred | Existing classification and attribution APIs are reused where possible; row cells/modals support one-line conclusion, source-collection back links, batch suggestion acceptance, and shallow undo |
-| 2c | Persisted reconciliation links, only if required | Additive only | User-confirmed bank-to-evidence links survive reloads and audits; split/merge editor remains a separate brief if needed |
+| 2a | Reconciliation read model and evidence-action display | No | Rows show source, concrete evidence rows when found, previous-period pattern suggestions, match state, action filters, tax blocker reasons, and closing checklist |
+| 2b | Account/exclusion/explanation actions | No preferred | Existing classification and attribution APIs are reused where possible; row cells/modals support one-line conclusion, source-collection back links, safe account-pattern batch acceptance, and shallow undo |
+| 2c | Durable-link decision | No additional change in v1 | Existing `linked_evidence_row_id` from migration 0066 is sufficient for exact 1:1 links; reopen only for partial payment, many-to-one, or split/merge |
+| 2d | Path 1 gate consumption | No schema change preferred | Filing preparation and VAT package UI/API consume one shared reconciliation gate; VAT value provenance is verified before generation can claim confirmed-ledger input |
 
-Slice 2a-lite must not pretend to save or confirm anything. It exists only to
-lock the display model, fixture scenarios, and workbench UX before the full read
-model is wired. Slice 2a must not invent a new table. If Slice 2b discovers that
-confirmed matches need a durable pair/link model, Slice 2c must get a separate
-migration brief before code starts.
+Slice 2a-lite did not pretend to save or confirm anything; it locked the display model, fixture scenarios, and workbench UX before full read wiring. Slice 2b later added exact 1:1 storage through migration 0066. That field is now the approved v1 durable-link boundary; a new table still requires a separate brief for partial/many-to-one/split-merge.
 
 ### 2.1 Implementation Order and Traceability
 
@@ -166,7 +163,7 @@ Traceability legend:
 | Step | Slice | Goal | Covers | Done when |
 |:---|:---|:---|:---|:---|
 | 2a-0 | 2a-lite | Display contract + fixture | §0.4, §4 display types, Preview 12, P: workbench review | `ReconciliationLedgerDisplayModel` is Zod-validated with fixture data based on Preview 12, including row-level `rowConclusion`; UI consumes this model only; no DB/API mutation and no hidden save behavior |
-| 2a-2 | 2a-lite | UI shell and honest labels | U:1-4; P: hero, source summary, ledger table columns; §0.4 next-action queue, tax blocker reasons, closing checklist | Readiness hero, source summary, next-action queue, period scope control, action tabs, table chips, tax blocker reasons, and closing checklist render from the display model; inactive controls stay disabled until their step lands |
+| 2a-2 | 2a-lite | UI shell and honest labels | U:1-4; P: initial shell; tax blocker reasons, closing checklist | Initial display-model shell landed. PR #171 later removed duplicated hero/source-summary/next-action cards; the current contract is period/action controls → ledger table → closing/tax blocker panels |
 | 2a-3 | 2a-lite | Table-cell evidence/account actions (display only) | U:6-7; §0.1; §0.3; P: evidence status cell, account popover, one-line conclusion column; §0.4 one-line panel conclusion | Fixture table uses full-width columns (거래일, 출처, 거래처, 적요, 금액, 증빙 상태, 계정항목, 한 줄 결론). **증빙 상태** cell shows **증빙있음** status with **증빙 확인** action for concrete evidence, **증빙 찾기** dropdown only when manual search is needed (세금계산서/현금영수증/체크카드 → browse modal), or **소명 입력** button. Account cell opens grouped search popover with AI recommendation hint. Save/connect/confirm controls stay disabled until 2b. |
 | 2a-4 | 2a-lite | Evidence finder browse + AI display shell | G: evidence finder, AI account recommendation, private/business-unrelated detection; §5.3; A: AI non-blocking, 증빙 확인/찾기 flow; §0.4 source-collection back link | Finder opens from the evidence-status cell in read/browse mode with source selector and filters from fixture/display data; AI/heuristic recommendation areas show reasons or manual-review fallback; missing-source problems show a 자료수집 backlink; save/connect buttons remain disabled until 2b-2 |
 | 2a-5 | 2a | Full read model wiring | G: bank↔evidence matching (세금계산서/현금영수증/카드 as evidence rows), period scope, evidence action status; §5.1; A: period switch, action-state labels, matching candidates | Existing bookkeeping/source summaries populate the same `ReconciliationLedgerDisplayModel`; fixture can be swapped for real data without changing UI props; rows derive action states instead of showing final-looking "증빙없음"; query contract uses `evidence_required` and `explanation_required` instead of legacy `missing_evidence` tab only |
@@ -176,17 +173,72 @@ Traceability legend:
 | 2b-2c-1 | 2b | Evidence unlink/replace | G: evidence finder; P: unlink/replace | User can unlink a saved `manual_reference` evidence row from the highlighted source-list row. Selecting another concrete evidence row replaces the existing link through the same connect mutation. The latest unlink/replace action can be undone from the current-session toast. |
 | 2b-2c-2 | 2b | Evidence exception | G: evidence exception; P: confirm evidence exception | User can mark a bank row as a normal-evidence exception such as internal transfer, loan, tax payment, refund/cancellation, or similar. v1 stores this as `staffMemo` with the `증빙 예외: ...` prefix and clears `linkedEvidenceRowId`, so exception and connected evidence cannot coexist on the same row. Editing/removing a saved exception after the current-session undo window is a follow-up, not part of this slice. |
 | 2b-2c-3 | 2b | Amount mismatch handling | G: amount mismatch; P: resolve amount mismatch | If counterparty/date look related but the amount differs, the row stays **증빙 필요** and must not become **증빙있음**. The evidence finder may show the related row with a **금액 차이** marker and remaining-difference guidance, but direct connect/save is blocked until the user resolves the difference. Full partial-payment/many-to-one split/merge saving remains a follow-up unless separately briefed. |
-| 2b-3 | 2b | Pattern apply/reject | §5.2; A: pattern recommendation AC; §0.4 batch suggestion acceptance | User can accept, change, or reject `patternSuggestion`; safe repeated suggestion groups can be batch-accepted only when eligibility is visible and the user explicitly confirms; rejected/changed decisions become the newer learning signal |
-| 2c | 2c | Durable confirmed links | Slice 2c trigger only | Start only if 2b proves user-confirmed bank↔evidence pairs must survive reload/audit beyond existing classification metadata |
-| 2d | downstream | Path 1 gate consumption | A: filing-preparation blocker counts; Backlog AC: confirmed ledger only | Filing-preparation and tax-type read models consume resolved ledger/blocker state from 자료대조원장 instead of treating raw classification rows as ready |
+| 2b-3a | 2b | Account pattern apply/reject | §5.2; A: pattern recommendation AC | User can apply or reject a prior account pattern from a row; the existing account mutation remains the only writer |
+| 2b-3b-1 | 2b | Evidence/exclusion pattern display | §5.2; A: pattern recommendation AC | Prior evidence/exclusion decisions provide a reason and a single-row entry point; no automatic link or exclusion |
+| 2b-3b-2a | 2b | Safe account-pattern batch acceptance | §0.4 batch account-pattern acceptance | Only homogeneous account groups are shown; the user reviews rows and explicitly confirms; current-session undo is available |
+| 2b-3b-2b | decision | Evidence/exclusion batch acceptance | Risk review | Decision complete: do not implement in v1; both remain single-row confirmations |
+| 2c | decision | Durable confirmed links | Existing migration 0066 | Decision complete: `linked_evidence_row_id` is sufficient for exact 1:1 links; no new pair table until partial/many-to-one/split-merge is separately briefed |
+| 2d-1 | downstream | Shared reconciliation gate + filing-preparation read | A: filing-preparation blocker counts; Backlog AC | One tenant/period-scoped read-only gate exposes the closing-checklist counts and target route; filing preparation consumes it without duplicating the rules |
+| 2d-2 | downstream | VAT package UI/API enforcement | VAT package route + UI | VAT package generation is disabled in UI and rejected by the API while source, reconciliation, or VAT deduction blockers remain |
+| 2d-3 | downstream | VAT confirmed-data provenance | Path 1 confirmed-ledger AC | Prove or rebuild the VAT package values from confirmed filing-relevant rows; if provenance cannot be verified, package generation stays locked |
 
 Cross-cutting requirements:
 
 - Before **2a-0**, define the display fixture scenario from Preview 12. The fixture must include at least one bank-to-tax-invoice candidate, one card/explanation-needed row, one private-use/exclusion candidate, one safe batch suggestion group, one tax blocker summary, and one source-collection back link.
-- Before **2a-2**, update [Component Plan §7.3a](./02_COMPONENT_LIBRARY_PLAN.md) for `Period Scope Control`, `Evidence Action Status`, `ReconciliationNextActionQueue`, `ReconciliationRowConclusion`, `ReconciliationBatchSuggestionBar`, `ReconciliationTaxBlockerReasons`, `ReconciliationClosingChecklist`, and source back-link/recent-undo controls.
+- Before **2a-2**, update [Component Plan §7.3a](./02_COMPONENT_LIBRARY_PLAN.md) for `Period Scope Control`, `Evidence Action Status`, `ReconciliationRowConclusion`, `ReconciliationBatchSuggestionBar`, `ReconciliationTaxBlockerReasons`, `ReconciliationClosingChecklist`, and source back-link/recent-undo controls. The later table-first UI decision removed the visible hero/source-summary/next-action cards.
 - Before **2b-1**, extend [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) with 자료대조원장 Phase 2 cases for action states, pattern display, AI fallback, and row-level mutations.
 - **Evidence finder boundary:** browse/search/preview belongs to 2a-4; connect/unlink/save belongs to 2b-2.
 - **Mobile/narrow layout (P):** row-level modals may expand to full-screen dialogs, but the same step order and actions apply.
+
+### 2.2 Slice 2d Path 1 Gate Consumption Contract
+
+Slice 2d makes the completed reconciliation work usable by downstream filing preparation. It does not generate an official Hometax file and does not add a second readiness formula.
+
+#### Shared gate source
+
+The gate must be derived from the same tenant and period-scoped reconciliation rows used by the live ledger:
+
+1. Load the bookkeeping review summary for `tenantId`, business entity, and filing period with excluded rows included for audit visibility.
+2. Transform those rows through the live reconciliation display model.
+3. Read `closingChecklist` as the single reconciliation decision source.
+4. Return a read-only contract such as:
+
+```ts
+type ReconciliationPath1Gate = {
+  periodKey: string
+  isReady: boolean
+  blockerCount: number
+  evidenceRequiredCount: number
+  explanationRequiredCount: number
+  accountUnconfirmedCount: number
+  exclusionReasonRequiredCount: number
+  taxBlockerCount: number
+  targetRoute: '/dashboard/bookkeeping/reconciliation-ledger'
+}
+```
+
+The gate loader must not write classification, VAT, or filing data. UI and mutation routes must call the same gate function rather than copying its conditions.
+
+#### Consumer boundary
+
+- **Consume in 2d:** filing-preparation common bookkeeping readiness and the VAT package UI/API, because VAT amounts and deduction review depend on reconciled bookkeeping evidence.
+- **Do not consume as a blocker:** withholding, simplified wage/payment statements, and payroll-based local income tax. Those routes use payroll/employee data and must not be blocked by unrelated bookkeeping rows.
+- **Defer:** business-status report remains read-only until an actual Path 1 file-generation route exists.
+
+#### VAT composite gate
+
+VAT package generation is allowed only when all applicable gates are ready:
+
+1. required source collection for the VAT period is complete or explicitly not applicable,
+2. `ReconciliationPath1Gate.isReady === true`,
+3. VAT deduction review has no pending items,
+4. VAT values used by the package are proven to come from confirmed, filing-relevant ledger rows for the same tenant and period.
+
+If any check fails, the UI stays disabled and the API returns a conflict response with reason codes, counts, and the reconciliation target route. Client-only disabling is not sufficient.
+
+Current `vat_period_summary` is a stored snapshot. Its presence alone does not prove that output/input tax values were rebuilt from the current confirmed ledger. Slice 2d-3 must verify that provenance or introduce a deterministic rebuild before the product claims that the generated package contains only confirmed transactions. Until then, package generation remains locked even if the visual checklist reaches zero.
+
+No new DB table is expected for 2d-1 or 2d-2. Official Hometax upload-file assembly remains JC-030; Slice 2d only supplies and enforces the readiness gate that JC-030 must consume.
 
 
 ## 3. Existing Data to Reuse
@@ -478,13 +530,13 @@ Runtime safety rules:
 | Explain use | User writes usage/business purpose memo | `staffMemo` for v1 |
 | Exclude row | User marks personal/private, business-unrelated, duplicate, wrong period, etc. | `status='excluded'` + required reason/memo; map to existing memo first |
 | Open evidence finder | User chooses 세금계산서 / 현금영수증 / 체크카드 and searches evidence rows | Evidence-status cell opens row-level modal or narrow-screen dialog |
-| Add evidence link | User selects one or more evidence rows and balances the transaction amount | Slice 2a read-only; Slice 2c persisted link if required |
-| Confirm match | User confirms bank-to-evidence candidate | Slice 2a read-only; Slice 2c persisted link if required |
-| Mark no evidence required | User says the row is allowed without matching evidence | v1 can store memo; durable enum requires Slice 2c |
+| Add evidence link | User selects one exact-amount evidence row for a bank movement | Existing `linked_evidence_row_id` mutation; multiple-row/partial allocation deferred |
+| Confirm found evidence | User verifies the concrete bank-to-evidence row | Existing connect/review/unlink/replace flow; unresolved alternatives stay under 증빙 찾기 |
+| Mark evidence exception | User confirms that normal evidence matching is not the right test | v1 stores `증빙 예외: ...` memo and clears the evidence link |
 | Hold for later | User keeps row out of current filing period | Existing material attribution decision where applicable |
 
 The explanation interaction should be modal-like: the user opens one row from
-the evidence-status cell, sees source details and candidate evidence, writes a
+the evidence-status cell, sees source details and relevant evidence, writes a
 short memo, chooses account or exclusion reason where required, and saves.
 
 ## 7. Path 1 Readiness Gate
@@ -516,20 +568,18 @@ Route: `/dashboard/bookkeeping/reconciliation-ledger` (introduced by PR #139).
 
 The approved Preview remains
 [12_reconciliation_ledger.html](../02_UI_Screens/previews/12_reconciliation_ledger.html).
-Phase 2 implementation should keep that layout:
+The live Phase 2 screen uses the later approved table-first layout. The large readiness hero, source-summary cards, and visible next-action queue were removed because they duplicated the table filters and created visual load. Do not reintroduce them without a new UI approval.
 
-1. Readiness hero.
-2. Source summary cards.
-3. Period scope control: month, quarter, half-year, year, and custom range. The default must follow the filing context, but the user can switch scope for review.
-4. Next-action queue: unresolved items ordered by filing blocker, amount, and due-date impact. The queue should let the user start work without hunting through tabs.
-5. Source/action tabs: all, bank, card, tax invoice, cash receipt, evidence needed, explanation needed, exclusion review. Tabs are secondary to the queue.
-6. Unified ledger table. The evidence-status column must show either **증빙있음** with **증빙 확인** (concrete evidence was found or linked, clickable to view/review), **증빙 찾기** (the user must search manually), **소명 입력** (explanation required), or a resolution chip such as "증빙 필요", "소명 완료", "증빙 예외", or "제외됨". It must not stop at candidate-count labels or render "증빙없음" as a completed state.
-7. Previous-period pattern chip or row subtext: show the historical basis such as last month/recent months, matched count, prior account/evidence/exclusion decision, and confidence.
-8. One-line conclusion column: each row must show the recommended account/evidence/exclusion decision, basis, and primary action before a modal is opened.
-9. Evidence finder opened from the evidence-status cell's "증빙 확인" or "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, add/select action, selected total, remaining difference, save/cancel.
-10. Tax-type blocker reason panel: show which Path 1 files are blocked and the top reasons.
-11. Closing checklist: show zero/remaining state for evidence, explanation, account, exclusion reason, and tax blockers.
-12. Source-collection back link and shallow undo affordance where applicable.
+1. Period scope control: month, quarter, half-year, year, and custom range. The default must follow the filing context, but the user can switch scope for review.
+2. Source/action tabs: all, bank, card, tax invoice, cash receipt, evidence needed, explanation needed, exclusion review.
+3. Search and display controls beside the tabs.
+4. Unified ledger table. The evidence-status column must show either **증빙있음** with **증빙 확인**, **증빙 찾기**, **소명 입력**, or a resolution chip such as "증빙 필요", "소명 완료", "증빙 예외", or "제외됨". It must not stop at candidate-count labels or render "증빙없음" as a completed state.
+5. Previous-period pattern chip or row subtext: show the historical basis such as last month/recent months, matched count, prior account/evidence/exclusion decision, and confidence.
+6. One-line conclusion column: each row must show the account/evidence/exclusion result and remaining action before a modal is opened.
+7. Evidence finder opened from the evidence-status cell's "증빙 확인" or "증빙 찾기": source selector (세금계산서/현금영수증/체크카드), search/date filters, evidence table, connect/replace/unlink action, and amount-difference blocking.
+8. Tax-type blocker reason panel: show which applicable Path 1 file is blocked and the top reasons.
+9. Closing checklist: show zero/remaining state for evidence, explanation, account, exclusion reason, and tax blockers.
+10. Source-collection back link, safe account-pattern batch action, and shallow undo affordance where applicable.
 
 The table may initially be read-only in Slice 2a, but the labels must be honest:
 inactive search or settings controls must look disabled until implemented.
@@ -538,14 +588,14 @@ inactive search or settings controls must look disabled until implemented.
 
 - The user can see which bank movements match or fail to match tax invoices,
   card approvals, cash receipts, or receipts.
-- The user can see why AI/rules suggested a concrete evidence row.
-- The user can start from a next-action queue that prioritizes Path 1 blockers before lower-impact rows.
+- The user can see why AI/rules found a concrete evidence row.
+- The user can start from the period/action filters and ledger table without scanning duplicated hero, source-summary, or next-action cards.
 - The user can switch review scope between month, quarter, half-year, year, and custom range, with sensible defaults from the current filing context.
 - The user can see previous-period pattern recommendations with their basis, and those recommendations do not auto-confirm rows.
 - From a row with concrete evidence, the user sees **증빙있음** and can open **증빙 확인**. The dropdown first shows one **찾은 증빙** line; clicking it opens the relevant source list with that row highlighted.
 - From a bank row, the user can open "증빙 확인" for found evidence or "증빙 찾기", choose 세금계산서/현금영수증/체크카드, search rows, select evidence, and see the remaining difference before saving.
 - The ledger row shows a one-line conclusion and primary action before the user opens detailed evidence/AI/pattern rationale in a modal.
-- Safe repeated suggestions can be accepted as a batch only when the group eligibility is visible and the user explicitly confirms the group.
+- Safe repeated **account** suggestions can be accepted as a batch only when the group eligibility is visible and the user explicitly confirms the group; evidence and exclusion remain single-row decisions.
 - The final UI does not use candidate counts as the main answer; it shows concrete evidence rows and actions.
 - Ambiguous matches are not auto-confirmed.
 - The user can confirm or change the account category for filing-relevant rows.
@@ -558,6 +608,9 @@ inactive search or settings controls must look disabled until implemented.
 - The user can undo the most recent apply/confirm action from the current session without opening a full audit-log UI.
 - Filing-preparation tracks read blocker counts from this gate instead of
   pretending the tax form is ready.
+- The filing-preparation bookkeeping foundation and VAT package UI/API use the same tenant/period-scoped gate decision.
+- The VAT package API rejects generation while source, reconciliation, VAT deduction, or confirmed-data provenance checks are unresolved.
+- Payroll-based withholding, simplified wage/payment statements, and local-income paths are not blocked by the bookkeeping reconciliation gate.
 - The screen does not provide Hometax direct-entry guidance.
 - AI/LLM recommendation failures, timeouts, quota errors, or provider disagreement do not block page rendering or user review; the row falls back to a visible manual-review state.
 
@@ -570,13 +623,13 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Existing classification and attribution schemas inspected.
 - [x] AI escalation and non-blocking runtime rules documented for 자료대조원장.
 - [x] Period scope and evidence action-state terminology documented for 자료대조원장.
-- [x] Convenience contract documented for next-action queue, batch acceptance, one-line panel conclusion, source-collection back link, tax blocker reasons, closing checklist, and shallow undo.
+- [x] Convenience contract documented and reconciled with the table-first UI: period/action filters, account-only batch acceptance, one-line row conclusion, source-collection back link, tax blocker reasons, closing checklist, and shallow undo.
 - [x] Phase 2 implementation order and traceability documented (§2.1).
 - [x] UI-first lite sequence documented: display contract + fixture before full read model wiring (§2.1 step 2a-0).
 - [x] Slice 2a-0 display contract + fixture implementation started (§2.1 step 2a-0) — landed on main (`01971b1`).
 - [x] Slice 2a-2 UI shell and honest labels implemented (§2.1 step 2a-2) — landed on main (`169ade8`).
 - [x] Slice 2a-3 table-cell evidence/account actions implemented (§2.1 step 2a-3) — PR #150, merged to main (`7b0ba25`). Product wording update (PR #153): `candidate` remains an internal match state only. If concrete evidence rows were found, the user-facing status is **증빙있음** and the action is **증빙 확인**. If no evidence was found, the user-facing action is **증빙 찾기** or **증빙 필요**. Do not add AI-style evidence states or candidate-count labels.
-- [x] Slice 2a-4 evidence finder browse + AI display shell implemented (§2.1 step 2a-4) — PR #160, merged to main (`9277a4c`). Search/date filter connected in the evidence picker modal; AI-matched candidates show an **AI 추천** badge with `matchCandidateReasonLabel` basis inside the currently browsed source list only; save/connect stays disabled until 2b-2.
+- [x] Slice 2a-4 evidence finder browse + AI display shell implemented (§2.1 step 2a-4) — PR #160, merged to main (`9277a4c`). Search/date filter connected in the evidence picker modal; found rows show their matching basis inside the currently browsed source list. Save/connect was enabled later in 2b-2.
 - [x] Slice 2a-5 full read model wiring implemented (§2.1 step 2a-5) — PR #161 (month period parsing), #162 (row transform, `evidenceActionState`/`rowConclusion` derivation), #163 (top-level aggregates: `nextActions`/`taxBlockerSummaries`/`closingChecklist`/`batchSuggestionGroups`), #164 (page wiring), merged to main (`ae2a94b`). Sidebar default is now live data — `isReconciliationDisplayFixtureMode` returns fixture only when `display=fixture` is explicitly requested. The old standalone `ReconciliationLedgerView` component was retired; both fixture and live modes render `ReconciliationLedgerDisplayFixtureView` with an `isFixtureMode` prop controlling the fixture-only branding text. Known gaps carried forward, not blocking this slice's completion:
   - `year` and `custom` period modes from §5.1 are still not implemented in `buildCompanyHomePeriod` — tracked as a separate follow-up task in the backlog.
   - `explanation_required`/`explained_no_evidence` and `evidence_exception` are derived from v1 heuristics or formatted `staffMemo` conventions, not dedicated DB columns. A future durable enum/column can replace the memo prefixes if audit needs grow.
@@ -591,8 +644,12 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Slice 2b-3a account pattern apply/reject implemented — live rows can derive `patternSuggestion.suggestedAccount` from prior confirmed rows with the same counterparty/direction, show the historical basis in the account popover, apply it through the existing account-confirm mutation, or reject it by storing a `패턴 거부: ...` memo. Evidence/exclusion pattern application and batch apply remain 2b-3 follow-ups.
 - [x] Slice 2b-3b-1 evidence/exclusion pattern display + single-row confirmation entry points — live rows can derive prior evidence-source and exclusion-reason patterns from same-counterparty/direction history. Evidence patterns reorder/mark the evidence finder source; exclusion patterns prefill the exclusion modal. No auto-link or auto-exclude.
 - [x] Slice 2b-3b-2a safe account-pattern batch acceptance implemented — only same counterparty/reason/account groups are visible, users must review the grouped rows in a confirmation dialog, and the mutation uses the existing account-confirm API with current-session undo.
-- [ ] Slice 2b-3b-2b evidence/exclusion batch acceptance decision — intentionally deferred; evidence linking and exclusion remain single-row confirmations until separate risk review.
-- [ ] Slice 2c durable match-link schema approved if needed.
+- [x] Slice 2b-3b-2b evidence/exclusion batch acceptance decision — not adopted in v1; evidence linking and exclusion remain single-row confirmations.
+- [x] Slice 2c durable match-link schema decision — migration 0066 `linked_evidence_row_id` is sufficient for exact 1:1; no new pair table unless partial/many-to-one/split-merge gets a separate brief.
+- [x] Slice 2d Path 1 gate contract documented (§2.2).
+- [ ] Slice 2d-1 shared reconciliation gate and filing-preparation read implemented.
+- [ ] Slice 2d-2 VAT package UI/API gate enforcement implemented.
+- [ ] Slice 2d-3 VAT confirmed-ledger provenance verified or deterministic rebuild implemented.
 
 ## 11. Related Documents
 
