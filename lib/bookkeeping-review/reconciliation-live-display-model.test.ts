@@ -179,6 +179,53 @@ describe('buildLiveBatchSuggestionGroups', () => {
     expect(groups[0]!.suggestedAction).toBe('apply_account')
     expect(groups[0]!.rowIds).toEqual(['target-a', 'target-b'])
     expect(groups[0]!.eligibility).toBe('safe_to_offer')
+    expect(groups[0]!.requiresUserConfirmation).toBe(true)
+  })
+
+  it('does not offer a batch group when confirmed rows are filtered out', () => {
+    const suggestion = {
+      suggestedAccount: 'fees' as const,
+      suggestedEvidenceSource: null,
+      suggestedExclusionReason: null,
+      confidence: 'high' as const,
+      basisLabel: '최근 같은 거래처 2건을 지급수수료로 확정',
+      matchedCount: 2,
+      lastSeenPeriod: '2026-06',
+      reason: 'same_counterparty_prior_account' as const,
+    }
+    const rows = [
+      buildLiveReconciliationLedgerRow(buildRow({ id: 'target-a', counterparty: '김세무사무소', status: 'suggested' }), { mode: 'month', label: 'label' }, suggestion),
+      buildLiveReconciliationLedgerRow(buildRow({ id: 'already-confirmed', counterparty: '김세무사무소', finalAccount: 'fees', status: 'confirmed' }), { mode: 'month', label: 'label' }, suggestion),
+    ]
+
+    expect(buildLiveBatchSuggestionGroups(rows)).toEqual([])
+  })
+
+  it('does not offer a batch group for mixed account suggestions', () => {
+    const rows = [
+      buildLiveReconciliationLedgerRow(buildRow({ id: 'target-a', counterparty: '김세무사무소', status: 'suggested' }), { mode: 'month', label: 'label' }, {
+        suggestedAccount: 'fees',
+        suggestedEvidenceSource: null,
+        suggestedExclusionReason: null,
+        confidence: 'high',
+        basisLabel: '최근 같은 거래처 1건을 지급수수료로 확정',
+        matchedCount: 1,
+        lastSeenPeriod: '2026-06',
+        reason: 'same_counterparty_prior_account',
+      }),
+      buildLiveReconciliationLedgerRow(buildRow({ id: 'target-b', counterparty: '김세무사무소', status: 'suggested' }), { mode: 'month', label: 'label' }, {
+        suggestedAccount: 'travel',
+        suggestedEvidenceSource: null,
+        suggestedExclusionReason: null,
+        confidence: 'high',
+        basisLabel: '최근 같은 거래처 1건을 여비교통비로 확정',
+        matchedCount: 1,
+        lastSeenPeriod: '2026-06',
+        reason: 'same_counterparty_prior_account',
+      }),
+    ]
+
+    expect(buildLiveBatchSuggestionGroups(rows)).toEqual([])
   })
 })
 

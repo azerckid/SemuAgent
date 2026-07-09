@@ -27,6 +27,7 @@ import { evidenceRowHighlightTone, type EvidenceFinderSource } from '@/lib/bookk
 import { cn } from '@/lib/utils'
 import {
   ReconciliationAccountSelector,
+  ReconciliationBatchSuggestionBar,
   ReconciliationEvidenceCell,
   ReconciliationEvidenceExceptionModal,
   ReconciliationEvidencePickerModal,
@@ -198,6 +199,12 @@ export function ReconciliationLedgerDisplayFixtureView({
             선택 건 확정
           </button>
         </div>
+
+        <ReconciliationBatchSuggestionBar
+          groups={displayModel.batchSuggestionGroups}
+          isFixtureMode={isFixtureMode}
+          rows={rows}
+        />
 
         <ReconciliationLedgerTableShell
           variant={tableVariant}

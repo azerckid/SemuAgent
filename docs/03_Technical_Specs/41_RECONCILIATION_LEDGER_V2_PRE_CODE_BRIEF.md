@@ -590,7 +590,8 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Slice 2b-2c-3 amount mismatch display/save blocking implemented — PR #178, merged to main. If counterparty/date look related but amount differs, the row remains `증빙 필요`; the finder shows `금액 차이` and direct connect/save is blocked. Partial-payment/many-to-one split/merge saving remains a separately briefed follow-up.
 - [x] Slice 2b-3a account pattern apply/reject implemented — live rows can derive `patternSuggestion.suggestedAccount` from prior confirmed rows with the same counterparty/direction, show the historical basis in the account popover, apply it through the existing account-confirm mutation, or reject it by storing a `패턴 거부: ...` memo. Evidence/exclusion pattern application and batch apply remain 2b-3 follow-ups.
 - [x] Slice 2b-3b-1 evidence/exclusion pattern display + single-row confirmation entry points — live rows can derive prior evidence-source and exclusion-reason patterns from same-counterparty/direction history. Evidence patterns reorder/mark the evidence finder source; exclusion patterns prefill the exclusion modal. No auto-link or auto-exclude.
-- [ ] Slice 2b-3b-2 safe batch acceptance — requires visible eligibility, explicit confirmation, and undo-safe mutation handling before enabling.
+- [x] Slice 2b-3b-2a safe account-pattern batch acceptance implemented — only same counterparty/reason/account groups are visible, users must review the grouped rows in a confirmation dialog, and the mutation uses the existing account-confirm API with current-session undo.
+- [ ] Slice 2b-3b-2b evidence/exclusion batch acceptance decision — intentionally deferred; evidence linking and exclusion remain single-row confirmations until separate risk review.
 - [ ] Slice 2c durable match-link schema approved if needed.
 
 ## 11. Related Documents
