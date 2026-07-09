@@ -23,7 +23,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { labelForBookkeepingAccountCategory } from '@/lib/bookkeeping/account-categories'
 import { filterReconciliationFixtureAccountGroups } from '@/lib/bookkeeping-review/reconciliation-fixture-account-options'
-import type { ReconciliationLedgerRow } from '@/lib/bookkeeping-review/reconciliation-display-model'
+import type { ReconciliationBatchSuggestionGroup, ReconciliationLedgerRow } from '@/lib/bookkeeping-review/reconciliation-display-model'
 import {
   computeRemainingDifferenceKrw,
   confidenceLabel,
@@ -114,6 +114,228 @@ function showUndoableSuccessToast(params: {
       },
     },
   })
+}
+
+type BatchUndoEntry = {
+  readonly previous: ReconciliationRowPreviousState | null
+  readonly rowId: string
+  readonly uploadSessionId: string
+}
+
+function showBatchUndoableSuccessToast(params: {
+  message: string
+  entries: readonly BatchUndoEntry[]
+  router: { refresh: () => void }
+}) {
+  const undoableEntries = params.entries.filter((entry) => entry.previous !== null)
+  const undoSequence = latestUndoToastSequence + 1
+  latestUndoToastSequence = undoSequence
+
+  if (undoableEntries.length === 0) {
+    toast.success(params.message)
+    return
+  }
+
+  toast.success(params.message, {
+    action: {
+      label: '되돌리기',
+      onClick: () => {
+        if (undoSequence !== latestUndoToastSequence) {
+          toast.error('가장 최근 작업만 되돌릴 수 있습니다.')
+          return
+        }
+
+        void Promise.all(undoableEntries.map((entry) => {
+          return revertReconciliationRowState({
+            uploadSessionId: entry.uploadSessionId,
+            rowId: entry.rowId,
+            previous: entry.previous!,
+          })
+        })).then((results) => {
+          const failed = results.find((result) => !result.ok)
+          if (failed) {
+            toast.error(failed.message)
+            return
+          }
+          latestUndoToastSequence += 1
+          toast.success('일괄 적용을 되돌렸습니다.')
+          params.router.refresh()
+        })
+      },
+    },
+  })
+}
+
+type SafeAccountBatchGroup = {
+  readonly accountKey: string
+  readonly accountLabel: string
+  readonly group: ReconciliationBatchSuggestionGroup
+  readonly rows: readonly ReconciliationLedgerRow[]
+}
+
+function resolveSafeAccountBatchGroups(
+  groups: readonly ReconciliationBatchSuggestionGroup[],
+  rows: readonly ReconciliationLedgerRow[],
+): SafeAccountBatchGroup[] {
+  const rowsById = new Map(rows.map((row) => [row.id, row]))
+
+  return groups.flatMap((group) => {
+    if (group.suggestedAction !== 'apply_account') return []
+    if (group.eligibility !== 'safe_to_offer') return []
+    if (!group.requiresUserConfirmation) return []
+
+    const groupRows = group.rowIds.map((rowId) => rowsById.get(rowId)).filter((row): row is ReconciliationLedgerRow => Boolean(row))
+    if (groupRows.length !== group.rowIds.length || groupRows.length < 2) return []
+
+    const accountKey = groupRows[0]?.patternSuggestion?.suggestedAccount ?? null
+    if (!accountKey) return []
+    if (!groupRows.every((row) => row.patternSuggestion?.suggestedAccount === accountKey)) return []
+    if (!groupRows.every((row) => row.actions.canConfirmAccount && !row.finalAccount && row.evidenceActionState !== 'excluded')) return []
+
+    const accountLabel = labelForBookkeepingAccountCategory(accountKey)
+    if (!accountLabel) return []
+
+    return [{ accountKey, accountLabel, group, rows: groupRows }]
+  })
+}
+
+export interface ReconciliationBatchSuggestionBarProps {
+  readonly groups: readonly ReconciliationBatchSuggestionGroup[]
+  readonly isFixtureMode: boolean
+  readonly rows: readonly ReconciliationLedgerRow[]
+}
+
+export function ReconciliationBatchSuggestionBar({ groups, isFixtureMode, rows }: ReconciliationBatchSuggestionBarProps) {
+  const router = useRouter()
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const safeGroups = useMemo(() => resolveSafeAccountBatchGroups(groups, rows), [groups, rows])
+  const selectedGroup = safeGroups.find((entry) => entry.group.id === selectedGroupId) ?? null
+
+  if (safeGroups.length === 0) return null
+
+  function applySelectedGroup() {
+    if (!selectedGroup || isFixtureMode) return
+
+    startTransition(async () => {
+      const undoEntries: BatchUndoEntry[] = []
+      for (const row of selectedGroup.rows) {
+        const result = await confirmReconciliationRowAccount({
+          uploadSessionId: row.uploadSessionId,
+          rowId: row.id,
+          accountKey: selectedGroup.accountKey,
+        })
+        if (!result.ok) {
+          if (undoEntries.length > 0) {
+            showBatchUndoableSuccessToast({
+              message: `${undoEntries.length}건 적용 후 중단되었습니다.`,
+              entries: undoEntries,
+              router,
+            })
+            router.refresh()
+          }
+          toast.error(result.message)
+          return
+        }
+        undoEntries.push({ uploadSessionId: row.uploadSessionId, rowId: row.id, previous: result.previous })
+      }
+
+      setSelectedGroupId(null)
+      showBatchUndoableSuccessToast({
+        message: `${selectedGroup.rows.length}건을 ${selectedGroup.accountLabel}로 확정했습니다.`,
+        entries: undoEntries,
+        router,
+      })
+      router.refresh()
+    })
+  }
+
+  return (
+    <section className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-3 py-2.5">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="min-w-[220px] flex-1">
+          <p className="text-[12.5px] font-semibold text-[#92400e]">반복 패턴 일괄 제안</p>
+          <p className="mt-0.5 text-[11.5px] text-[#b45309]">
+            같은 거래처·같은 근거·같은 계정 추천만 묶습니다. 적용 전 대상 행을 확인합니다.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {safeGroups.map((entry) => (
+            <button
+              key={entry.group.id}
+              className="rounded-lg border border-[#fde68a] bg-company-surface px-2.5 py-1.5 text-left text-[12px] font-semibold text-foreground hover:bg-[#fff7ed]"
+              onClick={() => setSelectedGroupId(entry.group.id)}
+              type="button"
+            >
+              <span className="block">{entry.accountLabel} · {entry.rows.length}건</span>
+              <span className="block max-w-[260px] truncate text-[11px] font-medium text-company-fg-muted">{entry.group.basisLabel}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <Dialog onOpenChange={(open) => !open && setSelectedGroupId(null)} open={selectedGroup !== null}>
+        <DialogContent className="max-w-[720px]">
+          <DialogHeader>
+            <DialogTitle>계정 패턴 일괄 적용</DialogTitle>
+            <DialogDescription>
+              {selectedGroup
+                ? `${selectedGroup.rows.length}건을 ${selectedGroup.accountLabel}로 확정합니다. 자동 적용이 아니며 확인 후 저장됩니다.`
+                : '반복 패턴 대상 행을 확인합니다.'}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedGroup ? (
+            <div className="max-h-[360px] overflow-auto rounded-lg border border-company-border">
+              <table className="w-full border-collapse text-left text-[12.5px]">
+                <thead className="sticky top-0 bg-company-nav-hover text-[11px] text-company-fg-subtle">
+                  <tr>
+                    <th className="px-3 py-2 font-semibold">거래일</th>
+                    <th className="px-3 py-2 font-semibold">거래처</th>
+                    <th className="px-3 py-2 text-right font-semibold">금액</th>
+                    <th className="px-3 py-2 font-semibold">적용 계정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedGroup.rows.map((row) => (
+                    <tr key={row.id} className="border-t border-company-border">
+                      <td className="px-3 py-2 font-mono text-company-fg-muted">{row.transactionDate ? row.transactionDate.slice(5, 10) : '-'}</td>
+                      <td className="px-3 py-2 font-semibold text-foreground">{row.counterparty ?? '거래처 미정'}</td>
+                      <td className="px-3 py-2 text-right font-mono font-semibold text-foreground">{formatKrwAmount(row.amountKrw)}</td>
+                      <td className="px-3 py-2 text-company-fg-muted">{selectedGroup.accountLabel}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+          <DialogFooter>
+            <button
+              className="rounded-lg border border-company-border px-3 py-2 text-[12px] font-semibold text-company-fg-muted hover:bg-company-nav-hover"
+              disabled={isPending}
+              onClick={() => setSelectedGroupId(null)}
+              type="button"
+            >
+              취소
+            </button>
+            <button
+              className={cn(
+                'rounded-lg border px-3 py-2 text-[12px] font-semibold',
+                isFixtureMode || isPending
+                  ? 'cursor-not-allowed border-company-border bg-company-nav-hover text-company-fg-subtle'
+                  : 'border-[#d97706] bg-[#d97706] text-white hover:opacity-90',
+              )}
+              disabled={isFixtureMode || isPending || !selectedGroup}
+              onClick={applySelectedGroup}
+              title={isFixtureMode ? disabledActionNote : undefined}
+              type="button"
+            >
+              {isPending ? '적용 중...' : selectedGroup ? `${selectedGroup.rows.length}건 계정 확정` : '계정 확정'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </section>
+  )
 }
 
 type Tone = 'ok' | 'warn' | 'danger' | 'muted'
