@@ -420,12 +420,12 @@ describe('updateBookkeepingClassificationRow shallow undo snapshot (Brief 41 §0
 describe('updateBookkeepingClassificationRow evidence link (JC-010 2b-2)', () => {
   const EVIDENCE_ROW_ID = 'classification-row-evidence'
 
-  async function seedEvidenceRow(sourceType: string) {
+  async function seedEvidenceRow(sourceType: string, amountKrw = 15000) {
     await client.execute({
       sql: `INSERT INTO bookkeeping_transaction_classification
             (id, tenant_id, classification_run_id, upload_session_id, source_type, transaction_date, merchant_name, description, amount_krw, direction, recommended_account, recommendation_confidence, recommendation_reason, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, '2026-06-10', '카페골목', '커피 구매', 15000, 'expense', 'employee_welfare', 'high', '커피', 'suggested', '2026-06-01', '2026-06-01')`,
-      args: [EVIDENCE_ROW_ID, TENANT, RUN_ID, SESSION_ID, sourceType],
+            VALUES (?, ?, ?, ?, ?, '2026-06-10', '카페골목', '커피 구매', ?, 'expense', 'employee_welfare', 'high', '커피', 'suggested', '2026-06-01', '2026-06-01')`,
+      args: [EVIDENCE_ROW_ID, TENANT, RUN_ID, SESSION_ID, sourceType, amountKrw],
     })
   }
 
@@ -446,6 +446,26 @@ describe('updateBookkeepingClassificationRow evidence link (JC-010 2b-2)', () =>
       .from(bookkeepingTransactionClassification)
       .where(eq(bookkeepingTransactionClassification.id, CLASSIFICATION_ROW_ID))
     expect(row.linkedEvidenceRowId).toBe(EVIDENCE_ROW_ID)
+  })
+
+  it('rejects linking evidence with a different amount so it cannot become 증빙있음', async () => {
+    await seedEvidenceRow('tax_invoice', 16000)
+
+    const result = await updateBookkeepingClassificationRow({
+      rowId: CLASSIFICATION_ROW_ID,
+      sessionId: SESSION_ID,
+      tenantId: TENANT,
+      staffRecord,
+      linkedEvidenceRowId: EVIDENCE_ROW_ID,
+    })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.status).toBe(400)
+    const [row] = await testDb
+      .select()
+      .from(bookkeepingTransactionClassification)
+      .where(eq(bookkeepingTransactionClassification.id, CLASSIFICATION_ROW_ID))
+    expect(row.linkedEvidenceRowId).toBeNull()
   })
 
   it('rejects linking a bank/other row (not itself evidence)', async () => {

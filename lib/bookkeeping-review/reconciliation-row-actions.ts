@@ -123,8 +123,12 @@ export function isSavedEvidenceReference(candidate: ReconciliationMatchCandidate
   return candidate?.reason === 'manual_reference'
 }
 
+export function isAmountDifferenceEvidenceReference(candidate: ReconciliationMatchCandidate | null): boolean {
+  return candidate?.reason === 'partial_amount' || candidate?.reason === 'many_to_one'
+}
+
 export function isFoundEvidenceReference(candidate: ReconciliationMatchCandidate | null): boolean {
-  return candidate !== null && !isSavedEvidenceReference(candidate)
+  return candidate !== null && !isSavedEvidenceReference(candidate) && !isAmountDifferenceEvidenceReference(candidate)
 }
 
 export function hasEvidenceFinderAiMatch(
@@ -135,6 +139,25 @@ export function hasEvidenceFinderAiMatch(
     const candidate = resolveEvidenceFinderRowMatch(candidates, browseRow.id)
     return isFoundEvidenceReference(candidate)
   })
+}
+
+export function hasEvidenceFinderAmountDifference(
+  candidates: ReconciliationMatchCandidate[],
+  browseRows: ReconciliationLedgerRow[],
+): boolean {
+  return browseRows.some((browseRow) => {
+    const candidate = resolveEvidenceFinderRowMatch(candidates, browseRow.id)
+    return isAmountDifferenceEvidenceReference(candidate)
+  })
+}
+
+export function hasDifferentAbsoluteAmount(
+  rowAmountKrw: number | null,
+  evidenceAmountKrw: number | null,
+): boolean {
+  return rowAmountKrw !== null
+    && evidenceAmountKrw !== null
+    && Math.abs(rowAmountKrw) !== Math.abs(evidenceAmountKrw)
 }
 
 export function resolveLinkedEvidenceDisplay(row: ReconciliationLedgerRow): LinkedEvidenceDisplay[] {
@@ -173,8 +196,8 @@ export function matchCandidateReasonLabel(reason: ReconciliationMatchCandidateRe
   if (reason === 'same_amount_same_day') return '같은 금액·같은 일자'
   if (reason === 'same_amount_near_day') return '같은 금액·인접 일자'
   if (reason === 'same_counterparty_amount') return '같은 거래처·금액'
-  if (reason === 'partial_amount') return '부분 금액 일치'
-  if (reason === 'many_to_one') return '다건 합산 추천'
+  if (reason === 'partial_amount') return '거래처·일자는 비슷하지만 금액이 다름'
+  if (reason === 'many_to_one') return '여러 건 합산 가능성 · 금액 확인 필요'
   return '수동 참조'
 }
 

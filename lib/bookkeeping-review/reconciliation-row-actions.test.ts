@@ -10,8 +10,11 @@ import {
   filterEvidenceFinderBrowseRows,
   formatEvidenceExceptionMemo,
   formatExclusionReasonMemo,
+  hasDifferentAbsoluteAmount,
   hasAiEvidenceSuggestion,
+  hasEvidenceFinderAmountDifference,
   hasEvidenceFinderAiMatch,
+  isAmountDifferenceEvidenceReference,
   isFoundEvidenceReference,
   isEvidenceExceptionMemo,
   isSavedEvidenceReference,
@@ -234,6 +237,26 @@ describe('reconciliation-row-actions', () => {
     const taxInvoiceBrowseRows = listEvidenceFinderBrowseRows(rows, 'tax_invoice', row!.id)
 
     expect(hasEvidenceFinderAiMatch([manualReferenceCandidate], taxInvoiceBrowseRows)).toBe(false)
+  })
+
+  it('keeps amount-difference matches out of found-evidence wording', () => {
+    const rows = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows
+    const row = rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankToTaxInvoice)
+    expect(row).toBeDefined()
+    expect(row!.candidates[0]).toBeDefined()
+
+    const amountDifferenceCandidate = {
+      ...row!.candidates[0]!,
+      reason: 'partial_amount' as const,
+    }
+    const taxInvoiceBrowseRows = listEvidenceFinderBrowseRows(rows, 'tax_invoice', row!.id)
+
+    expect(isAmountDifferenceEvidenceReference(amountDifferenceCandidate)).toBe(true)
+    expect(isFoundEvidenceReference(amountDifferenceCandidate)).toBe(false)
+    expect(hasEvidenceFinderAiMatch([amountDifferenceCandidate], taxInvoiceBrowseRows)).toBe(false)
+    expect(hasEvidenceFinderAmountDifference([amountDifferenceCandidate], taxInvoiceBrowseRows)).toBe(true)
+    expect(hasDifferentAbsoluteAmount(628_316, 416_207)).toBe(true)
+    expect(hasDifferentAbsoluteAmount(628_316, -628_316)).toBe(false)
   })
 
   it('treats only manual_reference as an already saved evidence connection', () => {

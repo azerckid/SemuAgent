@@ -52,6 +52,20 @@ describe('mapLiveEvidenceActionState', () => {
     expect(mapLiveEvidenceActionState(row)).toBe('candidate')
   })
 
+  it('keeps amount-difference candidates in evidence_required instead of 증빙있음', () => {
+    const row = buildRow({
+      reconciliation: {
+        matchState: 'missing_evidence',
+        candidates: [{
+          id: 'c1', sourceType: 'tax_invoice', rowId: 'other-row', date: '2026-07-08',
+          counterparty: '테스트 거래처', amountKrw: 80_000, confidence: 'medium', reason: 'partial_amount',
+        }],
+        blockers: [{ code: 'missing_evidence', label: '연결 증빙 필요' }],
+      },
+    })
+    expect(mapLiveEvidenceActionState(row)).toBe('evidence_required')
+  })
+
   it('requires evidence for bank/other sources with no candidates', () => {
     expect(mapLiveEvidenceActionState(buildRow({ sourceType: 'bank' }))).toBe('evidence_required')
     expect(mapLiveEvidenceActionState(buildRow({ sourceType: 'other' }))).toBe('evidence_required')

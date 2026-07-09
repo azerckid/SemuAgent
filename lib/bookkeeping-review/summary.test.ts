@@ -151,6 +151,18 @@ describe('attachReconciliationInfo', () => {
     expect(bank.reconciliation.blockers.some((blocker) => blocker.code === 'missing_evidence')).toBe(true)
   })
 
+  it('keeps same-counterparty different-amount evidence as missing evidence with amount-difference context', () => {
+    const [bank, invoice] = attachReconciliationInfo([
+      row({ id: 'bank', sourceType: 'bank', counterparty: '김세무사무소', amountKrw: 628316, transactionDate: '2026-07-28' }),
+      row({ id: 'invoice', sourceType: 'tax_invoice', counterparty: '김세무사무소', amountKrw: 416207, transactionDate: '2026-07-28', status: 'confirmed' }),
+    ])
+
+    expect(bank.reconciliation.matchState).toBe('missing_evidence')
+    expect(bank.reconciliation.blockers.some((blocker) => blocker.code === 'missing_evidence')).toBe(true)
+    expect(bank.reconciliation.candidates[0]).toMatchObject({ rowId: 'invoice', sourceType: 'tax_invoice', reason: 'partial_amount' })
+    expect(invoice.reconciliation.candidates).toHaveLength(0)
+  })
+
   it('does not flag a standalone tax invoice/card/receipt row as missing evidence, since the row is itself the evidence', () => {
     const [invoice, card, receipt] = attachReconciliationInfo([
       row({ id: 'invoice', sourceType: 'tax_invoice', amountKrw: 77000, transactionDate: '2026-06-10', status: 'confirmed' }),

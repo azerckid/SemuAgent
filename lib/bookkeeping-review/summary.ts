@@ -224,6 +224,16 @@ function hasSameAbsoluteAmount(a: number | null, b: number | null) {
   return a !== null && b !== null && Math.abs(a) === Math.abs(b)
 }
 
+function normalizeCounterpartyForMatch(value: string | null) {
+  return (value ?? '').replace(/\s+/g, '').toLowerCase()
+}
+
+function hasSameCounterparty(a: string | null, b: string | null) {
+  const normalizedA = normalizeCounterpartyForMatch(a)
+  const normalizedB = normalizeCounterpartyForMatch(b)
+  return normalizedA.length > 0 && normalizedA === normalizedB
+}
+
 function canSuggestReconciliationPair(row: BookkeepingReviewQueueRow, candidate: BookkeepingReviewQueueRow) {
   if (row.id === candidate.id) return false
   if (row.status === 'excluded' || candidate.status === 'excluded') return false
@@ -252,6 +262,27 @@ function buildReconciliationCandidate(row: BookkeepingReviewQueueRow, candidate:
     amountKrw: candidate.amountKrw,
     confidence,
     reason: confidence === 'high' ? 'same_amount_same_day' : 'same_amount_near_day',
+  }
+}
+
+function buildAmountDifferenceCandidate(row: BookkeepingReviewQueueRow, candidate: BookkeepingReviewQueueRow): ReconciliationMatchCandidate | null {
+  if (row.id === candidate.id) return null
+  if (row.status === 'excluded' || candidate.status === 'excluded') return null
+  if (row.sourceType !== 'bank' || !isEvidenceSource(candidate.sourceType)) return null
+  if (row.amountKrw === null || candidate.amountKrw === null) return null
+  if (hasSameAbsoluteAmount(row.amountKrw, candidate.amountKrw)) return null
+  if (!hasSameCounterparty(row.counterparty, candidate.counterparty)) return null
+  const confidence = candidateConfidenceByDate(row, candidate)
+  if (!confidence) return null
+  return {
+    id: `${row.id}__${candidate.id}`,
+    sourceType: candidate.sourceType,
+    rowId: candidate.id,
+    date: candidate.transactionDate,
+    counterparty: candidate.counterparty,
+    amountKrw: candidate.amountKrw,
+    confidence,
+    reason: 'partial_amount',
   }
 }
 
@@ -287,11 +318,21 @@ export function buildReconciliationInfo(row: BookkeepingReviewQueueRow, allRows:
     return { matchState: 'confirmed', candidates: [linkedCandidate], blockers: [] }
   }
 
-  const candidates = allRows
+  const exactCandidates = allRows
     .map((candidate) => buildReconciliationCandidate(row, candidate))
     .filter((candidate): candidate is ReconciliationMatchCandidate => Boolean(candidate))
     .sort((a, b) => confidenceRank(a.confidence) - confidenceRank(b.confidence) || (a.date ?? '').localeCompare(b.date ?? '') || a.rowId.localeCompare(b.rowId))
     .slice(0, MAX_CANDIDATES_PER_ROW)
+
+  const amountDifferenceCandidates = exactCandidates.length > 0
+    ? []
+    : allRows
+      .map((candidate) => buildAmountDifferenceCandidate(row, candidate))
+      .filter((candidate): candidate is ReconciliationMatchCandidate => Boolean(candidate))
+      .sort((a, b) => confidenceRank(a.confidence) - confidenceRank(b.confidence) || (a.date ?? '').localeCompare(b.date ?? '') || a.rowId.localeCompare(b.rowId))
+      .slice(0, MAX_CANDIDATES_PER_ROW)
+
+  const candidates = exactCandidates.length > 0 ? exactCandidates : amountDifferenceCandidates
 
   const blockers: ReconciliationBlocker[] = []
   if (row.status !== 'confirmed') {
@@ -300,16 +341,16 @@ export function buildReconciliationInfo(row: BookkeepingReviewQueueRow, allRows:
   if (row.requiresManualAccount) {
     blockers.push({ code: 'explanation_required', label: '사용내역 소명 필요' })
   }
-  if (!isEvidenceSource(row.sourceType) && candidates.length === 0) {
+  if (!isEvidenceSource(row.sourceType) && exactCandidates.length === 0) {
     blockers.push({ code: 'missing_evidence', label: '연결 증빙 필요' })
   }
-  if (candidates.length > 1) {
+  if (exactCandidates.length > 1) {
     blockers.push({ code: 'ambiguous_match', label: `대조 필요 ${candidates.length}건` })
   }
 
   let matchState: ReconciliationMatchState = 'confirmed'
-  if (candidates.length > 1) matchState = 'ambiguous'
-  else if (candidates.length === 1) matchState = 'candidate'
+  if (exactCandidates.length > 1) matchState = 'ambiguous'
+  else if (exactCandidates.length === 1) matchState = 'candidate'
   else if (blockers.some((blocker) => blocker.code === 'missing_evidence')) matchState = 'missing_evidence'
   else if (row.status === 'confirmed') matchState = 'confirmed'
   else matchState = 'candidate'

@@ -47,7 +47,10 @@ export function mapLiveEvidenceActionState(row: BookkeepingReviewQueueRow): Reco
     return row.staffMemo?.trim() ? 'explained_no_evidence' : 'explanation_required'
   }
 
-  if (row.reconciliation.candidates.length > 0) {
+  const hasExactEvidenceCandidate = row.reconciliation.candidates.some(
+    (candidate) => candidate.reason !== 'partial_amount' && candidate.reason !== 'many_to_one',
+  )
+  if (hasExactEvidenceCandidate) {
     return 'candidate'
   }
 
