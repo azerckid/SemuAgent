@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   confirmReconciliationRowAccount,
   connectReconciliationRowEvidence,
+  disconnectReconciliationRowEvidence,
   revertReconciliationRowState,
   saveReconciliationRowExclusion,
   saveReconciliationRowExplanation,
@@ -253,5 +254,42 @@ describe('connectReconciliationRowEvidence', () => {
     })
 
     expect(result).toEqual({ ok: false, message: '세금계산서·현금영수증·카드 거래만 증빙으로 연결할 수 있습니다.' })
+  })
+})
+
+describe('disconnectReconciliationRowEvidence', () => {
+  it('PATCHes the classification row endpoint with linkedEvidenceRowId null', async () => {
+    const previous = { finalAccount: null, staffMemo: null, status: 'suggested', linkedEvidenceRowId: 'row-2' }
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true, previous }) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await disconnectReconciliationRowEvidence({
+      uploadSessionId: 'session-1',
+      rowId: 'row-1',
+    })
+
+    expect(result).toEqual({ ok: true, previous })
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sessions/session-1/account-classification/rows/row-1',
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ linkedEvidenceRowId: null }),
+      },
+    )
+  })
+
+  it('returns the server error message on failure', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: '연결된 증빙이 없습니다.' }),
+    }))
+
+    const result = await disconnectReconciliationRowEvidence({
+      uploadSessionId: 'session-1',
+      rowId: 'row-1',
+    })
+
+    expect(result).toEqual({ ok: false, message: '연결된 증빙이 없습니다.' })
   })
 })

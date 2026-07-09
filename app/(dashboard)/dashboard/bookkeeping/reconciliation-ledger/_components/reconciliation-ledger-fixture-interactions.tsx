@@ -47,6 +47,7 @@ import {
 import {
   confirmReconciliationRowAccount,
   connectReconciliationRowEvidence,
+  disconnectReconciliationRowEvidence,
   revertReconciliationRowState,
   saveReconciliationRowExclusion,
   saveReconciliationRowExplanation,
@@ -389,6 +390,7 @@ export function ReconciliationEvidencePickerModal({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [connectingRowId, setConnectingRowId] = useState<string | null>(null)
+  const [disconnectingRowId, setDisconnectingRowId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [dateFilter, setDateFilter] = useState('')
   const browseRows = useMemo(
@@ -432,6 +434,31 @@ export function ReconciliationEvidencePickerModal({
       }
       showUndoableSuccessToast({
         message: '증빙을 연결했습니다.',
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        previous: result.previous,
+        router,
+      })
+      onOpenChange(false)
+      router.refresh()
+    })
+  }
+
+  function disconnectEvidence(evidenceRowId: string) {
+    if (!row) return
+    setDisconnectingRowId(evidenceRowId)
+    startTransition(async () => {
+      const result = await disconnectReconciliationRowEvidence({
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+      })
+      setDisconnectingRowId(null)
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      showUndoableSuccessToast({
+        message: '증빙 연결을 해제했습니다.',
         uploadSessionId: row.uploadSessionId,
         rowId: row.id,
         previous: result.previous,
@@ -553,20 +580,37 @@ export function ReconciliationEvidencePickerModal({
                             </td>
                             <td className="px-3 py-2 text-right font-mono">{formatKrwAmount(browseRow.amountKrw)}</td>
                             <td className="px-3 py-2">
-                              <button
-                                className={cn(
-                                  'rounded border px-2 py-0.5 text-[11px] font-semibold',
-                                  isFixtureMode || (isPending && connectingRowId !== browseRow.id)
-                                    ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
-                                    : 'border-[#93c5fd] text-[#1d4ed8] hover:bg-[#eff6ff]',
-                                )}
-                                disabled={isFixtureMode || isPending}
-                                onClick={() => connectEvidence(browseRow.id)}
-                                title={isFixtureMode ? disabledActionNote : undefined}
-                                type="button"
-                              >
-                                {connectingRowId === browseRow.id ? '연결 중…' : '선택'}
-                              </button>
+                              {isConnectedEvidence ? (
+                                <button
+                                  className={cn(
+                                    'rounded border px-2 py-0.5 text-[11px] font-semibold',
+                                    isFixtureMode || isPending
+                                      ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
+                                      : 'border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2]',
+                                  )}
+                                  disabled={isFixtureMode || isPending}
+                                  onClick={() => disconnectEvidence(browseRow.id)}
+                                  title={isFixtureMode ? disabledActionNote : undefined}
+                                  type="button"
+                                >
+                                  {disconnectingRowId === browseRow.id ? '해제 중…' : '해제'}
+                                </button>
+                              ) : (
+                                <button
+                                  className={cn(
+                                    'rounded border px-2 py-0.5 text-[11px] font-semibold',
+                                    isFixtureMode || isPending
+                                      ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
+                                      : 'border-[#93c5fd] text-[#1d4ed8] hover:bg-[#eff6ff]',
+                                  )}
+                                  disabled={isFixtureMode || isPending}
+                                  onClick={() => connectEvidence(browseRow.id)}
+                                  title={isFixtureMode ? disabledActionNote : undefined}
+                                  type="button"
+                                >
+                                  {connectingRowId === browseRow.id ? '연결 중…' : '선택'}
+                                </button>
+                              )}
                             </td>
                           </tr>
                         )
