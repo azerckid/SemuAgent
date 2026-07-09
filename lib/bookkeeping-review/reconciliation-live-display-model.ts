@@ -1,7 +1,7 @@
 import type { BookkeepingReviewSummary } from './summary'
 import { buildLiveReconciliationLedgerRow } from './reconciliation-live-model'
 import { labelForBookkeepingAccountCategory } from '@/lib/bookkeeping/account-categories'
-import { buildAccountPatternSuggestions } from './reconciliation-pattern-suggestions'
+import { buildReconciliationPatternSuggestions } from './reconciliation-pattern-suggestions'
 import type {
   ReconciliationBatchSuggestionGroup,
   ReconciliationClosingChecklist,
@@ -169,7 +169,7 @@ export function buildLiveReconciliationLedgerDisplayModel(
   summary: BookkeepingReviewSummary,
 ): ReconciliationLedgerDisplayModel {
   const periodMode = inferReconciliationPeriodMode(summary.period.key)
-  const patternSuggestions = buildAccountPatternSuggestions(summary.rows)
+  const patternSuggestions = buildReconciliationPatternSuggestions(summary.rows)
   const rows = summary.rows.map((row) =>
     buildLiveReconciliationLedgerRow(row, { mode: periodMode, label: summary.period.label }, patternSuggestions.get(row.id) ?? null),
   )

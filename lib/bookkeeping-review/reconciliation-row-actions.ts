@@ -29,6 +29,26 @@ const evidenceSourceLabels: Record<ReconciliationSource, string> = {
   other: '기타',
 }
 
+const exclusionReasonLabels = {
+  personal_private: '개인/사적 사용',
+  business_unrelated: '업무무관',
+  duplicate_evidence: '중복 증빙',
+  wrong_period: '기간 오류',
+  reference_only: '참고 자료',
+  non_deductible_vat: '불공제',
+  internal_transfer: '내부이체',
+  refund_or_cancellation: '환불/취소',
+  unsupported_needs_review: '수동 검토 필요',
+} satisfies Record<NonNullable<ReconciliationPatternSuggestion>['suggestedExclusionReason'] & string, string>
+
+export function evidenceSourceLabel(source: ReconciliationSource): string {
+  return evidenceSourceLabels[source]
+}
+
+export function exclusionReasonLabel(reason: NonNullable<ReconciliationPatternSuggestion>['suggestedExclusionReason']): string {
+  return reason ? exclusionReasonLabels[reason] : '제외 사유'
+}
+
 export type LinkedEvidenceDisplay = {
   rowId: string | null
   source: ReconciliationSource
