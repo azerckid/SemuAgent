@@ -5,6 +5,7 @@ import {
   computeRemainingDifferenceKrw,
   evidenceActionChipLabel,
   evidenceFinderActionLabel,
+  evidenceFinderSourceForLinkedEvidence,
   evidenceRowHighlightTone,
   filterEvidenceFinderBrowseRows,
   formatExclusionReasonMemo,
@@ -98,8 +99,21 @@ describe('reconciliation-row-actions', () => {
     expect(rentRow).toBeDefined()
     expect(interestRow).toBeDefined()
 
-    expect(resolveLinkedEvidenceDisplay(rentRow!)[0]?.source).toBe('tax_invoice')
-    expect(resolveLinkedEvidenceDisplay(interestRow!)[0]?.source).toBe('bank')
+    const rentEvidence = resolveLinkedEvidenceDisplay(rentRow!)[0]
+    const interestEvidence = resolveLinkedEvidenceDisplay(interestRow!)[0]
+
+    expect(rentEvidence?.source).toBe('tax_invoice')
+    expect(rentEvidence?.rowId).toBe(rentRow!.candidates[0]!.rowId)
+    expect(interestEvidence?.source).toBe('bank')
+    expect(interestEvidence?.rowId).toBeNull()
+  })
+
+  it('maps linked evidence sources to evidence finder source lists', () => {
+    expect(evidenceFinderSourceForLinkedEvidence('tax_invoice')).toBe('tax_invoice')
+    expect(evidenceFinderSourceForLinkedEvidence('receipt')).toBe('cash_receipt')
+    expect(evidenceFinderSourceForLinkedEvidence('cash_receipt')).toBe('cash_receipt')
+    expect(evidenceFinderSourceForLinkedEvidence('card')).toBe('card')
+    expect(evidenceFinderSourceForLinkedEvidence('bank')).toBeNull()
   })
 
   it('lists browse rows for evidence finder by source', () => {
@@ -175,6 +189,21 @@ describe('reconciliation-row-actions', () => {
 
     const cashReceiptBrowseRows = listEvidenceFinderBrowseRows(rows, 'cash_receipt', row!.id)
     expect(hasEvidenceFinderAiMatch(row!.candidates, cashReceiptBrowseRows)).toBe(false)
+  })
+
+  it('does not treat manual reference links as AI matches', () => {
+    const rows = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows
+    const row = rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankToTaxInvoice)
+    expect(row).toBeDefined()
+    expect(row!.candidates[0]).toBeDefined()
+
+    const manualReferenceCandidate = {
+      ...row!.candidates[0]!,
+      reason: 'manual_reference' as const,
+    }
+    const taxInvoiceBrowseRows = listEvidenceFinderBrowseRows(rows, 'tax_invoice', row!.id)
+
+    expect(hasEvidenceFinderAiMatch([manualReferenceCandidate], taxInvoiceBrowseRows)).toBe(false)
   })
 })
 

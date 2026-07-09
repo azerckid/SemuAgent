@@ -27,6 +27,7 @@ import {
   computeRemainingDifferenceKrw,
   evidenceActionChipLabel,
   evidenceFinderActionLabel,
+  evidenceFinderSourceForLinkedEvidence,
   evidenceFinderSourceOptions,
   filterEvidenceFinderBrowseRows,
   formatExclusionReasonMemo,
@@ -343,12 +344,14 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
 
 export interface ReconciliationLinkedEvidenceModalProps {
   readonly onOpenChange: (open: boolean) => void
+  readonly onOpenEvidenceSource: (source: EvidenceFinderSource, evidenceRowId: string) => void
   readonly open: boolean
   readonly row: ReconciliationLedgerRow | null
 }
 
 export function ReconciliationLinkedEvidenceModal({
   onOpenChange,
+  onOpenEvidenceSource,
   open,
   row,
 }: ReconciliationLinkedEvidenceModalProps) {
@@ -369,26 +372,64 @@ export function ReconciliationLinkedEvidenceModal({
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 px-5 py-4">
-              {linkedEvidence.map((evidence) => (
-                <div
-                  key={`${evidence.source}-${evidence.date}-${evidence.amountKrw}`}
-                  className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-3"
-                >
-                  <p className="text-[12px] font-semibold text-foreground">
-                    {evidence.sourceLabel} · {formatKrwAmount(evidence.amountKrw)}
-                  </p>
-                  <p className="mt-1 text-[12px] text-company-fg-muted">
-                    {evidence.counterparty ?? '거래처 미정'}
-                    {evidence.date ? ` · ${evidence.date.slice(5, 10)}` : ''}
-                  </p>
-                  {evidence.description ? (
-                    <p className="mt-1 text-[12px] text-company-fg-subtle">{evidence.description}</p>
-                  ) : null}
-                  {evidence.basisLabel ? (
-                    <p className="mt-1 text-[11px] text-company-fg-subtle">{evidence.basisLabel}</p>
-                  ) : null}
-                </div>
-              ))}
+              {linkedEvidence.map((evidence) => {
+                const finderSource = evidenceFinderSourceForLinkedEvidence(evidence.source)
+                const evidenceRowId = evidence.rowId
+                const canOpenSourceList = evidenceRowId !== null && finderSource !== null
+                const content = (
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[12px] font-semibold text-foreground">
+                          {evidence.sourceLabel} · {formatKrwAmount(evidence.amountKrw)}
+                        </p>
+                        <p className="mt-1 text-[12px] text-company-fg-muted">
+                          {evidence.counterparty ?? '거래처 미정'}
+                          {evidence.date ? ` · ${evidence.date.slice(5, 10)}` : ''}
+                        </p>
+                      </div>
+                      {canOpenSourceList ? (
+                        <span className="shrink-0 rounded-full border border-[#bbf7d0] bg-[#f0fdf4] px-2 py-0.5 text-[11px] font-semibold text-[#16a34a]">
+                          연결됨
+                        </span>
+                      ) : null}
+                    </div>
+                    {evidence.description ? (
+                      <p className="mt-1 text-[12px] text-company-fg-subtle">{evidence.description}</p>
+                    ) : null}
+                    {evidence.basisLabel ? (
+                      <p className="mt-1 text-[11px] text-company-fg-subtle">{evidence.basisLabel}</p>
+                    ) : null}
+                    {canOpenSourceList ? (
+                      <p className="mt-2 text-[11px] font-medium text-[#16a34a]">
+                        클릭하면 {evidence.sourceLabel} 목록에서 연결된 행을 강조합니다.
+                      </p>
+                    ) : null}
+                  </>
+                )
+
+                if (canOpenSourceList) {
+                  return (
+                    <button
+                      key={`${evidence.source}-${evidenceRowId}`}
+                      className="block w-full rounded-[10px] border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-3 text-left transition hover:border-[#86efac] hover:bg-[#dcfce7]"
+                      onClick={() => onOpenEvidenceSource(finderSource, evidenceRowId)}
+                      type="button"
+                    >
+                      {content}
+                    </button>
+                  )
+                }
+
+                return (
+                  <div
+                    key={`${evidence.source}-${evidence.date}-${evidence.amountKrw}`}
+                    className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-3"
+                  >
+                    {content}
+                  </div>
+                )
+              })}
             </div>
             <DialogFooter className="border-t border-company-border bg-[#fcfcfd] px-5 py-3 sm:justify-end">
               <button
@@ -408,6 +449,7 @@ export function ReconciliationLinkedEvidenceModal({
 
 export interface ReconciliationEvidencePickerModalProps {
   readonly allRows: ReconciliationLedgerRow[]
+  readonly highlightedEvidenceRowId?: string | null
   readonly isFixtureMode: boolean
   readonly onOpenChange: (open: boolean) => void
   readonly open: boolean
@@ -417,6 +459,7 @@ export interface ReconciliationEvidencePickerModalProps {
 
 export function ReconciliationEvidencePickerModal({
   allRows,
+  highlightedEvidenceRowId = null,
   isFixtureMode,
   onOpenChange,
   open,
@@ -493,7 +536,11 @@ export function ReconciliationEvidencePickerModal({
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 overflow-auto px-5 py-4">
-              {hasAiCandidates ? (
+              {highlightedEvidenceRowId ? (
+                <p className="rounded-lg border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-2 text-[12px] text-[#16a34a]">
+                  현재 연결된 증빙 행을 아래 목록에서 강조했습니다.
+                </p>
+              ) : hasAiCandidates ? (
                 <p className="rounded-lg border border-[#bfdbfe] bg-[#eff6ff] px-3 py-2 text-[12px] text-[#1d4ed8]">
                   AI가 아래 목록에서 후보를 찾았습니다 — <span className="font-semibold">AI 추천</span> 배지가 붙은 행을 확인하세요.
                 </p>
@@ -535,13 +582,16 @@ export function ReconciliationEvidencePickerModal({
                         const matchedCandidate = row
                           ? resolveEvidenceFinderRowMatch(row.candidates, browseRow.id)
                           : null
+                        const isConnectedEvidence = highlightedEvidenceRowId === browseRow.id
+                        const showAiBadge = matchedCandidate !== null && matchedCandidate.reason !== 'manual_reference'
 
                         return (
                           <tr
                             key={browseRow.id}
                             className={cn(
                               'border-b border-company-border last:border-b-0',
-                              matchedCandidate ? 'bg-[#eff6ff]' : '',
+                              isConnectedEvidence ? 'bg-[#f0fdf4] ring-1 ring-inset ring-[#86efac]' : '',
+                              !isConnectedEvidence && matchedCandidate ? 'bg-[#eff6ff]' : '',
                             )}
                           >
                             <td className="px-3 py-2 font-mono text-company-fg-muted">
@@ -549,7 +599,12 @@ export function ReconciliationEvidencePickerModal({
                             </td>
                             <td className="max-w-[120px] truncate px-3 py-2">
                               <span className="inline-flex items-center gap-1.5">
-                                {matchedCandidate ? (
+                                {isConnectedEvidence ? (
+                                  <span className="inline-flex shrink-0 items-center rounded-full border border-[#bbf7d0] bg-[#dcfce7] px-1.5 py-0.5 text-[10px] font-semibold text-[#16a34a]">
+                                    연결됨
+                                  </span>
+                                ) : null}
+                                {showAiBadge ? (
                                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-1.5 py-0.5 text-[10px] font-semibold text-[#1d4ed8]">
                                     <Sparkles className="size-2.5" />
                                     AI 추천

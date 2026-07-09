@@ -72,6 +72,7 @@ const chipClass: Record<Tone, string> = {
 }
 
 type EvidencePickerState = {
+  highlightedEvidenceRowId?: string | null
   rowId: string
   source: EvidenceFinderSource
 }
@@ -247,7 +248,7 @@ export function ReconciliationLedgerDisplayFixtureView({
                 key={row.id}
                 cardLayout={cardLayout}
                 isFixtureMode={isFixtureMode}
-                onOpenEvidencePicker={(source) => setEvidencePicker({ rowId: row.id, source })}
+                onOpenEvidencePicker={(source) => setEvidencePicker({ highlightedEvidenceRowId: null, rowId: row.id, source })}
                 onOpenExclusion={() => setExclusionRowId(row.id)}
                 onOpenExplanation={() => setExplanationRowId(row.id)}
                 onViewLinkedEvidence={() => setLinkedEvidenceRowId(row.id)}
@@ -265,6 +266,7 @@ export function ReconciliationLedgerDisplayFixtureView({
 
         <ReconciliationEvidencePickerModal
           allRows={rows}
+          highlightedEvidenceRowId={evidencePicker?.highlightedEvidenceRowId ?? null}
           isFixtureMode={isFixtureMode}
           onOpenChange={(open) => {
             if (!open) {
@@ -293,6 +295,13 @@ export function ReconciliationLedgerDisplayFixtureView({
             if (!open) {
               setLinkedEvidenceRowId(null)
             }
+          }}
+          onOpenEvidenceSource={(source, evidenceRowId) => {
+            if (!linkedEvidenceRow) {
+              return
+            }
+            setLinkedEvidenceRowId(null)
+            setEvidencePicker({ highlightedEvidenceRowId: evidenceRowId, rowId: linkedEvidenceRow.id, source })
           }}
           open={linkedEvidenceRow !== null}
           row={linkedEvidenceRow}
