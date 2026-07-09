@@ -581,14 +581,15 @@ inactive search or settings controls must look disabled until implemented.
   - `year` and `custom` period modes from §5.1 are still not implemented in `buildCompanyHomePeriod` — tracked as a separate follow-up task in the backlog.
   - `explanation_required`/`explained_no_evidence` and `evidence_exception` are derived from v1 heuristics or formatted `staffMemo` conventions, not dedicated DB columns. A future durable enum/column can replace the memo prefixes if audit needs grow.
   - `taxBlockerSummaries` only reports the `vat` track from live data; the other four tracks depend on data sources (payroll, filing-preparation) this screen does not read.
-  - `patternSuggestion` is always `null` for live rows — §5.2 previous-period pattern learning is out of scope for 2a-5, so `batchSuggestionGroups` is always empty for live data.
   - Non-blocking naming: `ReconciliationLedgerDisplayFixtureView`/`reconciliation-ledger-display-fixture-view.tsx` still carry "Fixture" in their names despite now rendering live data too. A rename is a mechanical follow-up, not required before Slice 2b.
 - [x] Slice 2b-1 account/explanation/exclusion mutations implemented — PR #166~#169, merged to main.
 - [x] Slice 2b-2a evidence connect save implemented — PR #173, merged to main (`4922096`). Prod DB migration 0066 was applied before merge: `linked_evidence_row_id` nullable text column, `bookkeeping_tx_linked_evidence_idx`, `foreign_key_check` 0.
 - [x] Slice 2b-2b connected evidence review/detail highlight — PR #175, merged to main (`f708af1`). `증빙 확인` shows one **찾은 증빙** line first, and that line opens the source list with the connected/found row highlighted. Saved manual links show `연결됨`; AI/rule-found but unsaved rows show `찾은 증빙`, not `연결됨`.
 - [x] Slice 2b-2c-1 evidence unlink/replace implemented — saved `manual_reference` links can be removed from the highlighted source-list row; selecting another evidence row replaces the existing link through the existing connect mutation. Exception and amount mismatch stay separate follow-ups.
 - [x] Slice 2b-2c-2 evidence exception implemented — v1 saves `증빙 예외: ...` in `staffMemo`, clears any saved evidence link, and renders the row as `증빙 예외` without reopening the evidence finder. Saved exception edit/remove after the current-session undo toast is a follow-up.
-- [ ] Slice 2b-2c-3 amount mismatch resolution — selected total/remaining difference behavior required before code.
+- [x] Slice 2b-2c-3 amount mismatch display/save blocking implemented — PR #178, merged to main. If counterparty/date look related but amount differs, the row remains `증빙 필요`; the finder shows `금액 차이` and direct connect/save is blocked. Partial-payment/many-to-one split/merge saving remains a separately briefed follow-up.
+- [x] Slice 2b-3a account pattern apply/reject implemented — live rows can derive `patternSuggestion.suggestedAccount` from prior confirmed rows with the same counterparty/direction, show the historical basis in the account popover, apply it through the existing account-confirm mutation, or reject it by storing a `패턴 거부: ...` memo. Evidence/exclusion pattern application and batch apply remain 2b-3 follow-ups.
+- [ ] Slice 2b-3b evidence/exclusion pattern application + safe batch acceptance — requires visible eligibility, explicit confirmation, and undo-safe mutation handling before enabling.
 - [ ] Slice 2c durable match-link schema approved if needed.
 
 ## 11. Related Documents

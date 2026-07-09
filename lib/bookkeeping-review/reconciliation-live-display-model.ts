@@ -1,5 +1,7 @@
 import type { BookkeepingReviewSummary } from './summary'
 import { buildLiveReconciliationLedgerRow } from './reconciliation-live-model'
+import { labelForBookkeepingAccountCategory } from '@/lib/bookkeeping/account-categories'
+import { buildAccountPatternSuggestions } from './reconciliation-pattern-suggestions'
 import type {
   ReconciliationBatchSuggestionGroup,
   ReconciliationClosingChecklist,
@@ -129,20 +131,47 @@ export function buildLiveNextActions(rows: ReconciliationLedgerRow[]): Reconcili
   return actions
 }
 
-export function buildLiveBatchSuggestionGroups(): ReconciliationBatchSuggestionGroup[] {
-  // Batch groups require rows that share the same patternSuggestion.reason
-  // (Brief 41 §0.4). patternSuggestion is always null for live rows today —
-  // §5.2 pattern learning is out of scope for Slice 2a-5 — so there is no
-  // honest basis for a batch group yet.
-  return []
+function normalizeGroupText(value: string | null | undefined): string {
+  return (value ?? '').replace(/\s+/g, '').toLowerCase()
+}
+
+export function buildLiveBatchSuggestionGroups(rows: ReconciliationLedgerRow[]): ReconciliationBatchSuggestionGroup[] {
+  const groups = new Map<string, ReconciliationLedgerRow[]>()
+
+  for (const row of rows) {
+    const suggestion = row.patternSuggestion
+    if (!suggestion?.suggestedAccount) continue
+    if (row.finalAccount) continue
+    if (!row.actions.canConfirmAccount) continue
+    const counterpartyKey = normalizeGroupText(row.counterparty)
+    if (!counterpartyKey) continue
+    const key = [suggestion.reason, suggestion.suggestedAccount, counterpartyKey].join('|')
+    groups.set(key, [...(groups.get(key) ?? []), row])
+  }
+
+  return [...groups.entries()]
+    .filter(([, groupRows]) => groupRows.length >= 2)
+    .map(([key, groupRows]) => {
+      const first = groupRows[0]!
+      const account = first.patternSuggestion!.suggestedAccount!
+      return {
+        id: `live-account-pattern-${key.replace(/[^a-z0-9가-힣_-]+/gi, '-')}`,
+        rowIds: groupRows.map((row) => row.id),
+        suggestedAction: 'apply_account' as const,
+        basisLabel: `${first.counterparty ?? '같은 거래처'} ${groupRows.length}건 · ${labelForBookkeepingAccountCategory(account)}로 계정 확정`,
+        eligibility: 'safe_to_offer' as const,
+        requiresUserConfirmation: true as const,
+      }
+    })
 }
 
 export function buildLiveReconciliationLedgerDisplayModel(
   summary: BookkeepingReviewSummary,
 ): ReconciliationLedgerDisplayModel {
   const periodMode = inferReconciliationPeriodMode(summary.period.key)
+  const patternSuggestions = buildAccountPatternSuggestions(summary.rows)
   const rows = summary.rows.map((row) =>
-    buildLiveReconciliationLedgerRow(row, { mode: periodMode, label: summary.period.label }),
+    buildLiveReconciliationLedgerRow(row, { mode: periodMode, label: summary.period.label }, patternSuggestions.get(row.id) ?? null),
   )
   const closingChecklist = buildLiveClosingChecklist(rows)
 
@@ -151,6 +180,6 @@ export function buildLiveReconciliationLedgerDisplayModel(
     nextActions: buildLiveNextActions(rows),
     taxBlockerSummaries: buildLiveTaxBlockerSummaries(closingChecklist),
     closingChecklist,
-    batchSuggestionGroups: buildLiveBatchSuggestionGroups(),
+    batchSuggestionGroups: buildLiveBatchSuggestionGroups(rows),
   }
 }

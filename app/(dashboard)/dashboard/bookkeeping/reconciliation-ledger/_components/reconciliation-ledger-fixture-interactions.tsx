@@ -26,6 +26,7 @@ import { filterReconciliationFixtureAccountGroups } from '@/lib/bookkeeping-revi
 import type { ReconciliationLedgerRow } from '@/lib/bookkeeping-review/reconciliation-display-model'
 import {
   computeRemainingDifferenceKrw,
+  confidenceLabel,
   evidenceActionChipLabel,
   evidenceFinderActionLabel,
   evidenceFinderSourceForLinkedEvidence,
@@ -34,6 +35,7 @@ import {
   formatEvidenceExceptionMemo,
   formatExclusionReasonMemo,
   formatKrwAmount,
+  patternSuggestionReasonLabel,
   formatRemainingDifferenceLabel,
   hasDifferentAbsoluteAmount,
   hasEvidenceFinderAmountDifference,
@@ -48,10 +50,12 @@ import {
   shouldShowEvidenceFinder,
   type EvidenceFinderSource,
 } from '@/lib/bookkeeping-review/reconciliation-row-actions'
+import { formatPatternRejectionMemo } from '@/lib/bookkeeping-review/reconciliation-pattern-suggestions'
 import {
   confirmReconciliationRowAccount,
   connectReconciliationRowEvidence,
   disconnectReconciliationRowEvidence,
+  rejectReconciliationRowPatternSuggestion,
   revertReconciliationRowState,
   saveReconciliationRowExclusion,
   saveReconciliationRowEvidenceException,
@@ -258,7 +262,9 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
   const [query, setQuery] = useState('')
   const accountKey = row.finalAccount ?? row.recommendedAccount
   const displayAccount = labelForBookkeepingAccountCategory(accountKey) || '계정 미정'
-  const hasRecommendation = Boolean(row.recommendedAccount) && !row.finalAccount
+  const patternAccountKey = row.patternSuggestion?.suggestedAccount ?? null
+  const patternAccountLabel = labelForBookkeepingAccountCategory(patternAccountKey)
+  const hasRecommendation = (Boolean(row.recommendedAccount) || Boolean(patternAccountKey)) && !row.finalAccount
   const groups = useMemo(() => filterReconciliationFixtureAccountGroups(query), [query])
   const isExcluded = row.evidenceActionState === 'excluded'
   const confirmDisabled = isFixtureMode || isPending || isExcluded
@@ -279,6 +285,32 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
       }
       showUndoableSuccessToast({
         message: '계정항목을 확정했습니다.',
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        previous: result.previous,
+        router,
+      })
+      setOpen(false)
+      router.refresh()
+    })
+  }
+
+  function rejectPatternSuggestion() {
+    if (!row.patternSuggestion) return
+    const rejectionMemo = formatPatternRejectionMemo(row.patternSuggestion.basisLabel)
+    const existingMemo = row.explanationMemo?.trim()
+    startTransition(async () => {
+      const result = await rejectReconciliationRowPatternSuggestion({
+        uploadSessionId: row.uploadSessionId,
+        rowId: row.id,
+        memo: existingMemo ? `${existingMemo}\n${rejectionMemo}`.slice(0, 1000) : rejectionMemo,
+      })
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      showUndoableSuccessToast({
+        message: '반복 패턴을 무시했습니다.',
         uploadSessionId: row.uploadSessionId,
         rowId: row.id,
         previous: result.previous,
@@ -318,6 +350,53 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
             />
           </div>
         </div>
+        {row.patternSuggestion && patternAccountKey ? (
+          <div className="border-b border-company-border bg-[#fffbeb] p-2">
+            <div className="rounded-lg border border-[#fde68a] bg-company-surface p-2">
+              <div className="flex items-start gap-2">
+                <Sparkles className="mt-0.5 size-3.5 shrink-0 text-[#d97706]" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-[#b45309]">반복 패턴</p>
+                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">{patternAccountLabel || patternAccountKey}</p>
+                  <p className="mt-0.5 text-[11.5px] text-company-fg-muted">{row.patternSuggestion.basisLabel}</p>
+                  <p className="mt-0.5 text-[11px] text-company-fg-subtle">
+                    {patternSuggestionReasonLabel(row.patternSuggestion.reason)} · 신뢰도 {confidenceLabel(row.patternSuggestion.confidence)}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 flex gap-1.5">
+                <button
+                  className={cn(
+                    'flex-1 rounded-md border px-2 py-1.5 text-[11.5px] font-semibold',
+                    confirmDisabled
+                      ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
+                      : 'border-[#fde68a] bg-[#d97706] text-white hover:opacity-90',
+                  )}
+                  disabled={confirmDisabled}
+                  onClick={() => confirmAccount(patternAccountKey)}
+                  title={confirmDisabled ? confirmDisabledTitle : undefined}
+                  type="button"
+                >
+                  패턴 적용
+                </button>
+                <button
+                  className={cn(
+                    'flex-1 rounded-md border px-2 py-1.5 text-[11.5px] font-semibold',
+                    confirmDisabled
+                      ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
+                      : 'border-company-border text-company-fg-muted hover:bg-company-nav-hover',
+                  )}
+                  disabled={confirmDisabled}
+                  onClick={rejectPatternSuggestion}
+                  title={confirmDisabled ? confirmDisabledTitle : undefined}
+                  type="button"
+                >
+                  무시
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
         <div className="max-h-[280px] overflow-auto p-2">
           {groups.map((group) => (
             <div key={group.label} className="mb-2 last:mb-0">

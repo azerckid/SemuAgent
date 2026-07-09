@@ -150,8 +150,35 @@ describe('buildLiveNextActions', () => {
 })
 
 describe('buildLiveBatchSuggestionGroups', () => {
-  it('is always empty since pattern suggestions are not yet computed for live rows', () => {
-    expect(buildLiveBatchSuggestionGroups()).toEqual([])
+  it('groups safe repeated account suggestions by counterparty and account', () => {
+    const rows = [
+      buildLiveReconciliationLedgerRow(buildRow({ id: 'target-a', counterparty: '김세무사무소', status: 'suggested' }), { mode: 'month', label: 'label' }, {
+        suggestedAccount: 'fees',
+        suggestedEvidenceSource: null,
+        suggestedExclusionReason: null,
+        confidence: 'high',
+        basisLabel: '최근 같은 거래처 2건을 지급수수료로 확정',
+        matchedCount: 2,
+        lastSeenPeriod: '2026-06',
+        reason: 'same_counterparty_prior_account',
+      }),
+      buildLiveReconciliationLedgerRow(buildRow({ id: 'target-b', counterparty: '김세무사무소', status: 'suggested' }), { mode: 'month', label: 'label' }, {
+        suggestedAccount: 'fees',
+        suggestedEvidenceSource: null,
+        suggestedExclusionReason: null,
+        confidence: 'high',
+        basisLabel: '최근 같은 거래처 2건을 지급수수료로 확정',
+        matchedCount: 2,
+        lastSeenPeriod: '2026-06',
+        reason: 'same_counterparty_prior_account',
+      }),
+    ]
+
+    const groups = buildLiveBatchSuggestionGroups(rows)
+    expect(groups).toHaveLength(1)
+    expect(groups[0]!.suggestedAction).toBe('apply_account')
+    expect(groups[0]!.rowIds).toEqual(['target-a', 'target-b'])
+    expect(groups[0]!.eligibility).toBe('safe_to_offer')
   })
 })
 
@@ -171,16 +198,20 @@ describe('buildLiveReconciliationLedgerDisplayModel', () => {
       },
       tab: 'all',
       counts: { pending: 1, lowConfidence: 0, confirmed: 0, total: 1 },
-      rows: [buildRow({ id: 'row-1' })],
+      rows: [
+        buildRow({ id: 'row-1', counterparty: '김세무사무소', transactionDate: '2026-07-08', status: 'suggested' }),
+        buildRow({ id: 'prior-1', counterparty: '김세무사무소', transactionDate: '2026-06-08', finalAccount: 'fees', status: 'confirmed' }),
+      ],
       selected: null,
     }
 
     const model = buildLiveReconciliationLedgerDisplayModel(summary)
 
     expect(() => reconciliationLedgerDisplayModelSchema.parse(model)).not.toThrow()
-    expect(model.rows).toHaveLength(1)
+    expect(model.rows).toHaveLength(2)
     expect(model.rows[0]!.periodMode).toBe('month')
     expect(model.rows[0]!.periodLabel).toBe('2026년 7월 기장검토')
+    expect(model.rows[0]!.patternSuggestion?.suggestedAccount).toBe('fees')
   })
 
   it('produces a schema-valid empty model when there are no rows', () => {

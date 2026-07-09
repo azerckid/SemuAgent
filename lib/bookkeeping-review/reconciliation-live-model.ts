@@ -9,6 +9,7 @@ import type {
   ReconciliationEvidenceActionState,
   ReconciliationLedgerRow,
   ReconciliationMatchCandidate,
+  ReconciliationPatternSuggestion,
   ReconciliationPeriodMode,
   ReconciliationRowConclusion,
   ReconciliationRowPrimaryAction,
@@ -141,6 +142,7 @@ export function buildLiveRowConclusion(
 export function buildLiveReconciliationLedgerRow(
   row: BookkeepingReviewQueueRow,
   period: { mode: ReconciliationPeriodMode; label: string },
+  patternSuggestion: ReconciliationPatternSuggestion | null = null,
 ): ReconciliationLedgerRow {
   const evidenceActionState = mapLiveEvidenceActionState(row)
   const candidates = row.reconciliation.candidates.map(mapLiveMatchCandidate)
@@ -164,7 +166,7 @@ export function buildLiveReconciliationLedgerRow(
     matchState: row.reconciliation.matchState,
     evidenceActionState,
     candidates,
-    patternSuggestion: null,
+    patternSuggestion,
     rowConclusion: buildLiveRowConclusion(row, evidenceActionState),
     blockers: row.reconciliation.blockers,
     actions: {
