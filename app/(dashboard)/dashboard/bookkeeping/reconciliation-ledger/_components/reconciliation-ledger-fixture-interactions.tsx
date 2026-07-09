@@ -31,6 +31,8 @@ import {
   evidenceFinderActionLabel,
   evidenceFinderSourceForLinkedEvidence,
   evidenceFinderSourceOptions,
+  evidenceSourceLabel,
+  exclusionReasonLabel,
   filterEvidenceFinderBrowseRows,
   formatEvidenceExceptionMemo,
   formatExclusionReasonMemo,
@@ -197,6 +199,13 @@ function EvidenceFinderDropdown({
   const foundEvidenceSource = foundEvidence
     ? evidenceFinderSourceForLinkedEvidence(foundEvidence.source)
     : null
+  const suggestedEvidenceSource = row.patternSuggestion?.suggestedEvidenceSource ?? null
+  const suggestedFinderSource = suggestedEvidenceSource
+    ? evidenceFinderSourceForLinkedEvidence(suggestedEvidenceSource)
+    : null
+  const sourceOptions = suggestedFinderSource
+    ? [...evidenceFinderSourceOptions].sort((a, b) => Number(b.source === suggestedFinderSource) - Number(a.source === suggestedFinderSource))
+    : evidenceFinderSourceOptions
   const canMarkEvidenceException = row.source === 'bank'
 
   return (
@@ -228,6 +237,17 @@ function EvidenceFinderDropdown({
             <DropdownMenuSeparator />
           </>
         ) : null}
+        {!foundEvidence && suggestedEvidenceSource && suggestedFinderSource ? (
+          <>
+            <div className="px-2 py-2 text-[12px]">
+              <span className="block text-[11px] font-semibold text-[#b45309]">반복 증빙 패턴</span>
+              <span className="mt-0.5 block text-company-fg-muted">
+                {evidenceSourceLabel(suggestedEvidenceSource)} · {row.patternSuggestion?.basisLabel}
+              </span>
+            </div>
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
         {canMarkEvidenceException ? (
           <>
             <DropdownMenuItem onClick={onOpenEvidenceException}>
@@ -236,12 +256,19 @@ function EvidenceFinderDropdown({
             <DropdownMenuSeparator />
           </>
         ) : null}
-        {evidenceFinderSourceOptions.map((option) => (
+        {sourceOptions.map((option) => (
           <DropdownMenuItem
             key={option.source}
             onClick={() => onOpenEvidencePicker(option.source)}
           >
-            {option.label}
+            <span className="inline-flex w-full items-center justify-between gap-3">
+              <span>{option.label}</span>
+              {option.source === suggestedFinderSource ? (
+                <span className="rounded-full border border-[#fde68a] bg-[#fffbeb] px-1.5 py-0.5 text-[10px] font-semibold text-[#b45309]">
+                  반복 패턴
+                </span>
+              ) : null}
+            </span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -264,6 +291,8 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
   const displayAccount = labelForBookkeepingAccountCategory(accountKey) || '계정 미정'
   const patternAccountKey = row.patternSuggestion?.suggestedAccount ?? null
   const patternAccountLabel = labelForBookkeepingAccountCategory(patternAccountKey)
+  const patternExclusionReason = row.patternSuggestion?.suggestedExclusionReason ?? null
+  const patternExclusionLabel = exclusionReasonLabel(patternExclusionReason)
   const hasRecommendation = (Boolean(row.recommendedAccount) || Boolean(patternAccountKey)) && !row.finalAccount
   const groups = useMemo(() => filterReconciliationFixtureAccountGroups(query), [query])
   const isExcluded = row.evidenceActionState === 'excluded'
@@ -378,6 +407,56 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
                   type="button"
                 >
                   패턴 적용
+                </button>
+                <button
+                  className={cn(
+                    'flex-1 rounded-md border px-2 py-1.5 text-[11.5px] font-semibold',
+                    confirmDisabled
+                      ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
+                      : 'border-company-border text-company-fg-muted hover:bg-company-nav-hover',
+                  )}
+                  disabled={confirmDisabled}
+                  onClick={rejectPatternSuggestion}
+                  title={confirmDisabled ? confirmDisabledTitle : undefined}
+                  type="button"
+                >
+                  무시
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {row.patternSuggestion && patternExclusionReason && !isExcluded ? (
+          <div className="border-b border-company-border bg-[#fff7f7] p-2">
+            <div className="rounded-lg border border-[#fecaca] bg-company-surface p-2">
+              <div className="flex items-start gap-2">
+                <Sparkles className="mt-0.5 size-3.5 shrink-0 text-[#dc2626]" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-[#dc2626]">반복 제외 패턴</p>
+                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">{patternExclusionLabel}</p>
+                  <p className="mt-0.5 text-[11.5px] text-company-fg-muted">{row.patternSuggestion.basisLabel}</p>
+                  <p className="mt-0.5 text-[11px] text-company-fg-subtle">
+                    {patternSuggestionReasonLabel(row.patternSuggestion.reason)} · 신뢰도 {confidenceLabel(row.patternSuggestion.confidence)}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 flex gap-1.5">
+                <button
+                  className={cn(
+                    'flex-1 rounded-md border px-2 py-1.5 text-[11.5px] font-semibold',
+                    confirmDisabled
+                      ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
+                      : 'border-[#fecaca] bg-[#dc2626] text-white hover:opacity-90',
+                  )}
+                  disabled={confirmDisabled}
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenExclusion()
+                  }}
+                  title={confirmDisabled ? confirmDisabledTitle : undefined}
+                  type="button"
+                >
+                  제외 사유 입력
                 </button>
                 <button
                   className={cn(
@@ -1030,6 +1109,8 @@ export function ReconciliationExclusionModal({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [draft, setDraft] = useState('')
+  const suggestedExclusionReason = row?.patternSuggestion?.suggestedExclusionReason ?? null
+  const suggestedExclusionDraft = exclusionReasonLabel(suggestedExclusionReason)
   const saveDisabled = isFixtureMode || isPending || draft.trim().length === 0
 
   function saveExclusion() {
@@ -1060,7 +1141,7 @@ export function ReconciliationExclusionModal({
     <Dialog
       onOpenChange={(nextOpen) => {
         if (nextOpen) {
-          setDraft('')
+          setDraft(suggestedExclusionReason ? suggestedExclusionDraft : '')
         }
         onOpenChange(nextOpen)
       }}
@@ -1080,6 +1161,12 @@ export function ReconciliationExclusionModal({
                 <p className="font-medium text-foreground">{row.description}</p>
                 <p className="mt-1">이 거래를 장부 대조 대상에서 제외합니다. 사유는 감사·되돌리기를 위해 함께 저장됩니다.</p>
               </div>
+              {suggestedExclusionReason ? (
+                <div className="rounded-[10px] border border-[#fecaca] bg-[#fff7f7] px-3 py-2 text-[12px] text-[#dc2626]">
+                  <p className="font-semibold">반복 제외 패턴 · {suggestedExclusionDraft}</p>
+                  <p className="mt-1 text-[11.5px] text-[#991b1b]">{row.patternSuggestion?.basisLabel}</p>
+                </div>
+              ) : null}
               <label className="block">
                 <span className="text-[12px] font-semibold text-foreground">제외 사유</span>
                 <textarea

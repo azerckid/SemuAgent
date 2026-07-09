@@ -214,6 +214,36 @@ describe('buildLiveReconciliationLedgerDisplayModel', () => {
     expect(model.rows[0]!.patternSuggestion?.suggestedAccount).toBe('fees')
   })
 
+  it('carries prior evidence and exclusion patterns into live rows', () => {
+    const summary: BookkeepingReviewSummary = {
+      tenant: { id: 't1', name: '회사', timezone: 'Asia/Seoul' },
+      businessEntity: { id: 'b1', name: '사업장' },
+      period: {
+        key: '2026-07',
+        label: '2026년 7월 기장검토',
+        startMonth: '2026-07',
+        endMonth: '2026-07',
+        filingDeadline: '2026-08-10',
+        dDay: 10,
+        progressPercent: 50,
+      },
+      tab: 'all',
+      counts: { pending: 2, lowConfidence: 0, confirmed: 0, total: 2 },
+      rows: [
+        buildRow({ id: 'bank-target', counterparty: '원아이지넥스원', transactionDate: '2026-07-08', sourceType: 'bank' }),
+        buildRow({ id: 'bank-prior', counterparty: '원아이지넥스원', transactionDate: '2026-06-08', sourceType: 'bank', linkedEvidenceRowId: 'tax-prior' }),
+        buildRow({ id: 'tax-prior', counterparty: '원아이지넥스원', transactionDate: '2026-06-08', sourceType: 'tax_invoice', status: 'confirmed' }),
+        buildRow({ id: 'exclude-target', counterparty: 'PC방나라', transactionDate: '2026-07-08', sourceType: 'card' }),
+        buildRow({ id: 'exclude-prior', counterparty: 'PC방나라', transactionDate: '2026-06-08', sourceType: 'card', status: 'excluded', staffMemo: '제외 사유: 업무무관 - PC방 결제' }),
+      ],
+      selected: null,
+    }
+
+    const model = buildLiveReconciliationLedgerDisplayModel(summary)
+    expect(model.rows.find((row) => row.id === 'bank-target')?.patternSuggestion?.suggestedEvidenceSource).toBe('tax_invoice')
+    expect(model.rows.find((row) => row.id === 'exclude-target')?.patternSuggestion?.suggestedExclusionReason).toBe('business_unrelated')
+  })
+
   it('produces a schema-valid empty model when there are no rows', () => {
     const summary: BookkeepingReviewSummary = {
       tenant: { id: 't1', name: '회사', timezone: 'Asia/Seoul' },
