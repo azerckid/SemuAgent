@@ -35,7 +35,10 @@ import {
   formatExclusionReasonMemo,
   formatKrwAmount,
   formatRemainingDifferenceLabel,
+  hasDifferentAbsoluteAmount,
+  hasEvidenceFinderAmountDifference,
   hasEvidenceFinderAiMatch,
+  isAmountDifferenceEvidenceReference,
   isFoundEvidenceReference,
   isSavedEvidenceReference,
   listEvidenceFinderBrowseRows,
@@ -426,6 +429,10 @@ export function ReconciliationEvidencePickerModal({
     () => (row ? hasEvidenceFinderAiMatch(row.candidates, browseRows) : false),
     [browseRows, row],
   )
+  const hasAmountDifferenceCandidates = useMemo(
+    () => (row ? hasEvidenceFinderAmountDifference(row.candidates, browseRows) : false),
+    [browseRows, row],
+  )
   const highlightedCandidate = useMemo(
     () => (row && highlightedEvidenceRowId
       ? resolveEvidenceFinderRowMatch(row.candidates, highlightedEvidenceRowId)
@@ -512,6 +519,10 @@ export function ReconciliationEvidencePickerModal({
                     ? '현재 연결된 증빙 행을 아래 목록에서 강조했습니다.'
                     : '찾은 증빙 행을 아래 목록에서 강조했습니다.'}
                 </p>
+              ) : hasAmountDifferenceCandidates ? (
+                <p className="rounded-lg border border-[#fde68a] bg-[#fffbeb] px-3 py-2 text-[12px] text-[#b45309]">
+                  거래처·일자는 비슷하지만 금액이 다른 항목이 있습니다 — <span className="font-semibold">금액 차이</span> 배지가 붙은 행은 바로 연결할 수 없습니다.
+                </p>
               ) : hasAiCandidates ? (
                 <p className="rounded-lg border border-[#bfdbfe] bg-[#eff6ff] px-3 py-2 text-[12px] text-[#1d4ed8]">
                   AI가 아래 목록에서 증빙을 찾았습니다 — <span className="font-semibold">찾은 증빙</span> 배지가 붙은 행을 확인하세요.
@@ -557,6 +568,9 @@ export function ReconciliationEvidencePickerModal({
                         const isHighlightedEvidence = highlightedEvidenceRowId === browseRow.id
                         const isConnectedEvidence = isHighlightedEvidence && isSavedEvidenceReference(matchedCandidate)
                         const isFoundEvidence = isFoundEvidenceReference(matchedCandidate)
+                        const isAmountDifferenceEvidence = isAmountDifferenceEvidenceReference(matchedCandidate)
+                          || hasDifferentAbsoluteAmount(row.amountKrw, browseRow.amountKrw)
+                        const canConnectEvidence = !isAmountDifferenceEvidence
 
                         return (
                           <tr
@@ -565,6 +579,7 @@ export function ReconciliationEvidencePickerModal({
                               'border-b border-company-border last:border-b-0',
                               isConnectedEvidence ? 'bg-[#f0fdf4] ring-1 ring-inset ring-[#86efac]' : '',
                               !isConnectedEvidence && (isHighlightedEvidence || isFoundEvidence) ? 'bg-[#eff6ff]' : '',
+                              !isConnectedEvidence && !isFoundEvidence && isAmountDifferenceEvidence ? 'bg-[#fffbeb]' : '',
                             )}
                           >
                             <td className="px-3 py-2 font-mono text-company-fg-muted">
@@ -581,6 +596,11 @@ export function ReconciliationEvidencePickerModal({
                                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-1.5 py-0.5 text-[10px] font-semibold text-[#1d4ed8]">
                                     <Sparkles className="size-2.5" />
                                     찾은 증빙
+                                  </span>
+                                ) : null}
+                                {isAmountDifferenceEvidence ? (
+                                  <span className="inline-flex shrink-0 items-center rounded-full border border-[#fde68a] bg-[#fef3c7] px-1.5 py-0.5 text-[10px] font-semibold text-[#b45309]">
+                                    금액 차이
                                   </span>
                                 ) : null}
                                 <span className="truncate">{browseRow.counterparty ?? '-'}</span>
@@ -611,6 +631,15 @@ export function ReconciliationEvidencePickerModal({
                                 >
                                   {disconnectingRowId === browseRow.id ? '해제 중…' : '해제'}
                                 </button>
+                              ) : isAmountDifferenceEvidence ? (
+                                <button
+                                  className="cursor-not-allowed rounded border border-[#fde68a] px-2 py-0.5 text-[11px] font-semibold text-[#b45309]"
+                                  disabled
+                                  title="금액이 달라 바로 증빙있음으로 연결할 수 없습니다."
+                                  type="button"
+                                >
+                                  차액 확인
+                                </button>
                               ) : (
                                 <button
                                   className={cn(
@@ -619,7 +648,7 @@ export function ReconciliationEvidencePickerModal({
                                       ? 'cursor-not-allowed border-company-border text-company-fg-subtle'
                                       : 'border-[#93c5fd] text-[#1d4ed8] hover:bg-[#eff6ff]',
                                   )}
-                                  disabled={isFixtureMode || isPending}
+                                  disabled={isFixtureMode || isPending || !canConnectEvidence}
                                   onClick={() => connectEvidence(browseRow.id)}
                                   title={isFixtureMode ? disabledActionNote : undefined}
                                   type="button"

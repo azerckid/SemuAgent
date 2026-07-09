@@ -964,7 +964,11 @@ export async function updateBookkeepingClassificationRow(params: {
     }
 
     const [evidenceRow] = await db
-      .select({ id: bookkeepingTransactionClassification.id, sourceType: bookkeepingTransactionClassification.sourceType })
+      .select({
+        id: bookkeepingTransactionClassification.id,
+        sourceType: bookkeepingTransactionClassification.sourceType,
+        amountKrw: bookkeepingTransactionClassification.amountKrw,
+      })
       .from(bookkeepingTransactionClassification)
       .where(
         and(
@@ -980,6 +984,9 @@ export async function updateBookkeepingClassificationRow(params: {
     }
     if (!LINKABLE_EVIDENCE_SOURCE_TYPES.has(evidenceRow.sourceType)) {
       return { ok: false as const, status: 400, error: '세금계산서·현금영수증·카드 거래만 증빙으로 연결할 수 있습니다.' }
+    }
+    if (row.amountKrw === null || evidenceRow.amountKrw === null || Math.abs(row.amountKrw) !== Math.abs(evidenceRow.amountKrw)) {
+      return { ok: false as const, status: 400, error: '금액이 다른 증빙은 바로 연결할 수 없습니다. 차액을 확인해 주세요.' }
     }
   }
 
