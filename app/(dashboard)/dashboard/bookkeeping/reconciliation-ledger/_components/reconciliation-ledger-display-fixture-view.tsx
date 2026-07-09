@@ -31,7 +31,6 @@ import {
   ReconciliationEvidencePickerModal,
   ReconciliationExclusionModal,
   ReconciliationExplanationModal,
-  ReconciliationLinkedEvidenceModal,
 } from './reconciliation-ledger-fixture-interactions'
 import {
   reconciliationLedgerColumnCount,
@@ -105,7 +104,6 @@ export function ReconciliationLedgerDisplayFixtureView({
     }
     return null
   })
-  const [linkedEvidenceRowId, setLinkedEvidenceRowId] = useState<string | null>(null)
   const [exclusionRowId, setExclusionRowId] = useState<string | null>(null)
 
   const evidencePickerRow = useMemo(
@@ -115,10 +113,6 @@ export function ReconciliationLedgerDisplayFixtureView({
   const explanationRow = useMemo(
     () => (explanationRowId ? rows.find((row) => row.id === explanationRowId) ?? null : null),
     [explanationRowId, rows],
-  )
-  const linkedEvidenceRow = useMemo(
-    () => (linkedEvidenceRowId ? rows.find((row) => row.id === linkedEvidenceRowId) ?? null : null),
-    [linkedEvidenceRowId, rows],
   )
   const exclusionRow = useMemo(
     () => (exclusionRowId ? rows.find((row) => row.id === exclusionRowId) ?? null : null),
@@ -249,9 +243,11 @@ export function ReconciliationLedgerDisplayFixtureView({
                 cardLayout={cardLayout}
                 isFixtureMode={isFixtureMode}
                 onOpenEvidencePicker={(source) => setEvidencePicker({ highlightedEvidenceRowId: null, rowId: row.id, source })}
+                onOpenFoundEvidence={(source, evidenceRowId) => {
+                  setEvidencePicker({ highlightedEvidenceRowId: evidenceRowId, rowId: row.id, source })
+                }}
                 onOpenExclusion={() => setExclusionRowId(row.id)}
                 onOpenExplanation={() => setExplanationRowId(row.id)}
-                onViewLinkedEvidence={() => setLinkedEvidenceRowId(row.id)}
                 row={row}
                 taxInvoiceLayout={taxInvoiceLayout}
               />
@@ -288,23 +284,6 @@ export function ReconciliationLedgerDisplayFixtureView({
           }}
           open={explanationRow !== null}
           row={explanationRow}
-        />
-
-        <ReconciliationLinkedEvidenceModal
-          onOpenChange={(open) => {
-            if (!open) {
-              setLinkedEvidenceRowId(null)
-            }
-          }}
-          onOpenEvidenceSource={(source, evidenceRowId) => {
-            if (!linkedEvidenceRow) {
-              return
-            }
-            setLinkedEvidenceRowId(null)
-            setEvidencePicker({ highlightedEvidenceRowId: evidenceRowId, rowId: linkedEvidenceRow.id, source })
-          }}
-          open={linkedEvidenceRow !== null}
-          row={linkedEvidenceRow}
         />
 
         <ReconciliationExclusionModal
@@ -427,18 +406,18 @@ function FixtureRow({
   cardLayout,
   isFixtureMode,
   onOpenEvidencePicker,
+  onOpenFoundEvidence,
   onOpenExclusion,
   onOpenExplanation,
-  onViewLinkedEvidence,
   row,
   taxInvoiceLayout,
 }: {
   readonly cardLayout: boolean
   readonly isFixtureMode: boolean
   readonly onOpenEvidencePicker: (source: EvidenceFinderSource) => void
+  readonly onOpenFoundEvidence: (source: EvidenceFinderSource, evidenceRowId: string) => void
   readonly onOpenExclusion: () => void
   readonly onOpenExplanation: () => void
-  readonly onViewLinkedEvidence: () => void
   readonly row: ReconciliationLedgerRow
   readonly taxInvoiceLayout: boolean
 }) {
@@ -515,8 +494,8 @@ function FixtureRow({
         <td className="px-3 py-3">
           <ReconciliationEvidenceCell
             onOpenEvidencePicker={onOpenEvidencePicker}
+            onOpenFoundEvidence={onOpenFoundEvidence}
             onOpenExplanation={onOpenExplanation}
-            onViewLinkedEvidence={onViewLinkedEvidence}
             row={row}
           />
         </td>
@@ -555,8 +534,8 @@ function FixtureRow({
       <td className="px-3 py-3">
         <ReconciliationEvidenceCell
           onOpenEvidencePicker={onOpenEvidencePicker}
+          onOpenFoundEvidence={onOpenFoundEvidence}
           onOpenExplanation={onOpenExplanation}
-          onViewLinkedEvidence={onViewLinkedEvidence}
           row={row}
         />
       </td>

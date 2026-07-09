@@ -17,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -112,15 +113,15 @@ const chipClass: Record<Tone, string> = {
 
 export interface ReconciliationEvidenceCellProps {
   readonly onOpenEvidencePicker: (source: EvidenceFinderSource) => void
+  readonly onOpenFoundEvidence: (source: EvidenceFinderSource, evidenceRowId: string) => void
   readonly onOpenExplanation: () => void
-  readonly onViewLinkedEvidence: () => void
   readonly row: ReconciliationLedgerRow
 }
 
 export function ReconciliationEvidenceCell({
   onOpenEvidencePicker,
+  onOpenFoundEvidence,
   onOpenExplanation,
-  onViewLinkedEvidence,
   row,
 }: ReconciliationEvidenceCellProps) {
   const statusChip = evidenceActionChipLabel(row.evidenceActionState)
@@ -135,17 +136,6 @@ export function ReconciliationEvidenceCell({
           type="button"
         >
           소명 입력
-        </button>
-      ) : row.evidenceActionState === 'linked' && statusChip ? (
-        <button
-          className={cn(
-            'inline-flex rounded-full border px-2.5 py-0.5 text-[11.5px] font-semibold hover:opacity-90',
-            chipClass[statusChip.tone],
-          )}
-          onClick={onViewLinkedEvidence}
-          type="button"
-        >
-          {statusChip.label}
         </button>
       ) : statusChip ? (
         <StatusChip tone={statusChip.tone}>{statusChip.label}</StatusChip>
@@ -164,6 +154,8 @@ export function ReconciliationEvidenceCell({
         <EvidenceFinderDropdown
           label={evidenceFinderActionLabel(row)}
           onOpenEvidencePicker={onOpenEvidencePicker}
+          onOpenFoundEvidence={onOpenFoundEvidence}
+          row={row}
         />
       ) : null}
     </div>
@@ -173,10 +165,22 @@ export function ReconciliationEvidenceCell({
 function EvidenceFinderDropdown({
   label,
   onOpenEvidencePicker,
+  onOpenFoundEvidence,
+  row,
 }: {
   readonly label: string
   readonly onOpenEvidencePicker: (source: EvidenceFinderSource) => void
+  readonly onOpenFoundEvidence: (source: EvidenceFinderSource, evidenceRowId: string) => void
+  readonly row: ReconciliationLedgerRow
 }) {
+  const foundEvidence = resolveLinkedEvidenceDisplay(row).find((evidence) => {
+    if (!evidence.rowId) return false
+    return evidenceFinderSourceForLinkedEvidence(evidence.source) !== null
+  })
+  const foundEvidenceSource = foundEvidence
+    ? evidenceFinderSourceForLinkedEvidence(foundEvidence.source)
+    : null
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -186,7 +190,26 @@ function EvidenceFinderDropdown({
         {label}
         <ChevronDown className="size-3 text-company-fg-muted" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[140px]">
+      <DropdownMenuContent align="start" className="min-w-[260px]">
+        {foundEvidence && foundEvidenceSource ? (
+          <>
+            <DropdownMenuItem
+              className="block px-2 py-2"
+              onClick={() => onOpenFoundEvidence(foundEvidenceSource, foundEvidence.rowId!)}
+            >
+              <span className="block text-[11px] font-semibold text-[#16a34a]">찾은 증빙</span>
+              <span className="mt-0.5 block truncate text-[12px] font-semibold text-foreground">
+                {foundEvidence.sourceLabel}
+                {' · '}
+                {foundEvidence.counterparty ?? '거래처 미정'}
+                {' · '}
+                {formatKrwAmount(foundEvidence.amountKrw)}
+                {foundEvidence.date ? ` · ${foundEvidence.date.slice(5, 10)}` : ''}
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
         {evidenceFinderSourceOptions.map((option) => (
           <DropdownMenuItem
             key={option.source}
@@ -339,111 +362,6 @@ export function ReconciliationAccountSelector({ isFixtureMode, onOpenExclusion, 
         )}
       </PopoverContent>
     </Popover>
-  )
-}
-
-export interface ReconciliationLinkedEvidenceModalProps {
-  readonly onOpenChange: (open: boolean) => void
-  readonly onOpenEvidenceSource: (source: EvidenceFinderSource, evidenceRowId: string) => void
-  readonly open: boolean
-  readonly row: ReconciliationLedgerRow | null
-}
-
-export function ReconciliationLinkedEvidenceModal({
-  onOpenChange,
-  onOpenEvidenceSource,
-  open,
-  row,
-}: ReconciliationLinkedEvidenceModalProps) {
-  const linkedEvidence = useMemo(
-    () => (row ? resolveLinkedEvidenceDisplay(row) : []),
-    [row],
-  )
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="flex w-full max-w-lg flex-col gap-0 overflow-hidden border-company-border bg-company-surface p-0 sm:max-w-lg">
-        {row ? (
-          <>
-            <DialogHeader className="border-b border-company-border px-5 py-4 pr-12">
-              <DialogTitle className="text-base font-semibold text-foreground">연결된 증빙</DialogTitle>
-              <DialogDescription className="text-[13px] text-company-fg-muted">
-                {row.counterparty ?? '거래처 미정'} · {formatKrwAmount(row.amountKrw)}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3 px-5 py-4">
-              {linkedEvidence.map((evidence) => {
-                const finderSource = evidenceFinderSourceForLinkedEvidence(evidence.source)
-                const evidenceRowId = evidence.rowId
-                const canOpenSourceList = evidenceRowId !== null && finderSource !== null
-                const content = (
-                  <>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[12px] font-semibold text-foreground">
-                          {evidence.sourceLabel} · {formatKrwAmount(evidence.amountKrw)}
-                        </p>
-                        <p className="mt-1 text-[12px] text-company-fg-muted">
-                          {evidence.counterparty ?? '거래처 미정'}
-                          {evidence.date ? ` · ${evidence.date.slice(5, 10)}` : ''}
-                        </p>
-                      </div>
-                      {canOpenSourceList ? (
-                        <span className="shrink-0 rounded-full border border-[#bbf7d0] bg-[#f0fdf4] px-2 py-0.5 text-[11px] font-semibold text-[#16a34a]">
-                          연결됨
-                        </span>
-                      ) : null}
-                    </div>
-                    {evidence.description ? (
-                      <p className="mt-1 text-[12px] text-company-fg-subtle">{evidence.description}</p>
-                    ) : null}
-                    {evidence.basisLabel ? (
-                      <p className="mt-1 text-[11px] text-company-fg-subtle">{evidence.basisLabel}</p>
-                    ) : null}
-                    {canOpenSourceList ? (
-                      <p className="mt-2 text-[11px] font-medium text-[#16a34a]">
-                        클릭하면 {evidence.sourceLabel} 목록에서 연결된 행을 강조합니다.
-                      </p>
-                    ) : null}
-                  </>
-                )
-
-                if (canOpenSourceList) {
-                  return (
-                    <button
-                      key={`${evidence.source}-${evidenceRowId}`}
-                      className="block w-full rounded-[10px] border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-3 text-left transition hover:border-[#86efac] hover:bg-[#dcfce7]"
-                      onClick={() => onOpenEvidenceSource(finderSource, evidenceRowId)}
-                      type="button"
-                    >
-                      {content}
-                    </button>
-                  )
-                }
-
-                return (
-                  <div
-                    key={`${evidence.source}-${evidence.date}-${evidence.amountKrw}`}
-                    className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-3"
-                  >
-                    {content}
-                  </div>
-                )
-              })}
-            </div>
-            <DialogFooter className="border-t border-company-border bg-[#fcfcfd] px-5 py-3 sm:justify-end">
-              <button
-                className="rounded-lg border border-company-border px-3 py-2 text-[12px] font-semibold text-company-fg-muted"
-                onClick={() => onOpenChange(false)}
-                type="button"
-              >
-                닫기
-              </button>
-            </DialogFooter>
-          </>
-        ) : null}
-      </DialogContent>
-    </Dialog>
   )
 }
 

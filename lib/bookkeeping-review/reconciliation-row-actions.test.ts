@@ -109,6 +109,17 @@ describe('reconciliation-row-actions', () => {
     expect(interestEvidence?.rowId).toBeNull()
   })
 
+  it('resolves found evidence for rows shown as 증빙있음 before manual save', () => {
+    const row = RECONCILIATION_LEDGER_DISPLAY_FIXTURE.rows.find((item) => item.id === RECONCILIATION_BANK_FIXTURE_ROW_IDS.bankToTaxInvoice)
+    expect(row).toBeDefined()
+    expect(row!.evidenceActionState).toBe('candidate')
+    expect(evidenceActionChipLabel(row!.evidenceActionState)?.label).toBe('증빙있음')
+
+    const foundEvidence = resolveLinkedEvidenceDisplay(row!)[0]
+    expect(foundEvidence?.rowId).toBe(row!.candidates[0]!.rowId)
+    expect(foundEvidence?.source).toBe('tax_invoice')
+  })
+
   it('maps linked evidence sources to evidence finder source lists', () => {
     expect(evidenceFinderSourceForLinkedEvidence('tax_invoice')).toBe('tax_invoice')
     expect(evidenceFinderSourceForLinkedEvidence('receipt')).toBe('cash_receipt')

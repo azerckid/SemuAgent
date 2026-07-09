@@ -130,7 +130,7 @@ export function hasEvidenceFinderAiMatch(
 }
 
 export function resolveLinkedEvidenceDisplay(row: ReconciliationLedgerRow): LinkedEvidenceDisplay[] {
-  if (row.evidenceActionState !== 'linked') {
+  if (row.evidenceActionState !== 'linked' && row.evidenceActionState !== 'candidate') {
     return []
   }
 
