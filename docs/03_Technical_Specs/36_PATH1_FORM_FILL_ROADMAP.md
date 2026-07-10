@@ -1,6 +1,6 @@
 # Path 1 — Hometax Form Fill Roadmap
 > Created: 2026-07-07 04:20 KST
-> Last Updated: 2026-07-10 22:14 KST
+> Last Updated: 2026-07-10
 
 ## 0. Governing Principle
 
@@ -29,8 +29,10 @@ Path 2 (JC-034 GIWA ZIP)는 Path 1 베타 이후에만 재개한다. Path 3
 완료: 자료대조원장 Phase 2 — 확정 원장 gate, 부가세 package gate, VAT provenance/rebuild
 구현 완료: 근로소득 간이지급명세서 — 양식 채움 확인, 비암호화 파일 후보, 검증, 업로드 안내; 공식 직접 수용은 beta 검증 대상
 차단 종료: 원천세 W0 — 공식 경로는 직접작성 또는 비밀번호 기반 회계프로그램 변환파일
-현재: 부가세 Stage A — 공개 자료 감사 완료, 로그인 화면·126 외부 확인 대기
-다음: 부가세 Stage A 통과 시 B~G / 실패 시 지방소득세 특별징수 Stage A
+현재 제품 작업: JC-035 VAI-1 — 부가세 AI 판단 UI-First Gate 확인 대기
+병렬 외부 대기: 부가세 Stage A — 공개 자료 감사 완료, 로그인 화면·126 외부 확인 대기
+다음 제품 작업: VAI-1 승인 후 VAI-2 공식 규칙 매트릭스 + Pre-Code Brief
+파일 트랙 다음: 부가세 Stage A 통과 시 B~G / 실패 시 지방소득세 특별징수 Stage A
 이후: 지방소득세 특별징수 → 사업장현황신고 → 연말 지급명세서
 보류: Path 2 ZIP, JC-023 자동제출
 제외: Path 3 fcrypt·암호화 파일·적합성 검정
@@ -39,6 +41,11 @@ Path 2 (JC-034 GIWA ZIP)는 Path 1 베타 이후에만 재개한다. Path 3
 **Phase 2 완료는 Path 1 완료가 아니다.** Phase 2는 신고 파일이 소비할 확정
 데이터와 gate를 완성한 작업이다. Path 1 완료는 아래 세목별 공식 파일 생성과
 실제 비암호화 업로드 검증까지 끝났을 때 판정한다.
+
+부가세 공식 파일 트랙이 외부 확인으로 막힌 동안 제품 구현을 멈추지 않는다. 현재
+우선순위는 [JC-035 VAT AI Tax Treatment](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)로,
+공제/불공제/안분과 과세/영세율/면세를 근거·증빙과 함께 검토하고 사용자가 확정하는
+기능이다. 이 기능은 신고 준비 품질을 높이지만 JC-030 Path 1 파일 완료로 세지 않는다.
 
 ## 1. Repeatable Tax-Type Pipeline
 
@@ -143,7 +150,20 @@ Phase 2는 전자이고, JC-030 부가세 Path 1은 후자다.
 따라 차단 종료했다. 최신 공식 비암호화 양식과 직접 수용 메뉴가 새로 확인되지 않는 한
 W1~W5를 재개하지 않는다.
 
-### 4.2 Current Track — VAT
+### 4.2 Current Product Track — VAT AI Tax Treatment (JC-035)
+
+부가세 신고에서 사용자가 실제로 판단해야 하는 공제/불공제·안분·영세율·면세를 먼저
+지원한다. 작업 단위와 완료선은 [VAT AI Completion Contract §6~7](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)을 따른다.
+
+1. **VAI-0** — Scope Contract. 완료 계약·AI 단계·비목표 고정.
+2. **VAI-1** — UI-First Gate. 현재 `03_vat.html` 브라우저 확인 대기.
+3. **VAI-2** — 공식 규칙 매트릭스 + Pre-Code Brief. VAI-1 승인 후 시작.
+4. **VAI-3~5** — read-only 추천 → 사용자 확정 → 고위험 consensus/fallback.
+5. **VAI-6** — 확정 결과를 VAT rebuild/package gate에 연결하고 closeout.
+
+JC-035는 공식 업로드 파일을 만들지 않고, 직접입력 가이드도 제공하지 않는다.
+
+### 4.3 Parallel External Gate — VAT Path 1 File
 
 부가세를 동일한 A~G 순서로 진행하되, 현재는 Stage A만 활성이다.
 
@@ -151,7 +171,7 @@ W1~W5를 재개하지 않는다.
 2. **VAT B~G** — Stage A 통과 후에만 Phase 2 gate/provenance를 generator가 소비한다.
 3. Stage A가 암호화·인증·회계프로그램 전용으로 최종 확인되면 부가세를 `closed blocked`로 닫고 지방소득세 Stage A로 이동한다.
 
-### 4.3 Following Tracks
+### 4.4 Following File Tracks
 
 부가세 종료 판정 후 각 세목을 동일한 A~G 순서로 진행한다.
 

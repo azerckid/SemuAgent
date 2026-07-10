@@ -121,6 +121,21 @@
   .mini-btn { font-size: 11.5px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 7px; padding: 4px 9px; cursor: pointer; }
   .mini-btn.danger { color: var(--danger); border-color: #fecaca; background: var(--danger-soft); }
   .mini-btn.ok { color: var(--ok); border-color: #bbf7d0; background: var(--ok-soft); }
+  .judgment { min-width: 154px; }
+  .judgment .j-main { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .source-mark { font-size: 10.5px; color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; font-weight: 600; }
+  .basis { min-width: 250px; max-width: 330px; }
+  .basis .b-main { font-size: 12.5px; font-weight: 600; }
+  .basis .b-sub { font-size: 11.5px; color: var(--fg-muted); margin-top: 3px; }
+  .evidence-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+  .evidence-tag { font-size: 10.5px; border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; color: var(--fg-muted); background: #fafafa; }
+  .evidence-tag.missing { color: var(--danger); border-color: #fecaca; background: var(--danger-soft); }
+  .ai-safety { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: #fafafa; font-size: 11.5px; color: var(--fg-muted); }
+  .ai-safety strong { color: var(--fg); }
+  .tax-treatment-table { table-layout: fixed; }
+  .tax-treatment-table td { overflow-wrap: anywhere; }
+  .tax-treatment-table .row-actions { flex-wrap: wrap; }
+  .type-inline { margin-left: 6px; vertical-align: middle; }
 
   /* Schedules + package */
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -182,7 +197,7 @@
       <a href="02_bookkeeping_review.html" class="nav-item"><span class="ico">▤</span> 기장검토</a>
       <a href="12_reconciliation_ledger.html" class="nav-item sub"><span class="ico">›</span> 자료대조원장</a>
     </div>
-    <a href="03_vat.html" class="nav-item active"><span class="ico">％</span> 부가세 <span class="cnt">3</span></a>
+    <a href="03_vat.html" class="nav-item active"><span class="ico">％</span> 부가세 <span class="cnt">5</span></a>
     <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여</a>
     <a href="05_filing_support.html" class="nav-item"><span class="ico">↧</span> 신고지원</a>
     <div class="nav-group">
@@ -241,7 +256,7 @@
           </div>
         </div>
         <div class="foot">
-          <span class="note">불공제 후보 3건 검토 시 매입세액이 줄어 납부세액이 늘 수 있습니다. 검토 확정 전까지 예정치입니다.</span>
+          <span class="note">부가세 판단 5건을 확정하면 매입세액과 납부세액이 달라질 수 있습니다. 사용자 확정 전까지 예정치입니다.</span>
           <span class="d-left">신고 마감 2026-07-25 · D-24</span>
         </div>
       </div>
@@ -269,52 +284,57 @@
         </div>
       </div>
 
-      <!-- Purchase deduction review -->
+      <!-- AI VAT tax-treatment review -->
       <div class="section-head">
-        <h2>매입세액 공제 검토</h2>
-        <span class="hint">불공제 대상 후보 3건 확인 필요</span>
-        <span class="link">전체 매입 보기 →</span>
+        <h2>AI 부가세 판단</h2>
+        <span class="hint">AI는 가능성과 근거를 제시하고, 최종 판단은 사용자가 확정합니다</span>
+        <span class="link">확인 필요만 보기 →</span>
       </div>
       <div class="panel">
-        <table>
+        <table class="tax-treatment-table">
+          <colgroup><col style="width:19%"><col style="width:12%"><col style="width:18%"><col style="width:34%"><col style="width:17%"></colgroup>
           <thead>
-            <tr><th>매입 내용 / 상대처</th><th style="text-align:right">공급가액</th><th style="text-align:right">세액</th><th>공제 판정</th><th>사유</th><th>처리</th></tr>
+            <tr><th>거래 / 상대처</th><th style="text-align:right">금액</th><th>AI 판단</th><th>판단 근거 · 필요 증빙</th><th>사용자 확정</th></tr>
           </thead>
           <tbody>
             <tr>
-              <td><div class="desc">거래처 접대 식대</div><div class="vendor">○○한정식 · 법인카드</div></td>
-              <td class="amt">1,200,000</td>
-              <td class="amt">120,000</td>
-              <td><span class="chip danger">불공제 후보</span></td>
-              <td>접대비 관련 매입세액</td>
-              <td><span class="row-actions"><span class="mini-btn danger">불공제 확정</span><span class="mini-btn">공제</span></span></td>
+              <td><div class="desc">국외 SaaS 개발 용역 <span class="chip muted type-inline">매출</span></div><div class="vendor">GLOBAL TECH INC · 외화 매출</div></td>
+              <td class="amt">40,000,000</td>
+              <td class="judgment"><div class="j-main"><span class="chip warn">영세율 가능성</span><span class="source-mark">AI 합의</span></div></td>
+              <td class="basis"><div class="b-main">국외 사업자에게 제공한 용역으로 보입니다</div><div class="b-sub">거래처 소재지·용역 수행지·대금 수취 사실을 확인해야 합니다</div><div class="evidence-tags"><span class="evidence-tag">계약서 있음</span><span class="evidence-tag">외화 입금 있음</span><span class="evidence-tag missing">영세율 첨부서류 확인 필요</span></div></td>
+              <td><span class="row-actions"><span class="mini-btn">증빙 확인</span><span class="mini-btn">다르게</span></span></td>
             </tr>
             <tr>
-              <td><div class="desc">업무용 승용차 정비</div><div class="vendor">○○모터스 · 세금계산서</div></td>
-              <td class="amt">900,000</td>
-              <td class="amt">90,000</td>
-              <td><span class="chip danger">불공제 후보</span></td>
-              <td>비영업용 소형승용차 관련</td>
-              <td><span class="row-actions"><span class="mini-btn danger">불공제 확정</span><span class="mini-btn">공제</span></span></td>
+              <td><div class="desc">거래처 접대 식대 <span class="chip muted type-inline">매입</span></div><div class="vendor">○○한정식 · 법인카드</div></td>
+              <td class="amt">1,320,000</td>
+              <td class="judgment"><div class="j-main"><span class="chip danger">불공제 가능성 높음</span><span class="source-mark">공식 규칙</span></div></td>
+              <td class="basis"><div class="b-main">기업업무추진비 관련 매입세액</div><div class="b-sub">부가가치세법 제39조 기준 · 법인카드와 계정항목 확인</div><div class="evidence-tags"><span class="evidence-tag">카드 내역 있음</span><span class="evidence-tag">사용 목적 있음</span></div></td>
+              <td><span class="row-actions"><span class="mini-btn danger">불공제로 확정</span><span class="mini-btn">다르게</span></span></td>
             </tr>
             <tr>
-              <td><div class="desc">면세사업분 공통매입</div><div class="vendor">○○물산 · 세금계산서</div></td>
-              <td class="amt">2,000,000</td>
-              <td class="amt">200,000</td>
-              <td><span class="chip warn">안분 필요</span></td>
-              <td>과세·면세 공통매입 안분계산</td>
-              <td><span class="row-actions"><span class="mini-btn">안분 계산</span></span></td>
+              <td><div class="desc">면세사업분 공통매입 <span class="chip muted type-inline">매입</span></div><div class="vendor">○○물산 · 세금계산서</div></td>
+              <td class="amt">2,200,000</td>
+              <td class="judgment"><div class="j-main"><span class="chip warn">안분 필요</span><span class="source-mark">공식 규칙</span></div></td>
+              <td class="basis"><div class="b-main">과세·면세 사업에 함께 사용한 공통매입</div><div class="b-sub">실지귀속을 먼저 확인하고, 불명확할 때만 공급가액 비율로 안분합니다</div><div class="evidence-tags"><span class="evidence-tag missing">사용 부서·목적 확인 필요</span></div></td>
+              <td><span class="row-actions"><span class="mini-btn">안분 검토</span></span></td>
             </tr>
             <tr>
-              <td><div class="desc">클라우드 서버 이용료</div><div class="vendor">AWS · 세금계산서</div></td>
-              <td class="amt">3,124,000</td>
-              <td class="amt">312,400</td>
-              <td><span class="chip ok">공제 확정</span></td>
-              <td>일반 매입세액</td>
-              <td><span class="row-actions"><span class="mini-btn ok">확정됨</span></span></td>
+              <td><div class="desc">클라우드 서버 이용료 <span class="chip muted type-inline">매입</span></div><div class="vendor">AWS · 세금계산서</div></td>
+              <td class="amt">3,436,400</td>
+              <td class="judgment"><div class="j-main"><span class="chip ok">공제 가능성 높음</span><span class="source-mark">이전 패턴</span></div></td>
+              <td class="basis"><div class="b-main">최근 같은 거래처 5건을 지급수수료·공제로 확정</div><div class="b-sub">세금계산서 금액과 원장 금액이 일치합니다</div><div class="evidence-tags"><span class="evidence-tag">세금계산서 있음</span><span class="evidence-tag">업무용 확인</span></div></td>
+              <td><span class="row-actions"><span class="mini-btn ok">공제로 확정</span><span class="mini-btn">다르게</span></span></td>
+            </tr>
+            <tr>
+              <td><div class="desc">온라인 교육 콘텐츠 제공 <span class="chip muted type-inline">매출</span></div><div class="vendor">○○러닝 · 국내 매출</div></td>
+              <td class="amt">8,800,000</td>
+              <td class="judgment"><div class="j-main"><span class="chip danger">면세 여부 확인 필요</span><span class="source-mark">AI 보강</span></div></td>
+              <td class="basis"><div class="b-main">교육 용역이라는 명칭만으로 면세를 확정할 수 없습니다</div><div class="b-sub">교육기관 인허가·용역의 실제 성격·계약 내용을 확인해야 합니다</div><div class="evidence-tags"><span class="evidence-tag missing">인허가·등록 확인 필요</span><span class="evidence-tag missing">전문가 확인 권장</span></div></td>
+              <td><span class="row-actions"><span class="mini-btn">내용 보완</span><span class="mini-btn">전문가 확인</span></span></td>
             </tr>
           </tbody>
         </table>
+        <div class="ai-safety"><strong>AI가 늦거나 응답하지 않아도 이 화면은 멈추지 않습니다.</strong> 해당 거래만 "수동 확인 필요"로 전환하고 기존 검토·확정 기능은 계속 사용할 수 있습니다.</div>
       </div>
 
       <!-- Schedules + filing package -->
@@ -325,21 +345,21 @@
           <div class="s-row"><div class="s-ico">▦</div><div class="s-main"><div class="s-t">매출처별 세금계산서 합계표</div><div class="s-d">매출 312건 집계 완료</div></div><span class="chip ok">준비됨</span></div>
           <div class="s-row"><div class="s-ico">▧</div><div class="s-main"><div class="s-t">매입처별 세금계산서 합계표</div><div class="s-d">매입 214건 집계 완료</div></div><span class="chip ok">준비됨</span></div>
           <div class="s-row"><div class="s-ico">▤</div><div class="s-main"><div class="s-t">신용카드 매출전표 등 수취명세서</div><div class="s-d">공제 매입 반영</div></div><span class="chip ok">준비됨</span></div>
-          <div class="s-row"><div class="s-ico">％</div><div class="s-main"><div class="s-t">공제받지 못할 매입세액 명세서</div><div class="s-d">불공제 후보 3건 검토 후 확정</div></div><span class="chip warn">검토 대기</span></div>
+          <div class="s-row"><div class="s-ico">％</div><div class="s-main"><div class="s-t">공제받지 못할 매입세액 명세서</div><div class="s-d">불공제 판단 1건·안분 1건 검토 후 확정</div></div><span class="chip warn">2건 검토</span></div>
         </div>
 
         <div class="card pkg">
-          <h3>신고 패키지 미리보기</h3>
-          <div class="sub">홈택스 업로드용 양식·파일 준비 + 첨부 서류 묶음</div>
+          <h3>신고 준비 검토 자료</h3>
+          <div class="sub">확정 세액·판단 근거·부속 명세 확인용. 공식 홈택스 업로드 파일이 아닙니다.</div>
           <div class="p-file">
             <div class="pf-ico">PDF</div>
             <div>
-              <div class="pf-name">2026년_1기_부가세_신고패키지.pdf</div>
-              <div class="pf-meta">신고서 초안 · 부속명세 4종 · 신고 준비값 확인</div>
+              <div class="pf-name">2026년_1기_부가세_검토자료.pdf</div>
+              <div class="pf-meta">확정 세액 · 사용자 판단 · 부속명세 준비 상태</div>
             </div>
           </div>
-          <div class="locknote">불공제 후보 3건 검토가 끝나야 최종 패키지를 생성할 수 있습니다.</div>
-          <button class="btn block is-disabled" aria-disabled="true" disabled title="불공제 후보 3건 검토를 먼저 완료하세요">패키지 생성 · 잠김 (검토 3건 완료 후 활성화)</button>
+          <div class="locknote">영세율 판단 1건·매입 공제 판단 3건·면세 여부 1건, 총 5건을 사용자가 확정해야 검토 자료를 마감할 수 있습니다. 공식 업로드 파일은 Stage A 확인 전 제공하지 않습니다.</div>
+          <button class="btn block is-disabled" aria-disabled="true" disabled title="부가세 판단 5건을 먼저 완료하세요">검토 자료 생성 · 잠김 (판단 5건 완료 후 활성화)</button>
         </div>
       </div>
 
@@ -377,8 +397,8 @@
 
       <div class="note">
         <b>Preview 안내</b> — 이 화면은 <b>부가세</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
-        구성: 납부(예정)세액 요약(매출세액 − 매입세액) · 매출 구분(과세/영세율/면세) · 매입세액 공제 검토(불공제/안분 후보) · 부속 명세 · 신고 패키지 미리보기 · 상태(로딩/빈/오류) 예시.
-        <b>자동 홈택스 제출은 범위 밖</b>이며, 신고 패키지 생성과 준비값 확인까지만 지원합니다. 회사 홈 "다음 할 일"의 "부가세 공제 검토"에서 이 화면으로 진입합니다.
+        구성: 납부(예정)세액 요약(매출세액 − 매입세액) · 매출 구분(과세/영세율/면세) · AI 부가세 판단(근거·필요 증빙·사용자 확정) · 부속 명세 · 신고 준비 검토 자료 · 상태(로딩/빈/오류) 예시.
+        <b>AI는 판단을 확정하지 않으며 자동 홈택스 제출도 하지 않습니다.</b> 공식 비암호화 업로드 파일은 Stage A 확인 전 제공하지 않고, 최종 판단·신고·제출은 사용자가 수행합니다.
       </div>
     </div>
   </div>

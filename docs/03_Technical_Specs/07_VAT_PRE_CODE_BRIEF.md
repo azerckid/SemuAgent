@@ -1,6 +1,11 @@
 # VAT Pre-Code Technical Brief
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-10
+
+> **Extension notice (JC-035):** 이 문서는 구현 완료된 JC-011 기본 VAT 화면·저장 계약을
+> 보존한다. 공제/불공제/안분과 과세/영세율/면세를 설명 가능한 AI 판단으로 보강하는
+> 다음 작업은 [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)를
+> 따른다. JC-035 UI Preview 승인 전에는 별도 Pre-Code Brief와 코드를 시작하지 않는다.
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -156,11 +161,16 @@ type VatSummary = {
 - `inputTaxDeductibleKrw`는 전체 매입세액(`inputTaxKrw`)을 예정 공제액으로 두고, `vat_deduction_review.decision='non_deductible'`은 전액 차감, `prorated`는 비공제분만 차감한다. `pending` 후보는 아직 차감하지 않고 잠금 사유로 남긴다.
 - `payableTaxKrw = outputTaxKrw - inputTaxDeductibleKrw`.
 - 매출 구분(과세/영세율/면세)은 `vat_period_summary`의 snapshot 값을 사용한다. 현재 전표 라인만으로는 영세율·면세를 안정적으로 복원하지 않는다.
-- 불공제 후보 기본 규칙:
+- 현재 JC-011 구현과 JC-035 목표 경계:
   - 접대비/기업업무추진비 계정 또는 설명이면 `non_deductible_candidate`.
   - 비영업용 승용차 가능성이 있는 차량 관련 매입이면 `non_deductible_candidate`.
   - 과세·면세 공통매입이면 `proration_required`.
-  - 그 외 사업 관련 매입세액은 `deductible`.
+  - **현재 스키마 사실:** `vat_deduction_review.kind`는 `deductible` 기본값이고,
+    `decision`은 `pending` 기본값이다. `kind='deductible'`은 사용자 공제 확정과 같지
+    않으며, 실제 확정 여부는 `decision`과 확정자/확정시각으로 판단한다.
+  - **JC-035 목표:** 근거 없는 기본 `kind`를 AI 최종판정으로 사용하지 않는다.
+    VAI-2에서 기존 enum을 억지로 확장하지 않고 별도 추천 상태·근거 계약을 정한 뒤,
+    사용자 확정 전에는 기존 `decision='pending'`과 VAT 저장값을 변경하지 않는다.
 - 패키지 생성 잠금: `pendingDeductionCount > 0`이면 `canGenerate=false`, disabled button + visible locknote + `aria-describedby`로 사유를 노출한다.
 - 세액은 `isFinal=false`이면 "예정"으로 표기한다.
 
@@ -204,7 +214,7 @@ type VatSummary = {
 7. 패키지 생성 guard API + locked button wrapper. **완료: `POST /api/vat/periods/[periodKey]/package`, `vat-actions.tsx`**
 8. `loading.tsx`/`error.tsx`. **완료**
 9. 사이드바·회사 홈 `ROUTES.vat` 재지정 + 정적 테스트. **완료**
-10. 로컬 QA seed로 Preview 숫자(32,000,000 - 18,000,000 = 14,000,000, 검토 3건)를 재현하고 브라우저 캡처 비교.
+10. JC-011 구현 당시 로컬 QA seed로 세액 숫자(32,000,000 - 18,000,000 = 14,000,000)와 공제 검토 3건을 재현하고 브라우저 캡처를 비교했다. JC-035 목표 Preview의 AI 판단 5건은 새 UX 상태 예시이며 현재 live seed 건수로 오해하지 않는다.
 
 ## 9. Acceptance Criteria
 
@@ -229,5 +239,6 @@ type VatSummary = {
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 홈택스 보조 책임 경계
 - **UI_Screens**: [Screen Flow 4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.4](../02_UI_Screens/01_UI_DESIGN.md) · [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)
 - **Technical_Specs**: [Component & Library Plan](./02_COMPONENT_LIBRARY_PLAN.md) · [DB Schema](./03_DB_SCHEMA.md) · [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
+- **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) - JC-035 AI 판단 보강 완료선·실행 순서
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-011 Context Lock
 - **QA_Validation**: [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 구현 전 QA 계약

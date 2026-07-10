@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-10 21:22 KST
+> Last Updated: 2026-07-10
 
 ## 0. Purpose
 
@@ -13,6 +13,7 @@ Rule: an open backlog item may not start implementation unless its completion co
 | Category | Meaning | Items |
 |---|---|---|
 | 신고 준비 기능 | Prepares reviewable data for any filing path | JC-025, JC-026, JC-028 |
+| 세무판단 보조 | Explains tax-treatment possibilities and keeps final confirmation with the user | JC-035 |
 | 공통 검증 | Validates confirmed data against official layout (Path 1 & 2) | JC-030 Validation |
 | Path 1 제출 준비물 | 홈택스 업로드용 양식·파일 작성 지원 | JC-030 Path 1, JC-013 |
 | Path 2 사무소 handoff | ZIP/package for JARYO-GIWA (자료기와) | JC-034 |
@@ -217,8 +218,7 @@ Stage A track. JC-030 planned-matrix decision close means withholding, VAT,
 local-income special collection, business-status report, and annual payment
 statement each either satisfy the per-tax completion line or are closed blocked
 by official Stage A evidence. A blocked track is not counted as Path 1 support.
-The implementation order is fixed in
-[Roadmap §4](./36_PATH1_FORM_FILL_ROADMAP.md).
+The implementation order is fixed in [Roadmap §4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
 #### Path 3 — 인증·암호화 파일 (excluded)
 
@@ -232,6 +232,36 @@ Non-goals (all JC-030 layers):
 - Tax-representative marketplace positioning.
 - File types without an official current layout.
 - Hometax screen transcription guide.
+
+### JC-035 — 부가세 AI 세무판단 보조
+
+Type: 세무판단 보조. 신고 준비 품질 기능이며 JC-030 파일 생성과 분리한다.
+
+Current gate: **VAI-1 UI-First Gate 확인 대기.** 완료선과 고정 순서는
+[VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)에 있다.
+
+May start implementation only after:
+
+- 기존 JC-011 화면과 구분되는 JC-035 Preview를 프로젝트 오너가 승인한다.
+- 공제/불공제/안분/과세/영세율/면세 공식 규칙 매트릭스의 출처·버전·적용일이 고정된다.
+- 추천 source(규칙/이전 패턴/AI/consensus)와 사용자 최종 결정의 저장 경계가 Pre-Code Brief에 고정된다.
+- timeout·quota·provider 실패 시 화면 비차단·수동 검토 전환 계약이 테스트 가능한 형태로 고정된다.
+
+Done means:
+
+- AI가 판단 가능성, 근거, 필요한 증빙, 부족한 사실을 한 행에서 설명한다.
+- 영세율·면세와 고위험 판단은 필수 증빙 또는 사용자 확인 없이는 확정되지 않는다.
+- 사용자 확인 없이 VAT fact·공제 decision·세액·package gate가 변경되지 않는다.
+- AI가 실패해도 VAT 화면·수동 검토·기존 mutation이 계속 동작한다.
+- 추천과 최종 결정, 규칙 버전, 확정자, 확정시각을 감사할 수 있다.
+- tenant·사업장·기간·이전 패턴이 격리되고 대표 브라우저 E2E와 전체 회귀가 통과한다.
+
+Non-goals before done:
+
+- 공식 업로드 파일 생성 또는 홈택스 직접입력 안내.
+- 자동 제출·자동 납부·세무대리.
+- AI의 자동 최종확정.
+- 모든 복잡한 세무 예외의 자동 처리.
 
 ### JC-034 — GIWA handoff package (Path 2 · ZIP Export v1)
 
