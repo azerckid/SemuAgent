@@ -21,7 +21,11 @@ export default async function VatPage({ searchParams }: PageProps) {
     redirect('/sign-in')
   }
 
-  const summary = await loadVatSummary({ tenantId, periodKey: period })
+  const summary = await loadVatSummary({
+    tenantId,
+    periodKey: period,
+    includeTaxTreatmentAi: true,
+  })
 
   if (!summary.businessEntity) {
     return <VatBusinessEntityEmptyState tenantName={summary.tenant.name} />

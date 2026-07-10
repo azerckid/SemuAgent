@@ -49,8 +49,8 @@
 - 신고 준비 검토 자료가 공식 홈택스 양식 업로드 파일이 아니라는 문구: **승인**
 - 추가 제품 결정: 홈택스 자동채움 내용을 확인할 때 `그대로 확인`과 `수정·추가 검토` 항목을 근거와 함께 제시한다. 실제 홈택스 자료를 가져오지 않은 경우 `홈택스 현재값`이 아니라 `자동채움 예상`으로 표시한다.
 - 승인일: 2026-07-11
-- 현재 구현: VAI-3a에서 공식 규칙·이전 확정 패턴·필요 증빙·홈택스 자동채움 예상 행동을 실제 `/dashboard/vat`에 read-only로 연결했다. exact VAT fact가 없는 행은 억지로 추정하지 않는다.
-- 다음 작업: VAI-3a 브라우저 승인 뒤 VAI-3b에서 규칙·패턴으로 남은 행만 single-provider AI로 보강한다.
+- 현재 구현: VAI-3a 공식 규칙·이전 확정 패턴에 이어 VAI-3b에서 남은 `needs_review` 행만 single-provider AI로 보강한다. AI 성공은 `AI 보강`, timeout·quota·invalid schema는 `수동 확인`으로 같은 표 행에 표시하며 exact VAT fact가 없는 행은 억지로 추정하지 않는다.
+- 다음 작업: VAI-3b 브라우저 승인 뒤 VAI-4a에서 사용자 확정 snapshot과 canonical VAT write를 하나의 transaction으로 연결한다.
 
 ## 7. Feedback & Improvements
 - (반영) 신고 패키지 생성 버튼을 승인 전 잠금 상태로 표현: `is-disabled` + `disabled` + `aria-disabled="true"`, muted 스타일, 잠김 라벨.

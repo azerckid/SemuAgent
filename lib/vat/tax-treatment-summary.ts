@@ -15,6 +15,7 @@ import {
   type VatTaxTreatmentFinalDecision,
 } from '@/lib/validations/vat-tax-treatment'
 import { parsedVatFactSchema } from './facts'
+import { enhanceVatTaxTreatmentRowsWithSingleAi } from './tax-treatment-ai'
 import {
   applyPriorConfirmedVatPattern,
   type VatTaxTreatmentPatternRow,
@@ -268,6 +269,7 @@ export function buildVatTaxTreatmentDisplayRows(params: {
         ruleVersion: VAT_TAX_TREATMENT_RULE_VERSION,
         hometaxComparisonMode: 'expected_prefill',
         aiTrace: null,
+        aiRuntimeStatus: 'not_requested',
         ...finalState,
         transactionDate: row.transactionDate,
         counterparty: row.merchantName?.trim() || '상대처 미확인',
@@ -287,6 +289,7 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
   tenantId: string
   businessEntityId: string
   period: Pick<CompanyHomePeriod, 'key' | 'startMonth' | 'endMonth'>
+  includeAi?: boolean
 }): Promise<VatTaxTreatmentDisplayRow[]> {
   const { db } = await import('@/lib/db')
   const sessions = await listActiveSourceBatchSessions({
@@ -367,9 +370,14 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
       .orderBy(desc(vatDeductionReview.updatedAt), desc(vatDeductionReview.id))
     : []
 
-  return buildVatTaxTreatmentDisplayRows({
-    ...params,
+  const rows = buildVatTaxTreatmentDisplayRows({
+    tenantId: params.tenantId,
+    businessEntityId: params.businessEntityId,
+    period: params.period,
     classificationRows,
     deductionReviews,
   })
+  return params.includeAi
+    ? enhanceVatTaxTreatmentRowsWithSingleAi({ rows })
+    : rows
 }

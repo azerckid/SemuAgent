@@ -128,7 +128,9 @@ function TaxTreatmentSection({ rows }: { readonly rows: VatTaxTreatmentDisplayRo
                         {taxTreatmentRecommendationLabel(row.recommendation)}
                       </ToneChip>
                       <span className="text-[11.5px] font-semibold text-company-fg-muted">
-                        {row.finalDecision ? '사용자 확정' : taxTreatmentSourceLabel(row.source)}
+                        {row.finalDecision
+                          ? '사용자 확정'
+                          : taxTreatmentSourceLabel(row.source, row.aiRuntimeStatus)}
                       </span>
                     </div>
                     <p className="mt-1 text-[11px] text-company-fg-subtle">
@@ -137,6 +139,15 @@ function TaxTreatmentSection({ rows }: { readonly rows: VatTaxTreatmentDisplayRo
                   </TableCell>
                   <TableCell className="min-w-[330px] max-w-[430px]">
                     <p className="text-[12.5px] font-medium text-foreground">{row.basisLabel}</p>
+                    {row.aiRuntimeStatus === 'manual_fallback' ? (
+                      <p className="mt-1 rounded-md border border-[#fde68a] bg-[#fffbeb] px-2 py-1 text-[11.5px] font-medium text-[#92400e]">
+                        AI 판단을 불러오지 못했습니다. 수동 검토를 계속할 수 있습니다.
+                      </p>
+                    ) : row.aiRuntimeStatus === 'deferred' ? (
+                      <p className="mt-1 rounded-md border border-company-border bg-company-nav-hover px-2 py-1 text-[11.5px] font-medium text-company-fg-muted">
+                        AI 보강 대상이 많아 이 행은 수동 확인으로 남겼습니다.
+                      </p>
+                    ) : null}
                     {row.ruleReference ? (
                       <p className="mt-0.5 text-[11.5px] text-company-fg-subtle">{row.ruleReference}</p>
                     ) : null}
@@ -608,7 +619,11 @@ function taxTreatmentRecommendationTone(value: VatTaxTreatmentDisplayRow['recomm
   return 'warn'
 }
 
-function taxTreatmentSourceLabel(value: VatTaxTreatmentDisplayRow['source']) {
+function taxTreatmentSourceLabel(
+  value: VatTaxTreatmentDisplayRow['source'],
+  aiRuntimeStatus: VatTaxTreatmentDisplayRow['aiRuntimeStatus'],
+) {
+  if (aiRuntimeStatus === 'manual_fallback' || aiRuntimeStatus === 'deferred') return '수동 확인'
   if (value === 'deterministic_rule') return '공식 규칙'
   if (value === 'prior_confirmed_pattern') return '이전 확정 패턴'
   if (value === 'ai_consensus') return 'AI 합의'

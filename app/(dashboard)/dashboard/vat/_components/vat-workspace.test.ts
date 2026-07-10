@@ -8,6 +8,10 @@ const packageRouteSource = readFileSync(new URL('../../../../api/vat/periods/[pe
 const rebuildRouteSource = readFileSync(new URL('../../../../api/vat/periods/[periodKey]/rebuild/route.ts', import.meta.url), 'utf8')
 const sidebarSource = readFileSync(new URL('../../../_components/sidebar.tsx', import.meta.url), 'utf8')
 const companyHomeSummarySource = readFileSync(new URL('../../../../../lib/company-home/summary.ts', import.meta.url), 'utf8')
+const vatPageSource = readFileSync(new URL('../page.tsx', import.meta.url), 'utf8')
+const vatSummarySource = readFileSync(new URL('../../../../../lib/vat/summary.ts', import.meta.url), 'utf8')
+const internalReminderSummarySource = readFileSync(new URL('../../../../../lib/internal-reminders/summary.ts', import.meta.url), 'utf8')
+const filingPreparationSummarySource = readFileSync(new URL('../../../../../lib/filing-preparation/summary.ts', import.meta.url), 'utf8')
 
 describe('VAT workspace static contract', () => {
   it('does not import or render the GIWA reviews workspace (S-70)', () => {
@@ -49,9 +53,19 @@ describe('VAT workspace static contract', () => {
     expect(workspaceSource).toContain('자동채움 예상')
     expect(workspaceSource).toContain('공식 규칙')
     expect(workspaceSource).toContain('이전 확정 패턴')
-    expect(workspaceSource).toContain("row.finalDecision ? '사용자 확정'")
+    expect(workspaceSource).toContain("? '사용자 확정'")
     expect(workspaceSource).toContain('미확정 · 저장 기능은 VAI-4에서 연결')
+    expect(workspaceSource).toContain('AI 판단을 불러오지 못했습니다. 수동 검토를 계속할 수 있습니다.')
+    expect(workspaceSource).toContain("aiRuntimeStatus === 'manual_fallback'")
+    expect(workspaceSource).toContain("return '수동 확인'")
     expect(workspaceSource).not.toContain('/api/vat/tax-treatments/')
+  })
+
+  it('enables VAI-3b AI only on the VAT page, not shared summary consumers', () => {
+    expect(vatPageSource).toContain('includeTaxTreatmentAi: true')
+    expect(vatSummarySource).toContain('includeTaxTreatmentAi = false')
+    expect(internalReminderSummarySource).not.toContain('includeTaxTreatmentAi')
+    expect(filingPreparationSummarySource).not.toContain('includeTaxTreatmentAi')
   })
 
   it('wires deduction review actions to the VAT mutation endpoint (S-50~52)', () => {

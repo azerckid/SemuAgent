@@ -19,6 +19,12 @@ export const vatTaxTreatmentSourceSchema = z.enum([
   'ai_consensus',
 ])
 export const vatTaxTreatmentConfidenceSchema = z.enum(['high', 'medium', 'low'])
+export const vatTaxTreatmentAiRuntimeStatusSchema = z.enum([
+  'not_requested',
+  'completed',
+  'manual_fallback',
+  'deferred',
+])
 export const vatTaxTreatmentEvidenceStatusSchema = z.enum(['present', 'missing', 'needs_review'])
 export const vatTaxTreatmentHometaxActionSchema = z.enum([
   'expected_no_change',
@@ -76,6 +82,7 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
   hometaxComparisonMode: z.literal('expected_prefill'),
   hometaxAction: vatTaxTreatmentHometaxActionSchema,
   aiTrace: vatTaxTreatmentAiTraceSchema.nullable(),
+  aiRuntimeStatus: vatTaxTreatmentAiRuntimeStatusSchema,
   finalDecision: vatTaxTreatmentFinalDecisionSchema.nullable(),
   confirmedByStaffId: z.string().min(1).nullable(),
   confirmedAt: z.string().min(1).nullable(),
@@ -112,6 +119,23 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
       code: 'custom',
       path: ['aiTrace'],
       message: 'AI 판단 출처와 AI trace가 일치해야 합니다.',
+    })
+  }
+  if ((value.aiRuntimeStatus === 'completed') !== isAiSource) {
+    context.addIssue({
+      code: 'custom',
+      path: ['aiRuntimeStatus'],
+      message: 'AI 완료 상태와 AI 판단 출처가 일치해야 합니다.',
+    })
+  }
+  if (
+    (value.aiRuntimeStatus === 'manual_fallback' || value.aiRuntimeStatus === 'deferred')
+    && value.recommendation !== 'needs_review'
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['aiRuntimeStatus'],
+      message: 'AI fallback·deferred 행은 수동 확인 상태여야 합니다.',
     })
   }
 

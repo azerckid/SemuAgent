@@ -107,6 +107,7 @@ type VatTaxTreatmentRecommendation = {
     promptVersion: string
     consensusProviders: Array<'gemini' | 'openai' | 'claude'>
   } | null
+  aiRuntimeStatus: 'not_requested' | 'completed' | 'manual_fallback' | 'deferred'
   finalDecision:
     | 'deductible'
     | 'non_deductible'
@@ -125,6 +126,8 @@ type VatTaxTreatmentRecommendation = {
 자료를 가져오지 않는 동안 `hometaxComparisonMode`는 `expected_prefill`만 허용한다.
 Zod `superRefine`으로 purchase 행은 `deductible|non_deductible|prorated`, sale 행은
 `taxable|zero_rated|exempt|non_taxable`만 최종 결정으로 허용한다.
+`aiRuntimeStatus`는 VAI-3 read-only 요청의 일시 상태이며 DB에 저장하지 않는다.
+`manual_fallback`과 `deferred`는 recommendation을 `needs_review`로 유지해야 한다.
 
 구조화 문자열과 배열에는 다음 상한을 둔다.
 
@@ -302,7 +305,7 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 | 순서 | PR 범위 | 완료선 |
 |:---|:---|:---|
 | VAI-3a | **구현 완료** — Zod + deterministic rules + pattern + read model | 실제 VAT 화면이 validated read model 소비, fixture에서 근거·홈택스 행동 검증, DB 쓰기 0 |
-| VAI-3b | 필요한 행만 single AI + timeout/fallback | 실제 화면에서 AI/수동 상태 표시, DB 쓰기 0 |
+| VAI-3b | **구현 완료** — 필요한 행만 single AI + timeout/fallback | 실제 화면에서 AI/수동 상태 표시, DB 쓰기 0 |
 | VAI-4a | additive audit schema + migration + API transaction | 사용자 확정 저장·tenant guard·rollback 테스트 |
 | VAI-4b | 적용/다르게/보류/전문가 확인 UI + undo | 브라우저 E2E와 감사 이력 확인 |
 | VAI-5 | 고위험 consensus + Claude 중재 | 불일치·실패 비차단 |
@@ -331,6 +334,17 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 - [x] `/dashboard/vat`에서 추천·근거·필요 증빙·홈택스 자동채움 예상 행동을 read-only 표시
 - [x] 신규 migration·DB write·AI provider 호출 없음
 - [x] 대표 규칙·패턴·read model·Zod 회귀 테스트 추가
+
+### 11.2 VAI-3b Implementation Result
+
+- [x] `needs_review`이고 사용자 미확정인 행만 single-provider AI 대상으로 제한
+- [x] 기존 provider order에서 설정된 첫 provider 하나만 사용하고 요청당 최대 12행으로 제한
+- [x] provider 호출 8초 timeout, quota·provider 오류·invalid schema 시 해당 행을 수동 확인으로 유지
+- [x] AI 성공 시 `ai_single`·provider/model/prompt version과 근거·부족 사실을 같은 판단 행에 표시
+- [x] 주민번호·전화번호·장문 숫자·이메일 형태를 prompt와 화면 출력에서 마스킹
+- [x] 부가세 페이지에서만 AI를 명시적으로 활성화하고 신고 준비·내부 리마인드 소비자는 호출하지 않음
+- [x] 신규 migration·DB write·재시도·multi-provider 호출 없음
+- [x] provider mock·timeout·quota·invalid schema·batch 제한·PII·소비자 격리 회귀 테스트 추가
 
 ## 12. Related Documents
 

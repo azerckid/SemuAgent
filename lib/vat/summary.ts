@@ -107,6 +107,7 @@ type LoadVatSummaryParams = {
   tenantId: string
   periodKey?: string | null
   today?: DateTime
+  includeTaxTreatmentAi?: boolean
 }
 
 const DEFAULT_TZ = 'Asia/Seoul'
@@ -345,7 +346,12 @@ export function buildVatPackagePreview(params: {
   }
 }
 
-export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSummaryParams): Promise<VatSummary> {
+export async function loadVatSummary({
+  tenantId,
+  periodKey,
+  today,
+  includeTaxTreatmentAi = false,
+}: LoadVatSummaryParams): Promise<VatSummary> {
   const { db } = await import('@/lib/db')
 
   const tenantRows = await db
@@ -434,6 +440,7 @@ export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSumm
       tenantId,
       businessEntityId: businessEntity.id,
       period,
+      includeAi: includeTaxTreatmentAi,
     }),
   ])
 

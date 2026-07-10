@@ -44,7 +44,7 @@
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
 | JC-034 | todo | GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1) | `lib/giwa-handoff`, `lib/filing-preparation`, JC-030 Validation | **우선순위: Path 1 베타 이후.** 문서만 보존, 기존 Preview는 Path 1 우선 화면으로 supersede, **구현 착수 보류**. ZIP(manifest + CSV + README). [Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [Pre-Code Brief](../03_Technical_Specs/35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md) |
 | JC-030 | todo | 전자신고 검증 및 파일 생성 (Validation / Path 1) | `lib/efiling-*`, JC-024·013 | **최우선 — Path 1 세목 확대.** 자료대조 Phase 2와 간이지급 파일 후보 구현 완료. **원천세 W0는 `closed blocked`; 부가세 Stage A는 공개 감사 완료 후 외부 확인 대기 `partial / blocked`.** 현재 회계프로그램 파일변환 메뉴와 일부 첨부서류 도구는 확인했지만 최신 전체 신고 비암호화 규격·수용 여부는 미확인이다. Stage A 통과 전 generator를 만들지 않는다. Path 3 암호화 파일은 범위 밖. [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [VAT Stage A Audit](../03_Technical_Specs/43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) |
-| JC-035 | doing | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **현재 제품 우선순위 · VAI-3a 구현 완료/승인 대기.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
+| JC-035 | doing | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **현재 제품 우선순위 · VAI-3b 구현 완료/승인 대기.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
@@ -698,7 +698,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-035 · 부가세 AI 세무판단 보조 — 공제·과세유형 판단 작업대 (현재 제품 우선순위)
 
-- Status: `doing` — VAI-0~2 완료, VAI-3a read-only 규칙·패턴·화면 구현 완료/승인 대기
+- Status: `doing` — VAI-0~3a 완료, VAI-3b single-provider AI·timeout/fallback 구현 완료/승인 대기
 - Related Domain: JC-011 부가세 · JC-010 자료대조원장 · exact VAT fact · `vat_deduction_review` · VAT provenance/rebuild
 - Related Completion Contract: [VAT AI Tax Treatment Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) — VAI-0~6 고정 순서·완료선·AI 실패 안전성
 - Related UI Docs: [VAT Preview](../02_UI_Screens/previews/03_vat.html) · [Prototype Review §6.1](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [Screen Flow §4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
@@ -726,7 +726,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 같은 tenant·사업장·기간·이전 확정 패턴만 사용한다.
   - [ ] 확정된 결과만 VAT rebuild와 package gate가 소비한다.
   - [ ] 대표 브라우저 E2E·tsc·전체 테스트·lint·whitespace·문서 sync가 통과한다.
-- Document Sync Check: 2026-07-11 VAI-3a 구현 완료. Zod 표시 계약, exact VAT fact 기반 deterministic 규칙, 같은 사업장 이전 확정 패턴, 실제 VAT read model/UI를 연결했다. 확정 decision을 오래된 kind보다 우선하며 신규 DB write·migration·AI 호출은 없다. 다음은 프로젝트 오너 브라우저 승인 뒤 VAI-3b single-provider AI·timeout/fallback이다. JC-030 부가세 양식 업로드 Stage A는 병렬 외부 확인 대기로 유지한다.
+- Document Sync Check: 2026-07-11 VAI-3b 구현 완료. 규칙·패턴 이후 남은 `needs_review` 행만 설정된 첫 provider에 최대 12건으로 보내고 8초 timeout·quota·invalid schema는 수동 확인으로 비차단 전환한다. AI는 부가세 페이지에서만 활성화되며 신규 DB write·migration·multi-provider 호출은 없다. 다음은 프로젝트 오너 브라우저 승인 뒤 VAI-4a 사용자 확정 audit/canonical transaction이다. JC-030 부가세 양식 업로드 Stage A는 병렬 외부 확인 대기로 유지한다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

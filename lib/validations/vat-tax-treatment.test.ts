@@ -27,6 +27,7 @@ function recommendation(overrides: Record<string, unknown> = {}) {
     hometaxComparisonMode: 'expected_prefill',
     hometaxAction: 'expected_no_change',
     aiTrace: null,
+    aiRuntimeStatus: 'not_requested',
     finalDecision: null,
     confirmedByStaffId: null,
     confirmedAt: null,
@@ -63,6 +64,33 @@ describe('VAT tax treatment validation', () => {
         promptVersion: 'v1',
         consensusProviders: [],
       },
+    })).success).toBe(false)
+
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      source: 'ai_single',
+      aiRuntimeStatus: 'completed',
+      aiTrace: {
+        provider: 'openai',
+        modelName: 'test-model',
+        promptVersion: 'vat-tax-treatment-v1',
+        consensusProviders: [],
+      },
+    })).success).toBe(true)
+  })
+
+  it('keeps AI runtime status consistent with the recommendation source', () => {
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      aiRuntimeStatus: 'completed',
+    })).success).toBe(false)
+
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      recommendation: 'needs_review',
+      aiRuntimeStatus: 'manual_fallback',
+    })).success).toBe(true)
+
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      recommendation: 'likely_deductible',
+      aiRuntimeStatus: 'manual_fallback',
     })).success).toBe(false)
   })
 
