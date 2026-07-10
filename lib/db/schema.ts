@@ -1209,6 +1209,86 @@ export const vatDeductionReview = sqliteTable('vat_deduction_review', {
 }))
 
 // ---------------------------------------------------------------------------
+// vat_tax_treatment_review
+// JC-035 VAI-4: AI/규칙 추천 snapshot과 사용자 행동을 canonical VAT 값과
+// 분리해 보존한다. 매입 결정은 vat_deduction_review, 매출 과세유형·금액은
+// bookkeeping_transaction_classification의 exact VAT fact가 계속 정본이다.
+// ---------------------------------------------------------------------------
+export const vatTaxTreatmentReview = sqliteTable('vat_tax_treatment_review', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  periodKey: text('period_key').notNull(),
+  classificationRowId: text('classification_row_id')
+    .notNull()
+    .references(() => bookkeepingTransactionClassification.id, { onDelete: 'cascade' }),
+  direction: text('direction', { enum: ['sale', 'purchase'] }).notNull(),
+  recommendation: text('recommendation', {
+    enum: [
+      'likely_taxable',
+      'likely_zero_rated',
+      'likely_exempt',
+      'likely_deductible',
+      'likely_non_deductible',
+      'proration_required',
+      'needs_review',
+    ],
+  }).notNull(),
+  recommendationSource: text('recommendation_source', {
+    enum: ['deterministic_rule', 'prior_confirmed_pattern', 'ai_single', 'ai_consensus'],
+  }).notNull(),
+  confidence: text('confidence', { enum: ['high', 'medium', 'low'] }).notNull(),
+  basisLabel: text('basis_label').notNull(),
+  ruleReference: text('rule_reference'),
+  ruleVersion: text('rule_version').notNull(),
+  aiProvider: text('ai_provider', { enum: ['gemini', 'openai', 'claude'] }),
+  aiModelName: text('ai_model_name'),
+  aiPromptVersion: text('ai_prompt_version'),
+  requiredEvidenceJson: text('required_evidence_json').notNull(),
+  missingFactsJson: text('missing_facts_json').notNull(),
+  hometaxComparisonMode: text('hometax_comparison_mode', { enum: ['expected_prefill'] }).notNull(),
+  hometaxAction: text('hometax_action', {
+    enum: [
+      'expected_no_change',
+      'review_deduction',
+      'review_sales_tax_type',
+      'add_or_correct_amount',
+      'review_proration',
+      'compare_in_hometax',
+    ],
+  }).notNull(),
+  recommendationFingerprint: text('recommendation_fingerprint').notNull(),
+  status: text('status', {
+    enum: ['pending', 'confirmed', 'held', 'expert_review'],
+  }).notNull().default('pending'),
+  finalDecision: text('final_decision', {
+    enum: [
+      'deductible',
+      'non_deductible',
+      'prorated',
+      'taxable',
+      'zero_rated',
+      'exempt',
+      'non_taxable',
+    ],
+  }),
+  finalReason: text('final_reason'),
+  prorationRateBps: integer('proration_rate_bps'),
+  confirmedByStaffId: text('confirmed_by_staff_id').references(() => staff.id),
+  confirmedAt: text('confirmed_at'),
+  recommendedAt: text('recommended_at').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  scopeUidx: uniqueIndex('vat_tax_treatment_review_scope_uidx')
+    .on(t.tenantId, t.clientId, t.periodKey, t.classificationRowId),
+  statusIdx: index('vat_tax_treatment_review_status_idx')
+    .on(t.tenantId, t.clientId, t.periodKey, t.status),
+  classificationIdx: index('vat_tax_treatment_review_classification_idx')
+    .on(t.tenantId, t.classificationRowId),
+}))
+
+// ---------------------------------------------------------------------------
 // client_request_event  (캘린더 요청 인스턴스)
 // upload_session_id: event → session 단방향 FK. 역방향은 upload_session.request_event_id (text only).
 // ---------------------------------------------------------------------------

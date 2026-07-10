@@ -108,6 +108,7 @@ type VatTaxTreatmentRecommendation = {
     consensusProviders: Array<'gemini' | 'openai' | 'claude'>
   } | null
   aiRuntimeStatus: 'not_requested' | 'completed' | 'manual_fallback' | 'deferred'
+  recommendationFingerprint: string
   finalDecision:
     | 'deductible'
     | 'non_deductible'
@@ -306,7 +307,7 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 |:---|:---|:---|
 | VAI-3a | **구현 완료** — Zod + deterministic rules + pattern + read model | 실제 VAT 화면이 validated read model 소비, fixture에서 근거·홈택스 행동 검증, DB 쓰기 0 |
 | VAI-3b | **구현 완료** — 필요한 행만 single AI + timeout/fallback | 실제 화면에서 AI/수동 상태 표시, DB 쓰기 0 |
-| VAI-4a | additive audit schema + migration + API transaction | 사용자 확정 저장·tenant guard·rollback 테스트 |
+| VAI-4a | **구현 완료** — additive audit schema + migration + API transaction | 사용자 확정 저장·tenant guard·rollback 테스트 |
 | VAI-4b | 적용/다르게/보류/전문가 확인 UI + undo | 브라우저 E2E와 감사 이력 확인 |
 | VAI-5 | 고위험 consensus + Claude 중재 | 불일치·실패 비차단 |
 | VAI-6 | rebuild/package gate 소비 + closeout | 확정값만 세액 반영, 문서·QA 동기화 |
@@ -345,6 +346,18 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 - [x] 부가세 페이지에서만 AI를 명시적으로 활성화하고 신고 준비·내부 리마인드 소비자는 호출하지 않음
 - [x] 신규 migration·DB write·재시도·multi-provider 호출 없음
 - [x] provider mock·timeout·quota·invalid schema·batch 제한·PII·소비자 격리 회귀 테스트 추가
+
+### 11.3 VAI-4a Implementation Result
+
+- [x] additive `vat_tax_treatment_review` schema와 migration `0068` 추가
+- [x] 추천 fingerprint를 validated display row에 포함하고 원천 VAT fact·구조화 판단 변경 시 stale 감지
+- [x] `PATCH /api/vat/tax-treatments/[rowId]` tenant·사업장·기간 범위 검증
+- [x] 매입은 `vat_deduction_review.decision`, 매출은 manual confirmed exact VAT fact를 canonical source로 유지
+- [x] canonical write와 추천 snapshot audit upsert를 하나의 DB transaction으로 저장
+- [x] 영세율·면세 필수 증빙 누락, 방향 불일치, stale fingerprint를 서버에서 차단
+- [x] tenant 격리·stale 차단·canonical/audit 원자 rollback 통합 테스트 추가
+- [ ] migration `0068` dev/prod 적용 — PR 머지 전 운영 게이트
+- [ ] 적용/다르게/보류/전문가 확인 UI와 undo — VAI-4b
 
 ## 12. Related Documents
 

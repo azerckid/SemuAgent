@@ -27,8 +27,9 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 - VAI-1 완료: AI 판단 작업표 Preview 프로젝트 오너 승인
 - VAI-2 완료: 규칙 매트릭스·Pre-Code Brief 프로젝트 오너 승인
 - VAI-3a 완료: Zod·deterministic rule·이전 확정 패턴·read-only 화면
-- 현재: VAI-3b single-provider AI·timeout/fallback 구현 완료, 프로젝트 오너 검토 대기
-- 다음: VAI-3b 승인 뒤 VAI-4a additive audit schema·사용자 확정 transaction
+- VAI-3b 완료: single-provider AI·timeout/fallback·PII/소비자 격리
+- 현재: VAI-4a additive audit schema·사용자 확정 transaction 구현 완료, migration 0068 적용·검토 대기
+- 다음: VAI-4a 승인 뒤 VAI-4b 적용/다르게/보류/전문가 확인 UI·undo
 
 ## 0.1 Current Status
 

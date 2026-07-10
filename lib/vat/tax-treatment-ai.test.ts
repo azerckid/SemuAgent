@@ -7,9 +7,10 @@ import {
   resolveConfiguredVatTaxTreatmentProvider,
   type VatTaxTreatmentAiRunner,
 } from './tax-treatment-ai'
+import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 
 function displayRow(overrides: Partial<VatTaxTreatmentDisplayRow> = {}): VatTaxTreatmentDisplayRow {
-  return vatTaxTreatmentDisplayRowSchema.parse({
+  return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
     rowId: 'row-1',
     classificationRowId: 'row-1',
     tenantId: 'tenant-secret',
@@ -21,6 +22,7 @@ function displayRow(overrides: Partial<VatTaxTreatmentDisplayRow> = {}): VatTaxT
       supplyAmountKrw: 100_000,
       taxAmountKrw: 10_000,
       grossAmountKrw: 110_000,
+      source: 'parser',
       status: 'derived',
     },
     recommendation: 'needs_review',
@@ -44,7 +46,7 @@ function displayRow(overrides: Partial<VatTaxTreatmentDisplayRow> = {}): VatTaxT
     sourceType: 'tax_invoice',
     accountLabel: null,
     ...overrides,
-  })
+  }))
 }
 
 function successRunner(overrides: Partial<Parameters<VatTaxTreatmentAiRunner>[0]> = {}) {

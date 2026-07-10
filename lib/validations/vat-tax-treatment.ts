@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { vatPeriodKeySchema } from './vat'
 
 export const VAT_TAX_TREATMENT_RULE_VERSION = 'vat-kr-2026.07-v1' as const
 
@@ -69,6 +70,7 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
     supplyAmountKrw: z.number().int().nonnegative(),
     taxAmountKrw: z.number().int().nonnegative(),
     grossAmountKrw: z.number().int().nonnegative(),
+    source: z.enum(['parser', 'manual']),
     status: z.enum(['derived', 'confirmed']),
   }),
   recommendation: vatTaxTreatmentRecommendationValueSchema,
@@ -150,6 +152,7 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
 })
 
 export const vatTaxTreatmentDisplayRowSchema = vatTaxTreatmentRecommendationSchema.and(z.object({
+  recommendationFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
   transactionDate: z.string().regex(/^20\d{2}-\d{2}-\d{2}$/),
   counterparty: z.string().min(1).max(200),
   description: z.string().min(1).max(500),
@@ -157,7 +160,53 @@ export const vatTaxTreatmentDisplayRowSchema = vatTaxTreatmentRecommendationSche
   accountLabel: z.string().min(1).max(120).nullable(),
 }))
 
+const vatTaxTreatmentMutationBase = {
+  periodKey: vatPeriodKeySchema,
+  recommendationFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+}
+
+export const vatTaxTreatmentMutationSchema = z.discriminatedUnion('action', [
+  z.object({
+    ...vatTaxTreatmentMutationBase,
+    action: z.literal('apply_recommendation'),
+  }),
+  z.object({
+    ...vatTaxTreatmentMutationBase,
+    action: z.literal('confirm_different'),
+    finalDecision: vatTaxTreatmentFinalDecisionSchema,
+    reason: z.string().trim().min(1).max(500),
+    prorationRateBps: z.number().int().min(1).max(10_000).optional(),
+  }),
+  z.object({
+    ...vatTaxTreatmentMutationBase,
+    action: z.literal('hold'),
+    reason: z.string().trim().max(500).optional(),
+  }),
+  z.object({
+    ...vatTaxTreatmentMutationBase,
+    action: z.literal('expert_review'),
+    reason: z.string().trim().max(500).optional(),
+  }),
+]).superRefine((value, context) => {
+  if (value.action !== 'confirm_different') return
+  if (value.finalDecision === 'prorated' && value.prorationRateBps === undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['prorationRateBps'],
+      message: '안분 확정에는 안분율이 필요합니다.',
+    })
+  }
+  if (value.finalDecision !== 'prorated' && value.prorationRateBps !== undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['prorationRateBps'],
+      message: '안분 결정이 아닐 때는 안분율을 저장할 수 없습니다.',
+    })
+  }
+})
+
 export type VatTaxTreatmentRecommendation = z.infer<typeof vatTaxTreatmentRecommendationSchema>
 export type VatTaxTreatmentDisplayRow = z.infer<typeof vatTaxTreatmentDisplayRowSchema>
 export type VatTaxTreatmentRequiredEvidence = z.infer<typeof vatTaxTreatmentRequiredEvidenceSchema>
 export type VatTaxTreatmentFinalDecision = z.infer<typeof vatTaxTreatmentFinalDecisionSchema>
+export type VatTaxTreatmentMutationInput = z.infer<typeof vatTaxTreatmentMutationSchema>

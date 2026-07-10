@@ -12,6 +12,7 @@ import {
   vatTaxTreatmentDisplayRowSchema,
   type VatTaxTreatmentDisplayRow,
 } from '@/lib/validations/vat-tax-treatment'
+import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 
 export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v1'
 export const VAT_TAX_TREATMENT_AI_BATCH_SIZE = 12
@@ -234,7 +235,10 @@ function withAiStatus(
   row: VatTaxTreatmentDisplayRow,
   aiRuntimeStatus: VatTaxTreatmentDisplayRow['aiRuntimeStatus'],
 ) {
-  return vatTaxTreatmentDisplayRowSchema.parse({ ...row, aiRuntimeStatus })
+  return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
+    ...row,
+    aiRuntimeStatus,
+  }))
 }
 
 export async function enhanceVatTaxTreatmentRowsWithSingleAi(params: {
@@ -297,7 +301,7 @@ export async function enhanceVatTaxTreatmentRowsWithSingleAi(params: {
       return withAiStatus(row, 'manual_fallback')
     }
 
-    return vatTaxTreatmentDisplayRowSchema.parse({
+    return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
       ...row,
       recommendation: candidate.recommendation,
       source: 'ai_single',
@@ -313,6 +317,6 @@ export async function enhanceVatTaxTreatmentRowsWithSingleAi(params: {
         consensusProviders: [],
       },
       aiRuntimeStatus: 'completed',
-    })
+    }))
   })
 }

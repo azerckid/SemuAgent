@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { vatTaxTreatmentRecommendationSchema } from './vat-tax-treatment'
+import {
+  vatTaxTreatmentMutationSchema,
+  vatTaxTreatmentRecommendationSchema,
+} from './vat-tax-treatment'
 
 function recommendation(overrides: Record<string, unknown> = {}) {
   return {
@@ -14,6 +17,7 @@ function recommendation(overrides: Record<string, unknown> = {}) {
       supplyAmountKrw: 100_000,
       taxAmountKrw: 10_000,
       grossAmountKrw: 110_000,
+      source: 'parser',
       status: 'derived',
     },
     recommendation: 'likely_deductible',
@@ -104,5 +108,37 @@ describe('VAT tax treatment validation', () => {
       confirmedByStaffId: 'staff-1',
       confirmedAt: '2026-07-11T00:00:00.000Z',
     })).success).toBe(true)
+  })
+
+  it('validates VAI-4a action inputs and proration requirements', () => {
+    const base = {
+      periodKey: '2026-H1',
+      recommendationFingerprint: 'a'.repeat(64),
+    }
+
+    expect(vatTaxTreatmentMutationSchema.safeParse({
+      ...base,
+      action: 'apply_recommendation',
+    }).success).toBe(true)
+    expect(vatTaxTreatmentMutationSchema.safeParse({
+      ...base,
+      action: 'confirm_different',
+      finalDecision: 'prorated',
+      reason: '과세·면세 공통매입',
+    }).success).toBe(false)
+    expect(vatTaxTreatmentMutationSchema.safeParse({
+      ...base,
+      action: 'confirm_different',
+      finalDecision: 'prorated',
+      reason: '과세·면세 공통매입',
+      prorationRateBps: 6_000,
+    }).success).toBe(true)
+    expect(vatTaxTreatmentMutationSchema.safeParse({
+      ...base,
+      action: 'confirm_different',
+      finalDecision: 'deductible',
+      reason: '업무용',
+      prorationRateBps: 6_000,
+    }).success).toBe(false)
   })
 })

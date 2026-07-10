@@ -15,6 +15,7 @@ import {
   type VatTaxTreatmentFinalDecision,
 } from '@/lib/validations/vat-tax-treatment'
 import { parsedVatFactSchema } from './facts'
+import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 import { enhanceVatTaxTreatmentRowsWithSingleAi } from './tax-treatment-ai'
 import {
   applyPriorConfirmedVatPattern,
@@ -73,6 +74,7 @@ type ExactVatTaxTreatmentRow = VatTaxTreatmentClassificationRow & {
   vatSupplyAmountKrw: number
   vatTaxAmountKrw: number
   vatGrossAmountKrw: number
+  vatFactSource: 'parser' | 'manual'
   vatFactStatus: 'derived' | 'confirmed'
   vatFactSourceRef: string
 }
@@ -83,6 +85,7 @@ function exactVatTaxTreatmentRow(row: VatTaxTreatmentClassificationRow): ExactVa
   if (!row.transactionDate || !/^20\d{2}-\d{2}-\d{2}$/.test(row.transactionDate)) return null
   if (row.vatDirection !== 'sale' && row.vatDirection !== 'purchase') return null
   if (!['taxable', 'zero_rated', 'exempt', 'non_taxable'].includes(row.vatTaxType ?? '')) return null
+  if (row.vatFactSource !== 'parser' && row.vatFactSource !== 'manual') return null
   if (row.vatFactStatus !== 'derived' && row.vatFactStatus !== 'confirmed') return null
   if (!row.vatFactSourceRef) return null
 
@@ -251,7 +254,7 @@ export function buildVatTaxTreatmentDisplayRows(params: {
       })
       const finalState = currentFinalDecision({ row, review })
 
-      return vatTaxTreatmentDisplayRowSchema.parse({
+      return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
         rowId: row.id,
         classificationRowId: row.id,
         tenantId: params.tenantId,
@@ -263,6 +266,7 @@ export function buildVatTaxTreatmentDisplayRows(params: {
           supplyAmountKrw: row.vatSupplyAmountKrw,
           taxAmountKrw: row.vatTaxAmountKrw,
           grossAmountKrw: row.vatGrossAmountKrw,
+          source: row.vatFactSource,
           status: row.vatFactStatus,
         },
         ...decision,
@@ -276,7 +280,7 @@ export function buildVatTaxTreatmentDisplayRows(params: {
         description: row.description?.trim() || row.merchantName?.trim() || '거래 내용 미확인',
         sourceType: row.sourceType,
         accountLabel: row.finalAccount ? labelForBookkeepingAccountCategory(row.finalAccount) || row.finalAccount : null,
-      })
+      }))
     })
     .sort((left, right) => (
       right.transactionDate.localeCompare(left.transactionDate)

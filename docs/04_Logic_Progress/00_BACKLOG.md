@@ -698,7 +698,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-035 · 부가세 AI 세무판단 보조 — 공제·과세유형 판단 작업대 (현재 제품 우선순위)
 
-- Status: `doing` — VAI-0~3a 완료, VAI-3b single-provider AI·timeout/fallback 구현 완료/승인 대기
+- Status: `doing` — VAI-0~4a 완료, migration 0068 적용·검토 뒤 VAI-4b UI 예정
 - Related Domain: JC-011 부가세 · JC-010 자료대조원장 · exact VAT fact · `vat_deduction_review` · VAT provenance/rebuild
 - Related Completion Contract: [VAT AI Tax Treatment Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) — VAI-0~6 고정 순서·완료선·AI 실패 안전성
 - Related UI Docs: [VAT Preview](../02_UI_Screens/previews/03_vat.html) · [Prototype Review §6.1](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [Screen Flow §4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
@@ -726,7 +726,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 같은 tenant·사업장·기간·이전 확정 패턴만 사용한다.
   - [ ] 확정된 결과만 VAT rebuild와 package gate가 소비한다.
   - [ ] 대표 브라우저 E2E·tsc·전체 테스트·lint·whitespace·문서 sync가 통과한다.
-- Document Sync Check: 2026-07-11 VAI-3b 구현 완료. 규칙·패턴 이후 남은 `needs_review` 행만 설정된 첫 provider에 최대 12건으로 보내고 8초 timeout·quota·invalid schema는 수동 확인으로 비차단 전환한다. AI는 부가세 페이지에서만 활성화되며 신규 DB write·migration·multi-provider 호출은 없다. 다음은 프로젝트 오너 브라우저 승인 뒤 VAI-4a 사용자 확정 audit/canonical transaction이다. JC-030 부가세 양식 업로드 Stage A는 병렬 외부 확인 대기로 유지한다.
+- Document Sync Check: 2026-07-11 VAI-4a 구현 완료. `vat_tax_treatment_review`와 migration 0068, 추천 fingerprint, tenant·사업장·기간 검증 API를 추가했다. 매입 공제 decision과 매출 exact VAT fact canonical write는 추천 snapshot audit와 같은 transaction에서만 저장되며 stale fingerprint·영세율/면세 증빙 누락·방향 불일치는 차단된다. VAI-4b UI가 아직 없으므로 브라우저에서 적용/다르게/보류/전문가 확인과 undo를 수행할 수는 없다. 다음은 0068 dev/prod 적용·PR 승인 뒤 VAI-4b다. JC-030 부가세 양식 업로드 Stage A는 병렬 외부 확인 대기로 유지한다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

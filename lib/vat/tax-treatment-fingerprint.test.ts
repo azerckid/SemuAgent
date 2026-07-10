@@ -1,0 +1,71 @@
+import { describe, expect, it } from 'vitest'
+import type { VatTaxTreatmentRecommendation } from '@/lib/validations/vat-tax-treatment'
+import { buildVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
+
+function recommendation(
+  overrides: Partial<VatTaxTreatmentRecommendation> = {},
+): VatTaxTreatmentRecommendation {
+  return {
+    rowId: 'row-1',
+    classificationRowId: 'row-1',
+    tenantId: 'tenant-1',
+    businessEntityId: 'client-1',
+    periodKey: '2026-H1',
+    direction: 'purchase',
+    currentVatFact: {
+      taxType: 'taxable',
+      supplyAmountKrw: 100_000,
+      taxAmountKrw: 10_000,
+      grossAmountKrw: 110_000,
+      source: 'parser',
+      status: 'derived',
+    },
+    recommendation: 'likely_deductible',
+    source: 'deterministic_rule',
+    confidence: 'medium',
+    basisLabel: '업무용 매입',
+    ruleReference: 'P-01',
+    ruleVersion: 'vat-kr-2026.07-v1',
+    requiredEvidence: [
+      { code: 'qualified_purchase_evidence', label: '적격 증빙', status: 'present' },
+      { code: 'exact_vat_fact', label: 'VAT fact', status: 'present' },
+    ],
+    missingFacts: [],
+    hometaxComparisonMode: 'expected_prefill',
+    hometaxAction: 'expected_no_change',
+    aiTrace: null,
+    aiRuntimeStatus: 'not_requested',
+    finalDecision: null,
+    confirmedByStaffId: null,
+    confirmedAt: null,
+    ...overrides,
+  }
+}
+
+describe('VAT tax treatment recommendation fingerprint', () => {
+  it('is deterministic regardless of evidence display order', () => {
+    const row = recommendation()
+    const reversed = recommendation({ requiredEvidence: [...row.requiredEvidence].reverse() })
+
+    expect(buildVatTaxTreatmentRecommendationFingerprint(row)).toBe(
+      buildVatTaxTreatmentRecommendationFingerprint(reversed),
+    )
+  })
+
+  it('changes when a canonical VAT fact or structured recommendation changes', () => {
+    const baseline = buildVatTaxTreatmentRecommendationFingerprint(recommendation())
+
+    expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation({
+      currentVatFact: {
+        ...recommendation().currentVatFact,
+        taxAmountKrw: 9_000,
+      },
+    }))).not.toBe(baseline)
+    expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation({
+      recommendation: 'likely_non_deductible',
+    }))).not.toBe(baseline)
+    expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation({
+      source: 'prior_confirmed_pattern',
+    }))).not.toBe(baseline)
+  })
+})
