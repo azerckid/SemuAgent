@@ -6,6 +6,7 @@ import { getActiveStaffForUser } from '@/lib/bookkeeping/classification-service'
 import { db } from '@/lib/db'
 import { client, vatDeductionReview, vatPeriodSummary } from '@/lib/db/schema'
 import { now, toDBString } from '@/lib/time'
+import { loadVatPackageGate } from '@/lib/vat/package-gate'
 import { buildVatPeriodRecalculation } from '@/lib/vat/summary'
 import { vatPeriodKeySchema } from '@/lib/validations/vat'
 
@@ -83,10 +84,19 @@ export async function POST(
         pendingDeductionCount: periodSummary.pendingDeductionCount,
       }
     const pendingDeductionCount = recalculation.pendingDeductionCount
+    const packageGate = await loadVatPackageGate({
+      tenantId,
+      periodKey: periodKey.data,
+      hasSummary: true,
+      pendingDeductionCount,
+    })
 
-    if (pendingDeductionCount > 0) {
+    if (!packageGate.isReady) {
       return NextResponse.json({
-        error: `공제 검토 ${pendingDeductionCount}건 완료 후 패키지를 생성할 수 있습니다.`,
+        error: '부가세 패키지 생성 조건을 먼저 완료해 주세요.',
+        code: 'vat_package_gate_blocked',
+        blockerCount: packageGate.blockerCount,
+        reasons: packageGate.reasons,
       }, { status: 409 })
     }
 

@@ -63,6 +63,7 @@ export type VatSummary = {
   tenant: { id: string; name: string; timezone: string }
   businessEntity: { id: string; name: string } | null
   period: CompanyHomePeriod
+  hasPeriodSummary: boolean
   taxSummary: VatTaxSummary
   salesGroups: VatSalesGroup[]
   deductionReviews: VatDeductionReviewRow[]
@@ -365,6 +366,7 @@ export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSumm
     const taxSummary = buildVatTaxSummary(EMPTY_VAT_PERIOD_SUMMARY, period)
     return {
       ...base,
+      hasPeriodSummary: false,
       taxSummary,
       salesGroups: buildVatSalesGroups(EMPTY_VAT_PERIOD_SUMMARY),
       deductionReviews: [],
@@ -432,6 +434,7 @@ export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSumm
 
   return {
     ...base,
+    hasPeriodSummary: Boolean(summaryRows[0]),
     taxSummary,
     salesGroups: buildVatSalesGroups(summary),
     deductionReviews,

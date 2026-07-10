@@ -83,9 +83,10 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 |:---|:---|:---|:---|:---:|
 | S-60 | 매출/매입 합계표 준비 | 렌더 | "준비됨" 상태칩 | PASS·단위 |
 | S-61 | 불공제 후보 3건 pending | 렌더 | 공제받지 못할 매입세액 명세서 "검토 대기" | PASS·단위 |
-| S-62 | pendingDeductionCount=3 | 패키지 카드 렌더 | 버튼 disabled + `aria-disabled=true` + locknote | PASS·구현 |
-| S-63 | pendingDeductionCount=3 | 패키지 생성 API 호출 | 409, 패키지 미생성 | PASS·단위 |
-| S-64 | pendingDeductionCount=0 | 패키지 생성 클릭 | 생성 허용, packageStatus 갱신 | PASS·단위 |
+| S-62 | source/reconciliation/deduction/provenance 중 하나 이상 미완 | 패키지 카드 렌더 | 버튼 disabled + `aria-disabled=true` + 사유별 count/이동 경로 | PASS·구현 |
+| S-63 | composite package gate 미완 | 패키지 생성 API 호출 | 409, 패키지 미생성, 동일 reason/count/target route 반환 | PASS·단위/구현 |
+| S-64 | source/reconciliation/deduction은 ready, provenance 미확인 | 패키지 생성 클릭 | 생성 거부, 확정 원장 출처 검증 전 잠금 유지 | PASS·단위/구현 |
+| S-65 | source/reconciliation/deduction/provenance 모두 ready | 패키지 생성 클릭 | packageStatus 갱신 | Pending · Slice 2d-3 |
 
 ### 2.8 Preview 계약·책임 경계
 
@@ -108,8 +109,8 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 ## 3. 자동화 계획
 
-- **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/validations/vat.test.ts`): S-03, S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~64.
-- **정적 검증 완료** (`vat-workspace.test.ts`): Preview 구조(S-01), 라우트(S-02), reviews 미import(S-70), 책임 경계 문구(S-71~72), mutation tenant guard(S-53), package guard(S-63~64).
+- **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/vat/package-gate.test.ts`, `lib/validations/vat.test.ts`): S-03, S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~64.
+- **정적 검증 완료** (`vat-workspace.test.ts`): Preview 구조(S-01), 라우트(S-02), reviews 미import(S-70), 책임 경계 문구(S-71~72), mutation tenant guard(S-53), composite package guard(S-63~64).
 - **브라우저 수동 검증 완료**: 승인 Preview와 실제 `/dashboard/vat?period=2026-H1` 캡처 비교. 숫자/상태/잠금 버튼/인라인 안분 UI 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 전표 생성부터 VAT summary 생성까지의 도메인 E2E는 별도 회계 시드 준비 후 검증한다.
 

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { requireTenantSession } from '@/lib/auth-helpers'
+import { loadVatPackageGate } from '@/lib/vat/package-gate'
 import { loadVatSummary } from '@/lib/vat/summary'
 import { VatBusinessEntityEmptyState, VatWorkspace } from './_components/vat-workspace'
 
@@ -26,5 +27,12 @@ export default async function VatPage({ searchParams }: PageProps) {
     return <VatBusinessEntityEmptyState tenantName={summary.tenant.name} />
   }
 
-  return <VatWorkspace summary={summary} />
+  const packageGate = await loadVatPackageGate({
+    tenantId,
+    periodKey: summary.period.key,
+    hasSummary: summary.hasPeriodSummary,
+    pendingDeductionCount: summary.taxSummary.pendingDeductionCount,
+  })
+
+  return <VatWorkspace summary={summary} packageGate={packageGate} />
 }

@@ -179,7 +179,7 @@ Traceability legend:
 | 2b-3b-2b | decision | Evidence/exclusion batch acceptance | Risk review | Decision complete: do not implement in v1; both remain single-row confirmations |
 | 2c | decision | Durable confirmed links | Existing migration 0066 | Decision complete: `linked_evidence_row_id` is sufficient for exact 1:1 links; no new pair table until partial/many-to-one/split-merge is separately briefed |
 | 2d-1 | downstream | Shared reconciliation gate + filing-preparation read | A: filing-preparation blocker counts; Backlog AC | One tenant/period-scoped read-only gate exposes the closing-checklist counts and target route; filing preparation consumes it without duplicating the rules |
-| 2d-2 | downstream | VAT package UI/API enforcement | VAT package route + UI | VAT package generation is disabled in UI and rejected by the API while source, reconciliation, or VAT deduction blockers remain |
+| 2d-2 | downstream | VAT package UI/API enforcement | VAT package route + UI | VAT package generation is disabled in UI and rejected by the API while source, reconciliation, VAT deduction, or confirmed-ledger provenance checks remain unresolved |
 | 2d-3 | downstream | VAT confirmed-data provenance | Path 1 confirmed-ledger AC | Prove or rebuild the VAT package values from confirmed filing-relevant rows; if provenance cannot be verified, package generation stays locked |
 
 Cross-cutting requirements:
@@ -650,7 +650,7 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Slice 2c durable match-link schema decision — migration 0066 `linked_evidence_row_id` is sufficient for exact 1:1; no new pair table unless partial/many-to-one/split-merge gets a separate brief.
 - [x] Slice 2d Path 1 gate contract documented (§2.2).
 - [x] Slice 2d-1 shared reconciliation gate and filing-preparation read implemented — `lib/bookkeeping-review/reconciliation-path1-gate.ts` derives one Zod-validated read-only gate from the live ledger `closingChecklist`; 신고 준비 replaces only the legacy bookkeeping attention with this gate and shows the same total/category counts plus the 자료대조원장 route. No DB/API mutation.
-- [ ] Slice 2d-2 VAT package UI/API gate enforcement implemented.
+- [x] Slice 2d-2 VAT package UI/API gate enforcement implemented — `lib/vat/package-gate.ts` combines source collection, reconciliation, VAT deduction, and confirmed-ledger provenance into one Zod-validated decision. The VAT screen lists the same reason codes/counts/routes returned by the POST API, and provenance remains explicitly unverified until 2d-3.
 - [ ] Slice 2d-3 VAT confirmed-ledger provenance verified or deterministic rebuild implemented.
 
 ## 11. Related Documents

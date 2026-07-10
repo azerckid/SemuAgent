@@ -61,11 +61,16 @@ describe('VAT workspace static contract', () => {
     expect(deductionRouteSource).toContain("revalidatePath('/dashboard/vat')")
   })
 
-  it('keeps package generation locked at the API boundary until pending reviews are complete (S-63~64)', () => {
+  it('uses the shared composite gate in the VAT UI and package API (S-63~65)', () => {
     expect(workspaceSource).toContain('VatPackageActionButton')
+    expect(workspaceSource).toContain('packageGate.reasons')
+    expect(workspaceSource).toContain('reason.targetRoute')
     expect(actionsSource).toContain('/api/vat/periods/${periodKey}/package')
     expect(packageRouteSource).toContain('vatPeriodKeySchema.safeParse(rawPeriodKey)')
     expect(packageRouteSource).toContain('eq(vatPeriodSummary.tenantId, tenantId)')
+    expect(packageRouteSource).toContain('loadVatPackageGate')
+    expect(packageRouteSource).toContain('vat_package_gate_blocked')
+    expect(packageRouteSource).toContain('reasons: packageGate.reasons')
     expect(packageRouteSource).toContain('status: 409')
     expect(packageRouteSource).toContain('reviewRows.length > 0')
     expect(packageRouteSource).toContain('inputTaxDeductibleKrw: periodSummary.inputTaxDeductibleKrw')

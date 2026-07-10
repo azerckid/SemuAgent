@@ -181,7 +181,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 자료대조원장 Slice 2c durable match-link schema 필요 여부 판단 — migration 0066 `linked_evidence_row_id`로 exact 1:1은 충분. 부분 지급·다건 합산·split/merge가 필요할 때 별도 brief 후 재개
   - [x] 자료대조원장 Slice 2d-0 Path 1 gate consumption 계약 고정 — Brief 41 §2.2. 자료대조원장 게이트의 소비자는 신고 준비 공통 기장 상태 + 부가세로 제한하고, 급여 기반 세목은 비차단
   - [x] 자료대조원장 Slice 2d-1 shared reconciliation gate + 신고 준비 read 연동 — live 원장과 같은 `closingChecklist`에서 Zod gate를 만들고 신고 준비의 legacy 기장 알림을 교체. 카드/차단 목록/사이드바 badge가 동일 값을 사용하며 DB write 없음
-  - [ ] 자료대조원장 Slice 2d-2 부가세 패키지 UI/API gate 강제 — 자료수집·대조원장·공제 검토 중 하나라도 미완이면 생성 불가
+  - [x] 자료대조원장 Slice 2d-2 부가세 패키지 UI/API gate 강제 — 자료수집·대조원장·공제 검토·확정 원장 provenance를 하나의 Zod gate로 결합. UI와 POST API가 동일 reason/count/route를 사용하며, 2d-3 완료 전에는 provenance 미확인 사유로 생성 잠금 유지
   - [ ] 자료대조원장 Slice 2d-3 부가세 package 값의 확정 원장 provenance 검증 또는 deterministic rebuild — 확인 전에는 생성 잠금 유지
 - Acceptance Criteria:
   - [x] 정규화된 거래가 분류 큐에 AI 추천 계정과목·신뢰도와 함께 표시된다.
@@ -209,6 +209,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check Update (2026-07-09 19:31): Slice 2b-2를 2b-2a 연결 저장(PR #173 완료, migration 0066 적용) / 2b-2b 연결 증빙 상세 보기 및 출처 목록 행 강조 / 2b-2c 연결 해제·증빙 예외·금액 차이 처리로 분리했다. 2026-07-09 21:05: `증빙있음` 행의 `증빙 확인`은 **찾은 증빙 한 줄**을 먼저 보여주고, 그 한 줄 클릭 시 세금계산서·현금영수증·체크카드 목록 중 해당 출처 목록을 열어 연결/발견 행을 시각적으로 강조해야 한다. 여러 후보라 결정하지 못한 상태는 `증빙있음`이 아니라 `증빙 찾기` 흐름이다. 2026-07-10: Slice 2b-3은 2b-3a(계정 반복 패턴 적용·무시), 2b-3b-1(증빙·제외 반복 패턴 표시와 단건 확인 진입점), 2b-3b-2(안전한 일괄 수락)로 분리한다. 2b-3a/2b-3b-1은 기존 단건 mutation을 재사용하고 신규 DB 없이 `패턴 거부: ...` memo로 무시 신호를 남긴다.
 - Document Sync Check Update (2026-07-10 08:17): PR #171 이후 live UI는 hero/source-summary/다음 할 일 카드가 없는 table-first 구조다. Slice 2b-3b-2b는 증빙·제외 일괄 적용을 v1에서 도입하지 않는 것으로 종료했고, Slice 2c도 migration 0066의 exact 1:1 링크를 유지하는 것으로 종료했다. 다음 구현은 Slice 2d-1 → 2d-2 → 2d-3 순서다. 2d는 자료대조원장 게이트를 신고 준비 공통 기장 상태와 부가세 패키지 UI/API에서 소비하게 하며, 급여 기반 세목은 차단하지 않는다. 부가세 저장 스냅샷이 확정 원장에서 유래했다는 provenance가 검증되지 않으면 파일/패키지 생성은 계속 잠근다.
 - Document Sync Check Update (2026-07-10 09:02): Slice 2d-1 구현 완료. `blockerCount`는 증빙 필요 + 소명 필요 + 계정 미확정 + 제외 사유 필요의 미해결 액션 합계이며 고유 거래 행 수가 아니다. dev DB `2026-H1` 검증에서 자료대조원장 `698건`과 신고 준비 카드 `6 + 5 + 687 + 0 = 698건`이 일치했다. 다음은 2d-2 부가세 package UI/API gate 강제다.
+- Document Sync Check Update (2026-07-10 09:34): Slice 2d-2 구현 완료. dev DB `2026-H1`에서 자료수집 `1 + 3`, 자료대조원장 `698`, 공제 검토 `3`, provenance 미확인 `1`을 합친 패키지 gate `706`을 확인했다. 부가세 화면과 POST API는 동일 reason/count/target route를 사용하고, 다음은 2d-3 확정 원장 provenance 검증 또는 deterministic rebuild다.
 
 ### JC-011 · Build VAT workspace (부가세) — 신규
 

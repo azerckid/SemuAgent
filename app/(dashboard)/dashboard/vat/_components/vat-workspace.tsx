@@ -8,6 +8,10 @@ import {
 } from 'lucide-react'
 import type { ComponentType, ReactNode } from 'react'
 import { buttonVariants } from '@/components/ui/button'
+import {
+  applyVatPackageGateToPreview,
+  type VatPackageGate,
+} from '@/lib/vat/package-gate'
 import type {
   VatDeductionDecision,
   VatDeductionKind,
@@ -46,9 +50,12 @@ const scheduleIcon: Record<VatSchedule['id'], ComponentType<{ className?: string
 
 export interface VatWorkspaceProps {
   readonly summary: VatSummary
+  readonly packageGate: VatPackageGate
 }
 
-export function VatWorkspace({ summary }: VatWorkspaceProps) {
+export function VatWorkspace({ summary, packageGate }: VatWorkspaceProps) {
+  const packagePreview = applyVatPackageGateToPreview(summary.packagePreview, packageGate)
+
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <VatTopbar summary={summary} />
@@ -58,7 +65,11 @@ export function VatWorkspace({ summary }: VatWorkspaceProps) {
         <DeductionReviewSection reviews={summary.deductionReviews} />
         <div className="grid gap-4 lg:grid-cols-2">
           <SchedulesSection schedules={summary.schedules} />
-          <PackagePreviewCard periodKey={summary.period.key} packagePreview={summary.packagePreview} />
+          <PackagePreviewCard
+            periodKey={summary.period.key}
+            packagePreview={packagePreview}
+            packageGate={packageGate}
+          />
         </div>
         <StateCoverageSection />
         <PreviewNote />
@@ -67,7 +78,7 @@ export function VatWorkspace({ summary }: VatWorkspaceProps) {
   )
 }
 
-function VatTopbar({ summary }: VatWorkspaceProps) {
+function VatTopbar({ summary }: { readonly summary: VatSummary }) {
   const companyName = summary.businessEntity?.name ?? summary.tenant.name
 
   return (
@@ -98,7 +109,7 @@ function VatTopbar({ summary }: VatWorkspaceProps) {
   )
 }
 
-function TaxSummaryHero({ summary }: VatWorkspaceProps) {
+function TaxSummaryHero({ summary }: { readonly summary: VatSummary }) {
   const { taxSummary } = summary
   const pendingNote = taxSummary.pendingDeductionCount > 0
     ? `불공제 후보 ${taxSummary.pendingDeductionCount}건 검토 시 매입세액이 달라질 수 있습니다.`
@@ -295,14 +306,16 @@ function SchedulesSection({ schedules }: { readonly schedules: VatSchedule[] }) 
 function PackagePreviewCard({
   periodKey,
   packagePreview,
+  packageGate,
 }: {
   readonly periodKey: string
   readonly packagePreview: VatPackagePreview
+  readonly packageGate: VatPackageGate
 }) {
   return (
     <section className={cn(panelClass, 'p-[18px]')}>
       <h2 className="text-[13px] font-semibold text-foreground">신고 패키지 미리보기</h2>
-      <p className="mt-1 text-xs text-company-fg-subtle">홈택스 입력 안내 + 첨부 서류 묶음</p>
+      <p className="mt-1 text-xs text-company-fg-subtle">홈택스 업로드용 파일 준비 + 첨부 서류 묶음</p>
       <div className="mt-3 flex items-center gap-2.5 rounded-[9px] border border-company-border px-3 py-2.5">
         <div className="grid size-7 place-items-center rounded-[7px] bg-[#fef2f2] text-[11px] font-bold text-[#dc2626]">
           PDF
@@ -312,7 +325,24 @@ function PackagePreviewCard({
           <p className="truncate text-[11px] text-company-fg-subtle">{packagePreview.description}</p>
         </div>
       </div>
-      {packagePreview.lockReason ? (
+      {packageGate.reasons.length > 0 ? (
+        <div id="vat-package-locknote" className="mt-3 rounded-lg border border-[#fde68a] bg-[#fffbeb] px-3 py-2.5 text-xs text-[#92400e]">
+          <p className="font-semibold">{packagePreview.lockReason}</p>
+          <ul className="mt-2 grid gap-1.5">
+            {packageGate.reasons.map((reason) => (
+              <li key={reason.code} className="flex items-start justify-between gap-3">
+                <span>{reason.message}</span>
+                <Link
+                  href={reason.targetRoute}
+                  className="shrink-0 font-semibold text-[#b45309] underline underline-offset-2"
+                >
+                  확인
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : packagePreview.lockReason ? (
         <p id="vat-package-locknote" className="mt-3 rounded-lg border border-[#fde68a] bg-[#fffbeb] px-3 py-2 text-xs text-[#d97706]">
           {packagePreview.lockReason}
         </p>
