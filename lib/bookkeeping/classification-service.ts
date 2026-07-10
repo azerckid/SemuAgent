@@ -22,6 +22,13 @@ import {
 } from '@/lib/review/default-criteria'
 import { sourceBatchIdForLegacyUploadSession } from '@/lib/source-batch/scope'
 import { now, toDBString } from '@/lib/time'
+import {
+  buildClearedManualVatFactFields,
+  buildManualVatFactFields,
+  buildParsedVatFactFields,
+  isVatEvidenceSource,
+  type ManualVatFactInput,
+} from '@/lib/vat/facts'
 import { getActiveAiProviderOrder, type AiProvider } from '@/lib/ai/provider-order'
 import {
   formatBookkeepingCategoryNotes,
@@ -346,6 +353,22 @@ function chunkCandidates<T>(items: T[], size: number) {
     chunks.push(items.slice(index, index + size))
   }
   return chunks
+}
+
+function classificationTransactionSignature(transaction: {
+  sourceFileId: string
+  transactionDate?: string
+  merchantName?: string
+  description?: string
+  amountKrw?: number
+}) {
+  return [
+    transaction.sourceFileId,
+    transaction.transactionDate ?? '',
+    transaction.merchantName ?? '',
+    transaction.description ?? '',
+    transaction.amountKrw ?? '',
+  ].join('|')
 }
 
 function rowStatusForRecommendation(params: {
@@ -756,23 +779,15 @@ export async function executeBookkeepingClassification(params: {
       )
     }
     const aiTransactionBySignature = new Map(aiTransactions.map((transaction) => [
-      [
-        transaction.sourceFileId,
-        transaction.transactionDate ?? '',
-        transaction.merchantName ?? '',
-        transaction.description ?? '',
-        transaction.amountKrw ?? '',
-      ].join('|'),
+      classificationTransactionSignature(transaction),
       transaction,
     ]))
+    const candidateBySignature = new Map(candidates.map((candidate) => [
+      classificationTransactionSignature(candidate),
+      candidate,
+    ]))
     const transactions = ruleBasedTransactions.map((transaction) => {
-      const aiTransaction = aiTransactionBySignature.get([
-        transaction.sourceFileId,
-        transaction.transactionDate ?? '',
-        transaction.merchantName ?? '',
-        transaction.description ?? '',
-        transaction.amountKrw ?? '',
-      ].join('|'))
+      const aiTransaction = aiTransactionBySignature.get(classificationTransactionSignature(transaction))
       if (aiTransaction) return aiTransaction
       if (skippedAiCandidateCount > 0 && transaction.recommendedAccount === 'unclassified') {
         return {
@@ -788,6 +803,13 @@ export async function executeBookkeepingClassification(params: {
 
     const rowTs = toDBString(now())
     const rows = transactions.filter(isDisplayableClassificationRow).map((transaction) => {
+      const sourceCandidate = candidateBySignature.get(classificationTransactionSignature(transaction))
+      const vatFactFields = buildParsedVatFactFields({
+        sourceType: transaction.sourceType,
+        direction: transaction.direction,
+        sourceReference: sourceCandidate?.sourceRowRef ?? `${transaction.sourceFileId}:classification`,
+        vatFact: sourceCandidate?.vatFact,
+      })
       const recommendedAccount = isBookkeepingAccountCategoryKey(transaction.recommendedAccount)
         ? transaction.recommendedAccount
         : 'unclassified'
@@ -817,6 +839,7 @@ export async function executeBookkeepingClassification(params: {
         finalAccount: recommendedAccount === 'unclassified' ? null : recommendedAccount,
         staffMemo: null,
         status,
+        ...vatFactFields,
         confirmedByStaffId: null,
         confirmedAt: null,
         createdAt: rowTs,
@@ -910,6 +933,7 @@ export async function updateBookkeepingClassificationRow(params: {
   status?: BookkeepingRowStatus
   purposeRequestRowId?: string | null
   linkedEvidenceRowId?: string | null
+  vatFact?: ManualVatFactInput | null
 }) {
   const sessionRow = await getSessionForStaff(params)
   if (!sessionRow) {
@@ -942,6 +966,30 @@ export async function updateBookkeepingClassificationRow(params: {
   const nextLinkedEvidenceRowId = params.linkedEvidenceRowId === undefined
     ? row.linkedEvidenceRowId
     : params.linkedEvidenceRowId
+
+  let nextVatFactFields: ReturnType<typeof buildClearedManualVatFactFields> | undefined
+  if (params.vatFact !== undefined) {
+    if (!isVatEvidenceSource(row.sourceType)) {
+      return { ok: false as const, status: 400, error: '세금계산서·현금영수증·카드 거래만 부가세 사실값을 저장할 수 있습니다.' }
+    }
+
+    const sourceReference = `staff:${params.staffRecord.id}:${row.id}`
+    if (params.vatFact === null) {
+      nextVatFactFields = buildClearedManualVatFactFields({
+        direction: row.direction,
+        sourceReference,
+      })
+    } else {
+      const manualFields = buildManualVatFactFields(params.vatFact, sourceReference)
+      if (!manualFields) {
+        return { ok: false as const, status: 400, error: '공급가액·세액·합계액을 다시 확인해 주세요.' }
+      }
+      if (row.amountKrw === null || Math.abs(row.amountKrw) !== manualFields.vatGrossAmountKrw) {
+        return { ok: false as const, status: 400, error: '부가세 합계액은 원장 거래금액과 일치해야 합니다.' }
+      }
+      nextVatFactFields = manualFields
+    }
+  }
 
   if (nextStatus === 'confirmed' && !nextFinalAccount) {
     return { ok: false as const, status: 400, error: '확정하려면 계정항목을 선택해야 합니다.' }
@@ -1024,6 +1072,7 @@ export async function updateBookkeepingClassificationRow(params: {
         staffMemo: nextMemo,
         status: nextStatus,
         linkedEvidenceRowId: nextLinkedEvidenceRowId,
+        ...nextVatFactFields,
         confirmedByStaffId: nextStatus === 'confirmed' ? params.staffRecord.id : row.confirmedByStaffId,
         confirmedAt: nextStatus === 'confirmed' ? ts : row.confirmedAt,
         updatedAt: ts,

@@ -99,6 +99,7 @@ export function buildFileSummaryClassificationCandidates(params: {
       description: row.description ?? row.sourceLabel,
       amountKrw: resolveFileSummaryAmount(row),
       direction: inferDirectionFromFileSummary(row),
+      sourceRowRef: `file-summary:${row.uploadFileId}`,
       rawRow: [
         row.sourceLabel,
         row.evidenceDate ?? '',

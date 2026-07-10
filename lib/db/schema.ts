@@ -913,6 +913,20 @@ export const bookkeepingTransactionClassification = sqliteTable('bookkeeping_tra
   status: text('status', {
     enum: ['suggested', 'needs_decision', 'confirmed', 'unclassified', 'excluded'],
   }).notNull().default('suggested'),
+  vatDirection: text('vat_direction', {
+    enum: ['sale', 'purchase', 'not_applicable', 'needs_review'],
+  }),
+  vatTaxType: text('vat_tax_type', {
+    enum: ['taxable', 'zero_rated', 'exempt', 'non_taxable', 'needs_review'],
+  }),
+  vatSupplyAmountKrw: integer('vat_supply_amount_krw'),
+  vatTaxAmountKrw: integer('vat_tax_amount_krw'),
+  vatGrossAmountKrw: integer('vat_gross_amount_krw'),
+  vatFactSource: text('vat_fact_source', { enum: ['parser', 'manual'] }),
+  vatFactSourceRef: text('vat_fact_source_ref'),
+  vatFactStatus: text('vat_fact_status', {
+    enum: ['derived', 'confirmed', 'needs_review', 'excluded'],
+  }),
   // JC-010 2b-2: 자료대조원장에서 통장 행이 사용자가 확정한 증빙 행(세금계산서/
   // 현금영수증/카드)을 가리키는 단방향 링크. AI 후보 매칭(같은 금액·같은 날짜
   // 휴리스틱, evidenceJson과는 무관)과 구분되는 사용자 확정 연결이다. FK 제약은
@@ -928,6 +942,7 @@ export const bookkeepingTransactionClassification = sqliteTable('bookkeeping_tra
   sessionIdx: index('bookkeeping_tx_session_idx').on(t.tenantId, t.uploadSessionId),
   sourceBatchIdx: index('bookkeeping_tx_source_batch_idx').on(t.tenantId, t.sourceBatchId),
   statusIdx: index('bookkeeping_tx_status_idx').on(t.tenantId, t.status),
+  vatFactIdx: index('bookkeeping_tx_vat_fact_idx').on(t.tenantId, t.vatFactStatus, t.vatDirection),
   linkedEvidenceIdx: index('bookkeeping_tx_linked_evidence_idx').on(t.tenantId, t.linkedEvidenceRowId),
 }))
 
@@ -1144,6 +1159,10 @@ export const vatPeriodSummary = sqliteTable('vat_period_summary', {
   packageStatus: text('package_status', { enum: ['locked', 'ready', 'generated'] }).notNull().default('locked'),
   packageStorageKey: text('package_storage_key'),
   generatedAt: text('generated_at'),
+  provenanceVersion: text('provenance_version'),
+  sourceFingerprint: text('source_fingerprint'),
+  sourceRowCount: integer('source_row_count'),
+  rebuiltAt: text('rebuilt_at'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 }, (t) => ({

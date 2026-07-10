@@ -1,6 +1,6 @@
 # Test Scenarios: Bookkeeping Review
 > Created: 2026-07-02 09:10
-> Last Updated: 2026-07-10 09:55 KST
+> Last Updated: 2026-07-10 13:49 KST
 
 기장검토(JC-010) Layer 5 QA 시나리오. [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)와 [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)의 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
 
@@ -127,7 +127,11 @@
 | S-127 | 원천세·간이지급명세서·지방소득세 payroll route | bookkeeping blocker 존재 | payroll 전용 validation만 적용되고 reconciliation gate로 차단되지 않음 | Pending |
 | S-128 | shared gate load | 실행 | classification/VAT/filing DB에 write side effect 없음 | PASS·단위 |
 | S-129 | VAT snapshot만 있고 normalized VAT fact/provenance metadata 없음 | package gate | snapshot 숫자가 맞아 보여도 provenance ready로 승격하지 않음 | PASS·감사 |
-| S-130 | gross amount만 있고 exact supply/tax basis 없음 | deterministic rebuild | gross/11 추정 없이 `needs_review`로 차단 | Pending · 2d-3b/3c |
+| S-130 | evidence row에 gross amount만 있고 exact supply/tax basis 없음 | VAT fact writer | gross/11 추정 없이 `needs_review`, exact 금액 필드는 null | PASS·단위 · 2d-3b |
+| S-131 | 세금계산서 원본에 direction/tax type/supply/tax/gross 존재 | parser | 산술 일치 시 source row identity와 함께 `derived` fact 저장 | PASS·단위 · 2d-3b |
+| S-132 | staff가 exact VAT fact 입력 | classification row PATCH | 산술 검증 + 원장 gross 일치 후 `manual/confirmed` 저장 | PASS·단위 · 2d-3b |
+| S-133 | bank settlement row | parser/manual writer | VAT fact 미생성; manual 입력은 거부 | PASS·단위 · 2d-3b |
+| S-134 | 기존/sample evidence row에 exact VAT split 없음 | seed/writer | 자동 backfill 없이 `needs_review`, package 잠금 유지 | PASS·단위 · 2d-3b |
 
 ## 3. 자동화 현황 및 후속
 - **자동 단위 완료**(`lib/bookkeeping-review/summary.test.ts`): 탭 집계(S-20~23), 신뢰도·계정지정(S-30~32), 분개 균형(S-42), 제외 테이블(S-61), 기간 필터(S-10).
@@ -135,7 +139,8 @@
 - **구현 검증 완료**: `tsc --noEmit`, `npm run lint`, `npm run test`, `npm run build`.
 - **자료대조원장 완료 범위**: Slice 2a/2b의 live read, row mutation, exact 1:1 evidence lifecycle, pattern display/account batch acceptance는 unit + browser E2E로 검증됐다.
 - **Slice 2d-1 완료**: S-120~S-122/S-128. dev DB `2026-H1`에서 gate total 698과 신고 준비 분해값(증빙 6 + 소명 5 + 계정 687 + 제외 0)이 일치했다.
-- **후속**: Slice 2d-3은 S-126을 자동화하며 confirmed-ledger provenance 또는 deterministic rebuild를 연결한다. S-127 payroll 비차단 경계와 공식 Hometax 파일 assembly 검증은 각각 기존 payroll 계약과 JC-030 범위에서 유지한다.
+- **Slice 2d-3b 완료**: S-130~S-134. exact VAT fact schema/parser/sample/manual writer와 nullable summary provenance metadata를 추가했고 기존 row는 backfill하지 않았다.
+- **후속**: Slice 2d-3c는 S-126을 자동화하며 confirmed-ledger deterministic rebuild와 fingerprint verification을 연결한다. S-127 payroll 비차단 경계와 공식 Hometax 파일 assembly 검증은 각각 기존 payroll 계약과 JC-030 범위에서 유지한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [Bookkeeping Review Prototype Review](../02_UI_Screens/04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) · [Bookkeeping HTML Preview](../02_UI_Screens/previews/02_bookkeeping_review.html) · [Reconciliation Prototype Review](../02_UI_Screens/12_RECONCILIATION_LEDGER_PROTOTYPE_REVIEW.md) · [Reconciliation HTML Preview](../02_UI_Screens/previews/12_reconciliation_ledger.html)

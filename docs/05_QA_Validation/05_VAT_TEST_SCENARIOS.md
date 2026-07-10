@@ -1,6 +1,6 @@
 # Test Scenarios: VAT
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-10 09:55 KST
+> Last Updated: 2026-07-10 13:49 KST
 
 부가세(JC-011) Layer 5 QA 시나리오. [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -89,6 +89,10 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-65 | source/reconciliation/deduction/provenance 모두 ready | 패키지 생성 클릭 | packageStatus 갱신 | Pending · Slice 2d-3 |
 | S-66 | stored snapshot은 있으나 exact VAT facts/fingerprint 없음 | 패키지 생성 | snapshot presence만으로 잠금 해제하지 않음 | PASS·감사 |
 | S-67 | confirmed VAT facts에서 deterministic rebuild 완료 | package gate 검증 | current fingerprint가 일치할 때만 생성 허용 | Pending · Slice 2d-3c |
+| S-68 | parser가 exact supply/tax/gross와 tax type을 읽음 | classification 저장 | 산술 일치 시 `derived` VAT fact + source row identity 저장 | PASS·단위 · Slice 2d-3b |
+| S-69 | exact basis가 빠진 evidence row | classification 저장 | 금액 추정 없이 `needs_review` 저장 | PASS·단위 · Slice 2d-3b |
+| S-70 | staff VAT fact가 산술 불일치 또는 원장 gross와 불일치 | row PATCH | 400 거부, 기존 fact 미변경 | PASS·단위 · Slice 2d-3b |
+| S-71 | migration 0067 이후 summary provenance metadata가 null | package gate | 2d-3c rebuild 전 잠금 유지 | PASS·설계 · Slice 2d-3b |
 
 ### 2.8 Preview 계약·책임 경계
 

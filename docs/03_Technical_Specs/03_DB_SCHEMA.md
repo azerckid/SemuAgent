@@ -1,6 +1,6 @@
 # DB Schema (Company-context Adaptation)
 > Created: 2026-07-01 22:40
-> Last Updated: 2026-07-04 01:43
+> Last Updated: 2026-07-10 13:49 KST
 
 ## 1. 목적 및 범위
 
@@ -142,7 +142,25 @@ JC-011 구현은 아래 두 테이블을 `lib/db/schema.ts`와
 | `output_tax_krw`, `input_tax_krw`, `input_tax_deductible_krw`, `payable_tax_krw` | 세액 요약 |
 | `pending_deduction_count`, `is_final` | 검토 대기·예정/확정 |
 | `package_status`, `package_storage_key`, `generated_at` | 신고 패키지 생성 상태(제출/납부 아님) |
+| `provenance_version`, `source_fingerprint`, `source_row_count`, `rebuilt_at` | 확정 VAT fact deterministic rebuild 계약·입력 fingerprint·행 수·재계산 시각. 2d-3c 전에는 null 유지 |
 | `created_at`, `updated_at` | 감사·동기화 |
+
+#### `bookkeeping_transaction_classification` VAT fact (Slice 2d-3b)
+
+Migration 0067은 기존 거래 identity를 재사용하면서 다음 nullable 필드를
+추가한다. 기존 행은 자동 backfill하지 않는다.
+
+| 컬럼 | 목적 |
+|:---|:---|
+| `vat_direction` | `sale` / `purchase` / `not_applicable` / `needs_review` |
+| `vat_tax_type` | `taxable` / `zero_rated` / `exempt` / `non_taxable` / `needs_review` |
+| `vat_supply_amount_krw`, `vat_tax_amount_krw`, `vat_gross_amount_krw` | 원본이 제공한 exact 금액. 합계 산술 검증을 통과해야 저장 |
+| `vat_fact_source`, `vat_fact_source_ref` | `parser` / `manual`과 파일·행 또는 staff·row identity |
+| `vat_fact_status` | `derived` / `confirmed` / `needs_review` / `excluded` |
+
+통장 행은 결제·정산 수단이므로 VAT fact를 갖지 않는다. 세금계산서·카드·
+현금영수증 등 evidence row만 fact 대상이며, 정확한 공급가액·세액 basis가
+없으면 금액을 추정하지 않고 `needs_review`로 남긴다.
 
 #### `vat_deduction_review`
 
@@ -159,9 +177,10 @@ JC-011 구현은 아래 두 테이블을 `lib/db/schema.ts`와
 | `confirmed_by_staff_id`, `confirmed_at` | 사용자 확정 |
 | `created_at`, `updated_at` | 감사·동기화 |
 
-매출 구분(과세/영세율/면세)은 현재 전표 라인만으로 안정적으로 복원할 수 없으므로
-`vat_period_summary` snapshot에 저장한다. 향후 거래/전표에 세무 구분 태그가 추가되면
-파생 방식으로 전환할 수 있다.
+매출 구분(과세/영세율/면세)은 기존 전표 라인만으로 안정적으로 복원할 수 없어
+`vat_period_summary` snapshot에도 저장한다. Slice 2d-3b부터 거래 분류 행에 exact
+VAT fact를 보존하며, 2d-3c에서 확정 fact만으로 summary를 deterministic rebuild하고
+fingerprint가 일치할 때에만 package provenance를 통과시킨다.
 
 ### 4.2 급여 (Payroll) — JC-012 게이트에서 물리 스키마 필요
 

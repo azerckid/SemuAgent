@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-10 09:55 KST
+> Last Updated: 2026-07-10 13:49 KST
 
 ## 0. Purpose
 
@@ -654,7 +654,7 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Slice 2d-1 shared reconciliation gate and filing-preparation read implemented — `lib/bookkeeping-review/reconciliation-path1-gate.ts` derives one Zod-validated read-only gate from the live ledger `closingChecklist`; 신고 준비 replaces only the legacy bookkeeping attention with this gate and shows the same total/category counts plus the 자료대조원장 route. No DB/API mutation.
 - [x] Slice 2d-2 VAT package UI/API gate enforcement implemented — `lib/vat/package-gate.ts` combines source collection, reconciliation, VAT deduction, and confirmed-ledger provenance into one Zod-validated decision. The VAT screen lists the same reason codes/counts/routes returned by the POST API, and provenance remains explicitly unverified until 2d-3.
 - [x] Slice 2d-3a provenance audit and completion contract — current data cannot prove the snapshot; [Audit 42](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) fixes the additive VAT fact/provenance fields and deterministic rebuild boundary.
-- [ ] Slice 2d-3b additive VAT fact fields, summary provenance metadata, and source writers implemented.
+- [x] Slice 2d-3b additive VAT fact fields, summary provenance metadata, and source writers implemented — migration 0067 adds nullable classification VAT facts and summary fingerprint metadata; parser/sample/manual writers share `lib/vat/facts.ts`, exact arithmetic is required, bank rows receive no VAT facts, and no existing row is heuristically backfilled. Package provenance remains locked.
 - [ ] Slice 2d-3c deterministic rebuild, fingerprint verification, and package-gate unlock implemented.
 
 ## 11. Related Documents

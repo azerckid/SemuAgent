@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { parsedVatFactSchema, type ParsedVatFact } from '@/lib/vat/facts'
 import { transactionCandidateSchema, type TransactionCandidate } from './schemas'
 
 const MAX_SHEETS = 24
@@ -15,6 +16,10 @@ type HeaderMap = {
   incomeAmountIndexes: number[]
   expenseAmountIndexes: number[]
   merchantIndexes: number[]
+  supplyAmountIndexes: number[]
+  taxAmountIndexes: number[]
+  grossAmountIndexes: number[]
+  taxTypeIndexes: number[]
 }
 
 export type BookkeepingTransactionFileInspection = {
@@ -91,7 +96,7 @@ function inferSourceType(file: UploadFileLike, row: string[]): SourceType {
 function inferDirection(row: string[], amount: number | null): Direction {
   const text = row.join(' ')
   if (/입금|매출|수입|deposit|income/i.test(text)) return 'income'
-  if (/출금|지출|결제|사용|withdraw|expense|payment/i.test(text)) return 'expense'
+  if (/출금|지출|결제|사용|매입|withdraw|expense|payment/i.test(text)) return 'expense'
   if (amount !== null && amount < 0) return 'expense'
   return 'unknown'
 }
@@ -140,6 +145,13 @@ function isAmountHeader(value: string) {
     '승인금액',
     '매출금액',
     '공급가액',
+    '공급액',
+    '세액',
+    '부가세',
+    '합계금액',
+    '합계액',
+    '공급대가',
+    '총액',
     '지출금액',
     '집행금액',
     '사용금액',
@@ -160,6 +172,31 @@ function isAmountHeader(value: string) {
     '현금',
     '금액',
   ].includes(value)
+}
+
+function isSupplyAmountHeader(value: string) {
+  return ['공급가액', '공급액'].includes(value)
+}
+
+function isTaxAmountHeader(value: string) {
+  return ['세액', '부가세'].includes(value)
+}
+
+function isGrossAmountHeader(value: string) {
+  return ['합계금액', '합계액', '공급대가', '총액'].includes(value)
+}
+
+function isTaxTypeHeader(value: string) {
+  return ['과세유형', '과세구분', '세금구분'].includes(value)
+}
+
+function normalizeVatTaxType(value: string): ParsedVatFact['taxType'] | null {
+  const normalized = normalizeHeader(value)
+  if (['과세', '일반', '일반과세'].includes(normalized)) return 'taxable'
+  if (['영세', '영세율'].includes(normalized)) return 'zero_rated'
+  if (normalized === '면세') return 'exempt'
+  if (['비과세', '해당없음'].includes(normalized)) return 'non_taxable'
+  return null
 }
 
 function isIncomeAmountHeader(value: string) {
@@ -234,6 +271,10 @@ function detectHeaderMap(row: string[]): HeaderMap | null {
   const incomeAmountIndexes: number[] = []
   const expenseAmountIndexes: number[] = []
   const merchantIndexes: number[] = []
+  const supplyAmountIndexes: number[] = []
+  const taxAmountIndexes: number[] = []
+  const grossAmountIndexes: number[] = []
+  const taxTypeIndexes: number[] = []
   let recognizedHeaderCells = 0
 
   normalized.forEach((cell, index) => {
@@ -248,6 +289,13 @@ function detectHeaderMap(row: string[]): HeaderMap | null {
     }
     if (isIncomeAmountHeader(cell)) incomeAmountIndexes.push(index)
     if (isExpenseAmountHeader(cell)) expenseAmountIndexes.push(index)
+    if (isSupplyAmountHeader(cell)) supplyAmountIndexes.push(index)
+    if (isTaxAmountHeader(cell)) taxAmountIndexes.push(index)
+    if (isGrossAmountHeader(cell)) grossAmountIndexes.push(index)
+    if (isTaxTypeHeader(cell)) {
+      taxTypeIndexes.push(index)
+      recognizedHeaderCells += 1
+    }
     if (isMerchantHeader(cell)) {
       merchantIndexes.push(index)
       recognizedHeaderCells += 1
@@ -255,7 +303,18 @@ function detectHeaderMap(row: string[]): HeaderMap | null {
   })
 
   if (dateIndexes.length === 0 || amountIndexes.length === 0 || recognizedHeaderCells < 2) return null
-  return { headers: row, dateIndexes, amountIndexes, incomeAmountIndexes, expenseAmountIndexes, merchantIndexes }
+  return {
+    headers: row,
+    dateIndexes,
+    amountIndexes,
+    incomeAmountIndexes,
+    expenseAmountIndexes,
+    merchantIndexes,
+    supplyAmountIndexes,
+    taxAmountIndexes,
+    grossAmountIndexes,
+    taxTypeIndexes,
+  }
 }
 
 function detectDocumentKind(rows: Array<{ row: string[] }>): BookkeepingTransactionFileInspection['documentKind'] {
@@ -311,6 +370,35 @@ function inferDirectionFromHeaderAmount(
   return inferDirection(row, amount)
 }
 
+function buildParsedVatFact(params: {
+  file: UploadFileLike
+  row: string[]
+  headerMap?: HeaderMap | null
+  direction: Direction
+  sourceType: SourceType
+  sheetName: string
+  rowNumber: number
+}): ParsedVatFact | undefined {
+  if (!params.headerMap || !['card', 'receipt', 'tax_invoice'].includes(params.sourceType)) return undefined
+  if (params.direction === 'unknown') return undefined
+
+  const supplyAmountKrw = pickByIndexes(params.row, params.headerMap.supplyAmountIndexes, normalizeAmount)
+  const taxAmountKrw = pickByIndexes(params.row, params.headerMap.taxAmountIndexes, normalizeAmount)
+  const grossAmountKrw = pickByIndexes(params.row, params.headerMap.grossAmountIndexes, normalizeAmount)
+  const taxType = pickByIndexes(params.row, params.headerMap.taxTypeIndexes, normalizeVatTaxType)
+  if (supplyAmountKrw === null || taxAmountKrw === null || grossAmountKrw === null || taxType === null) return undefined
+
+  const parsed = parsedVatFactSchema.safeParse({
+    direction: params.direction === 'income' ? 'sale' : 'purchase',
+    taxType,
+    supplyAmountKrw: Math.abs(supplyAmountKrw),
+    taxAmountKrw: Math.abs(taxAmountKrw),
+    grossAmountKrw: Math.abs(grossAmountKrw),
+    sourceReference: `${params.file.id}:${params.sheetName}:${params.rowNumber}`,
+  })
+  return parsed.success ? parsed.data : undefined
+}
+
 function isSummaryRow(row: string[]) {
   const text = row.join(' ')
   return /(^|\s)(합계|총계|소계|원화\s*합계|달러\s*합계|엔화\s*합계|total|subtotal)(\s|$)/i.test(text) ||
@@ -345,18 +433,32 @@ function rowToCandidate(
   const pickedAmount = pickRepresentativeAmount(amounts)
   if (pickedAmount === null) return null
   const description = pickHeaderLabeledDescription(row, meta.headerMap)
+  const sourceType = inferSourceType(file, row)
+  const direction = inferDirectionFromHeaderAmount(meta.headerMap, pickedAmount.index, row, pickedAmount.amount)
+  const sourceRowRef = `${file.id}:${meta.sheetName}:${meta.rowNumber}`
+  const vatFact = buildParsedVatFact({
+    file,
+    row,
+    headerMap: meta.headerMap,
+    direction,
+    sourceType,
+    sheetName: meta.sheetName,
+    rowNumber: meta.rowNumber,
+  })
   const candidate = {
     sourceFileId: file.id,
     sourceFilename: file.originalFilename,
-    sourceType: inferSourceType(file, row),
+    sourceType,
     transactionDate: date,
     merchantName: pickMerchantFromHeader(row, meta.headerMap),
     description: [
       `${meta.sheetName} 시트 ${meta.rowNumber}행`,
       description,
     ].filter(Boolean).join(' · '),
-    amountKrw: Math.abs(pickedAmount.amount),
-    direction: inferDirectionFromHeaderAmount(meta.headerMap, pickedAmount.index, row, pickedAmount.amount),
+    amountKrw: vatFact?.grossAmountKrw ?? Math.abs(pickedAmount.amount),
+    direction,
+    sourceRowRef,
+    vatFact,
     rawRow: row.slice(0, 30),
   }
 

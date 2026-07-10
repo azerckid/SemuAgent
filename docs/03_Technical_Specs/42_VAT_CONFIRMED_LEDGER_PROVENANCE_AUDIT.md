@@ -1,6 +1,6 @@
 # VAT Confirmed-Ledger Provenance Audit
 > Created: 2026-07-10 09:55 KST
-> Last Updated: 2026-07-10 09:55 KST
+> Last Updated: 2026-07-10 13:49 KST
 
 ## 0. Purpose
 
@@ -105,6 +105,30 @@ locked.
 | 2d-3a | This audit and completion-contract update | Existing gaps, chosen model, non-goals, and QA gates are documented before schema/code changes. |
 | 2d-3b | Additive VAT fact + summary provenance schema and writers | Parsed/manual VAT facts are stored with source identity; sample data uses the same writer contract; existing rows remain locked until backfilled/confirmed. |
 | 2d-3c | Deterministic rebuild + package-gate verification | Rebuild tests cover all tax categories and stale/missing sources; the UI/API unlock only when the current fingerprint verifies. |
+
+### 4.1 Slice 2d-3b Implementation Result
+
+Migration `0067_add_vat_fact_provenance.sql` adds the classification VAT fact
+columns and nullable summary provenance metadata. The shared Zod contract in
+`lib/vat/facts.ts` is used by parsed transaction rows, first-run sample rows,
+and the existing staff row PATCH writer.
+
+- Exact parser values are stored as `derived` only when supply amount, tax
+  amount, gross amount, direction, tax type, and source-row identity are all
+  present and arithmetically consistent.
+- Evidence rows without that complete basis are stored as `needs_review` with
+  no inferred supply or tax amount. Gross divided by 11 is never used.
+- Staff-confirmed facts must pass the same arithmetic validation and their
+  gross amount must equal the classification row amount.
+- Bank rows remain payment/settlement rows and receive no VAT fact fields.
+- Existing rows are not backfilled. First-run sample evidence rows also remain
+  `needs_review` because their current fixture definitions do not contain exact
+  VAT supply/tax splits.
+- Summary provenance fields remain null until Slice 2d-3c performs a
+  deterministic rebuild and writes the current fingerprint.
+
+The package gate therefore remains unconditionally provenance-locked after
+2d-3b. This is intentional, not a partial unlock.
 
 No further 2d-3 sub-slice may be added without updating this contract first.
 Slice 2d-3 is complete only when both 2d-3b and 2d-3c are merged and the package

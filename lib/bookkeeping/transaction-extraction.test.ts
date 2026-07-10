@@ -342,4 +342,60 @@ describe('extractTransactionCandidates', () => {
     expect(candidates[0]?.rawRow).toContain('')
     expect(candidates[0]?.amountKrw).toBe(2561569)
   })
+
+  it('preserves exact VAT supply, tax, and gross values from a tax-invoice row', () => {
+    const buffer = workbookBuffer({
+      '매입': [
+        ['작성일자', '매입매출구분', '거래처', '공급가액', '세액', '합계금액', '과세유형'],
+        ['2026-06-10', '매입', '주식회사 테스트', '100,000', '10,000', '110,000', '과세'],
+      ],
+    })
+
+    const candidates = extractTransactionCandidates({
+      file: {
+        id: 'file-tax-invoice-exact',
+        originalFilename: '전자세금계산서.xlsx',
+        fileType: 'excel',
+      },
+      buffer,
+    })
+
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]).toMatchObject({
+      sourceType: 'tax_invoice',
+      amountKrw: 110000,
+      direction: 'expense',
+      sourceRowRef: 'file-tax-invoice-exact:매입:2',
+      vatFact: {
+        direction: 'purchase',
+        taxType: 'taxable',
+        supplyAmountKrw: 100000,
+        taxAmountKrw: 10000,
+        grossAmountKrw: 110000,
+        sourceReference: 'file-tax-invoice-exact:매입:2',
+      },
+    })
+  })
+
+  it('does not infer a VAT fact when an exact source field is missing', () => {
+    const buffer = workbookBuffer({
+      '매입': [
+        ['작성일자', '매입매출구분', '거래처', '공급가액', '합계금액', '과세유형'],
+        ['2026-06-10', '매입', '주식회사 테스트', '100,000', '110,000', '과세'],
+      ],
+    })
+
+    const candidates = extractTransactionCandidates({
+      file: {
+        id: 'file-tax-invoice-missing-tax',
+        originalFilename: '전자세금계산서.xlsx',
+        fileType: 'excel',
+      },
+      buffer,
+    })
+
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]?.amountKrw).toBe(110000)
+    expect(candidates[0]?.vatFact).toBeUndefined()
+  })
 })

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { manualVatFactInputSchema, parsedVatFactSchema } from '@/lib/vat/facts'
 import { BOOKKEEPING_ACCOUNT_CATEGORIES } from './account-categories'
 
 const accountCategoryKeys = BOOKKEEPING_ACCOUNT_CATEGORIES.map((category) => category.key) as [
@@ -27,6 +28,8 @@ export const transactionCandidateSchema = z.object({
   description: z.string().optional(),
   amountKrw: z.number().int().optional(),
   direction: bookkeepingDirectionSchema,
+  sourceRowRef: z.string().min(1).max(500).optional(),
+  vatFact: parsedVatFactSchema.optional(),
   rawRow: z.array(z.string()).max(30),
 })
 
@@ -55,6 +58,7 @@ export const updateClassificationRowSchema = z.object({
   status: bookkeepingRowStatusSchema.optional(),
   purposeRequestRowId: z.string().min(1).nullable().optional(),
   linkedEvidenceRowId: z.string().min(1).nullable().optional(),
+  vatFact: manualVatFactInputSchema.nullable().optional(),
 })
 
 export const bulkConfirmClassificationRowsSchema = z.object({

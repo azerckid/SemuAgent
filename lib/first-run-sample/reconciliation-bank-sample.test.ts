@@ -61,6 +61,16 @@ describe('reconciliation bank sample rows', () => {
     expect(bankRow?.transactionDate).toBe(taxRow?.transactionDate)
     expect(bankRow?.status).toBe('suggested')
     expect(bankRow?.recommendationConfidence).toBe('high')
+    expect(bankRow?.vatFactStatus).toBeNull()
+    expect(taxRow).toMatchObject({
+      vatDirection: 'sale',
+      vatTaxType: 'needs_review',
+      vatSupplyAmountKrw: null,
+      vatTaxAmountKrw: null,
+      vatGrossAmountKrw: null,
+      vatFactSource: 'parser',
+      vatFactStatus: 'needs_review',
+    })
   })
 
   it('creates paired card and tax invoice rows', () => {

@@ -126,6 +126,14 @@ beforeAll(async () => {
       final_account text,
       staff_memo text,
       status text NOT NULL DEFAULT 'suggested',
+      vat_direction text,
+      vat_tax_type text,
+      vat_supply_amount_krw integer,
+      vat_tax_amount_krw integer,
+      vat_gross_amount_krw integer,
+      vat_fact_source text,
+      vat_fact_source_ref text,
+      vat_fact_status text,
       linked_evidence_row_id text,
       confirmed_by_staff_id text,
       confirmed_at text,
@@ -591,5 +599,88 @@ describe('updateBookkeepingClassificationRow evidence link (JC-010 2b-2)', () =>
       .from(bookkeepingTransactionClassification)
       .where(eq(bookkeepingTransactionClassification.id, CLASSIFICATION_ROW_ID))
     expect(row.linkedEvidenceRowId).toBe(EVIDENCE_ROW_ID)
+  })
+})
+
+describe('updateBookkeepingClassificationRow VAT fact writer (Slice 2d-3b)', () => {
+  const VAT_ROW_ID = 'classification-row-vat-fact'
+
+  beforeEach(async () => {
+    await client.execute({
+      sql: `INSERT INTO bookkeeping_transaction_classification
+            (id, tenant_id, classification_run_id, upload_session_id, source_type, transaction_date, merchant_name, description, amount_krw, direction, recommended_account, recommendation_confidence, recommendation_reason, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 'tax_invoice', '2026-06-10', '주식회사 테스트', '매입 세금계산서', 110000, 'expense', 'supplies', 'high', '세금계산서', 'suggested', '2026-06-01', '2026-06-01')`,
+      args: [VAT_ROW_ID, TENANT, RUN_ID, SESSION_ID],
+    })
+  })
+
+  it('stores exact staff-confirmed VAT values with source identity', async () => {
+    const result = await updateBookkeepingClassificationRow({
+      rowId: VAT_ROW_ID,
+      sessionId: SESSION_ID,
+      tenantId: TENANT,
+      staffRecord,
+      vatFact: {
+        direction: 'purchase',
+        taxType: 'taxable',
+        supplyAmountKrw: 100000,
+        taxAmountKrw: 10000,
+        grossAmountKrw: 110000,
+      },
+    })
+
+    expect(result.ok).toBe(true)
+    const [row] = await testDb
+      .select()
+      .from(bookkeepingTransactionClassification)
+      .where(eq(bookkeepingTransactionClassification.id, VAT_ROW_ID))
+    expect(row).toMatchObject({
+      vatDirection: 'purchase',
+      vatTaxType: 'taxable',
+      vatSupplyAmountKrw: 100000,
+      vatTaxAmountKrw: 10000,
+      vatGrossAmountKrw: 110000,
+      vatFactSource: 'manual',
+      vatFactSourceRef: `staff:${staffRecord.id}:${VAT_ROW_ID}`,
+      vatFactStatus: 'confirmed',
+    })
+  })
+
+  it('rejects a VAT gross amount that does not match the classification row', async () => {
+    const result = await updateBookkeepingClassificationRow({
+      rowId: VAT_ROW_ID,
+      sessionId: SESSION_ID,
+      tenantId: TENANT,
+      staffRecord,
+      vatFact: {
+        direction: 'purchase',
+        taxType: 'taxable',
+        supplyAmountKrw: 90000,
+        taxAmountKrw: 9000,
+        grossAmountKrw: 99000,
+      },
+    })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.status).toBe(400)
+  })
+
+  it('rejects manual VAT facts on bank settlement rows', async () => {
+    const result = await updateBookkeepingClassificationRow({
+      rowId: CLASSIFICATION_ROW_ID,
+      sessionId: SESSION_ID,
+      tenantId: TENANT,
+      staffRecord,
+      vatFact: {
+        direction: 'purchase',
+        taxType: 'taxable',
+        supplyAmountKrw: 13636,
+        taxAmountKrw: 1364,
+        grossAmountKrw: 15000,
+      },
+    })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.status).toBe(400)
   })
 })

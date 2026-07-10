@@ -1,4 +1,5 @@
 import type { bookkeepingTransactionClassification } from '@/lib/db/schema'
+import { buildParsedVatFactFields } from '@/lib/vat/facts'
 import {
   BANK_SAMPLE_DEFINITIONS,
   CARD_SAMPLE_DEFINITIONS,
@@ -49,18 +50,23 @@ function buildClassificationRow(
   runId: string,
   input: {
     idSuffix: string
-    sourceType: BookkeepingInsert['sourceType']
+    sourceType: NonNullable<BookkeepingInsert['sourceType']>
     transactionDate: string
     merchantName: string
     description: string
     amountKrw: number
-    direction: BookkeepingInsert['direction']
+    direction: NonNullable<BookkeepingInsert['direction']>
     recommendedAccount: string
     status: BookkeepingInsert['status']
     recommendationConfidence: BookkeepingInsert['recommendationConfidence']
     evidenceJson: string | null
   },
 ): BookkeepingInsert {
+  const vatFactFields = buildParsedVatFactFields({
+    sourceType: input.sourceType,
+    direction: input.direction,
+    sourceReference: `sample:${input.idSuffix}`,
+  })
   return {
     id: firstRunSampleId(params.tenantId, input.idSuffix),
     tenantId: params.tenantId,
@@ -81,6 +87,7 @@ function buildClassificationRow(
     finalAccount: null,
     staffMemo: null,
     status: input.status,
+    ...vatFactFields,
     confirmedByStaffId: null,
     confirmedAt: null,
     createdAt: params.timestamp,

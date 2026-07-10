@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-10 09:55 KST
+> Last Updated: 2026-07-10 13:49 KST
 
 ## Status Legend
 
@@ -183,7 +183,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 자료대조원장 Slice 2d-1 shared reconciliation gate + 신고 준비 read 연동 — live 원장과 같은 `closingChecklist`에서 Zod gate를 만들고 신고 준비의 legacy 기장 알림을 교체. 카드/차단 목록/사이드바 badge가 동일 값을 사용하며 DB write 없음
   - [x] 자료대조원장 Slice 2d-2 부가세 패키지 UI/API gate 강제 — 자료수집·대조원장·공제 검토·확정 원장 provenance를 하나의 Zod gate로 결합. UI와 POST API가 동일 reason/count/route를 사용하며, 2d-3 완료 전에는 provenance 미확인 사유로 생성 잠금 유지
   - [x] 자료대조원장 Slice 2d-3a provenance 감사·완료선 고정 — 현재 VAT snapshot은 runtime producer/정규화 VAT fact/연결된 deduction review가 없어 검증 불가. [Audit 42](../03_Technical_Specs/42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md)로 gross/11 추정 금지와 2d-3b→2d-3c 순서 고정
-  - [ ] 자료대조원장 Slice 2d-3b additive VAT fact 필드 + summary provenance metadata + source writer 구현
+  - [x] 자료대조원장 Slice 2d-3b additive VAT fact 필드 + summary provenance metadata + source writer 구현 — migration 0067, `lib/vat/facts.ts`, parser/sample/manual writer. exact 공급가액·세액·합계액이 모두 맞을 때만 저장하고, gross/11 추정·기존 row 자동 backfill·package unlock 없음
   - [ ] 자료대조원장 Slice 2d-3c deterministic rebuild + fingerprint 검증 + package gate 잠금 해제 구현
 - Acceptance Criteria:
   - [x] 정규화된 거래가 분류 큐에 AI 추천 계정과목·신뢰도와 함께 표시된다.
@@ -213,6 +213,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check Update (2026-07-10 09:02): Slice 2d-1 구현 완료. `blockerCount`는 증빙 필요 + 소명 필요 + 계정 미확정 + 제외 사유 필요의 미해결 액션 합계이며 고유 거래 행 수가 아니다. dev DB `2026-H1` 검증에서 자료대조원장 `698건`과 신고 준비 카드 `6 + 5 + 687 + 0 = 698건`이 일치했다. 다음은 2d-2 부가세 package UI/API gate 강제다.
 - Document Sync Check Update (2026-07-10 09:34): Slice 2d-2 구현 완료. dev DB `2026-H1`에서 자료수집 `1 + 3`, 자료대조원장 `698`, 공제 검토 `3`, provenance 미확인 `1`을 합친 패키지 gate `706`을 확인했다. 부가세 화면과 POST API는 동일 reason/count/target route를 사용하고, 다음은 2d-3 확정 원장 provenance 검증 또는 deterministic rebuild다.
 - Document Sync Check Update (2026-07-10 09:55): Slice 2d-3a 감사 완료. `vat_period_summary`는 sample seed가 직접 만든 snapshot이고 runtime tax-value producer가 없으며, classification에는 exact VAT fact가 없고 dev sample deduction review 4건은 source link `0/0/0`, voucher는 unrelated draft 1건뿐이다. [Audit 42](../03_Technical_Specs/42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md)에 2d-3b additive VAT facts/provenance metadata → 2d-3c deterministic rebuild/fingerprint verification 완료선을 고정했다. 검증 전 package 잠금 유지.
+- Document Sync Check Update (2026-07-10 13:45): Slice 2d-3b 구현. migration 0067이 classification VAT fact 8개 필드와 `vat_period_summary` provenance 4개 필드를 nullable로 추가한다. 파일 parser·first-run sample·staff PATCH는 `lib/vat/facts.ts`의 동일 Zod 산술 계약을 사용한다. exact source basis가 없는 evidence row는 `needs_review`, bank row는 VAT fact 없음, 기존 row backfill 없음. 2d-3c 전 package 잠금은 그대로 유지한다.
 
 ### JC-011 · Build VAT workspace (부가세) — 신규
 

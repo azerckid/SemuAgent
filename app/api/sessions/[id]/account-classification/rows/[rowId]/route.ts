@@ -34,6 +34,7 @@ export async function PATCH(
       status: input.data.status,
       purposeRequestRowId: input.data.purposeRequestRowId,
       linkedEvidenceRowId: input.data.linkedEvidenceRowId,
+      vatFact: input.data.vatFact,
     })
 
     if (!result.ok) {
