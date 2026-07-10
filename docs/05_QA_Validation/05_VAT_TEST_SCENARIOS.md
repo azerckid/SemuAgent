@@ -127,19 +127,19 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-90 | 사업 무관·비영업용 승용차·기업업무추진비처럼 공식 규칙에 명확히 해당 | 판단 파생 | LLM 없이 불공제 가능성·규칙 조항·근거 사실 표시, 자동확정 없음 | Pending |
-| S-91 | 같은 tenant·사업장에 같은 거래처/용도의 사용자 확정 이력 | 반복 거래 판단 | 이전 확정 건수·기간·결정을 패턴 근거로 표시, 다른 tenant 이력 미사용 | Pending |
+| S-90 | 사업 무관·비영업용 승용차·기업업무추진비처럼 공식 규칙에 명확히 해당 | 판단 파생 | LLM 없이 불공제 가능성·규칙 조항·근거 사실 표시, 자동확정 없음 | PASS·VAI-3a 단위 |
+| S-91 | 같은 tenant·사업장에 같은 거래처/용도의 사용자 확정 이력 | 반복 거래 판단 | 이전 확정 건수·기간·결정을 패턴 근거로 표시, 다른 tenant 이력 미사용 | PASS·VAI-3a 단위/정적 |
 | S-92 | 규칙·패턴으로 결정하기 어려운 거래 목적 | 단일 AI 판단 | 가능성·근거·부족한 정보·신뢰도 표시, 사용자 확정 전 저장값 미변경 | Pending |
 | S-93 | 영세율/면세·고액·낮은 신뢰도 또는 1차 모델 불일치 | multi-provider 판단 | Gemini+OpenAI 결과를 비교하고 불일치 시 Claude 중재; 최종은 사용자 확인 필요 | Pending |
-| S-94 | 영세율 가능 거래에 계약서·외화입금 등 필수 증빙 일부 누락 | 사용자 확정 시도 | 누락 증빙 표시, 영세율 확정과 downstream gate 해제 차단 | Pending |
-| S-95 | 면세 가능 거래가 명칭만 있고 인허가·실질 용역 정보 부족 | 판단 파생 | 면세 자동확정 금지, 내용 보완 또는 전문가 확인 상태 | Pending |
-| S-96 | 공통매입에 실지귀속 정보 존재 | 안분 판단 | 실지귀속을 우선 사용하고 단순 비율 안분을 자동 적용하지 않음 | Pending |
+| S-94 | 영세율 가능 거래에 계약서·외화입금 등 필수 증빙 일부 누락 | 사용자 확정 시도 | 누락 증빙 표시, 영세율 확정과 downstream gate 해제 차단 | PARTIAL·VAI-3a 표시, VAI-4 gate 후속 |
+| S-95 | 면세 가능 거래가 명칭만 있고 인허가·실질 용역 정보 부족 | 판단 파생 | 면세 자동확정 금지, 내용 보완 또는 전문가 확인 상태 | PASS·VAI-3a 단위 |
+| S-96 | 공통매입에 실지귀속 정보 존재 | 안분 판단 | 실지귀속을 우선 사용하고 단순 비율 안분을 자동 적용하지 않음 | PARTIAL·VAI-3a 안분 확인 표시, 실지귀속 소비 후속 |
 | S-97 | provider timeout·quota·invalid schema·전체 실패 | VAT 화면 사용 | 무한 loading 없이 해당 행만 수동 확인, 표·검색·기존 mutation 계속 동작 | Pending |
 | S-98 | AI 추천과 사용자 판단이 다름 | 사용자가 `다르게` 확정 | 사용자 최종 결정이 저장되고 추천·규칙 버전·확정자·시각을 별도로 감사 가능 | Pending |
 | S-99 | 미확정 AI 판단이 1건 이상 | rebuild/package gate | 추천만으로 gate 해제되지 않고, 사용자 확정된 VAT fact/decision만 소비 | Pending |
 | S-100 | 법령 규칙 버전 변경 | 기존 확정 행 로드 | 기존 결정을 몰래 변경하지 않고 재검토 필요 여부와 새 규칙 버전을 표시 | Pending |
-| S-101 | 실제 홈택스 조회자료를 가져오지 않음 | VAT 판단 표 렌더 | `홈택스 현재값`·실제 차액을 표시하지 않고 `자동채움 예상`과 확인·수정 행동만 표시 | Pending |
-| S-102 | 사업용 카드 매입의 SemuAgent 판단이 불공제 가능성 높음 | 행 렌더 | `공제·불공제 확인`을 표시하고 사용자 확정 전 기존 decision을 바꾸지 않음 | Pending |
+| S-101 | 실제 홈택스 조회자료를 가져오지 않음 | VAT 판단 표 렌더 | `홈택스 현재값`·실제 차액을 표시하지 않고 `자동채움 예상`과 확인·수정 행동만 표시 | PASS·VAI-3a 정적 |
+| S-102 | 사업용 카드 매입의 SemuAgent 판단이 불공제 가능성 높음 | 행 렌더 | `공제·불공제 확인`을 표시하고 사용자 확정 전 기존 decision을 바꾸지 않음 | PASS·VAI-3a 단위 |
 | S-103 | 계좌·핀테크 매출이 전자증빙 집계에서 누락될 가능성 | 행 렌더 | `금액 추가·수정 확인`과 누락 매출 근거를 표시, 홈택스 현재 누락으로 단정하지 않음 | Pending |
 
 ## 3. 자동화 계획
@@ -148,7 +148,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **정적 검증 완료** (`vat-workspace.test.ts`): Preview 구조(S-01), 라우트(S-02), reviews 미import(S-70), 책임 경계 문구(S-71~72), mutation tenant guard(S-53), composite package guard(S-63~65), explicit rebuild route/action(S-78).
 - **브라우저 수동 검증 완료**: 승인 Preview와 실제 `/dashboard/vat?period=2026-H1` 캡처 비교. 숫자/상태/잠금 버튼/인라인 안분 UI 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 전표 생성부터 VAT summary 생성까지의 도메인 E2E는 별도 회계 시드 준비 후 검증한다.
-- **JC-035 자동화 계획**: VAI-2에서 규칙 fixture·provider mock·timeout·tenant 격리·감사 저장 계약을 고정했고, VAI-3~6 각 PR에서 S-90~S-103을 단계적으로 자동화한다. VAI-3a는 read-only 규칙·패턴부터 시작한다.
+- **JC-035 자동화 계획**: VAI-3a에서 Zod·deterministic 규칙·이전 확정 패턴·read model·read-only UI 경계를 자동화했다. VAI-3b는 provider mock·timeout/fallback, VAI-4~6은 mutation·감사·gate를 단계적으로 자동화한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)

@@ -25,8 +25,9 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 
 - VAI-0 완료: 범위·AI 판단 단계·실패 안전성 고정
 - VAI-1 완료: AI 판단 작업표 Preview 프로젝트 오너 승인
-- 현재: VAI-2 규칙 매트릭스·Pre-Code Brief 작성 완료, 승인 대기
-- 다음: VAI-3 read-only 추천 구현
+- VAI-2 완료: 규칙 매트릭스·Pre-Code Brief 프로젝트 오너 승인
+- 현재: VAI-3a Zod·deterministic rule·이전 확정 패턴·read-only 화면 구현 완료, 프로젝트 오너 검토 대기
+- 다음: VAI-3a 승인 뒤 VAI-3b single-provider AI·timeout/fallback
 
 ## 0.1 Current Status
 
@@ -181,7 +182,7 @@ VAI-1 승인 전 VAI-2 Pre-Code Brief와 코드 구현을 시작하지 않는다
 JC-035는 다음을 **모두** 만족할 때만 `done`이다.
 
 - [x] VAI-1 HTML Preview가 프로젝트 오너에게 승인됐다.
-- [ ] 공제/불공제/안분/과세/영세율/면세 공식 규칙 매트릭스의 출처·버전·적용일이 고정됐다.
+- [x] 공제/불공제/안분/과세/영세율/면세 공식 규칙 매트릭스의 출처·버전·적용일이 고정됐다.
 - [ ] 규칙·패턴·AI·consensus·수동 판단의 source와 근거가 화면에 구분된다.
 - [ ] 영세율·면세는 필수 증빙이 없으면 사용자 확정과 downstream gate가 차단된다.
 - [ ] AI가 판단하지 못하거나 timeout/error가 나도 화면과 수동 검토가 계속 동작한다.

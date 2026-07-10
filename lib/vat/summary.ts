@@ -2,6 +2,8 @@ import { and, desc, eq } from 'drizzle-orm'
 import type { DateTime } from 'luxon'
 import { buildCompanyHomePeriod, type CompanyHomePeriod } from '@/lib/company-home/summary'
 import { client, tenant, vatDeductionReview, vatPeriodSummary } from '@/lib/db/schema'
+import type { VatTaxTreatmentDisplayRow } from '@/lib/validations/vat-tax-treatment'
+import { loadVatTaxTreatmentDisplayRows } from './tax-treatment-summary'
 
 export type VatSalesGroupId = 'taxable' | 'zero_rated' | 'exempt'
 export type VatDeductionDecision = 'pending' | 'deductible' | 'non_deductible' | 'prorated'
@@ -66,6 +68,7 @@ export type VatSummary = {
   hasPeriodSummary: boolean
   taxSummary: VatTaxSummary
   salesGroups: VatSalesGroup[]
+  taxTreatmentRows: VatTaxTreatmentDisplayRow[]
   deductionReviews: VatDeductionReviewRow[]
   schedules: VatSchedule[]
   packagePreview: VatPackagePreview
@@ -369,6 +372,7 @@ export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSumm
       hasPeriodSummary: false,
       taxSummary,
       salesGroups: buildVatSalesGroups(EMPTY_VAT_PERIOD_SUMMARY),
+      taxTreatmentRows: [],
       deductionReviews: [],
       schedules: buildVatSchedules(taxSummary, []),
       packagePreview: buildVatPackagePreview({
@@ -381,7 +385,7 @@ export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSumm
     }
   }
 
-  const [summaryRows, reviewRows] = await Promise.all([
+  const [summaryRows, reviewRows, taxTreatmentRows] = await Promise.all([
     db
       .select({
         taxableSupplyKrw: vatPeriodSummary.taxableSupplyKrw,
@@ -426,6 +430,11 @@ export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSumm
         eq(vatDeductionReview.periodKey, period.key),
       ))
       .orderBy(desc(vatDeductionReview.decision), desc(vatDeductionReview.inputTaxKrw), desc(vatDeductionReview.createdAt)),
+    loadVatTaxTreatmentDisplayRows({
+      tenantId,
+      businessEntityId: businessEntity.id,
+      period,
+    }),
   ])
 
   const summary = summaryRows[0] ?? EMPTY_VAT_PERIOD_SUMMARY
@@ -437,6 +446,7 @@ export async function loadVatSummary({ tenantId, periodKey, today }: LoadVatSumm
     hasPeriodSummary: Boolean(summaryRows[0]),
     taxSummary,
     salesGroups: buildVatSalesGroups(summary),
+    taxTreatmentRows,
     deductionReviews,
     schedules: buildVatSchedules(taxSummary, deductionReviews),
     packagePreview: buildVatPackagePreview({

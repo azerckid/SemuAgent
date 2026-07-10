@@ -301,7 +301,7 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 
 | 순서 | PR 범위 | 완료선 |
 |:---|:---|:---|
-| VAI-3a | Zod + deterministic rules + pattern + read model | fixture에서 근거·홈택스 행동 표시, DB 쓰기 0 |
+| VAI-3a | **구현 완료** — Zod + deterministic rules + pattern + read model | 실제 VAT 화면이 validated read model 소비, fixture에서 근거·홈택스 행동 검증, DB 쓰기 0 |
 | VAI-3b | 필요한 행만 single AI + timeout/fallback | 실제 화면에서 AI/수동 상태 표시, DB 쓰기 0 |
 | VAI-4a | additive audit schema + migration + API transaction | 사용자 확정 저장·tenant guard·rollback 테스트 |
 | VAI-4b | 적용/다르게/보류/전문가 확인 UI + undo | 브라우저 E2E와 감사 이력 확인 |
@@ -320,7 +320,17 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 - [x] tenant·사업장·기간·규칙 버전·추천 fingerprint 검증을 고정했다.
 - [x] AI timeout/fallback과 수동 검토 비차단 계약을 고정했다.
 - [x] VAI-3~6 PR 순서와 완료선을 고정했다.
-- [ ] 프로젝트 오너가 VAI-2 Pre-Code Brief를 승인했다.
+- [x] 프로젝트 오너가 VAI-2 Pre-Code Brief를 승인했다.
+
+### 11.1 VAI-3a Implementation Result
+
+- [x] `vat-kr-2026.07-v1` Zod 표시 계약과 direction별 final decision 검증
+- [x] P-01~P-07·S-01~S-06 중 exact VAT fact로 판단 가능한 deterministic 규칙 구현
+- [x] 같은 tenant·사업장·거래처·방향의 이전 사용자 확정 패턴만 보강 근거로 사용
+- [x] 확정 `vat_deduction_review.decision`을 오래된 `kind`보다 우선해 화면 모순 방지
+- [x] `/dashboard/vat`에서 추천·근거·필요 증빙·홈택스 자동채움 예상 행동을 read-only 표시
+- [x] 신규 migration·DB write·AI provider 호출 없음
+- [x] 대표 규칙·패턴·read model·Zod 회귀 테스트 추가
 
 ## 12. Related Documents
 

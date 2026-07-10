@@ -33,6 +33,7 @@ describe('VAT workspace static contract', () => {
     const sectionOrder = [
       'TaxSummaryHero',
       'SalesGroupsSection',
+      'TaxTreatmentSection',
       'DeductionReviewSection',
       'SchedulesSection',
       'PackagePreviewCard',
@@ -41,6 +42,16 @@ describe('VAT workspace static contract', () => {
     const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
     expect(positions.every((position) => position >= 0)).toBe(true)
     expect([...positions].sort((a, b) => a - b)).toEqual(positions)
+  })
+
+  it('renders VAI-3a recommendations as expected Hometax prefill guidance without mutation controls', () => {
+    expect(workspaceSource).toContain('summary.taxTreatmentRows')
+    expect(workspaceSource).toContain('자동채움 예상')
+    expect(workspaceSource).toContain('공식 규칙')
+    expect(workspaceSource).toContain('이전 확정 패턴')
+    expect(workspaceSource).toContain("row.finalDecision ? '사용자 확정'")
+    expect(workspaceSource).toContain('미확정 · 저장 기능은 VAI-4에서 연결')
+    expect(workspaceSource).not.toContain('/api/vat/tax-treatments/')
   })
 
   it('wires deduction review actions to the VAT mutation endpoint (S-50~52)', () => {
