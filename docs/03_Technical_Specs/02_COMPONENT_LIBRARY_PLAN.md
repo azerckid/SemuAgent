@@ -138,18 +138,21 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 |:---|:---|:---|
 | VAT Summary Hero | 커스텀 `VatSummaryHero` | `card` + 3셀 계산 레이아웃 + 상태 안내 |
 | Sales Grouping Cards | 커스텀 `VatSalesGroupCards` | `card` + `badge` |
-| Deduction Review Table | 커스텀 `VatDeductionReviewTable` | `table` + `badge` + 행 액션 `button` |
+| VAT Tax Treatment Table | 커스텀 `VatTaxTreatmentTable` | 기존 `table` + 판단 source mark + 필요 증빙 tag + 사용자 확정 `button` |
+| Tax Treatment Basis | 커스텀 `VatTaxTreatmentBasis` | 한 줄 결론 + 공식 규칙/이전 패턴/AI 근거 + 부족한 사실 |
+| AI Failure Fallback | 커스텀 `VatAiFallbackState` | 행 단위 `수동 확인 필요` + 제한 재시도; 표 전체 비차단 |
 | Deduction Action Controls | 커스텀 `VatDeductionActions` | `button` + `sonner` 피드백 |
 | Schedule Status List | 커스텀 `VatScheduleList` | `card` + 상태칩 |
 | Confirmed Ledger Rebuild | 커스텀 `VatProvenanceRebuildButton` | `button` + `RefreshCw` + `sonner`; exact inputs가 유효하고 snapshot만 stale일 때만 노출 |
-| Filing Package Preview | 커스텀 `VatPackagePreview` | `card` + disabled `button` wrapper |
+| Filing Review Material | 커스텀 `VatPackagePreview` 이름 정리 검토 | `card` + disabled `button` wrapper; 공식 업로드 파일 아님 |
 | Locked Action Wrapper | 커스텀 `LockedActionButton` | visible locknote + `aria-describedby`; 별도 tooltip 패키지 미도입 |
 | State(로딩/빈/오류) | 공용 재사용 | `skeleton` + `button` |
 
 - 신규 shadcn 없음. `progress`/`skeleton`과 기존 `card`/`badge`/`button`/`table` 재사용.
-- 패키지 생성 버튼은 자료수집·자료대조·공제 검토·확정 원장 fingerprint 완료 전 `disabled` + `aria-disabled="true"` + visible locknote를 사용한다. 재계산 버튼은 자동 실행하지 않으며, exact inputs가 유효하고 snapshot만 stale인 조건에서만 표시한다. 브라우저별 `title` 툴팁에 의존하지 않는다.
+- JC-035는 별도 요약 카드를 추가하지 않고 기존 공제 검토 표를 AI 판단 작업표로 확장한다. source·근거·필요 증빙·사용자 확정을 같은 행에서 읽게 한다.
+- 검토 자료 마감 버튼은 자료수집·자료대조·사용자 세무판단·확정 원장 fingerprint 완료 전 `disabled` + `aria-disabled="true"` + visible locknote를 사용한다. 재계산 버튼은 자동 실행하지 않으며, exact inputs가 유효하고 snapshot만 stale인 조건에서만 표시한다. 브라우저별 `title` 툴팁에 의존하지 않는다.
 - 부가세 화면은 회사용 `/dashboard/vat`로 새로 구성하며, GIWA `/dashboard/reviews` 워크스페이스 컴포넌트를 import/render하지 않는다.
-- 자동 홈택스 제출·자동 납부 UI는 만들지 않는다. 신고 준비값 확인과 접수증 보관은 JC-013 신고지원에서 최종 연결한다.
+- 자동 홈택스 제출·자동 납부 UI는 만들지 않는다. AI 추천은 사용자 확정 전 기존 VAT mutation을 호출하지 않는다. 신고 준비값 확인과 접수증 보관은 JC-013 신고지원에서 최종 연결한다.
 
 ### 7.5 급여 (UI Design 4.5)
 

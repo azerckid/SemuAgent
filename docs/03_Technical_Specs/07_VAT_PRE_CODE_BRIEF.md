@@ -1,6 +1,11 @@
 # VAT Pre-Code Technical Brief
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-03 15:46
+> Last Updated: 2026-07-10
+
+> **Extension notice (JC-035):** 이 문서는 구현 완료된 JC-011 기본 VAT 화면·저장 계약을
+> 보존한다. 공제/불공제/안분과 과세/영세율/면세를 설명 가능한 AI 판단으로 보강하는
+> 다음 작업은 [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)를
+> 따른다. JC-035 UI Preview 승인 전에는 별도 Pre-Code Brief와 코드를 시작하지 않는다.
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -156,11 +161,13 @@ type VatSummary = {
 - `inputTaxDeductibleKrw`는 전체 매입세액(`inputTaxKrw`)을 예정 공제액으로 두고, `vat_deduction_review.decision='non_deductible'`은 전액 차감, `prorated`는 비공제분만 차감한다. `pending` 후보는 아직 차감하지 않고 잠금 사유로 남긴다.
 - `payableTaxKrw = outputTaxKrw - inputTaxDeductibleKrw`.
 - 매출 구분(과세/영세율/면세)은 `vat_period_summary`의 snapshot 값을 사용한다. 현재 전표 라인만으로는 영세율·면세를 안정적으로 복원하지 않는다.
-- 불공제 후보 기본 규칙:
+- 기존 JC-011 불공제 검토 표시 규칙:
   - 접대비/기업업무추진비 계정 또는 설명이면 `non_deductible_candidate`.
   - 비영업용 승용차 가능성이 있는 차량 관련 매입이면 `non_deductible_candidate`.
   - 과세·면세 공통매입이면 `proration_required`.
-  - 그 외 사업 관련 매입세액은 `deductible`.
+  - 그 외 거래를 근거 없이 공제로 자동 확정하지 않는다. 기존에 확정된 공제 행은
+    사용자 decision을 표시하고, 신규 AI 판단은 JC-035 규칙 매트릭스·근거·사용자
+    확인을 통과하기 전까지 `needs_review` 또는 pending으로 남긴다.
 - 패키지 생성 잠금: `pendingDeductionCount > 0`이면 `canGenerate=false`, disabled button + visible locknote + `aria-describedby`로 사유를 노출한다.
 - 세액은 `isFinal=false`이면 "예정"으로 표기한다.
 
@@ -229,5 +236,6 @@ type VatSummary = {
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 홈택스 보조 책임 경계
 - **UI_Screens**: [Screen Flow 4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.4](../02_UI_Screens/01_UI_DESIGN.md) · [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)
 - **Technical_Specs**: [Component & Library Plan](./02_COMPONENT_LIBRARY_PLAN.md) · [DB Schema](./03_DB_SCHEMA.md) · [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
+- **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) - JC-035 AI 판단 보강 완료선·실행 순서
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-011 Context Lock
 - **QA_Validation**: [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 구현 전 QA 계약

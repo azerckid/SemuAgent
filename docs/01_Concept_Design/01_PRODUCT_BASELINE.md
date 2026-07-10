@@ -113,6 +113,7 @@ Path 1 파일 다운로드와 Path 2 ZIP Export **모두** 전에, 확정 데이
   statements, receipts, payroll files, Hometax exports.
 - Classify transactions and generate reviewable bookkeeping entries.
 - Prepare VAT-period summaries and supporting schedules.
+- Assist VAT tax treatment review with official-rule, prior-pattern, and conditional AI evidence; keep deductible/non-deductible, proration, taxable/zero-rated/exempt decisions under explicit user confirmation.
 - Calculate payroll from structured company payroll inputs.
 - Generate filing-material packages for **Path 1** (official non-encrypted upload forms + Hometax upload guide).
 - Provide Hometax upload guidance and e-filing file validation (JC-030 Path 1).

@@ -1,11 +1,11 @@
 # VAT Prototype Review
 > Created: 2026-07-01 20:50
-> Last Updated: 2026-07-10 14:28
+> Last Updated: 2026-07-10
 
 ## 1. HTML UI Preview
 - Preview: [부가세](./previews/03_vat.html)
 - 확인 방식: 브라우저에서 HTML 파일 직접 열람. 회사 홈 "부가세 열기"(다음 할 일) 또는 사이드바 "부가세"로 진입.
-- 확인 목적: 부가세 세액 집계·매출 구분·매입세액 공제 검토·신고 패키지 흐름의 화면 구조, 동선, 상태별 UI
+- 확인 목적: 부가세 세액 집계·매출 구분과 함께, AI가 공제/불공제/안분·과세/영세율/면세 가능성을 근거·필요 증빙과 함께 제시하고 사용자가 확정하는 흐름의 화면 구조·동선·상태별 UI
 
 ## 2. Prototype Link/Screenshot
 - 정적 HTML Preview 파일 1종. 회사 홈·자료수집·기장검토와 상호 링크.
@@ -15,11 +15,15 @@
 - 회사 홈 → 부가세 진입(다음 할 일 CTA / 사이드바).
 - 세액 요약(매출세액 − 매입세액 = 납부 예정세액)과 마감 D-day 확인.
 - 매출 구분(과세/영세율/면세) 확인.
-- 매입세액 공제 검토: 불공제 후보 확정/공제, 공통매입 안분 계산.
+- AI 부가세 판단: 규칙·이전 확정 패턴·AI 보강·AI 합의를 구분해 표시.
+- 매입세액 공제 검토: 공제 가능성/불공제 가능성/공통매입 안분을 근거와 함께 확인하고 사용자가 확정.
+- 매출 과세유형 검토: 영세율·면세 가능성은 필수 증빙과 부족한 사실을 확인한 뒤 사용자 확정.
+- AI timeout·provider 실패 시 해당 행만 수동 확인으로 전환하고 나머지 화면과 mutation은 계속 사용.
 - 부속 명세 준비 상태 확인 → 자료수집·자료대조·공제 검토 완료 → stale snapshot이면 `확정 원장 다시 계산` → 현재 fingerprint 확인 후 신고 패키지 생성.
 
 ## 4. Screen States
-- Default: 세액 요약·매출 구분·공제 검토·부속 명세·패키지 미리보기가 채워진 화면.
+- Default: 세액 요약·매출 구분·AI 판단 작업표·부속 명세·신고 준비 검토 자료가 채워진 화면.
+- AI unavailable: 표는 유지하고 해당 행에 `수동 확인 필요`·다시 시도를 표시. 무한 loading 없음.
 - Loading: 카드·표 스켈레톤.
 - Empty: 집계할 매출·매입 자료 0건 시 "기장검토 먼저 확정" 안내.
 - Error: 세액 집계 로드 실패 시 오류 + 다시 시도.
@@ -27,9 +31,9 @@
 
 ## 5. Data Flow
 - Inputs: 기장검토 확정 전표(매출·매입), 증빙 유형, 공제/불공제 판정 근거.
-- Displayed data: 매출세액·매입세액·납부(예정)세액, 과세/영세율/면세 구분, 공제 검토 표(공급가액·세액·판정·사유), 부속 명세 준비 상태, 신고 패키지 미리보기.
-- Mutations / saved data: 공제/불공제 확정, 공통매입 안분 계산, 명시적 확정 원장 재계산, 신고 패키지 생성. 검토 완료 전에는 세액이 "예정"이며 패키지 생성 잠금. 재계산은 exact VAT fact와 같은 scope의 공제 검토가 유효할 때만 노출되고 자동 실행되지 않는다.
-- External dependencies: 없음(내부 집계). 자동 홈택스 제출은 범위 밖(패키지 + 준비값 확인까지). 외부 세무사 검토 흐름은 v1 제외.
+- Displayed data: 매출세액·매입세액·납부(예정)세액, 과세/영세율/면세 구분, AI 판단 source·신뢰도·근거·규칙 버전·필요 증빙, 사용자 확정 상태, 부속 명세 준비 상태, 신고 준비 검토 자료.
+- Mutations / saved data: 기존 공제/불공제 확정·공통매입 안분·명시적 확정 원장 재계산은 유지한다. JC-035에서는 AI 추천과 사용자 최종 결정을 분리 저장한다. 사용자 확정 전 AI 추천은 세액·VAT fact·package gate를 변경하지 않는다.
+- External dependencies: exact VAT fact·공식 규칙·이전 확정 패턴이 우선이며, 애매한 행에만 설정된 AI provider를 조건부 사용한다. provider가 없거나 실패해도 수동 검토로 전환한다. 자동 홈택스 제출은 범위 밖이다.
 
 ## 6. User Confirmation
 - 화면/UI 선확인 여부: 확인함
@@ -38,10 +42,20 @@
 - 확인 일시: 2026-07-01
 - 보완 필요 사항: 없음 (잠금 버튼 수정 반영 후 승인).
 
+### 6.1 JC-035 VAT AI Extension Review
+
+- 기존 JC-011 기본 화면 승인: 유지
+- AI 판단 작업표·근거·필요 증빙·사용자 확정 흐름: **확인 대기**
+- 신고 준비 검토 자료가 공식 홈택스 업로드 파일이 아니라는 문구: **확인 대기**
+- 승인 후 다음 작업: [VAT AI Tax Treatment Completion Contract §6 VAI-2](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)에 따라 공식 규칙 매트릭스와 별도 Pre-Code Brief 작성
+
 ## 7. Feedback & Improvements
 - (반영) 신고 패키지 생성 버튼을 승인 전 잠금 상태로 표현: `is-disabled` + `disabled` + `aria-disabled="true"`, muted 스타일, 잠김 라벨.
 - (구현 노트) disabled 버튼의 `title` 툴팁은 브라우저별로 표시가 일관되지 않는다. React 구현 시 비활성 버튼을 래퍼(예: span/tooltip 컴포넌트)로 감싸 잠금 사유를 접근성 있게 노출한다. → Component & Library Plan / JC-011 전제조건에 반영.
 - (Slice 2d-3c) 승인 Preview 이후 추가된 조건부 상태: 다른 package gate가 모두 준비됐으나 저장 snapshot fingerprint만 stale이면 패키지 카드에 `확정 원장 다시 계산`을 표시한다. unresolved fact/review 상태에서는 이 버튼도 숨기고 기존 blocker 사유만 표시한다.
+- (JC-035 Preview) 기존 공제검토 표를 별도 카드 추가 없이 AI 판단 작업표로 확장했다. 사용자는 한 행에서 판단 가능성·근거·필요 증빙·확정 액션을 함께 본다.
+- (JC-035 경계) `영세율 가능성`·`면세 가능성`은 확정 상태가 아니다. 필요한 증빙 또는 사실이 부족하면 package gate를 해제하지 않는다.
+- (JC-035 안전성) AI 장애는 화면 전체 오류가 아니라 해당 행의 수동 확인 상태다.
 
 ## 8. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -49,3 +63,4 @@
 - **UI_Screens**: [UI Design](./01_UI_DESIGN.md) - 디자인 시스템 및 컴포넌트
 - **UI_Screens**: [Bookkeeping Review Prototype Review](./04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) - 선행 화면(기장검토)
 - **UI_Screens**: [HTML Preview](./previews/03_vat.html) - 브라우저 확인용 프로토타입
+- **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) - JC-035 완료선·실행 순서
