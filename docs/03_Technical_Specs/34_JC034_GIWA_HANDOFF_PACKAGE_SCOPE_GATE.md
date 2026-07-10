@@ -1,6 +1,6 @@
 # JC-034 — GIWA Handoff Package Scope Gate
 > Created: 2026-07-07 04:00 KST
-> Last Updated: 2026-07-07 04:20 KST
+> Last Updated: 2026-07-10 16:01 KST
 
 ## 0. Flow Status
 
@@ -28,7 +28,7 @@ SemuAgent는 홈택스에 제출하지 않는다. 사무소는 위하고·세무
 |---|---|
 | Filing Path | **Path 2** — 세무회계사무소 연결 (자료기와) |
 | Path 1 (parallel) | 양식 파일 + 홈택스 안내 — JC-030 Path 1 · JC-013 |
-| Path 3 (future) | 인증·암호화 파일 — JC-030 Path 3 |
+| Path 3 (excluded) | 인증·암호화 파일 — 현재 제품 범위 밖 |
 | v1 delivery | **ZIP Export** (manual upload to firm) |
 | v2 delivery | Invitation link, API push, receipt sync |
 | Tax-agent marketplace | **Excluded** |
@@ -105,7 +105,7 @@ JC-034 must reuse `lib/efiling-simplified-wage` validation where 간이지급 is
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - **Concept_Design**: [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md)
-- **Technical_Specs**: [E-Filing Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 Validation / Path 1 / Path 3
+- **Technical_Specs**: [E-Filing Scope Gate](./19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 Validation / Path 1
 - **Technical_Specs**: [JC-030 PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
 - **Technical_Specs**: [JC-034 Pre-Code Brief](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md)
 - **Logic_Progress**: [Backlog JC-034](../04_Logic_Progress/00_BACKLOG.md)

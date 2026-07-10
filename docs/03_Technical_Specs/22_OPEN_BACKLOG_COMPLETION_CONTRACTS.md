@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-10 15:27 KST
+> Last Updated: 2026-07-10 16:01 KST
 
 ## 0. Purpose
 
@@ -16,7 +16,7 @@ Rule: an open backlog item may not start implementation unless its completion co
 | 공통 검증 | Validates confirmed data against official layout (Path 1 & 2) | JC-030 Validation |
 | Path 1 제출 준비물 | 홈택스 업로드용 양식·파일 작성 지원 | JC-030 Path 1, JC-013 |
 | Path 2 사무소 handoff | ZIP/package for JARYO-GIWA (자료기와) | JC-034 |
-| Path 3 인증 제출 준비물 | Encrypted Hometax-uploadable files after certification | JC-030 Path 3 |
+| 제품 범위 밖 | Encrypted Hometax files, fcrypt and certification tooling | Archived JC-030 research |
 | 제출 자동화 | Attempts submission after explicit user approval | JC-023 |
 | 기반 정리 | Removes copied GIWA assumptions or legacy surfaces | JC-031 |
 
@@ -28,7 +28,7 @@ Every item can move to `done` only when all of the following are true:
 
 1. Scope is fixed in the backlog and, when user-visible, through UI-First Gate.
 2. A Pre-Code Brief exists for implementation work, unless the item is explicitly docs-only or blocked by an external gate.
-3. Responsibility boundary is explicit: SemuAgent prepares data and artifacts; final filing is by the user (Path 1/3), licensed firm (Path 2), unless JC-023 is separately approved.
+3. Responsibility boundary is explicit: SemuAgent prepares data and artifacts; final filing is by the user (Path 1), licensed firm (Path 2), unless JC-023 is separately approved.
 4. No Hometax/certificate/bank/card credentials are stored.
 5. Tests and docs are updated for the implemented scope.
 6. Backlog status, acceptance checks, and Document Sync Check match the actual code state.
@@ -144,36 +144,35 @@ Non-goals before done:
 - Automatic submission.
 - Corporate or VAT-liable business handling in this workflow.
 
-### JC-030 — 전자신고 검증 및 파일 생성 (Validation / Path 1 / Path 3)
+### JC-030 — 전자신고 검증 및 파일 생성 (Validation / Path 1)
 
-Type: 공통 검증 + Path 1 plain files + Path 3 encrypted files (future).
+Type: 공통 검증 + Path 1 공식 비암호화 업로드 파일. 암호화 파일은 범위 밖.
 
 Current gate: **JC-030 epic is in progress.** The simplified-wage tax-type v1
 (Slices 1a–2a, 3) is implemented on main, but that does not complete JC-030 or
 Path 1 beta. Reconciliation Phase 2 and the VAT confirmed-ledger
 gate/provenance foundation are complete. The current tax-type track is
 **withholding**, which has a validation panel but is blocked before file
-generation by the missing official binary layout. The fixed order and
+generation by the missing official non-encrypted upload template and verified
+Hometax acceptance path. The fixed order and
 completion lines are in [Path 1 Roadmap §§2–4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
-**Beta focus is Path 1 only.** Path 2 is after Path 1 beta; Path 3 is unknown
-until certification/conformance is confirmed. **Slice 2b**
-(fcrypt·Windows microservice) remains a separate deferred track per
-[NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md). Hometax
-screen transcription guidance is explicitly excluded.
+**Beta focus is Path 1 only.** Path 2 is after Path 1 beta. Path 3 encryption,
+fcrypt and certification tooling are outside the current product scope.
+Hometax screen transcription guidance is also explicitly excluded.
 
-**Filing path priority (2026-07-07):** JC-030 is focused on Path 1. Other paths are deferred:
+**Filing path priority (2026-07-10):** JC-030 is focused on Path 1. Path 2 is deferred and encrypted Path 3 is excluded:
 
 | Layer | Filing Path | Status |
 |---|---|---|
 | **Validation** | Path 1 & 2 공통 | Implemented for simplified wage; repeated per tax type |
-| **Path 1** | 홈택스 업로드용 양식·파일 작성 | In progress — simplified wage implemented, withholding next |
+| **Path 1** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | In progress — simplified wage candidate implemented, withholding W0 blocked |
 | **Path 2** | 세무사무소 handoff ZIP | Deferred until Path 1 beta |
-| **Path 3** | 인증·암호화 업로드 파일 | Deferred (Slice 2b·적합성 검정) |
+| **Path 3** | 인증·암호화 업로드 파일 | Excluded from current product scope |
 
 #### Validation — 공통 검증 (Path 1 & 2)
 
-Current state: `lib/efiling-simplified-wage` on main — layout validation, plain record build, tests.
+Current state: `lib/efiling-simplified-wage` on main — layout validation, non-encrypted candidate build, tests.
 
 Done means:
 
@@ -184,48 +183,41 @@ Done means:
 Remaining:
 
 - [ ] JC-034 v1 consumes validation output in ZIP (after Path 1 beta)
-- [ ] UI shows Path 1 as active and Path 2·3 as deferred where mentioned
+- [ ] UI shows Path 1 as active, Path 2 as deferred and encrypted Path 3 as out of scope where mentioned
 
 #### Path 1 — 홈택스 업로드용 양식·파일 작성 지원
 
-Current state: simplified-wage plain download + form-fill preview + Hometax
-conversion upload guide are on main. Withholding has Slice 1a validation only;
+Current state: simplified-wage non-encrypted file candidate, form-fill preview
+and Hometax upload guide are on main. Withholding has Slice 1a validation only;
 the other ordered tax types do not yet generate official upload files.
 
 Done means (Path 1, per tax type v1):
 
-- User can download plain e-filing file candidates from validated preparation data.
+- User can download a file generated from the official non-encrypted upload template and validated preparation data.
 - User can inspect the values that will be filled into the form/file before download: 신고 양식, 귀속기간, 사업자, 대상자, 합계, 일회성 식별정보 입력 상태.
 - Hometax upload guide is shown for the prepared artifact.
-- UI states plain-file limits until Path 3 certification exists.
 - User uploads the prepared form/file and submits directly; SemuAgent does not log in, copy-type values into Hometax, or submit.
-- The official layout source/version/applicability date is recorded and no
-  unresolved layout or field-mapping gaps remain in the approved v1 scope.
-- Preview values and generated records come from one shared read model.
-- File name, record order/length, encoding, required codes, totals,
+- The official non-encrypted template source/version/applicability date and
+  Hometax direct-acceptance route are recorded, with no unresolved field-mapping gaps.
+- Preview values and generated form/file come from one shared read model.
+- File name, file type, template structure, required fields, totals,
   tenant/business/period isolation, and non-persistence are tested.
-- A representative file passes Hometax/Witax conversion or upload validation;
+- A representative file passes Hometax/Witax non-encrypted upload validation;
   implementation without this operational verification remains open.
 
-Path 1 beta means both simplified wage and withholding satisfy the per-tax
-completion line above. JC-030 Path 1 planned-matrix close means withholding,
+Path 1 beta means simplified wage and one additional compatible tax type satisfy
+the per-tax completion line above. Withholding is attempted first; if W0 confirms
+that no official non-encrypted upload template exists, it stays blocked and the
+next tax type that passes Stage A becomes the beta companion. JC-030 Path 1 planned-matrix close means withholding,
 VAT, local-income special collection, business-status report, and annual
 payment statement each satisfy it. The implementation order is fixed in
 [Roadmap §4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
-#### Path 3 — 인증 후 암호화 파일 (future)
+#### Path 3 — 인증·암호화 파일 (excluded)
 
-Current state: not started. Slice 2b (fcrypt) and 적합성 검정 deferred.
-
-May start only after:
-
-- NTS file-conversion certification path is confirmed, and
-- Crypto round-trip validated per [NTS Crypto Spec §10](./31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md).
-
-Done means (Path 3):
-
-- User can download encrypted files intended for Hometax file-conversion upload.
-- Certification status is accurate in UI (`국세청 검증 완료` only if true).
+fcrypt, encrypted upload files, electronic-filing passwords and certification
+tooling are not part of the current product completion contract. A tax type
+that requires them remains blocked instead of silently expanding Path 1.
 
 Non-goals (all JC-030 layers):
 

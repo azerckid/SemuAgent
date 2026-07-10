@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-08 03:25
+> Last Updated: 2026-07-10 16:01 KST
 
 ## 1. 디자인 방향
 
@@ -221,7 +221,7 @@
 |:---|:---|:---|
 | Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·Path 1 양식 확인 준비 상태 | 진행률 + blocker 카운트 |
 | **Path 1 Completion Flow** | 홈택스 업로드용 양식·파일 작성, 양식 채움 확인, 업로드 안내 | 베타 중심 경로 |
-| **Deferred Paths Notice** | Path 2(사무소 ZIP)·Path 3(미래 인증) 보류 안내 | Path 1 베타 이후 |
+| **Path Boundary Notice** | Path 2(사무소 ZIP)는 베타 이후, 암호화 Path 3은 범위 밖임을 안내 | 책임 경계 |
 | Next Action List | 신고 전 blocker와 해당 워크스페이스 CTA | danger/warn/ok dot + 라우팅 |
 | Common Foundation Cards | 자료수집 -> 기장검토 공통 기반의 입력·산출 상태 | 누락/검토대기/원장 준비 상태칩 |
 | Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/Path 1 양식·파일 상태 |

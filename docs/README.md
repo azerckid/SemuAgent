@@ -1,11 +1,14 @@
 # SemuAgent Docs
 > Created: 2026-07-01 17:50
-> Last Updated: 2026-07-07 04:20 KST
+> Last Updated: 2026-07-10 16:01 KST
 
 This documentation set defines SemuAgent, an AI-powered tax operations assistant
-for small companies. Filing completes through **3 Filing Paths**: Path 1 (Hometax
-form files + upload guide), Path 2 (JARYO-GIWA / 자료기와 handoff), Path 3 (future
-certified encrypted upload).
+for small companies. The active filing product path is **Path 1**: SemuAgent fills
+an official non-encrypted upload template accepted directly by Hometax or Witax,
+the user reviews and downloads it, and the user uploads and submits it. Path 2
+(JARYO-GIWA / 자료기와 handoff) is deferred until Path 1 beta validation. Encrypted
+or certified upload files formerly called Path 3 are outside the current product
+scope.
 
 ## Layers
 

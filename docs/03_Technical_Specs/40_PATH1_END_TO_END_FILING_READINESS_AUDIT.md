@@ -1,6 +1,6 @@
 # Path 1 End-to-End Filing Readiness Audit
 > Created: 2026-07-07 23:29 KST
-> Last Updated: 2026-07-10 15:27 KST
+> Last Updated: 2026-07-10 16:01 KST
 
 ## 0. Purpose
 
@@ -18,7 +18,8 @@ Path 1 workflow and states exactly what remains before beta.
 ```
 
 There is no Hometax direct-entry path in beta. Path 1 means **official
-form/file preparation for upload**, not copying values into Hometax screens.
+non-encrypted form/file preparation for upload**, not copying values into
+Hometax screens or generating encrypted electronic files.
 
 ## 1. Current Answer
 
@@ -34,7 +35,7 @@ files exist for only one tax type.
 | 신고 준비 공통 gate | **Live** | `loadReconciliationPath1Gate`, filing-preparation summary | VAT is the first consumer; payroll-only routes intentionally do not inherit unrelated bookkeeping blockers |
 | 부가세 확정 원장 provenance | **Live** | `lib/vat/facts.ts`, `lib/vat/provenance.ts`, rebuild/package gates | Exact VAT facts are not manufactured for old/sample rows; unresolved rows remain correctly blocked |
 | 세목별 신고 준비 데이터 | Live for core tracks | VAT, payroll/withholding, payment statements, local income, business status read models | A ready data screen is not yet an official upload file |
-| 양식에 채워질 값 확인 | Live for simplified wage; validation-only for withholding | `lib/efiling-simplified-wage`, `lib/efiling-withholding` | Withholding needs the final binary layout and file-backed preview; later tax types need their own UI-First Gate |
+| 양식에 채워질 값 확인 | Live for simplified wage; validation-only for withholding | `lib/efiling-simplified-wage`, `lib/efiling-withholding` | Withholding needs an official non-encrypted upload template accepted by Hometax; later tax types need their own UI-First Gate |
 | 홈택스 업로드용 파일 | Live for simplified wage only | simplified-wage generate API and upload guide | Withholding, VAT, local income, business status and annual statement files remain |
 | 최종 제출 | User only | Product Baseline, Roadmap 36 | Auto-submit and credential storage remain excluded |
 
@@ -42,8 +43,9 @@ The useful status is therefore qualitative, not a single percentage:
 
 - **Common confirmed-data foundation:** complete for the planned v1 exact-match flow.
 - **Tax-type upload files:** one tax type implemented; withholding is next and partially prepared.
-- **Path 1 beta:** not complete until simplified wage and withholding pass the
-  full file-verification completion line.
+- **Path 1 beta:** not complete until simplified wage and one additional tax
+  type pass the full non-encrypted upload-file verification line. Withholding
+  is preferred but cannot be forced through an encrypted fallback.
 - **Planned Path 1 matrix:** not complete until the remaining ordered tax types
   each pass the same completion line.
 
@@ -60,6 +62,7 @@ Not Path 1:
 
 - Hometax screen transcription or direct-entry copy workflow.
 - Auto-submit.
+- Encrypted electronic-file generation, fcrypt, or certification tooling.
 - Storing Hometax passwords, certificates, bank passwords, or card credentials.
 - Sending the package to a tax office or accounting firm.
 
@@ -78,7 +81,7 @@ gates:
 | Account confirmation | Each filing-relevant transaction has a final account or blocks generation |
 | Tax-specific review | VAT deduction/provenance or payroll/local-income/business-status checks pass |
 | Form-fill preview | The user sees the exact values used by the generated file before download |
-| File conformance | The generated file matches the current official layout and passes representative conversion/upload validation |
+| File conformance | The generated file matches the current official non-encrypted upload template and passes representative upload validation |
 
 ## 4. What Is Already Designed Correctly
 
@@ -93,8 +96,8 @@ gates:
 - VAT UI/API enforce the composite source/reconciliation/deduction/provenance
   gate, and the deterministic rebuild verifies exact confirmed VAT facts.
 - Payroll-only paths remain independent from unrelated bookkeeping blockers.
-- Simplified wage provides the first complete form-fill preview and plain-file
-  generation pattern.
+- Simplified wage provides the first form-fill preview and non-encrypted file
+  generation pattern; official direct-upload acceptance remains part of beta verification.
 
 ## 5. Remaining Product Gaps
 
@@ -130,17 +133,17 @@ Simplified wage shows the repeatable pattern:
 - one-time PII input status;
 - generated-file and Hometax upload boundary.
 
-Withholding has the preparation/validation panel but not the official binary
-layout or generated file. VAT, local income, business status and annual
+Withholding has the preparation/validation panel but no confirmed official
+non-encrypted upload template or generated file. VAT, local income, business status and annual
 statements still require their own layout, mapping, UI-First Gate, generator
 and file verification.
 
 ### 5.3 File Verification Must Be Part Of Done
 
 Code generation alone is not enough. A tax type stays open until the generated
-artifact is checked for filename, record order/length, encoding, required
-codes, totals, tenant/period isolation, and representative Hometax/Witax
-conversion or upload validation.
+artifact is checked for filename, file type, template structure, required
+fields, totals, tenant/period isolation, and representative Hometax/Witax
+non-encrypted upload validation.
 
 ## 6. Fixed Next Work
 
@@ -148,22 +151,24 @@ The authoritative sequence and completion lines are in
 [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md).
 
 1. **Synchronize this audit, Roadmap 36, Completion Contract, Backlog and QA.**
-2. **Complete withholding Path 1.**
-   - W0 official binary layout acquisition.
-   - W1 Part B mapping and final Brief approval.
+2. **Attempt withholding Path 1 under the non-encrypted contract.**
+   - W0 official non-encrypted upload template and Hometax acceptance path.
+   - W1 Part B template-position mapping and final Brief approval.
    - W2 shared preview/generator model.
    - W3 generate API and download UI.
-   - W4 deterministic, browser and Hometax conversion/upload verification.
+   - W4 deterministic, browser and Hometax non-encrypted upload verification.
    - W5 docs closeout.
+   - If W0 fails, keep withholding blocked and move to the next tax type's
+     Stage A without implementing binary or encrypted output.
 3. **Complete VAT Path 1 A~G.**
    - Reuse the completed Phase 2 gate and provenance source of truth.
    - Acquire and map the official upload-file layout before generator code.
 4. **Repeat A~G in order for local-income special collection, business-status
    report and annual payment statement.**
-5. **Run Path 1 beta after simplified wage and withholding both satisfy the
-   per-tax completion line.**
+5. **Run Path 1 beta after simplified wage and one additional compatible tax
+   type satisfy the per-tax completion line.**
 
-Path 2, Path 3, direct-entry guidance and automatic submission do not interrupt
+Path 2, encrypted Path 3, direct-entry guidance and automatic submission do not interrupt
 this sequence.
 
 ## 7. Completion Decisions
@@ -172,7 +177,7 @@ this sequence.
 |:---|:---|
 | Reconciliation Phase 2 | Brief 41 §9 complete and VAT gate/provenance consumers implemented — **done** |
 | One tax type | Roadmap 36 §2.1 all conditions pass |
-| Path 1 beta | Simplified wage + withholding pass actual form/file verification and beta flow |
+| Path 1 beta | Simplified wage + one additional tax type pass official non-encrypted upload verification and beta flow |
 | Planned Path 1 matrix | Withholding, VAT, local income, business status and annual statement each pass §2.1 |
 | Path 2 restart | Path 1 beta is stable and a new UI-First Gate is approved |
 
@@ -183,7 +188,7 @@ current choices. For beta:
 
 - Path 1 is the product path.
 - Path 2 is after Path 1 beta.
-- Path 3 is future work after certification/conformance is clear.
+- Encrypted Path 3 is outside the current product scope.
 - Hometax direct-entry guidance is excluded.
 
 Related:
