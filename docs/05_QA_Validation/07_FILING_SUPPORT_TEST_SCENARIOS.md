@@ -1,6 +1,6 @@
 # Test Scenarios: Filing Support
 > Created: 2026-07-02 20:23
-> Last Updated: 2026-07-10 16:01 KST
+> Last Updated: 2026-07-10 21:22 KST
 
 신고지원(JC-013) Layer 5 QA 시나리오. [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -112,8 +112,9 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 ### 2.10 Path 1 Tax-Type File Completion (Pending)
 
 이 시나리오는 [Path 1 Roadmap §2.1](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)의
-세목별 완료선을 검증한다. 원천세 Slice 1b가 첫 적용 대상이며, 이후 세목도
-동일한 시나리오를 전용 fixture로 반복한다.
+세목별 완료선을 검증한다. 원천세 W0는 공식 조사 결과 `closed blocked`로 종료했고
+W1~W5를 시작하지 않는다. 현재는 부가세 Stage A가 S-90의 적용 대상이며, Stage A를
+통과한 세목만 S-91~S-99를 전용 fixture로 반복한다.
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
@@ -135,7 +136,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **API 구현 완료**: receipt metadata upload/delete, checklist toggle, tenant/staff guard(S-40~43, S-50~53). 실제 Blob 저장 환경은 JC-014에서 검증 완료.
 - **브라우저 수동 검증 완료**: `/dashboard/filing-support?period=2026-H1` 로그인 렌더와 승인 Preview 구조를 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 홈택스/EDI 접수증 파일 포맷별 업로드는 별도 fixture 확보 후 검증한다.
-- **Path 1 파일 후속**: 원천세 W0에서 공식 비암호화 업로드 양식·수용 경로를 확인한 경우에만 W1과 S-90~S-99를 generator 단위 테스트, API 테스트, 브라우저 다운로드, 홈택스 업로드 검증으로 진행한다. W0가 실패하면 원천세를 `blocked`로 표시하고 다음 세목 Stage A로 이동한다. S-98 전에는 어떤 세목도 Path 1 `done`으로 표시하지 않는다.
+- **Path 1 파일 후속**: 원천세 W0는 직접작성 또는 비밀번호 기반 회계프로그램 변환파일만 확인되어 `closed blocked`다. 현재 부가세 Stage A에서 전체 신고 또는 공식 부속명세 비암호화 양식·규격·직접 수용 경로를 확인한다. Stage A가 통과한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1 `done`으로 표시하지 않는다.
 
 ## 4. Related Documents
 

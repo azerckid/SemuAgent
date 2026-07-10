@@ -1,28 +1,28 @@
 # JC-030 Withholding Official Upload Form Pre-Code Technical Brief
 > Created: 2026-07-07 04:40 KST
-> Last Updated: 2026-07-10 16:01 KST
+> Last Updated: 2026-07-10 21:22 KST
 
 ## 0.1 Flow Status
 
 ```text
 [Flow]
-완료: Slice 0b 서식 조사·Part A 매핑, Slice 1a 검증 패널
-현재: Slice 1b 선행 W0 — 공식 비암호화 업로드 양식·홈택스 수용 경로 확인
-다음: W0 통과 시 W1 Part B 매핑·Brief 승인 → W2 generator/Preview → W3 API/UI → W4 실제 업로드 검증
-차단: 공식 비암호화 업로드 원본과 직접 수용 메뉴를 확인하기 전 generator 코드 금지
-분기: W0 실패 시 원천세 blocked 유지, 암호화 경로로 우회하지 않고 다음 세목 Stage A 진행
+완료: Slice 0b 서식 조사·Part A 매핑, Slice 1a 검증 패널, W0 공식 경로 감사
+판정: 원천세 W0 closed blocked — 직접작성 또는 비밀번호 기반 변환파일만 공식 확인
+종료: W1~W5 generator 구현 미착수·현재 계약에서 재개 금지
+현재: 부가세 Stage A 공식 비암호화 업로드 양식 감사
+재개: 최신 공식 비암호화 원본과 직접 수용 메뉴가 새로 확인될 때만 본 Brief 활성화
 ```
 
 ## 0. Governing Principle
 
-JC-030 Path 1 **2번 세목**은 JC-012·JC-013이 준비한 **월별 원천징수 집계**를
+JC-030 Path 1 **2번 세목 후보**는 JC-012·JC-013이 준비한 **월별 원천징수 집계**를
 홈택스가 직접 수용하는 **원천징수이행상황신고서 공식 비암호화 업로드 양식**에
 채우고, 제출 전 **서식·정합성 사전검증**을 보여준다.
 
 - **자동 제출·자격증명 저장 없음** (JC-023 원칙).
 - **self-filing 보조** — 사용자가 홈택스 원천세 신고에서 준비된 파일을 직접 업로드·제출.
 - v1은 **근로소득 간이세액(A01) 집계 행**만; 환급조정·부표·타 소득구분 제외.
-- 공식 비암호화 업로드 양식 **미확인** — [Field Mapping Part B](./38_JC030_WITHHOLDING_EFILING_FIELD_MAPPING.md); **코드 착수 전 W0 통과 필수**.
+- 공식 비암호화 업로드 양식 **미확인**이며 W0는 `closed blocked` — [Final Audit](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md). 아래 구현 범위는 재개 조건 충족 전 비활성 계약이다.
 
 ## 1. Scope
 

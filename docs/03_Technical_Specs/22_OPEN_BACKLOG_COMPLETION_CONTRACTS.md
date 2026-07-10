@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-10 16:01 KST
+> Last Updated: 2026-07-10 21:22 KST
 
 ## 0. Purpose
 
@@ -151,10 +151,12 @@ Type: 공통 검증 + Path 1 공식 비암호화 업로드 파일. 암호화 파
 Current gate: **JC-030 epic is in progress.** The simplified-wage tax-type v1
 (Slices 1a–2a, 3) is implemented on main, but that does not complete JC-030 or
 Path 1 beta. Reconciliation Phase 2 and the VAT confirmed-ledger
-gate/provenance foundation are complete. The current tax-type track is
-**withholding**, which has a validation panel but is blocked before file
-generation by the missing official non-encrypted upload template and verified
-Hometax acceptance path. The fixed order and
+gate/provenance foundation are complete. The withholding W0 audit is now
+**closed blocked**: official NTS guidance exposes Hometax direct entry or an
+accounting-program conversion file with password input, neither of which is the
+approved Path 1 artifact. W1-W5 were not started. The current tax-type track is
+**VAT Stage A**, which is partial/blocked while the official non-encrypted
+whole-return template and direct-acceptance path remain unverified. The fixed order and
 completion lines are in [Path 1 Roadmap §§2–4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
 **Beta focus is Path 1 only.** Path 2 is after Path 1 beta. Path 3 encryption,
@@ -166,7 +168,7 @@ Hometax screen transcription guidance is also explicitly excluded.
 | Layer | Filing Path | Status |
 |---|---|---|
 | **Validation** | Path 1 & 2 공통 | Implemented for simplified wage; repeated per tax type |
-| **Path 1** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | In progress — simplified wage candidate implemented, withholding W0 blocked |
+| **Path 1** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | In progress — simplified wage candidate implemented, withholding W0 closed blocked, VAT Stage A active |
 | **Path 2** | 세무사무소 handoff ZIP | Deferred until Path 1 beta |
 | **Path 3** | 인증·암호화 업로드 파일 | Excluded from current product scope |
 
@@ -188,8 +190,11 @@ Remaining:
 #### Path 1 — 홈택스 업로드용 양식·파일 작성 지원
 
 Current state: simplified-wage non-encrypted file candidate, form-fill preview
-and Hometax upload guide are on main. Withholding has Slice 1a validation only;
-the other ordered tax types do not yet generate official upload files.
+and Hometax upload guide are on main. Withholding retains Slice 1a validation
+assets but its W0 file track is closed blocked. VAT Stage A found official
+conversion flows for some schedules, but not a complete official non-encrypted
+whole-return template or verified direct-acceptance route. Other ordered tax
+types do not yet generate official upload files.
 
 Done means (Path 1, per tax type v1):
 
@@ -206,11 +211,13 @@ Done means (Path 1, per tax type v1):
   implementation without this operational verification remains open.
 
 Path 1 beta means simplified wage and one additional compatible tax type satisfy
-the per-tax completion line above. Withholding is attempted first; if W0 confirms
-that no official non-encrypted upload template exists, it stays blocked and the
-next tax type that passes Stage A becomes the beta companion. JC-030 Path 1 planned-matrix close means withholding,
-VAT, local-income special collection, business-status report, and annual
-payment statement each satisfy it. The implementation order is fixed in
+the per-tax completion line above. Withholding W0 is closed blocked, so the
+next tax type that passes Stage A becomes the beta companion. VAT is the current
+Stage A track. JC-030 planned-matrix decision close means withholding, VAT,
+local-income special collection, business-status report, and annual payment
+statement each either satisfy the per-tax completion line or are closed blocked
+by official Stage A evidence. A blocked track is not counted as Path 1 support.
+The implementation order is fixed in
 [Roadmap §4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
 #### Path 3 — 인증·암호화 파일 (excluded)
