@@ -1,6 +1,6 @@
 # Test Scenarios: VAT
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-03 20:24
+> Last Updated: 2026-07-10 09:55 KST
 
 부가세(JC-011) Layer 5 QA 시나리오. [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -87,6 +87,8 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-63 | composite package gate 미완 | 패키지 생성 API 호출 | 409, 패키지 미생성, 동일 reason/count/target route 반환 | PASS·단위/구현 |
 | S-64 | source/reconciliation/deduction은 ready, provenance 미확인 | 패키지 생성 클릭 | 생성 거부, 확정 원장 출처 검증 전 잠금 유지 | PASS·단위/구현 |
 | S-65 | source/reconciliation/deduction/provenance 모두 ready | 패키지 생성 클릭 | packageStatus 갱신 | Pending · Slice 2d-3 |
+| S-66 | stored snapshot은 있으나 exact VAT facts/fingerprint 없음 | 패키지 생성 | snapshot presence만으로 잠금 해제하지 않음 | PASS·감사 |
+| S-67 | confirmed VAT facts에서 deterministic rebuild 완료 | package gate 검증 | current fingerprint가 일치할 때만 생성 허용 | Pending · Slice 2d-3c |
 
 ### 2.8 Preview 계약·책임 경계
 

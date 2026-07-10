@@ -1,6 +1,6 @@
 # Path 1 End-to-End Filing Readiness Audit
 > Created: 2026-07-07 23:29 KST
-> Last Updated: 2026-07-10 09:02 KST
+> Last Updated: 2026-07-10 09:55 KST
 
 ## 0. Purpose
 
@@ -92,7 +92,7 @@ generated only from data that passed these gates:
 
 The **기장검토 하위 "자료대조원장"** workbench now provides live tenant/period rows, exact 1:1 bank-to-tax-invoice/cash-receipt/card evidence discovery and connection, evidence review/unlink/replace, amount-difference blocking, account confirmation, explanation, exclusion, evidence exceptions, prior-pattern guidance, and the closing checklist.
 
-Filing preparation now consumes the same shared reconciliation decision through Slice 2d-1. The remaining gap is VAT package enforcement and confirmed-ledger provenance (2d-2/2d-3). VAT is the first package consumer. Payroll-based withholding, simplified wage/payment statements, and local-income paths must not be blocked by unrelated bookkeeping rows.
+Filing preparation consumes the same shared reconciliation decision through Slice 2d-1, and the VAT UI/API enforce the composite package gate through Slice 2d-2. The remaining VAT gap is confirmed-ledger provenance and deterministic rebuild (2d-3b/2d-3c). VAT is the first package consumer. Payroll-based withholding, simplified wage/payment statements, and local-income paths must not be blocked by unrelated bookkeeping rows.
 
 ### 5.2 Private or business-unrelated exclusion has a v1 shared language
 
@@ -128,10 +128,10 @@ considered beta-ready.
 
 The next product work should be Path 1 completion, not Path 2 and not Path 3.
 
-1. **Slice 2d-2/2d-3 — enforce the 자료대조원장 gate for VAT**
+1. **Slice 2d-3b/2d-3c — complete confirmed-ledger VAT provenance**
    - The tenant/period-scoped read-only gate and filing-preparation display are complete in 2d-1.
-   - Enforce the same gate in both VAT package UI and API.
-   - Verify VAT values came from confirmed filing-relevant rows before generation is unlocked.
+   - The same composite gate is enforced in both VAT package UI and API by 2d-2.
+   - Complete [Audit 42](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) 2d-3b/2d-3c: store exact VAT facts and summary provenance, then rebuild and fingerprint confirmed filing-relevant rows before generation is unlocked.
    - Do not apply this bookkeeping gate to payroll-only filing routes.
 2. **원천세 Path 1 complete**
    - Finish official layout acquisition.
@@ -159,3 +159,4 @@ Related:
 - [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
 - [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
 - [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)
+- [VAT Confirmed-Ledger Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md)

@@ -1,6 +1,6 @@
 # Test Scenarios: Bookkeeping Review
 > Created: 2026-07-02 09:10
-> Last Updated: 2026-07-10 09:02 KST
+> Last Updated: 2026-07-10 09:55 KST
 
 기장검토(JC-010) Layer 5 QA 시나리오. [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)와 [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)의 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
 
@@ -126,6 +126,8 @@
 | S-126 | 같은 tenant/period의 confirmed filing rows로 VAT 값 rebuild 완료 | VAT package POST | gate 통과 후에만 package status 전환 | Pending |
 | S-127 | 원천세·간이지급명세서·지방소득세 payroll route | bookkeeping blocker 존재 | payroll 전용 validation만 적용되고 reconciliation gate로 차단되지 않음 | Pending |
 | S-128 | shared gate load | 실행 | classification/VAT/filing DB에 write side effect 없음 | PASS·단위 |
+| S-129 | VAT snapshot만 있고 normalized VAT fact/provenance metadata 없음 | package gate | snapshot 숫자가 맞아 보여도 provenance ready로 승격하지 않음 | PASS·감사 |
+| S-130 | gross amount만 있고 exact supply/tax basis 없음 | deterministic rebuild | gross/11 추정 없이 `needs_review`로 차단 | Pending · 2d-3b/3c |
 
 ## 3. 자동화 현황 및 후속
 - **자동 단위 완료**(`lib/bookkeeping-review/summary.test.ts`): 탭 집계(S-20~23), 신뢰도·계정지정(S-30~32), 분개 균형(S-42), 제외 테이블(S-61), 기간 필터(S-10).

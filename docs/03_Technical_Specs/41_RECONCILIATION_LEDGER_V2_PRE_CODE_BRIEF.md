@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-10 09:02 KST
+> Last Updated: 2026-07-10 09:55 KST
 
 ## 0. Purpose
 
@@ -142,7 +142,7 @@ Explicitly deferred from Phase 2 convenience scope:
 | 2a | Reconciliation read model and evidence-action display | No | Rows show source, concrete evidence rows when found, previous-period pattern suggestions, match state, action filters, tax blocker reasons, and closing checklist |
 | 2b | Account/exclusion/explanation actions | No preferred | Existing classification and attribution APIs are reused where possible; row cells/modals support one-line conclusion, source-collection back links, safe account-pattern batch acceptance, and shallow undo |
 | 2c | Durable-link decision | No additional change in v1 | Existing `linked_evidence_row_id` from migration 0066 is sufficient for exact 1:1 links; reopen only for partial payment, many-to-one, or split/merge |
-| 2d | Path 1 gate consumption | No schema change preferred | Filing preparation and VAT package UI/API consume one shared reconciliation gate; VAT value provenance is verified before generation can claim confirmed-ledger input |
+| 2d | Path 1 gate consumption | 2d-1/2d-2 no schema change; 2d-3 requires additive VAT fact and summary provenance fields | Filing preparation and VAT package UI/API consume one shared reconciliation gate; VAT value provenance is verified before generation can claim confirmed-ledger input |
 
 Slice 2a-lite did not pretend to save or confirm anything; it locked the display model, fixture scenarios, and workbench UX before full read wiring. Slice 2b later added exact 1:1 storage through migration 0066. That field is now the approved v1 durable-link boundary; a new table still requires a separate brief for partial/many-to-one/split-merge.
 
@@ -180,7 +180,7 @@ Traceability legend:
 | 2c | decision | Durable confirmed links | Existing migration 0066 | Decision complete: `linked_evidence_row_id` is sufficient for exact 1:1 links; no new pair table until partial/many-to-one/split-merge is separately briefed |
 | 2d-1 | downstream | Shared reconciliation gate + filing-preparation read | A: filing-preparation blocker counts; Backlog AC | One tenant/period-scoped read-only gate exposes the closing-checklist counts and target route; filing preparation consumes it without duplicating the rules |
 | 2d-2 | downstream | VAT package UI/API enforcement | VAT package route + UI | VAT package generation is disabled in UI and rejected by the API while source, reconciliation, VAT deduction, or confirmed-ledger provenance checks remain unresolved |
-| 2d-3 | downstream | VAT confirmed-data provenance | Path 1 confirmed-ledger AC | Prove or rebuild the VAT package values from confirmed filing-relevant rows; if provenance cannot be verified, package generation stays locked |
+| 2d-3 | downstream | VAT confirmed-data provenance | [VAT Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) | 2d-3a audit → 2d-3b additive VAT facts/provenance metadata → 2d-3c deterministic rebuild and fingerprint verification; package stays locked until 2d-3c passes |
 
 Cross-cutting requirements:
 
@@ -239,6 +239,8 @@ VAT package generation is allowed only when all applicable gates are ready:
 If any check fails, the UI stays disabled and the API returns a conflict response with reason codes, counts, and the reconciliation target route. Client-only disabling is not sufficient.
 
 Current `vat_period_summary` is a stored snapshot. Its presence alone does not prove that output/input tax values were rebuilt from the current confirmed ledger. Slice 2d-3 must verify that provenance or introduce a deterministic rebuild before the product claims that the generated package contains only confirmed transactions. Until then, package generation remains locked even if the visual checklist reaches zero.
+
+The [VAT Confirmed-Ledger Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) found that the current snapshot has no runtime tax-value producer, classification rows lack normalized VAT fact fields, sample deduction reviews have no source links, and the available sample voucher is draft and unrelated. Slice 2d-3 is therefore fixed as 2d-3a audit, 2d-3b additive VAT facts/provenance metadata, and 2d-3c deterministic rebuild/fingerprint verification. No gross/11 heuristic or snapshot-presence shortcut may unlock the gate.
 
 No new DB table is expected for 2d-1 or 2d-2. Official Hometax upload-file assembly remains JC-030; Slice 2d only supplies and enforces the readiness gate that JC-030 must consume.
 
@@ -651,12 +653,15 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Slice 2d Path 1 gate contract documented (§2.2).
 - [x] Slice 2d-1 shared reconciliation gate and filing-preparation read implemented — `lib/bookkeeping-review/reconciliation-path1-gate.ts` derives one Zod-validated read-only gate from the live ledger `closingChecklist`; 신고 준비 replaces only the legacy bookkeeping attention with this gate and shows the same total/category counts plus the 자료대조원장 route. No DB/API mutation.
 - [x] Slice 2d-2 VAT package UI/API gate enforcement implemented — `lib/vat/package-gate.ts` combines source collection, reconciliation, VAT deduction, and confirmed-ledger provenance into one Zod-validated decision. The VAT screen lists the same reason codes/counts/routes returned by the POST API, and provenance remains explicitly unverified until 2d-3.
-- [ ] Slice 2d-3 VAT confirmed-ledger provenance verified or deterministic rebuild implemented.
+- [x] Slice 2d-3a provenance audit and completion contract — current data cannot prove the snapshot; [Audit 42](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) fixes the additive VAT fact/provenance fields and deterministic rebuild boundary.
+- [ ] Slice 2d-3b additive VAT fact fields, summary provenance metadata, and source writers implemented.
+- [ ] Slice 2d-3c deterministic rebuild, fingerprint verification, and package-gate unlock implemented.
 
 ## 11. Related Documents
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - company self-use filing assistance boundary.
 - **UI_Screens**: [Screen Flow 4c](../02_UI_Screens/00_SCREEN_FLOW.md) - 자료대조원장 position and flow; [UI Design 4.3a](../02_UI_Screens/01_UI_DESIGN.md) - approved component contract; [Reconciliation Ledger Prototype Review](../02_UI_Screens/12_RECONCILIATION_LEDGER_PROTOTYPE_REVIEW.md) - user approval record.
 - **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) - existing classification queue contract; [Path 1 End-to-End Filing Readiness Audit](./40_PATH1_END_TO_END_FILING_READINESS_AUDIT.md) - product path and gaps; [DB Schema](./03_DB_SCHEMA.md) - existing bookkeeping tables.
+- **Technical_Specs**: [VAT Confirmed-Ledger Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) - Slice 2d-3 source facts, deterministic rebuild, and completion line.
 - **Logic_Progress**: [Backlog JC-010](../04_Logic_Progress/00_BACKLOG.md) - Context Lock and implementation tracking.
 - **QA_Validation**: [Bookkeeping Review Test Scenarios](../05_QA_Validation/04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) - existing JC-010 QA baseline; Phase 2 scenarios to add before Slice 2b implementation.
