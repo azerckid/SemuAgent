@@ -1,11 +1,12 @@
 # VAT Pre-Code Technical Brief
 > Created: 2026-07-02 11:03
-> Last Updated: 2026-07-10
+> Last Updated: 2026-07-11
 
 > **Extension notice (JC-035):** 이 문서는 구현 완료된 JC-011 기본 VAT 화면·저장 계약을
 > 보존한다. 공제/불공제/안분과 과세/영세율/면세를 설명 가능한 AI 판단으로 보강하는
 > 다음 작업은 [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)를
-> 따른다. JC-035 UI Preview 승인 전에는 별도 Pre-Code Brief와 코드를 시작하지 않는다.
+> 따른다. JC-035 UI Preview는 승인됐으며, 후속 구현은 [VAI-2 Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md)와
+> [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md)를 단일 계약으로 사용한다.
 
 ## 0. Governing Principle - Preview UI가 계약이다
 
@@ -239,6 +240,6 @@ type VatSummary = {
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 홈택스 보조 책임 경계
 - **UI_Screens**: [Screen Flow 4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design 4.4](../02_UI_Screens/01_UI_DESIGN.md) · [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)
 - **Technical_Specs**: [Component & Library Plan](./02_COMPONENT_LIBRARY_PLAN.md) · [DB Schema](./03_DB_SCHEMA.md) · [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)
-- **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) - JC-035 AI 판단 보강 완료선·실행 순서
+- **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [VAI-2 Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) - JC-035 AI 판단 보강 규칙·저장 계약·실행 순서
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-011 Context Lock
 - **QA_Validation**: [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 구현 전 QA 계약
