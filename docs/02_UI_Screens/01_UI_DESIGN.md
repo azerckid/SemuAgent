@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-10 16:01 KST
+> Last Updated: 2026-07-11
 
 ## 1. 디자인 방향
 
@@ -125,6 +125,7 @@
 | Tax Summary Hero | 매출세액 − 매입세액 = 납부(예정)세액 강조, 마감 D-day | 3셀 계산 레이아웃 + 예정치 안내 + D-day 칩 |
 | Sales Grouping Cards | 과세 / 영세율 / 면세 그룹별 공급가액·매출세액 | 3카드, 그룹 태그(tax/zero/exempt) |
 | VAT AI Tax Treatment Table | 매입 공제·불공제·안분과 매출 과세·영세율·면세 가능성 검토 | 거래·구분·금액·AI 판단·근거/필요 증빙·사용자 확정의 단일 표 |
+| Hometax Review Action | 홈택스 자동채움에서 확인·수정할 항목 | 그대로 확인 / 공제·불공제 확인 / 과세유형 확인 / 금액 추가·수정 / 안분 확인; 실제 자료 미연결 시 `자동채움 예상` 표시 |
 | Tax Treatment Source Mark | 판단 출처를 설명 | 공식 규칙 / 이전 패턴 / AI 보강 / AI 합의를 작은 source mark로 표시 |
 | Required Evidence Tags | 영세율·면세·공제 판단에 필요한 증빙 상태 | 있음(neutral) / 확인 필요(danger); 누락 시 확정·gate 해제 금지 |
 | AI Failure Fallback | timeout·quota·provider 오류 시 비차단 수동 검토 | 표 유지 + 해당 행 `수동 확인 필요` + 제한된 다시 시도 |

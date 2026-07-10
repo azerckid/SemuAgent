@@ -135,6 +135,7 @@
   .tax-treatment-table { table-layout: fixed; }
   .tax-treatment-table td { overflow-wrap: anywhere; }
   .tax-treatment-table .row-actions { flex-wrap: wrap; }
+  .hometax-action { margin-bottom: 6px; color: var(--fg-muted); font-size: 11px; font-weight: 700; }
   .type-inline { margin-left: 6px; vertical-align: middle; }
 
   /* Schedules + package */
@@ -292,9 +293,9 @@
       </div>
       <div class="panel">
         <table class="tax-treatment-table">
-          <colgroup><col style="width:19%"><col style="width:12%"><col style="width:18%"><col style="width:34%"><col style="width:17%"></colgroup>
+          <colgroup><col style="width:19%"><col style="width:12%"><col style="width:18%"><col style="width:31%"><col style="width:20%"></colgroup>
           <thead>
-            <tr><th>거래 / 상대처</th><th style="text-align:right">금액</th><th>AI 판단</th><th>판단 근거 · 필요 증빙</th><th>사용자 확정</th></tr>
+            <tr><th>거래 / 상대처</th><th style="text-align:right">금액</th><th>AI 판단</th><th>판단 근거 · 필요 증빙</th><th>홈택스 확인 · 사용자 확정</th></tr>
           </thead>
           <tbody>
             <tr>
@@ -302,35 +303,35 @@
               <td class="amt">40,000,000</td>
               <td class="judgment"><div class="j-main"><span class="chip warn">영세율 가능성</span><span class="source-mark">AI 합의</span></div></td>
               <td class="basis"><div class="b-main">국외 사업자에게 제공한 용역으로 보입니다</div><div class="b-sub">거래처 소재지·용역 수행지·대금 수취 사실을 확인해야 합니다</div><div class="evidence-tags"><span class="evidence-tag">계약서 있음</span><span class="evidence-tag">외화 입금 있음</span><span class="evidence-tag missing">영세율 첨부서류 확인 필요</span></div></td>
-              <td><span class="row-actions"><span class="mini-btn">증빙 확인</span><span class="mini-btn">다르게</span></span></td>
+              <td><div class="hometax-action">홈택스: 과세유형 확인</div><span class="row-actions"><span class="mini-btn">증빙 확인</span><span class="mini-btn">다르게</span></span></td>
             </tr>
             <tr>
               <td><div class="desc">거래처 접대 식대 <span class="chip muted type-inline">매입</span></div><div class="vendor">○○한정식 · 법인카드</div></td>
               <td class="amt">1,320,000</td>
               <td class="judgment"><div class="j-main"><span class="chip danger">불공제 가능성 높음</span><span class="source-mark">공식 규칙</span></div></td>
               <td class="basis"><div class="b-main">기업업무추진비 관련 매입세액</div><div class="b-sub">부가가치세법 제39조 기준 · 법인카드와 계정항목 확인</div><div class="evidence-tags"><span class="evidence-tag">카드 내역 있음</span><span class="evidence-tag">사용 목적 있음</span></div></td>
-              <td><span class="row-actions"><span class="mini-btn danger">불공제로 확정</span><span class="mini-btn">다르게</span></span></td>
+              <td><div class="hometax-action">홈택스: 공제·불공제 확인</div><span class="row-actions"><span class="mini-btn danger">불공제로 확정</span><span class="mini-btn">다르게</span></span></td>
             </tr>
             <tr>
               <td><div class="desc">면세사업분 공통매입 <span class="chip muted type-inline">매입</span></div><div class="vendor">○○물산 · 세금계산서</div></td>
               <td class="amt">2,200,000</td>
               <td class="judgment"><div class="j-main"><span class="chip warn">안분 필요</span><span class="source-mark">공식 규칙</span></div></td>
               <td class="basis"><div class="b-main">과세·면세 사업에 함께 사용한 공통매입</div><div class="b-sub">실지귀속을 먼저 확인하고, 불명확할 때만 공급가액 비율로 안분합니다</div><div class="evidence-tags"><span class="evidence-tag missing">사용 부서·목적 확인 필요</span></div></td>
-              <td><span class="row-actions"><span class="mini-btn">안분 검토</span></span></td>
+              <td><div class="hometax-action">홈택스: 안분 확인</div><span class="row-actions"><span class="mini-btn">안분 검토</span></span></td>
             </tr>
             <tr>
               <td><div class="desc">클라우드 서버 이용료 <span class="chip muted type-inline">매입</span></div><div class="vendor">AWS · 세금계산서</div></td>
               <td class="amt">3,436,400</td>
               <td class="judgment"><div class="j-main"><span class="chip ok">공제 가능성 높음</span><span class="source-mark">이전 패턴</span></div></td>
               <td class="basis"><div class="b-main">최근 같은 거래처 5건을 지급수수료·공제로 확정</div><div class="b-sub">세금계산서 금액과 원장 금액이 일치합니다</div><div class="evidence-tags"><span class="evidence-tag">세금계산서 있음</span><span class="evidence-tag">업무용 확인</span></div></td>
-              <td><span class="row-actions"><span class="mini-btn ok">공제로 확정</span><span class="mini-btn">다르게</span></span></td>
+              <td><div class="hometax-action">홈택스: 그대로 확인</div><span class="row-actions"><span class="mini-btn ok">공제로 확정</span><span class="mini-btn">다르게</span></span></td>
             </tr>
             <tr>
               <td><div class="desc">온라인 교육 콘텐츠 제공 <span class="chip muted type-inline">매출</span></div><div class="vendor">○○러닝 · 국내 매출</div></td>
               <td class="amt">8,800,000</td>
               <td class="judgment"><div class="j-main"><span class="chip danger">면세 여부 확인 필요</span><span class="source-mark">AI 보강</span></div></td>
               <td class="basis"><div class="b-main">교육 용역이라는 명칭만으로 면세를 확정할 수 없습니다</div><div class="b-sub">교육기관 인허가·용역의 실제 성격·계약 내용을 확인해야 합니다</div><div class="evidence-tags"><span class="evidence-tag missing">인허가·등록 확인 필요</span><span class="evidence-tag missing">전문가 확인 권장</span></div></td>
-              <td><span class="row-actions"><span class="mini-btn">내용 보완</span><span class="mini-btn">전문가 확인</span></span></td>
+              <td><div class="hometax-action">홈택스: 과세유형 확인</div><span class="row-actions"><span class="mini-btn">내용 보완</span><span class="mini-btn">전문가 확인</span></span></td>
             </tr>
           </tbody>
         </table>
@@ -398,7 +399,7 @@
       <div class="note">
         <b>Preview 안내</b> — 이 화면은 <b>부가세</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
         구성: 납부(예정)세액 요약(매출세액 − 매입세액) · 매출 구분(과세/영세율/면세) · AI 부가세 판단(근거·필요 증빙·사용자 확정) · 부속 명세 · 신고 준비 검토 자료 · 상태(로딩/빈/오류) 예시.
-        <b>AI는 판단을 확정하지 않으며 자동 홈택스 제출도 하지 않습니다.</b> 공식 비암호화 업로드 파일은 Stage A 확인 전 제공하지 않고, 최종 판단·신고·제출은 사용자가 수행합니다.
+        <b>AI는 판단을 확정하지 않으며 자동 홈택스 제출도 하지 않습니다.</b> 공식 양식 업로드가 확인된 범위만 별도 지원하며, 최종 판단·신고·제출은 사용자가 수행합니다.
       </div>
     </div>
   </div>

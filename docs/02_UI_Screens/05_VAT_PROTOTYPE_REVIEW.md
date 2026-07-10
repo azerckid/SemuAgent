@@ -1,6 +1,6 @@
 # VAT Prototype Review
 > Created: 2026-07-01 20:50
-> Last Updated: 2026-07-10
+> Last Updated: 2026-07-11
 
 ## 1. HTML UI Preview
 - Preview: [부가세](./previews/03_vat.html)
@@ -45,9 +45,11 @@
 ### 6.1 JC-035 VAT AI Extension Review
 
 - 기존 JC-011 기본 화면 승인: 유지
-- AI 판단 작업표·근거·필요 증빙·사용자 확정 흐름: **확인 대기**
-- 신고 준비 검토 자료가 공식 홈택스 업로드 파일이 아니라는 문구: **확인 대기**
-- 승인 후 다음 작업: [VAT AI Tax Treatment Completion Contract §6 VAI-2](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)에 따라 공식 규칙 매트릭스와 별도 Pre-Code Brief 작성
+- AI 판단 작업표·근거·필요 증빙·사용자 확정 흐름: **승인**
+- 신고 준비 검토 자료가 공식 홈택스 양식 업로드 파일이 아니라는 문구: **승인**
+- 추가 제품 결정: 홈택스 자동채움 내용을 확인할 때 `그대로 확인`과 `수정·추가 검토` 항목을 근거와 함께 제시한다. 실제 홈택스 자료를 가져오지 않은 경우 `홈택스 현재값`이 아니라 `자동채움 예상`으로 표시한다.
+- 승인일: 2026-07-11
+- 다음 작업: [VAI-2 Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md)와 [VAI-2 Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) 승인 후 VAI-3a read-only 구현
 
 ## 7. Feedback & Improvements
 - (반영) 신고 패키지 생성 버튼을 승인 전 잠금 상태로 표현: `is-disabled` + `disabled` + `aria-disabled="true"`, muted 스타일, 잠김 라벨.

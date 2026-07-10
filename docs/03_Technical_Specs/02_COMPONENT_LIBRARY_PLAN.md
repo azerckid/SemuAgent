@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-08 05:23 KST
+> Last Updated: 2026-07-11
 
 ## 1. 목적 및 범위
 
@@ -140,6 +140,8 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 | Sales Grouping Cards | 커스텀 `VatSalesGroupCards` | `card` + `badge` |
 | VAT Tax Treatment Table | 커스텀 `VatTaxTreatmentTable` | 기존 `table` + 판단 source mark + 필요 증빙 tag + 사용자 확정 `button` |
 | Tax Treatment Basis | 커스텀 `VatTaxTreatmentBasis` | 한 줄 결론 + 공식 규칙/이전 패턴/AI 근거 + 부족한 사실 |
+| Hometax Review Action | `VatTaxTreatmentTable` 행 셀 확장 | 자동채움 예상 기준 그대로 확인/공제·불공제/과세유형/금액/안분 확인; 실제값으로 오표시 금지 |
+| Required Evidence List | `VatTaxTreatmentBasis` 내부 목록 | 증빙 있음/누락/확인 필요, 영세율·면세 누락 시 확정 차단 |
 | AI Failure Fallback | 커스텀 `VatAiFallbackState` | 행 단위 `수동 확인 필요` + 제한 재시도; 표 전체 비차단 |
 | Deduction Action Controls | 커스텀 `VatDeductionActions` | `button` + `sonner` 피드백 |
 | Schedule Status List | 커스텀 `VatScheduleList` | `card` + 상태칩 |
@@ -243,6 +245,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 자료수집 Pre-Code Brief: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) (JC-009 구현·머지 완료).
 - 기장검토 Pre-Code Brief: [06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) (JC-010 구현·머지 완료).
 - 부가세 Pre-Code Brief: [07_VAT_PRE_CODE_BRIEF.md](./07_VAT_PRE_CODE_BRIEF.md) (JC-011 구현·머지 완료).
+- 부가세 AI 판단 VAI-2: [45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) (JC-035 규칙·저장 계약 승인 대기).
 - 급여 Pre-Code Brief: [08_PAYROLL_PRE_CODE_BRIEF.md](./08_PAYROLL_PRE_CODE_BRIEF.md) (JC-012 구현·머지 완료).
 - 신고지원 Pre-Code Brief: [09_FILING_SUPPORT_PRE_CODE_BRIEF.md](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) (JC-013 게이트 완료, 구현 PR에서 물리 migration·workspace 적용).
 - First-run Sample Data Pre-Code Brief: [12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) (JC-019 게이트 완료 후 구현 PR에서 migration·seed/delete API 적용).
@@ -258,6 +261,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - **Technical_Specs**: [Source Collection Pre-Code Brief](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) - 자료수집 mutation·라우트·acceptance 계약
 - **Technical_Specs**: [Bookkeeping Review Pre-Code Brief](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) - 기장검토 분류 큐·승인 mutation·Preview 계약
 - **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) - 부가세 세액 집계·공제 검토·패키지 잠금 계약
+- **Technical_Specs**: [VAT AI Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAT AI Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) - JC-035 판단 규칙·표시·저장·컴포넌트 계약
 - **Technical_Specs**: [Payroll Pre-Code Brief](./08_PAYROLL_PRE_CODE_BRIEF.md) - 급여대장·고지액 매칭·마감 잠금 계약
 - **Technical_Specs**: [Filing Support Pre-Code Brief](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) - 신고 항목·준비값 확인·접수증 보관 계약
 - **Technical_Specs**: [First-run Sample Data Pre-Code Brief](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) - 샘플 banner/dialog 컴포넌트 계약

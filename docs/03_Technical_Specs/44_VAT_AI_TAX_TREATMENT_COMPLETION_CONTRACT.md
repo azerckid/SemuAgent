@@ -1,6 +1,6 @@
 # VAT AI Tax Treatment Completion Contract
 > Created: 2026-07-10
-> Last Updated: 2026-07-10
+> Last Updated: 2026-07-11
 > Backlog: JC-035
 
 ## 0. Decision
@@ -20,6 +20,13 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 부가세 Path 1 공식 비암호화 업로드 파일 조사는 [VAT Stage A Audit](./43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md)에
 따라 별도 외부 확인 대기로 유지한다. JC-035 완료는 JC-030 부가세 파일 지원 완료를
 의미하지 않는다.
+
+### 0.2 Flow Status
+
+- VAI-0 완료: 범위·AI 판단 단계·실패 안전성 고정
+- VAI-1 완료: AI 판단 작업표 Preview 프로젝트 오너 승인
+- 현재: VAI-2 규칙 매트릭스·Pre-Code Brief 작성 완료, 승인 대기
+- 다음: VAI-3 read-only 추천 구현
 
 ## 0.1 Current Status
 
@@ -160,7 +167,7 @@ type VatTaxTreatmentRecommendation = {
 |:---|:---|:---|
 | **VAI-0 · Scope Contract** | 현재 구현 격차·제품 경계·AI 단계·완료선 고정 | 본 문서·Backlog·Roadmap 동기화 |
 | **VAI-1 · UI-First Gate** | `03_vat.html`에 AI 판단·근거·필요 증빙·사용자 확정·실패 상태 표시 | 브라우저에서 프로젝트 오너 승인 |
-| **VAI-2 · Rule Matrix + Pre-Code Brief** | 공식 규칙 매트릭스, Zod/API/read model/mutation/감사 계약 | 규칙 출처·버전·테스트 fixture와 Pre-Code Brief 승인 |
+| **VAI-2 · Rule Matrix + Pre-Code Brief** | [공식 규칙 매트릭스](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md), [Zod/API/read model/mutation/감사 계약](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) | 규칙 출처·버전·테스트 fixture와 Pre-Code Brief 승인 |
 | **VAI-3 · Read-only Recommendation** | deterministic + 이전 확정 패턴 + 필요한 행만 single AI | 실제 데이터에서 추천·근거·증빙요건 표시, 저장 없음 |
 | **VAI-4 · User Confirmation** | 적용/다르게/보류/전문가 확인, 최종 결정 저장·이력 | AI 추천과 사용자 확정이 분리 저장되고 undo/감사 가능 |
 | **VAI-5 · Risk Escalation** | 고위험 multi-provider consensus·timeout·fallback | 불일치/실패가 비차단 `확인 필요`로 전환됨 |
@@ -173,7 +180,7 @@ VAI-1 승인 전 VAI-2 Pre-Code Brief와 코드 구현을 시작하지 않는다
 
 JC-035는 다음을 **모두** 만족할 때만 `done`이다.
 
-- [ ] VAI-1 HTML Preview가 프로젝트 오너에게 승인됐다.
+- [x] VAI-1 HTML Preview가 프로젝트 오너에게 승인됐다.
 - [ ] 공제/불공제/안분/과세/영세율/면세 공식 규칙 매트릭스의 출처·버전·적용일이 고정됐다.
 - [ ] 규칙·패턴·AI·consensus·수동 판단의 source와 근거가 화면에 구분된다.
 - [ ] 영세율·면세는 필수 증빙이 없으면 사용자 확정과 downstream gate가 차단된다.
@@ -194,6 +201,6 @@ JC-035는 다음을 **모두** 만족할 때만 `done`이다.
 ## 8. Related Documents
 
 - **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) · [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [Screen Flow §4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
-- **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) · [VAT Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) · [VAT Stage A Audit](./43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) · [Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
+- **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) · [VAI-2 Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) · [VAT Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) · [VAT Stage A Audit](./43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) · [Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
 - **Logic_Progress**: [Backlog JC-035](../04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)

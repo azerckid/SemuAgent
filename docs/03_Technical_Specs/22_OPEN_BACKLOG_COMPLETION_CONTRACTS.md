@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-10
+> Last Updated: 2026-07-11
 
 ## 0. Purpose
 
@@ -237,8 +237,10 @@ Non-goals (all JC-030 layers):
 
 Type: 세무판단 보조. 신고 준비 품질 기능이며 JC-030 파일 생성과 분리한다.
 
-Current gate: **VAI-1 UI-First Gate 확인 대기.** 완료선과 고정 순서는
-[VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)에 있다.
+Current gate: **VAI-2 규칙·저장 계약 승인 대기.** VAI-1 Preview는 승인됐고, 완료선과
+고정 순서는 [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md),
+[Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md),
+[Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md)에 있다.
 
 May start implementation only after:
 
