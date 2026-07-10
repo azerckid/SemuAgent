@@ -2,9 +2,12 @@ import { DateTime } from 'luxon'
 import { describe, expect, it } from 'vitest'
 import { resolveBusinessStatusEligibility } from '@/lib/business-status-report/summary'
 import type { InternalReminderAttention } from '@/lib/internal-reminders/summary'
+import type { ReconciliationPath1Gate } from '@/lib/bookkeeping-review/reconciliation-path1-gate'
 import {
+  buildFoundation,
   buildFilingPreparationBlockers,
   buildFilingPreparationReadiness,
+  buildReconciliationGateAttention,
   buildTracks,
   buildUpcomingSchedule,
   businessTypeLabel,
@@ -26,6 +29,21 @@ function attentions(overrides: Partial<Record<InternalReminderAttention['domain'
     count: counts[domain],
     label: `${domain} ${counts[domain]}건`,
   }))
+}
+
+function reconciliationGate(overrides: Partial<ReconciliationPath1Gate> = {}): ReconciliationPath1Gate {
+  return {
+    periodKey: '2026-H1',
+    isReady: false,
+    blockerCount: 25,
+    evidenceRequiredCount: 7,
+    explanationRequiredCount: 5,
+    accountUnconfirmedCount: 11,
+    exclusionReasonRequiredCount: 2,
+    taxBlockerCount: 25,
+    targetRoute: '/dashboard/bookkeeping/reconciliation-ledger',
+    ...overrides,
+  }
 }
 
 describe('businessTypeLabel', () => {
@@ -160,6 +178,50 @@ describe('buildFilingPreparationReadiness', () => {
     expect(buildFilingPreparationReadiness(attentions({ vat: 3, payroll: 1 }))).toBe(50)
     // filing_support는 준비율 계산에서 제외 → 여전히 100%
     expect(buildFilingPreparationReadiness(attentions({ filing_support: 2 }))).toBe(100)
+  })
+})
+
+describe('reconciliation Path 1 gate integration', () => {
+  it('replaces the legacy bookkeeping attention with the shared closing-checklist count', () => {
+    const bookkeeping = buildReconciliationGateAttention(reconciliationGate())
+    const replaced = attentions({ bookkeeping_review: 3 })
+      .map((item) => item.domain === 'bookkeeping_review' ? bookkeeping : item)
+
+    expect(bookkeeping).toEqual({
+      domain: 'bookkeeping_review',
+      count: 25,
+      label: '자료대조 확인 필요 25건',
+    })
+    expect(buildFilingPreparationReadiness(replaced)).toBe(75)
+  })
+
+  it('shows the exact gate breakdown and route on the filing-preparation foundation card', () => {
+    const gate = reconciliationGate()
+    const cards = buildFoundation(attentions(), gate)
+    const bookkeeping = cards.find((card) => card.id === 'bookkeeping_review')!
+
+    expect(bookkeeping.title).toBe('자료대조원장')
+    expect(bookkeeping.chipLabel).toBe('확인 필요 25건')
+    expect(bookkeeping.output).toBe('증빙 7건 · 소명 5건 · 계정 11건 · 제외 사유 2건')
+    expect(bookkeeping.href).toBe('/dashboard/bookkeeping/reconciliation-ledger')
+  })
+
+  it('shows a completed foundation state when the shared gate is ready', () => {
+    const gate = reconciliationGate({
+      isReady: true,
+      blockerCount: 0,
+      evidenceRequiredCount: 0,
+      explanationRequiredCount: 0,
+      accountUnconfirmedCount: 0,
+      exclusionReasonRequiredCount: 0,
+      taxBlockerCount: 0,
+    })
+    const cards = buildFoundation(attentions(), gate)
+    const bookkeeping = cards.find((card) => card.id === 'bookkeeping_review')!
+
+    expect(bookkeeping.chipLabel).toBe('자료대조 완료')
+    expect(bookkeeping.chipTone).toBe('ok')
+    expect(bookkeeping.output).toContain('확인을 완료했습니다')
   })
 })
 

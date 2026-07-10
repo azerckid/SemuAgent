@@ -575,14 +575,30 @@ export async function loadInternalReminderAttentionItems({
   tenantId,
   periodKey,
   today,
+  bookkeepingAttentionOverride,
 }: {
   tenantId: string
   periodKey?: string | null
   today?: DateTime
+  bookkeepingAttentionOverride?: InternalReminderAttention | Promise<InternalReminderAttention>
 }): Promise<InternalReminderAttention[]> {
-  const [source, bookkeeping, vat, payroll, filing] = await Promise.all([
+  const bookkeepingAttention = bookkeepingAttentionOverride ?? loadBookkeepingReviewSummary({
+    tenantId,
+    periodKey,
+    today,
+  }).then((bookkeeping): InternalReminderAttention => ({
+    domain: 'bookkeeping_review',
+    count: bookkeeping.counts.pending + bookkeeping.counts.lowConfidence,
+    label: bookkeeping.counts.pending > 0
+      ? `미분류 ${bookkeeping.counts.pending}건`
+      : bookkeeping.counts.lowConfidence > 0
+        ? `낮은 신뢰도 ${bookkeeping.counts.lowConfidence}건`
+        : '기장검토 확인 필요 없음',
+  }))
+
+  const [source, resolvedBookkeepingAttention, vat, payroll, filing] = await Promise.all([
     loadSourceCollectionSummary({ tenantId, periodKey, today }),
-    loadBookkeepingReviewSummary({ tenantId, periodKey, today }),
+    bookkeepingAttention,
     loadVatSummary({ tenantId, periodKey, today }),
     loadPayrollWorkspaceSummary({ tenantId, periodKey: null, today }),
     loadFilingSupportSummary({ tenantId, periodKey, today }),
@@ -598,15 +614,7 @@ export async function loadInternalReminderAttentionItems({
           ? `정규화 확인 ${source.completeness.normalizationPendingCount}건`
           : '자료수집 확인 필요 없음',
     },
-    {
-      domain: 'bookkeeping_review',
-      count: bookkeeping.counts.pending + bookkeeping.counts.lowConfidence,
-      label: bookkeeping.counts.pending > 0
-        ? `미분류 ${bookkeeping.counts.pending}건`
-        : bookkeeping.counts.lowConfidence > 0
-          ? `낮은 신뢰도 ${bookkeeping.counts.lowConfidence}건`
-          : '기장검토 확인 필요 없음',
-    },
+    resolvedBookkeepingAttention,
     {
       domain: 'vat',
       count: vat.taxSummary.pendingDeductionCount,

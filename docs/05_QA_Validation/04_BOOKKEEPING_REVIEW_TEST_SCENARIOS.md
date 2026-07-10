@@ -1,6 +1,6 @@
 # Test Scenarios: Bookkeeping Review
 > Created: 2026-07-02 09:10
-> Last Updated: 2026-07-10 08:17 KST
+> Last Updated: 2026-07-10 09:02 KST
 
 기장검토(JC-010) Layer 5 QA 시나리오. [Bookkeeping Review Pre-Code Brief](../03_Technical_Specs/06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md)와 [Reconciliation Ledger Phase 2 Brief](../03_Technical_Specs/41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)의 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
 
@@ -117,22 +117,23 @@
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-120 | tenant A/B와 같은 period key | shared gate load for tenant A | tenant B 행은 blocker/count에 포함되지 않음 | Pending |
-| S-121 | 증빙·소명·계정·제외 blocker가 섞인 동일 기간 | gate derivation | `closingChecklist`와 gate count/reason이 일치 | Pending |
-| S-122 | 신고 준비 허브 | common bookkeeping readiness render | 별도 규칙 복사 없이 shared gate count와 자료대조원장 route 사용 | Pending |
+| S-120 | tenant A/B와 같은 period key | shared gate load for tenant A | tenant B 행은 blocker/count에 포함되지 않음 | PASS·단위 |
+| S-121 | 증빙·소명·계정·제외 blocker가 섞인 동일 기간 | gate derivation | `closingChecklist`와 gate count/reason이 일치 | PASS·단위 |
+| S-122 | 신고 준비 허브 | common bookkeeping readiness render | 별도 규칙 복사 없이 shared gate count와 자료대조원장 route 사용 | PASS·구현 |
 | S-123 | source collection 또는 reconciliation 미완 | VAT package UI | 생성 버튼 disabled + 정확한 사유와 이동 경로 표시 | Pending |
 | S-124 | source/reconciliation/VAT deduction 중 하나라도 미완 | VAT package POST | API가 conflict 응답으로 거부하고 reason/count/target route 반환 | Pending |
 | S-125 | 세 gate가 모두 ready이나 VAT snapshot provenance 미확인 | VAT package POST | 생성 거부; confirmed-ledger provenance 확인 전 잠금 유지 | Pending |
 | S-126 | 같은 tenant/period의 confirmed filing rows로 VAT 값 rebuild 완료 | VAT package POST | gate 통과 후에만 package status 전환 | Pending |
 | S-127 | 원천세·간이지급명세서·지방소득세 payroll route | bookkeeping blocker 존재 | payroll 전용 validation만 적용되고 reconciliation gate로 차단되지 않음 | Pending |
-| S-128 | shared gate load | 실행 | classification/VAT/filing DB에 write side effect 없음 | Pending |
+| S-128 | shared gate load | 실행 | classification/VAT/filing DB에 write side effect 없음 | PASS·단위 |
 
 ## 3. 자동화 현황 및 후속
 - **자동 단위 완료**(`lib/bookkeeping-review/summary.test.ts`): 탭 집계(S-20~23), 신뢰도·계정지정(S-30~32), 분개 균형(S-42), 제외 테이블(S-61), 기간 필터(S-10).
 - **정적 검증 완료**(`bookkeeping-review.test.ts`): Preview 구조(S-01), GIWA 워크스페이스 미import(S-60), 문구(S-62), 라우트(S-02).
 - **구현 검증 완료**: `tsc --noEmit`, `npm run lint`, `npm run test`, `npm run build`.
 - **자료대조원장 완료 범위**: Slice 2a/2b의 live read, row mutation, exact 1:1 evidence lifecycle, pattern display/account batch acceptance는 unit + browser E2E로 검증됐다.
-- **후속**: Slice 2d는 S-120~S-128을 먼저 자동화한 뒤 filing-preparation/VAT UI와 API를 연결한다. 공식 Hometax 파일 assembly 검증은 JC-030 범위다.
+- **Slice 2d-1 완료**: S-120~S-122/S-128. dev DB `2026-H1`에서 gate total 698과 신고 준비 분해값(증빙 6 + 소명 5 + 계정 687 + 제외 0)이 일치했다.
+- **후속**: Slice 2d-2/2d-3은 S-123~S-127을 자동화하며 VAT UI/API gate와 confirmed-ledger provenance를 연결한다. 공식 Hometax 파일 assembly 검증은 JC-030 범위다.
 
 ## 4. Related Documents
 - **UI_Screens**: [Bookkeeping Review Prototype Review](../02_UI_Screens/04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) · [Bookkeeping HTML Preview](../02_UI_Screens/previews/02_bookkeeping_review.html) · [Reconciliation Prototype Review](../02_UI_Screens/12_RECONCILIATION_LEDGER_PROTOTYPE_REVIEW.md) · [Reconciliation HTML Preview](../02_UI_Screens/previews/12_reconciliation_ledger.html)

@@ -1,6 +1,6 @@
 # Reconciliation Ledger Phase 2 Pre-Code Technical Brief
 > Created: 2026-07-08 02:01 KST
-> Last Updated: 2026-07-10 08:17 KST
+> Last Updated: 2026-07-10 09:02 KST
 
 ## 0. Purpose
 
@@ -218,6 +218,8 @@ type ReconciliationPath1Gate = {
 ```
 
 The gate loader must not write classification, VAT, or filing data. UI and mutation routes must call the same gate function rather than copying its conditions.
+
+`blockerCount` is defined as `evidenceRequiredCount + explanationRequiredCount + accountUnconfirmedCount + exclusionReasonRequiredCount`. It is the unresolved-action total shown by the closing checklist, not a de-duplicated transaction-row count.
 
 #### Consumer boundary
 
@@ -647,7 +649,7 @@ inactive search or settings controls must look disabled until implemented.
 - [x] Slice 2b-3b-2b evidence/exclusion batch acceptance decision — not adopted in v1; evidence linking and exclusion remain single-row confirmations.
 - [x] Slice 2c durable match-link schema decision — migration 0066 `linked_evidence_row_id` is sufficient for exact 1:1; no new pair table unless partial/many-to-one/split-merge gets a separate brief.
 - [x] Slice 2d Path 1 gate contract documented (§2.2).
-- [ ] Slice 2d-1 shared reconciliation gate and filing-preparation read implemented.
+- [x] Slice 2d-1 shared reconciliation gate and filing-preparation read implemented — `lib/bookkeeping-review/reconciliation-path1-gate.ts` derives one Zod-validated read-only gate from the live ledger `closingChecklist`; 신고 준비 replaces only the legacy bookkeeping attention with this gate and shows the same total/category counts plus the 자료대조원장 route. No DB/API mutation.
 - [ ] Slice 2d-2 VAT package UI/API gate enforcement implemented.
 - [ ] Slice 2d-3 VAT confirmed-ledger provenance verified or deterministic rebuild implemented.
 
