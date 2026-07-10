@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-10 08:17 KST
+> Last Updated: 2026-07-10 09:02 KST
 
 ## Status Legend
 
@@ -180,7 +180,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 자료대조원장 Slice 2b-3b-2b 증빙/제외 패턴 일괄 수락 여부 판단 — v1 미도입. 증빙 연결·제외 처리는 단건 확인만 유지
   - [x] 자료대조원장 Slice 2c durable match-link schema 필요 여부 판단 — migration 0066 `linked_evidence_row_id`로 exact 1:1은 충분. 부분 지급·다건 합산·split/merge가 필요할 때 별도 brief 후 재개
   - [x] 자료대조원장 Slice 2d-0 Path 1 gate consumption 계약 고정 — Brief 41 §2.2. 자료대조원장 게이트의 소비자는 신고 준비 공통 기장 상태 + 부가세로 제한하고, 급여 기반 세목은 비차단
-  - [ ] 자료대조원장 Slice 2d-1 shared reconciliation gate + 신고 준비 read 연동
+  - [x] 자료대조원장 Slice 2d-1 shared reconciliation gate + 신고 준비 read 연동 — live 원장과 같은 `closingChecklist`에서 Zod gate를 만들고 신고 준비의 legacy 기장 알림을 교체. 카드/차단 목록/사이드바 badge가 동일 값을 사용하며 DB write 없음
   - [ ] 자료대조원장 Slice 2d-2 부가세 패키지 UI/API gate 강제 — 자료수집·대조원장·공제 검토 중 하나라도 미완이면 생성 불가
   - [ ] 자료대조원장 Slice 2d-3 부가세 package 값의 확정 원장 provenance 검증 또는 deterministic rebuild — 확인 전에는 생성 잠금 유지
 - Acceptance Criteria:
@@ -208,6 +208,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync History (2026-07-08, later decisions may supersede this record): Screen Flow 4c / UI Design 4.3+4.3a / Prototype Review / Preview / Component Plan 7.3 / Pre-Code Brief / QA Scenarios 상호 링크됨. 2026-07-08: "자료대조원장"은 신고 준비 하위가 아니라 기장검토 하위 진입점으로 정리했고, 전용 Preview(12)에서 통장·카드·세금계산서·현금영수증 대조 원장 구조를 승인했다. `/dashboard/bookkeeping`은 기장검토 분류 큐로 유지하고, `/dashboard/bookkeeping/reconciliation-ledger` 전용 라우트 1차 구현으로 자료대조원장 화면을 분리한다. 1차 구현은 기존 classification read model을 재사용한다. 2026-07-08 02:01: Phase 2 Brief(41)로 입출금↔증빙 대조, 계정확정, 사용내역 소명 모달, 제외 사유 taxonomy, 세목별 Path 1 blocker 계약을 고정했다. 2026-07-08 03:12: 당시 앱의 자료대조원장은 아직 1차 slice였다. 완성 기준은 통장 입출금↔세금계산서 매칭, 통장↔증빙 연결(카드는 증빙 대상으로만 사용), 증빙 찾기, 사용내역/소명 입력, AI 계정 추천과 불확실 항목 사용자 선택, 사적·업무무관 의심 표시, 제외 사유 선택, 계정항목 인라인 수정까지 포함했다. 전월/최근 확정 패턴은 계정·증빙·제외 판단 근거로만 사용하며, 사용자의 확인 없이 자동 확정하지 않는다. AI 판단은 규칙→패턴→단일 AI→multi-provider consensus→수동 검토 fallback 순서로 단계화하고, LLM 실패·타임아웃·quota·provider disagreement가 화면 렌더나 사용자 검토를 막지 않도록 Brief 41에 비차단 런타임 계약을 추가했다. 2026-07-08 04:02: 자료대조원장 기간 단위는 월/분기/반기/연/사용자 지정으로 고정하고, 기본값은 진입한 신고 맥락에 맞춘다. "증빙없음"은 완료 상태가 아니라 내부 원인/문제이므로 화면에는 증빙 필요·소명 필요·소명 완료·증빙 예외·제외됨처럼 사용자 행동과 해결 상태를 표시한다. 2026-07-08 04:51: 초기 편의성 계약으로 다음 할 일 큐·우측 패널 등을 제안했으나, 이후 table-first 행 액션 UI와 PR #171의 시각 부담 제거 결정으로 대체됐다. 분할/묶음 editor, 장문 소명 초안, 별도 규칙 저장, 빠른/전체 모드 분리는 후속으로 보류한다. 2026-07-08 05:12: Brief §2.1로 Phase 2 implementation order(2a-0..2d)와 traceability를 고정했고, 2026-07-08 05:23에는 UI-first lite 순서를 추가했다.
 - Document Sync Check Update (2026-07-09 19:31): Slice 2b-2를 2b-2a 연결 저장(PR #173 완료, migration 0066 적용) / 2b-2b 연결 증빙 상세 보기 및 출처 목록 행 강조 / 2b-2c 연결 해제·증빙 예외·금액 차이 처리로 분리했다. 2026-07-09 21:05: `증빙있음` 행의 `증빙 확인`은 **찾은 증빙 한 줄**을 먼저 보여주고, 그 한 줄 클릭 시 세금계산서·현금영수증·체크카드 목록 중 해당 출처 목록을 열어 연결/발견 행을 시각적으로 강조해야 한다. 여러 후보라 결정하지 못한 상태는 `증빙있음`이 아니라 `증빙 찾기` 흐름이다. 2026-07-10: Slice 2b-3은 2b-3a(계정 반복 패턴 적용·무시), 2b-3b-1(증빙·제외 반복 패턴 표시와 단건 확인 진입점), 2b-3b-2(안전한 일괄 수락)로 분리한다. 2b-3a/2b-3b-1은 기존 단건 mutation을 재사용하고 신규 DB 없이 `패턴 거부: ...` memo로 무시 신호를 남긴다.
 - Document Sync Check Update (2026-07-10 08:17): PR #171 이후 live UI는 hero/source-summary/다음 할 일 카드가 없는 table-first 구조다. Slice 2b-3b-2b는 증빙·제외 일괄 적용을 v1에서 도입하지 않는 것으로 종료했고, Slice 2c도 migration 0066의 exact 1:1 링크를 유지하는 것으로 종료했다. 다음 구현은 Slice 2d-1 → 2d-2 → 2d-3 순서다. 2d는 자료대조원장 게이트를 신고 준비 공통 기장 상태와 부가세 패키지 UI/API에서 소비하게 하며, 급여 기반 세목은 차단하지 않는다. 부가세 저장 스냅샷이 확정 원장에서 유래했다는 provenance가 검증되지 않으면 파일/패키지 생성은 계속 잠근다.
+- Document Sync Check Update (2026-07-10 09:02): Slice 2d-1 구현 완료. `blockerCount`는 증빙 필요 + 소명 필요 + 계정 미확정 + 제외 사유 필요의 미해결 액션 합계이며 고유 거래 행 수가 아니다. dev DB `2026-H1` 검증에서 자료대조원장 `698건`과 신고 준비 카드 `6 + 5 + 687 + 0 = 698건`이 일치했다. 다음은 2d-2 부가세 package UI/API gate 강제다.
 
 ### JC-011 · Build VAT workspace (부가세) — 신규
 

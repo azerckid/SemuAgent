@@ -69,7 +69,7 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
             <p className="text-xs font-semibold text-company-fg-muted">신고 데이터 준비 파이프라인</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">홈택스·위택스에 넣을 확정 데이터가 준비되고 있는지 봅니다</h2>
             <p className="mt-2 max-w-[650px] text-[13px] text-company-fg-muted">
-              자료수집과 기장검토를 공통 기반으로 두고, 원천세·부가세·지급명세서/연말정산·지방소득세 트랙의 입력, 산출, handoff 상태를 한 화면에서 확인합니다.
+              자료수집과 자료대조원장을 공통 기반으로 두고, 원천세·부가세·지급명세서/연말정산·지방소득세 트랙의 입력, 산출, handoff 상태를 한 화면에서 확인합니다.
             </p>
             <div className="mt-4 h-2 max-w-[520px] overflow-hidden rounded-full bg-company-border">
               <span className="block h-full bg-[#2563eb]" style={{ width: `${hero.readinessPercent}%` }} />
@@ -176,7 +176,15 @@ function FoundationCard({ card }: { card: FilingPrepFoundationCard }) {
         </div>
         <Chip tone={card.chipTone}>{card.chipLabel}</Chip>
       </div>
-      <p className="mt-3.5 rounded-[10px] border border-company-border bg-[#fafafa] px-3 py-2.5 text-[12.5px]">{card.output}</p>
+      <div className="mt-3.5 flex items-center justify-between gap-3 rounded-[10px] border border-company-border bg-[#fafafa] px-3 py-2.5">
+        <p className="text-[12.5px]">{card.output}</p>
+        <Link
+          href={card.href}
+          className="whitespace-nowrap rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-xs font-semibold"
+        >
+          열기
+        </Link>
+      </div>
     </article>
   )
 }

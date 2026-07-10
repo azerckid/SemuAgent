@@ -4,6 +4,10 @@ import { buildCompanyHomePeriod, type CompanyHomePeriod } from '@/lib/company-ho
 import { client, tenant } from '@/lib/db/schema'
 import { loadBusinessStatusReportAttentionCount, resolveBusinessStatusEligibility } from '@/lib/business-status-report/summary'
 import {
+  loadReconciliationPath1Gate,
+  type ReconciliationPath1Gate,
+} from '@/lib/bookkeeping-review/reconciliation-path1-gate'
+import {
   loadInternalReminderAttentionItems,
   type InternalReminderAttention,
   type InternalReminderDomain,
@@ -156,6 +160,16 @@ export function buildFilingPreparationBlockers(attentions: InternalReminderAtten
     })
 }
 
+export function buildReconciliationGateAttention(
+  gate: ReconciliationPath1Gate,
+): InternalReminderAttention {
+  return {
+    domain: 'bookkeeping_review',
+    count: gate.blockerCount,
+    label: gate.isReady ? '자료대조 완료' : `자료대조 확인 필요 ${gate.blockerCount}건`,
+  }
+}
+
 function attentionByDomain(attentions: InternalReminderAttention[], domain: InternalReminderDomain) {
   return attentions.find((item) => item.domain === domain)
 }
@@ -215,14 +229,20 @@ export async function loadFilingPreparationSummary({
     }
   }
 
-  const [attentions, vat, paymentStatement, localIncomeTax, businessStatus] = await Promise.all([
-    loadInternalReminderAttentionItems({ tenantId, periodKey, today }),
+  const reconciliationGatePromise = loadReconciliationPath1Gate({ tenantId, periodKey, today })
+  const [attentions, reconciliationGate, vat, paymentStatement, localIncomeTax, businessStatus] = await Promise.all([
+    loadInternalReminderAttentionItems({
+      tenantId,
+      periodKey,
+      today,
+      bookkeepingAttentionOverride: reconciliationGatePromise.then(buildReconciliationGateAttention),
+    }),
+    reconciliationGatePromise,
     loadVatSummary({ tenantId, periodKey, today }),
     loadPaymentStatementAttentionCount(tenantId),
     loadLocalIncomeTaxAttentionCount(tenantId),
     loadBusinessStatusReportAttentionCount(tenantId),
   ])
-
   const blockers = buildFilingPreparationBlockers(attentions)
   const readinessPercent = buildFilingPreparationReadiness(attentions)
   const tracks = buildTracks(attentions, vat.taxSummary, businessType, paymentStatement, localIncomeTax, businessStatus)
@@ -238,7 +258,7 @@ export async function loadFilingPreparationSummary({
       handoffReadyCount,
     },
     blockers,
-    foundation: buildFoundation(attentions),
+    foundation: buildFoundation(attentions, reconciliationGate),
     tracks,
     schedule: buildUpcomingSchedule(today ?? now(tenantRow.timezone)),
   }
@@ -246,13 +266,19 @@ export async function loadFilingPreparationSummary({
 
 // 사이드바 badge용 경량 카운트(확인 필요 blocker 수).
 export async function loadFilingPreparationAttentionCount(tenantId: string): Promise<number> {
-  const attentions = await loadInternalReminderAttentionItems({ tenantId })
+  const reconciliationGatePromise = loadReconciliationPath1Gate({ tenantId })
+  const attentions = await loadInternalReminderAttentionItems({
+    tenantId,
+    bookkeepingAttentionOverride: reconciliationGatePromise.then(buildReconciliationGateAttention),
+  })
   return buildFilingPreparationBlockers(attentions).length
 }
 
-function buildFoundation(attentions: InternalReminderAttention[]): FilingPrepFoundationCard[] {
+export function buildFoundation(
+  attentions: InternalReminderAttention[],
+  reconciliationGate: ReconciliationPath1Gate,
+): FilingPrepFoundationCard[] {
   const source = attentionByDomain(attentions, 'source_collection')
-  const bookkeeping = attentionByDomain(attentions, 'bookkeeping_review')
   return [
     {
       id: 'source_collection',
@@ -265,12 +291,16 @@ function buildFoundation(attentions: InternalReminderAttention[]): FilingPrepFou
     },
     {
       id: 'bookkeeping_review',
-      title: '기장검토',
-      description: '귀속월 확정·중복제거·계정분류 후보 검토',
-      chipLabel: bookkeeping && bookkeeping.count > 0 ? bookkeeping.label : '원장 준비',
-      chipTone: bookkeeping && bookkeeping.count > 0 ? 'warn' : 'ok',
-      output: '확정 거래원장은 모든 신고 트랙의 소스가 됩니다.',
-      href: '/dashboard/bookkeeping',
+      title: '자료대조원장',
+      description: '증빙 연결·소명·계정항목·제외 사유 확정',
+      chipLabel: reconciliationGate.isReady
+        ? '자료대조 완료'
+        : `확인 필요 ${reconciliationGate.blockerCount}건`,
+      chipTone: reconciliationGate.isReady ? 'ok' : 'warn',
+      output: reconciliationGate.isReady
+        ? '증빙·소명·계정항목·제외 사유 확인을 완료했습니다.'
+        : `증빙 ${reconciliationGate.evidenceRequiredCount}건 · 소명 ${reconciliationGate.explanationRequiredCount}건 · 계정 ${reconciliationGate.accountUnconfirmedCount}건 · 제외 사유 ${reconciliationGate.exclusionReasonRequiredCount}건`,
+      href: reconciliationGate.targetRoute,
     },
   ]
 }
