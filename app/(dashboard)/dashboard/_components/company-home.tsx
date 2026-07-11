@@ -10,6 +10,7 @@ import type {
   CompanyHomeTone,
   CompanyHomeWorkspaceCard,
 } from '@/lib/company-home/summary'
+import type { UpcomingScheduleItem } from '@/lib/tax-calendar'
 import { cn } from '@/lib/utils'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
@@ -56,6 +57,7 @@ export function CompanyHomeView({ summary }: CompanyHomeViewProps) {
       <div className="flex w-full max-w-[1200px] flex-col gap-5 px-7 pt-6 pb-12">
         <PeriodHero summary={summary} />
         <ActionItemsSection items={summary.actionItems} />
+        <UpcomingScheduleSection items={summary.schedule} />
         <WorkspaceCardsSection cards={summary.workspaceCards} />
         <RecentRowsSection rows={summary.recentRows} />
         <StateCoverageSection />
@@ -213,6 +215,52 @@ function ActionItemsSection({ items }: ActionItemsSectionProps) {
               )}
             >
               {item.ctaLabel}
+            </Link>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+interface UpcomingScheduleSectionProps {
+  readonly items: UpcomingScheduleItem[]
+}
+
+// JC-036: 별도 신고 준비 허브 대신 회사 홈의 얕은 스트립으로 다가오는 신고 일정을 보여준다.
+function UpcomingScheduleSection({ items }: UpcomingScheduleSectionProps) {
+  return (
+    <section className="grid gap-3" aria-labelledby="company-home-schedule">
+      <SectionHeader
+        id="company-home-schedule"
+        title="다가오는 신고"
+        hint="가장 가까운 일정 순"
+      />
+      <div className={panelClass}>
+        {items.length === 0 && (
+          <p className="px-[18px] py-4 text-[12.5px] text-company-fg-muted">다가오는 세무 일정이 없습니다.</p>
+        )}
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className={cn(
+              'grid grid-cols-[64px_1fr_auto] items-center gap-3.5 px-[18px] py-3',
+              index > 0 && 'border-t border-company-border',
+            )}
+          >
+            <div className="text-center">
+              <p className={cn('text-[15px] font-extrabold', item.soon && 'text-[#dc2626]')}>D-{item.dDay}</p>
+              <p className="text-[10px] text-company-fg-subtle">{item.dateLabel}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-semibold">{item.title}</p>
+              <p className="mt-0.5 text-[11.5px] text-company-fg-subtle">신고 준비 완료 후 홈택스·위택스에서 직접 신고합니다.</p>
+            </div>
+            <Link
+              href={item.href}
+              className="shrink-0 rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[12.5px] font-semibold whitespace-nowrap text-foreground transition-colors hover:bg-company-nav-hover"
+            >
+              준비 화면 열기
             </Link>
           </div>
         ))}

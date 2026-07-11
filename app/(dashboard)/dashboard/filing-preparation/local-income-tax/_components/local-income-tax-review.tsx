@@ -22,7 +22,7 @@ export function LocalIncomeTaxEmptyState({ tenantName }: { readonly tenantName: 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <div className="border-b border-company-border bg-company-surface px-7 py-3.5">
-        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 신고 준비 › 지방소득세</p>
+        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 급여·지급 › 지방소득세</p>
         <h1 className="text-base font-semibold tracking-tight text-foreground">지방소득세</h1>
       </div>
       <div className="px-7 pt-6">
@@ -45,7 +45,7 @@ export function LocalIncomeTaxReview({ summary }: { readonly summary: LocalIncom
       <div className="flex items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
         <div className="min-w-0">
           <p className="text-[12.5px] font-medium text-company-fg-subtle">
-            회사 홈 › <Link href="/dashboard/filing-preparation" className="hover:underline">신고 준비</Link> › 지방소득세
+            회사 홈 › <Link href="/dashboard/payroll" className="hover:underline">급여·지급</Link> › 지방소득세
           </p>
           <h1 className="text-base font-semibold tracking-tight text-foreground">지방소득세</h1>
         </div>
@@ -123,7 +123,7 @@ export function LocalIncomeTaxReview({ summary }: { readonly summary: LocalIncom
         </section>
 
         <section className="rounded-xl border border-[#ddd6fe] bg-[#f5f3ff] px-[18px] py-4 text-[12.5px] text-[#4c1d95]">
-          <b className="text-[#2e1065]">신고지원과 동일한 값</b> — 이 지방소득세 값은 신고지원의 원천세 준비값 확인에 표시되는 지방소득세와 같은 실제 급여 기록에서 옵니다. 두 화면에서 다른 숫자가 보이지 않습니다.
+          <b className="text-[#2e1065]">원천세와 동일한 값</b> — 이 지방소득세 값은 원천세 준비값 확인에 표시되는 지방소득세와 같은 실제 급여 기록에서 옵니다. 두 화면에서 다른 숫자가 보이지 않습니다.
         </section>
 
         <section className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-4 text-[12.5px] text-[#1e3a8a]">

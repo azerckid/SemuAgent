@@ -45,7 +45,7 @@
 | JC-034 | todo | GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1) | `lib/giwa-handoff`, `lib/filing-preparation`, JC-030 Validation | **우선순위: 전체 Path 1 베타(1a+1b) 이후.** 필수 산출물이 원천세·부가세 등 summary CSV라 1b 요약 작업이 선행. 문서만 보존, 기존 Preview는 Path 1 우선 화면으로 supersede, **구현 착수 보류**. ZIP(manifest + CSV + README). [Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [Pre-Code Brief](../03_Technical_Specs/35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md) |
 | JC-030 | todo | 전자신고 검증 및 파일 생성 (Validation / Path 1a·1b) | `lib/efiling-*`, JC-024·013 | **최우선 — Path 1 세목 확대.** 자료대조 Phase 2와 간이지급 파일(1a) 후보 구현 완료. **원천세는 공식 양식 미확인 → Path 1b(직접입력 정리) 대상으로 결정(1b 값 정리 화면 미구현); 부가세도 Path 1b 대상이며 Stage A는 1a 승격용 외부 확인 대기.** 공식 비암호화 전체 신고 양식이 확인되면 해당 세목만 1a(파일)로 승격하고, 그전에는 `항목 = 값` 직접입력 정리 대상으로 둔다(값 정리 화면 구현은 후속, `blocked` 세목 없음). Stage A 통과 전 generator를 만들지 않는다. Path 3 암호화 파일은 범위 밖. [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [VAT Stage A Audit](../03_Technical_Specs/43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) |
 | JC-035 | done | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **완료(done) · VAI-0~6b 구현·머지(PR #200)·dev/prod migration `0070`·브라우저 E2E 완료.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·단계별 직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
-| JC-036 | todo | Cadence 기반 내비게이션 재구성 | `sidebar.tsx`, 회사 홈, 기존 filing routes | **UI 계약 승인(2026-07-11), runtime 미구현.** 상위 메뉴를 급여·지급(월) / 부가세(분기·반기) / 연간신고(연)로 재구성하고 신고지원·신고 준비 상위 메뉴를 제거한다. 직원 명부·원천세·지급명세서·지방소득세는 급여·지급 하위, 법인세/종합소득세/사업장현황신고는 사업자 유형에 따라 연간신고 하위에 조건부 노출한다. 회사 홈에는 별도 허브 대신 다가오는 신고 스트립을 둔다. [Cadence Navigation Review](../02_UI_Screens/13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) |
+| JC-036 | done | Cadence 기반 내비게이션 재구성 | `sidebar.tsx`, 회사 홈, 기존 filing routes | **runtime 구현 완료(2026-07-11).** 상위 메뉴를 급여·지급(월) / 부가세(분기·반기) / 연간신고(연)로 재구성하고 신고지원·신고 준비 상위 메뉴를 제거했다. 직원 명부·원천세·지급명세서·지방소득세는 급여·지급 하위, 법인세/종합소득세/사업장현황신고는 사업자 유형(`client.taxEntityType`)에 따라 연간신고 하위에 조건부 노출한다. 회사 홈에 다가오는 신고 스트립(세목별 CTA 포함)을 추가하고 기존 신고 준비 허브의 "다가오는 세무 일정" 섹션은 제거했다. 기존 URL은 하나도 바꾸지 않아 redirect/alias가 필요 없다. [Cadence Navigation Review](../02_UI_Screens/13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
@@ -70,15 +70,15 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 직원 명부의 급여·지급 하위 이동 승인
   - [x] 사업자 유형별 연간 세목 조건부 노출 계약
   - [x] HTML Preview 동기화
-  - [ ] 기존 runtime route redirect/alias 정책 확정
-  - [ ] 실제 sidebar/breadcrumb 대상 파일과 회귀 테스트 범위 확정
+  - [x] 기존 runtime route redirect/alias 정책 확정 — **URL을 하나도 바꾸지 않는다.** 사이드바의 시각적 그룹핑만 재배치하고 기존 라우트(`/dashboard/filing-support`, `/dashboard/filing-preparation/*`, `/dashboard/employees` 등)는 그대로 유지해 redirect 자체가 불필요하다.
+  - [x] 실제 sidebar/breadcrumb 대상 파일과 회귀 테스트 범위 확정 — `sidebar.tsx`(신규 `PAYROLL_CHILD_NAV`/`ANNUAL_FILING_FIXED_CHILD_NAV`), `layout.tsx`(`loadPrimaryBusinessEntityType` 추가), breadcrumb 15개 파일, `sidebar.test.ts`
 - Acceptance Criteria:
-  - [ ] runtime 사이드바에 신고지원·신고 준비 상위 메뉴가 없다.
-  - [ ] 급여·지급 하위 메뉴와 parent/child active 상태가 정확하다.
-  - [ ] 법인은 법인세, 일반 개인은 종합소득세, 면세 개인은 종합소득세·사업장현황신고만 본다.
-  - [ ] 회사 홈의 다가오는 신고가 가장 가까운 일정 2~3건과 해당 세목 CTA를 제공한다.
-  - [ ] 기존 URL은 redirect/alias로 안전하게 유지되고 직접 링크 회귀가 없다.
-- Document Sync Check: cadence IA docs/Preview 완료. runtime 구현·QA는 후속 PR에서 체크한다.
+  - [x] runtime 사이드바에 신고지원·신고 준비 상위 메뉴가 없다.
+  - [x] 급여·지급 하위 메뉴와 parent/child active 상태가 정확하다.
+  - [x] 법인은 법인세, 일반 개인은 종합소득세, 면세 개인은 종합소득세·사업장현황신고만 본다. 미지정(unknown)은 하위 메뉴 없이 상위 항목만 노출한다(과잉 추정 방지).
+  - [x] 회사 홈의 다가오는 신고가 가장 가까운 일정 2~3건과 해당 세목 CTA(`준비 화면 열기`)를 제공한다.
+  - [x] 기존 URL은 redirect/alias로 안전하게 유지되고 직접 링크 회귀가 없다(URL 미변경).
+- Document Sync Check (2026-07-11): `lib/tax-calendar.ts`에 `buildUpcomingSchedule`/`UpcomingScheduleItem`(+ 세목별 `href` 매핑)을 두어 `lib/filing-preparation/summary.ts`와 `lib/company-home/summary.ts`가 공유(순환 import 회피, 원래 `filing-preparation/summary.ts`에 있던 함수를 이전 후 재-export). `filing-preparation-hub.tsx`의 "다가오는 세무 일정" 섹션은 제거하고 breadcrumb을 "연간신고"로 갱신. tsc/lint(0 errors)/vitest(239 files·1664 tests) 전체 통과, whitespace clean. 브라우저 검증: 회사 홈 사이드바·다가오는 신고 스트립·CTA 라우팅, 급여·지급/원천세/연간신고 breadcrumb, dev DB에서 `taxEntityType`을 corporation/tax_exempt로 임시 전환해 연간신고 조건부 하위 메뉴(법인세 단독 / 종합소득세+사업장현황신고) 확인 후 원상복구(null) 완료. 검증 중 `/dashboard/settings` 사업자 유형 저장 시 발생한 별도 pre-existing 버그(`{formErrors, fieldErrors}` 객체를 React child로 직접 렌더 — `settings-panel.tsx`/`/api/settings/tenant`)를 발견했으나 JC-036 변경 파일과 무관해 이번 범위에 포함하지 않음(후속 이슈로 별도 처리 필요).
 
 ### JC-005 · Define company tenant data model delta
 

@@ -11,6 +11,7 @@ import {
   uploadFile,
 } from '@/lib/db/schema'
 import { internalSourceBatchReadKindCondition } from '@/lib/source-batch/scope'
+import { buildUpcomingSchedule, type UpcomingScheduleItem } from '@/lib/tax-calendar'
 import { DateTime as LuxonDateTime, fromISO, now } from '@/lib/time'
 
 export type CompanyHomePeriodKey =
@@ -85,6 +86,7 @@ export type CompanyHomeSummary = {
   actionItems: CompanyHomeActionItem[]
   workspaceCards: CompanyHomeWorkspaceCard[]
   recentRows: CompanyHomeRecentRow[]
+  schedule: UpcomingScheduleItem[]
 }
 
 export type CompanyHomeCounts = {
@@ -531,6 +533,8 @@ export async function loadCompanyHomeSummary({
     today,
     timezone: tenantRow.timezone,
   })
+  // 다가오는 신고(JC-036): 별도 허브가 아니라 회사 홈의 얕은 스트립으로 제공.
+  const schedule = buildUpcomingSchedule(today ?? now(tenantRow.timezone))
 
   const businessEntityRows = await db
     .select({
@@ -566,6 +570,7 @@ export async function loadCompanyHomeSummary({
       actionItems: buildCompanyHomeActionItems(counts),
       workspaceCards: buildCompanyHomeWorkspaceCards(counts),
       recentRows: [],
+      schedule,
     }
   }
 
@@ -745,5 +750,6 @@ export async function loadCompanyHomeSummary({
     actionItems: buildCompanyHomeActionItems(counts),
     workspaceCards: buildCompanyHomeWorkspaceCards(counts),
     recentRows,
+    schedule,
   }
 }

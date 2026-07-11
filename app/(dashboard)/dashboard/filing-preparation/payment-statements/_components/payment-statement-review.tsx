@@ -29,7 +29,7 @@ export function PaymentStatementEmptyState({ tenantName }: { readonly tenantName
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <div className="border-b border-company-border bg-company-surface px-7 py-3.5">
-        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 신고 준비 › 지급명세서·연말정산</p>
+        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 급여·지급 › 지급명세서·연말정산</p>
         <h1 className="text-base font-semibold tracking-tight text-foreground">지급명세서 · 연말정산</h1>
       </div>
       <div className="px-7 pt-6">
@@ -58,7 +58,7 @@ export function PaymentStatementReview({
       <div className="flex items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
         <div className="min-w-0">
           <p className="text-[12.5px] font-medium text-company-fg-subtle">
-            회사 홈 › <Link href="/dashboard/filing-preparation" className="hover:underline">신고 준비</Link> › 지급명세서·연말정산
+            회사 홈 › <Link href="/dashboard/payroll" className="hover:underline">급여·지급</Link> › 지급명세서·연말정산
           </p>
           <h1 className="text-base font-semibold tracking-tight text-foreground">지급명세서 · 연말정산</h1>
         </div>

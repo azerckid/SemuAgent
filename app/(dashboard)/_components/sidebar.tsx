@@ -1,3 +1,4 @@
+import type { FilingPrepBusinessType } from '@/lib/filing-preparation/summary'
 import { SidebarNavLink } from './sidebar-nav-link'
 import { SidebarSignOutButton } from './sidebar-sign-out-button'
 
@@ -7,28 +8,36 @@ const HOME_NAV = {
   glyph: '◧',
 } as const
 
+// 2026-07-11 cadence IA(JC-036): 신고 주기(월/분기·반기/연) 기준 3그룹으로 재구성.
+// 신고지원·신고 준비 상위 메뉴는 폐기하고 하위 항목을 급여·지급/연간신고로 흡수한다.
 const FLOW_NAV = [
   { href: '/dashboard/direct-upload', label: '자료수집', glyph: '↥' },
   { href: '/dashboard/bookkeeping', label: '기장검토', glyph: '▤' },
+  { href: '/dashboard/payroll', label: '급여·지급', glyph: '₩' },
   { href: '/dashboard/vat', label: '부가세', glyph: '％' },
-  { href: '/dashboard/payroll', label: '급여', glyph: '₩' },
-  { href: '/dashboard/filing-support', label: '신고지원', glyph: '↧' },
-  { href: '/dashboard/filing-preparation', label: '신고 준비', glyph: '◷' },
+  { href: '/dashboard/filing-preparation', label: '연간신고', glyph: '◷' },
 ] as const
 
 const BOOKKEEPING_CHILD_NAV = [
   { href: '/dashboard/bookkeeping/reconciliation-ledger', label: '자료대조원장' },
 ] as const
 
-const FILING_PREPARATION_CHILD_NAV = [
+const PAYROLL_CHILD_NAV = [
+  { href: '/dashboard/employees', label: '직원 명부' },
+  { href: '/dashboard/filing-support', label: '원천세' },
   { href: '/dashboard/filing-preparation/payment-statements', label: '지급명세서·연말정산' },
   { href: '/dashboard/filing-preparation/local-income-tax', label: '지방소득세' },
+] as const
+
+// 사업자현황신고(면세 개인 전용)만 고정 항목. 법인세/종합소득세는 사업자 유형에 따라
+// 조건부로 앞에 붙인다(annualFilingChildNav). 두 세목은 JC-025/026 미구현이라
+// 전용 라우트가 없으므로 연간신고 허브(같은 href)로 안내한다.
+const ANNUAL_FILING_FIXED_CHILD_NAV = [
   { href: '/dashboard/filing-preparation/business-status-report', label: '사업장현황신고' },
 ] as const
 
 const MANAGE_NAV = [
   { href: '/dashboard/settings', label: '설정', glyph: '⚙' },
-  { href: '/dashboard/employees', label: '직원 명부', glyph: '◍' },
   { href: '/dashboard/reminders', label: '리마인드', glyph: '✉' },
 ] as const
 
@@ -40,11 +49,27 @@ interface SidebarProps {
   filingAttentionCount?: number
   filingPrepAttentionCount?: number
   reminderAttentionCount?: number
+  businessType?: FilingPrepBusinessType
 }
 
 function userInitial(userName: string) {
   const trimmed = userName.trim()
   return trimmed ? trimmed.slice(0, 1) : 'U'
+}
+
+// 미지정(unknown)이면 하위 항목을 노출하지 않는다(과잉 추정 방지) —
+// lib/filing-preparation/summary.ts의 "미지정이면 흐림 없음" 원칙과 대칭.
+function annualFilingChildNav(businessType: FilingPrepBusinessType) {
+  const items: { href: string; label: string }[] = []
+  if (businessType === 'corporation') {
+    items.push({ href: '/dashboard/filing-preparation', label: '법인세' })
+  } else if (businessType === 'individual' || businessType === 'tax_exempt') {
+    items.push({ href: '/dashboard/filing-preparation', label: '종합소득세' })
+  }
+  if (businessType === 'tax_exempt') {
+    items.push(...ANNUAL_FILING_FIXED_CHILD_NAV)
+  }
+  return items
 }
 
 export function Sidebar({
@@ -55,7 +80,10 @@ export function Sidebar({
   filingAttentionCount = 0,
   filingPrepAttentionCount = 0,
   reminderAttentionCount = 0,
+  businessType = 'unknown',
 }: SidebarProps) {
+  const annualFilingChildren = annualFilingChildNav(businessType)
+
   return (
     <aside className="sticky top-0 flex h-screen w-[248px] shrink-0 flex-col gap-1 border-r border-company-border bg-company-surface px-3.5 py-5 text-foreground">
       <div className="flex items-center gap-2.5 px-2 pb-[18px]">
@@ -83,11 +111,9 @@ export function Sidebar({
             ? bookkeepingPendingCount
             : item.href === '/dashboard/payroll'
               ? payrollEmployeeCount
-              : item.href === '/dashboard/filing-support'
-                ? filingAttentionCount
-                : item.href === '/dashboard/filing-preparation'
-                  ? filingPrepAttentionCount
-                  : 0
+              : item.href === '/dashboard/filing-preparation'
+                ? filingPrepAttentionCount
+                : 0
 
           return (
             <div key={item.href}>
@@ -107,10 +133,26 @@ export function Sidebar({
                   ))}
                 </div>
               ) : null}
-              {item.href === '/dashboard/filing-preparation' ? (
+              {item.href === '/dashboard/payroll' ? (
                 <div className="mt-0.5 ml-[28px] flex flex-col gap-0.5">
-                  {FILING_PREPARATION_CHILD_NAV.map((child) => (
-                    <SidebarNavLink key={child.href} href={child.href}>
+                  {PAYROLL_CHILD_NAV.map((child) => (
+                    <SidebarNavLink
+                      key={child.href}
+                      href={child.href}
+                      badge={child.href === '/dashboard/filing-support' ? filingAttentionCount : 0}
+                    >
+                      <span className="w-[10px] shrink-0 text-center text-[12px] text-company-fg-subtle" aria-hidden="true">
+                        ›
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-[12.5px]">{child.label}</span>
+                    </SidebarNavLink>
+                  ))}
+                </div>
+              ) : null}
+              {item.href === '/dashboard/filing-preparation' && annualFilingChildren.length > 0 ? (
+                <div className="mt-0.5 ml-[28px] flex flex-col gap-0.5">
+                  {annualFilingChildren.map((child) => (
+                    <SidebarNavLink key={child.label} href={child.href}>
                       <span className="w-[10px] shrink-0 text-center text-[12px] text-company-fg-subtle" aria-hidden="true">
                         ›
                       </span>

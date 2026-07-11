@@ -81,9 +81,11 @@ function FilingTopbar({ summary }: FilingSupportWorkspaceProps) {
         <p className="text-[12.5px] font-medium text-company-fg-subtle">
           <Link href="/dashboard" className="hover:text-company-fg-muted hover:underline">회사 홈</Link>
           <span aria-hidden="true"> › </span>
-          <span>신고지원</span>
+          <Link href="/dashboard/payroll" className="hover:text-company-fg-muted hover:underline">급여·지급</Link>
+          <span aria-hidden="true"> › </span>
+          <span>원천세</span>
         </p>
-        <h1 className="text-base font-semibold tracking-tight text-foreground">신고지원</h1>
+        <h1 className="text-base font-semibold tracking-tight text-foreground">원천세</h1>
       </div>
       <span className="text-[13px] font-medium text-company-fg-muted">{companyName}</span>
       <div className="ml-auto">
@@ -401,8 +403,8 @@ export function FilingSupportBusinessEntityEmptyState({ tenantName }: { readonly
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <div className="border-b border-company-border bg-company-surface px-7 py-3.5">
-        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 신고지원</p>
-        <h1 className="text-base font-semibold tracking-tight text-foreground">신고지원</h1>
+        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 급여·지급 › 원천세</p>
+        <h1 className="text-base font-semibold tracking-tight text-foreground">원천세</h1>
       </div>
       <div className="px-7 pt-6">
         <div className="max-w-[720px] rounded-xl border border-company-border bg-company-surface p-6 shadow-company-card">
