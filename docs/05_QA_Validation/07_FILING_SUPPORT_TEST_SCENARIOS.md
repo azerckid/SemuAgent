@@ -1,6 +1,6 @@
 # Test Scenarios: Filing Support
 > Created: 2026-07-02 20:23
-> Last Updated: 2026-07-10 22:14 KST
+> Last Updated: 2026-07-11 KST
 
 신고지원(JC-013) Layer 5 QA 시나리오. [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -109,13 +109,16 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-83 | 미인증 | 접근 | `/sign-in` redirect | PASS·구현 |
 | S-84 | tenant 없음 | 진입 | tenant-scoped 접근 차단 | PASS·구현 |
 
-### 2.10 Path 1 Tax-Type File Completion (Pending)
+### 2.10 Path 1a Tax-Type File Completion (Pending)
 
 이 시나리오는 [Path 1 Roadmap §2.1](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)의
-세목별 완료선을 검증한다. 원천세 W0는 공식 조사 결과 `closed blocked`로 종료했고
-W1~W5를 시작하지 않는다. 부가세 Stage A 공개 자료 감사에서는 현재 회계프로그램
-파일변환 메뉴와 일부 첨부서류 도구를 확인했지만 최신 비암호화 수용은 미확인이다. Stage A를
-통과한 세목만 S-91~S-99를 전용 fixture로 반복한다.
+세목별 **Path 1a(양식·파일)** 완료선을 검증한다. 원천세는 공식 조사 결과 공식 비암호화
+업로드 양식이 없어 **Path 1b(직접입력 정리) 대상으로 결정**됐고(1b 값 정리 화면은 아직
+미구현) 1a W1~W5를 시작하지 않는다. 부가세도 Path 1b 대상이며(화면 미구현), Stage A
+공개 자료 감사에서는 현재 회계프로그램 파일변환 메뉴와 일부 첨부서류 도구를 확인했지만
+최신 비암호화 수용은 미확인이라 Stage A는 1a 승격용 선택 조사다. Stage A가 양식을 확인한
+세목만 S-91~S-99를 전용 fixture로 반복하며, 1a가 없는 세목은 아래 §2.11의 Path 1b 값 정리
+시나리오로 검증한다(모두 Pending). 어떤 세목도 `blocked`로 두지 않는다.
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
@@ -127,8 +130,21 @@ W1~W5를 시작하지 않는다. 부가세 Stage A 공개 자료 감사에서는
 | S-95 | tenant A/B·사업장 A/B·귀속월 A/B 데이터 | tenant A/사업장 A/귀속월 A 생성 | 선택 범위 이외 데이터가 파일에 포함되지 않음 | Pending |
 | S-96 | 일회성 입력과 생성 파일 | 생성·다운로드 후 | 파일·PII·자격증명·원문 payload가 서버 DB/storage/log에 영구 저장되지 않음 | Pending |
 | S-97 | 브라우저 다운로드 | 성공/오류/경고 상태 확인 | 실제 파일 다운로드, 정확한 filename/content type, 복구 가능한 오류 안내 | Pending |
-| S-98 | 생성된 대표 비암호화 파일 | 홈택스/위택스 공식 파일 업로드 검증 | 암호화·별도 변환 없이 수용되거나, 미수용이면 해당 세목을 blocked로 판정하고 generator를 배포하지 않음 | Pending |
-| S-99 | Path 1 화면·가이드 | 렌더 | 직접입력·자동제출·자격증명 저장·암호화 업로드·세무대리 문구가 없고 사용자 직접 업로드 책임을 표시 | Pending |
+| S-98 | 생성된 대표 비암호화 파일 | 홈택스/위택스 공식 파일 업로드 검증 | 암호화·별도 변환 없이 수용되거나, 미수용이면 해당 세목은 1a generator를 배포하지 않고 Path 1b(직접입력 정리)로 제공 | Pending |
+| S-99 | Path 1a 화면·가이드 | 렌더 | 단계별 위치 안내·자동제출·자격증명 저장·암호화 업로드·세무대리 문구가 없고 사용자 직접 업로드 책임을 표시 | Pending |
+
+### 2.11 Path 1b Direct-Entry Value Summary (Pending)
+
+공식 비암호화 업로드 양식이 없는 세목(원천세·부가세 등)은 Path 1b 대상으로 결정됐다.
+**1b 값 정리 화면은 아직 구현하지 않았다**(아래 시나리오는 전부 Pending). 1b는 확정값을
+`항목 = 값`으로 정리해 보여주는 데까지이며, 파일 generator·업로드 검증(S-90~S-98)을 만들지 않는다.
+
+| # | Given | When | Then | Result |
+|:---|:---|:---|:---|:---:|
+| S-1B0 | 양식 미확인 세목의 확정 신고 기간 | 신고지원 화면 렌더 | 확정값이 `항목 = 값`으로 표시되고 값 소스는 검증과 동일 read model | Pending |
+| S-1B1 | 자료대조·귀속·합계 blocker 존재 | 1b 값 정리 렌더 | 미확정 사유가 표시되고 확정 전 값은 준비되지 않았음을 명시 | Pending |
+| S-1B2 | 1b 화면 | 렌더 | 홈택스 메뉴·입력칸 위치 단계별 안내, 파일 다운로드, 자동제출, 세무대리 문구가 없음 | Pending |
+| S-1B3 | tenant A/B·사업장 A/B·귀속월 A/B | tenant A 범위 진입 | 선택 범위 이외 값이 요약에 섞이지 않고 PII가 서버에 영구 저장되지 않음 | Pending |
 
 ## 3. 자동화 계획
 
@@ -137,7 +153,7 @@ W1~W5를 시작하지 않는다. 부가세 Stage A 공개 자료 감사에서는
 - **API 구현 완료**: receipt metadata upload/delete, checklist toggle, tenant/staff guard(S-40~43, S-50~53). 실제 Blob 저장 환경은 JC-014에서 검증 완료.
 - **브라우저 수동 검증 완료**: `/dashboard/filing-support?period=2026-H1` 로그인 렌더와 승인 Preview 구조를 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 홈택스/EDI 접수증 파일 포맷별 업로드는 별도 fixture 확보 후 검증한다.
-- **Path 1 파일 후속**: 원천세 W0는 직접작성 또는 비밀번호 기반 회계프로그램 변환파일만 확인되어 `closed blocked`다. 부가세 Stage A 공개 자료 감사는 완료했지만, 현재 메뉴는 회계프로그램 파일변환이고 공식 Excel 도구는 일부 첨부서류 전용이다. 로그인 화면 또는 126으로 최신 비암호화 수용 여부를 확인한다. Stage A가 통과한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1 `done`으로 표시하지 않는다.
+- **Path 1a 파일 후속**: 원천세는 직접작성 또는 비밀번호 기반 회계프로그램 변환파일만 확인되어 공식 비암호화 업로드 양식이 없으므로 Path 1b(직접입력 정리) 대상으로 결정됐다(1b 값 정리 화면 미구현). 부가세도 Path 1b 대상이며(화면 미구현), Stage A 공개 자료 감사는 완료했지만 현재 메뉴는 회계프로그램 파일변환이고 공식 Excel 도구는 일부 첨부서류 전용이다. 로그인 화면 또는 126으로 최신 비암호화 수용 여부를 확인하는 것은 1a 승격용 선택 조사다. Stage A가 양식을 확인한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1a `done`으로 표시하지 않는다. 1a가 없는 세목은 §2.11 Path 1b 시나리오(S-1B0~S-1B3, 전부 Pending)로 검증한다. 어떤 세목도 `blocked`로 두지 않는다.
 
 ## 4. Related Documents
 

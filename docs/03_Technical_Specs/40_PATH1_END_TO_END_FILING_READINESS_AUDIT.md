@@ -1,6 +1,6 @@
 # Path 1 End-to-End Filing Readiness Audit
 > Created: 2026-07-07 23:29 KST
-> Last Updated: 2026-07-10 21:22 KST
+> Last Updated: 2026-07-11 KST
 
 ## 0. Purpose
 
@@ -12,20 +12,27 @@ Path 1 workflow and states exactly what remains before beta.
 -> 정규화·귀속기간·중복 검토
 -> 자료대조원장에서 증빙·소명·계정·제외 확정
 -> 확정 데이터만 세목별 신고 준비 데이터로 집계
--> 공식 양식·파일에 채워질 값을 화면에서 확인
--> SemuAgent가 홈택스·위택스 업로드용 파일 생성
--> 사용자가 직접 업로드·검증·제출
+-> [Path 1a] 공식 비암호화 양식이 있으면: 채워질 값 확인 -> SemuAgent가 파일 생성 -> 사용자가 직접 업로드·제출
+-> [Path 1b] 공식 양식이 없으면: 확정 값을 `항목 = 값`으로 화면 정리 -> 사용자가 홈택스에 직접 입력·제출
 ```
 
-There is no Hometax direct-entry path in beta. Path 1 means **official
-non-encrypted form/file preparation for upload**, not copying values into
-Hometax screens or generating encrypted electronic files.
+Path 1 has two branches. **Path 1a** fills an official non-encrypted
+upload form so the user uploads a file. **Path 1b** organizes the confirmed
+values as an on-screen `항목 = 값` summary so the user types them into Hometax
+directly. Path 1b provides the value summary only; it does not build a file
+generator (B~G) and it is not a step-by-step Hometax menu/field-location guide.
+Encrypted electronic-file generation stays out of scope, and no tax type ends
+as `blocked` — a tax type without an official form is **assigned to Path 1b**.
+Path 1b is a decided routing outcome, not a shipped screen: as of this PR the 1b
+value-summary screens for withholding and VAT are **not yet implemented**.
 
 ## 1. Current Answer
 
 The common data-preparation foundation is now complete through Reconciliation
-Ledger Phase 2. Path 1 is still incomplete because actual official upload
-files exist for only one tax type.
+Ledger Phase 2. Path 1a (official upload file) is implemented for one tax type;
+tax types without a confirmed official form are **assigned to Path 1b**
+(direct-entry value summary) rather than being blocked. The 1b screens themselves
+are decided but **not yet implemented**.
 
 | Step | Current state | Evidence | Remaining gap |
 |:---|:---|:---|:---|
@@ -34,43 +41,59 @@ files exist for only one tax type.
 | 자료대조·확정 원장 | **Live; Phase 2 complete** | `/dashboard/bookkeeping/reconciliation-ledger`, Brief 41 §9 | Exact evidence connection, account, explanation, exclusion, exception, pattern and shared gate are implemented; deferred edges remain explicit non-goals |
 | 신고 준비 공통 gate | **Live** | `loadReconciliationPath1Gate`, filing-preparation summary | VAT is the first consumer; payroll-only routes intentionally do not inherit unrelated bookkeeping blockers |
 | 부가세 확정 원장 provenance | **Live** | `lib/vat/facts.ts`, `lib/vat/provenance.ts`, rebuild/package gates | Exact VAT facts are not manufactured for old/sample rows; unresolved rows remain correctly blocked |
-| 세목별 신고 준비 데이터 | Live for core tracks | VAT, payroll/withholding, payment statements, local income, business status read models | A ready data screen is not yet an official upload file |
-| 양식에 채워질 값 확인 | Live for simplified wage; validation-only assets preserved for withholding | `lib/efiling-simplified-wage`, `lib/efiling-withholding` | Withholding W0 is closed blocked; VAT Stage A must pass before its own UI-First Gate |
-| 홈택스 업로드용 파일 | Live for simplified wage only | simplified-wage generate API and upload guide | Withholding is blocked; VAT, local income, business status and annual statement files remain |
+| 세목별 신고 준비 데이터 | Live for core tracks | VAT, payroll/withholding, payment statements, local income, business status read models | A ready data screen is the Path 1b endpoint; Path 1a additionally needs an official upload file |
+| 양식에 채워질 값 확인 | Live for simplified wage; validation/value assets preserved for withholding | `lib/efiling-simplified-wage`, `lib/efiling-withholding` | Withholding has no confirmed official form → assigned to Path 1b (value-summary screen not yet built); VAT Path 1a form is a Stage A upgrade only |
+| 홈택스 업로드용 파일 (Path 1a) | Live for simplified wage only | simplified-wage generate API and upload guide | Withholding is Path 1b (no file); VAT, local income, business status and annual statement 1a files remain conditional on a confirmed form |
+| 홈택스 직접입력 정리 (Path 1b) | **Decided, not yet implemented** for form-less tax types | 확정 `항목 = 값` read model (source values exist) | Withholding and VAT are assigned to 1b but the 1b value-summary screens are pending; 1b is value-list display only |
 | 최종 제출 | User only | Product Baseline, Roadmap 36 | Auto-submit and credential storage remain excluded |
 
 The useful status is therefore qualitative, not a single percentage:
 
 - **Common confirmed-data foundation:** complete for the planned v1 exact-match flow.
-- **Tax-type upload files:** one tax type implemented; withholding is closed blocked and VAT Stage A is current.
-- **Path 1 beta:** not complete until simplified wage and one additional tax
-  type pass the full non-encrypted upload-file verification line. Withholding
-  is closed blocked; VAT is the current candidate and cannot be forced through
-  an encrypted fallback.
-- **Planned Path 1 matrix:** not complete until the remaining ordered tax types
-  each pass the same completion line.
+- **Tax-type upload files (Path 1a):** one tax type implemented; withholding has
+  no confirmed official form and is assigned to Path 1b; VAT Path 1a is a
+  Stage A upgrade.
+- **Direct-entry summaries (Path 1b):** the routing decision is made for any tax
+  type without a confirmed form (so no tax type ends as `blocked`), **but the 1b
+  value-summary screens are not yet implemented** — the current app still shows the
+  withholding preparation/validation panel and has no VAT value-summary screen.
+- **Path 1 beta:** Path 1a beta is not complete until simplified wage and one
+  additional tax type pass the full non-encrypted upload-file verification line;
+  encrypted fallback is never used. Path 1b coverage still needs its value-summary
+  screens built.
+- **Planned Path 1a matrix:** not complete until the remaining ordered tax types
+  each either pass the 1a completion line or are assigned to 1b with the 1b screen built.
 
 ## 2. Product Contract
 
-Path 1 beta is one path:
+Path 1 beta has two branches:
+
+**Path 1a (official form exists):**
 
 1. SemuAgent prepares the official upload artifact.
 2. The user inspects the values before download.
 3. The user downloads the file.
 4. The user opens Hometax or Witax and uploads/submits directly.
 
+**Path 1b (no official form):**
+
+1. SemuAgent organizes the confirmed values as an on-screen `항목 = 값` summary.
+2. The user reads the summary and types the values into Hometax directly.
+3. SemuAgent provides the value summary only — no file, no step-by-step menu guide.
+
 Not Path 1:
 
-- Hometax screen transcription or direct-entry copy workflow.
 - Auto-submit.
 - Encrypted electronic-file generation, fcrypt, or certification tooling.
+- Step-by-step Hometax menu/field-location walkthrough (1b is value display only).
 - Storing Hometax passwords, certificates, bank passwords, or card credentials.
 - Sending the package to a tax office or accounting firm.
 
 ## 3. Data Preparation Contract
 
-A tax-type file may be generated only from data that passed the applicable
-gates:
+A Path 1a file may be generated, or a Path 1b value summary shown, only from
+data that passed the applicable gates. The final "File conformance" row applies
+to Path 1a only; Path 1b ends at the confirmed form-fill preview:
 
 | Gate | Required behavior |
 |:---|:---|
@@ -134,65 +157,77 @@ Simplified wage shows the repeatable pattern:
 - one-time PII input status;
 - generated-file and Hometax upload boundary.
 
-Withholding keeps the preparation/validation panel but its file track is closed
-blocked: official guidance exposes direct entry or password-based accounting-program
-conversion, not the approved Path 1 artifact. VAT Stage A has confirmed some
-schedule-level file conversion flows but not an official non-encrypted whole-return
-template or verified direct-acceptance route. Local income, business status and
-annual statements still require their own Stage A through G work.
+Withholding keeps the preparation/validation panel and is assigned to Path 1b:
+official guidance exposes Hometax direct entry or password-based accounting-program
+conversion, not an official non-encrypted upload form, so the confirmed A01
+aggregate is **intended** to be shown as a `항목 = 값` direct-entry summary instead
+of a generated file — **that 1b screen is not yet built.** VAT Stage A has confirmed
+some schedule-level file conversion flows but not an official non-encrypted
+whole-return template or verified direct-acceptance route, so VAT is assigned to
+Path 1b (screen also pending) while Path 1a stays a Stage A upgrade. Local income,
+business status and annual statements are likewise assigned to Path 1b and add
+Path 1a files only when their own Stage A confirms an official form.
 
-### 5.3 File Verification Must Be Part Of Done
+### 5.3 File Verification Must Be Part Of Path 1a Done
 
-Code generation alone is not enough. A tax type stays open until the generated
-artifact is checked for filename, file type, template structure, required
-fields, totals, tenant/period isolation, and representative Hometax/Witax
-non-encrypted upload validation.
+For Path 1a, code generation alone is not enough. A tax type's 1a track stays
+open until the generated artifact is checked for filename, file type, template
+structure, required fields, totals, tenant/period isolation, and representative
+Hometax/Witax non-encrypted upload validation. Path 1b has no generated file, so
+its done line is the confirmed `항목 = 값` summary matching the same read model.
 
 ## 6. Fixed Next Work
 
 The authoritative sequence and completion lines are in
 [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md).
 
-1. **Keep withholding W0 closed blocked.**
+1. **Build the withholding Path 1b screen (not yet implemented).**
    - Preserve Part A mapping and Slice 1a validation assets.
-   - Do not start W1-W5 unless a new official non-encrypted template and direct
-     Hometax acceptance route satisfy the W0 reopen conditions.
-2. **Finish VAT Stage A external verification.**
-   - Confirm whether a complete non-encrypted return template exists.
+   - Implement the confirmed A01 aggregate as a `항목 = 값` direct-entry summary
+     screen (currently the app shows only the validation panel).
+   - Start Path 1a W1-W5 only if a new official non-encrypted template and direct
+     Hometax acceptance route satisfy the W0 upgrade conditions.
+2. **Build the VAT Path 1b screen and finish VAT Stage A as a 1a upgrade check.**
+   - Implement the confirmed VAT values as a `항목 = 값` direct-entry summary
+     screen (not yet built).
+   - Confirm whether a complete non-encrypted return template exists (Path 1a).
    - Confirm whether schedule-level conversion files remain supported without
      encryption and acquire their official current layouts.
-   - Do not start Stage B mapping or generator code while Stage A is blocked.
-3. **If VAT Stage A passes, complete VAT B~G.**
+   - Do not start Stage B mapping or generator code until Stage A confirms a form.
+3. **If VAT Stage A confirms a form, complete VAT Path 1a B~G.**
    - Reuse the completed Phase 2 gate and provenance source of truth.
-   - Limit the product claim to the exact return or schedule files officially supported.
-4. **If VAT Stage A closes blocked, move to local-income special collection Stage A.**
-5. **Repeat A~G in order for local-income special collection, business-status
+   - Limit the 1a claim to the exact return or schedule files officially supported.
+4. **If VAT Stage A finds no form, VAT stays on Path 1b and the next Stage A moves
+   to local-income special collection.**
+5. **Repeat per tax type: build the Path 1b screen, add Path 1a via Stage A~G when
+   an official form is confirmed, for local-income special collection, business-status
    report and annual payment statement.**
-6. **Run Path 1 beta after simplified wage and one additional compatible tax
-   type satisfy the per-tax completion line.**
+6. **Run Path 1a beta after simplified wage and one additional compatible tax
+   type satisfy the per-tax 1a completion line; Path 1b screens remain pending.**
 
-Path 2, encrypted Path 3, direct-entry guidance and automatic submission do not interrupt
-this sequence.
+Path 2, encrypted Path 3, step-by-step direct-entry guidance and automatic
+submission do not interrupt this sequence.
 
 ## 7. Completion Decisions
 
 | Scope | Done when |
 |:---|:---|
 | Reconciliation Phase 2 | Brief 41 §9 complete and VAT gate/provenance consumers implemented — **done** |
-| One tax type | Roadmap 36 §2.1 all conditions pass |
-| Path 1 beta | Simplified wage + one additional tax type pass official non-encrypted upload verification and beta flow |
-| Planned tax matrix decision | Withholding, VAT, local income, business status and annual statement each pass §2.1 or close blocked with official Stage A evidence; blocked tracks are not Path 1 support |
-| Path 2 restart | Path 1 beta is stable and a new UI-First Gate is approved |
+| One tax type (Path 1a) | Roadmap 36 §2.1 all conditions pass |
+| Path 1a beta | Simplified wage + one additional tax type pass official non-encrypted upload verification and beta flow |
+| Path 1b coverage | Every tax type without a confirmed form is assigned to Path 1b and its `항목 = 값` direct-entry summary screen is built (currently pending for withholding/VAT); no tax type ends `blocked` |
+| Planned tax matrix decision | Withholding, VAT, local income, business status and annual statement each pass §2.1 (Path 1a) or are assigned to Path 1b with official Stage A evidence that no form exists |
+| Path 2 restart | Full Path 1 beta (1a files + 1b summary screens) is stable and a new UI-First Gate is approved |
 
 ## 8. Documentation Sync
 
 This audit supersedes wording that presents Path 1, Path 2, and Path 3 as equal
 current choices. For beta:
 
-- Path 1 is the product path.
-- Path 2 is after Path 1 beta.
+- Path 1 is the product path, with 1a (official form upload) and 1b (direct-entry value summary) branches; no tax type ends `blocked`.
+- Path 2 is after the full Path 1 beta (1a files + 1b summary screens); JC-034's required outputs are the per-tax summary CSVs that depend on 1b work, with Path 1a files only optional attachments.
 - Encrypted Path 3 is outside the current product scope.
-- Hometax direct-entry guidance is excluded.
+- Step-by-step Hometax menu/field-location guidance is excluded (1b is value display only).
 
 Related:
 

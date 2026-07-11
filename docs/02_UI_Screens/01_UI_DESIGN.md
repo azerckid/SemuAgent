@@ -229,18 +229,18 @@
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
-| Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·Path 1 양식 확인 준비 상태 | 진행률 + blocker 카운트 |
-| **Path 1 Completion Flow** | 홈택스 업로드용 양식·파일 작성, 양식 채움 확인, 업로드 안내 | 베타 중심 경로 |
-| **Path Boundary Notice** | Path 2(사무소 ZIP)는 베타 이후, 암호화 Path 3은 범위 밖임을 안내 | 책임 경계 |
+| Filing Preparation Hero | 신고서에 넣을 확정 데이터 준비율·확인 필요·Path 1 준비 상태 | 진행률 + blocker 카운트 |
+| **Path 1 Completion Flow** | 1a: 홈택스 업로드용 양식·파일 작성·양식 채움 확인·업로드 안내 / 1b: 항목=값 직접입력 정리 | 베타 중심 경로 |
+| **Path Boundary Notice** | Path 2(사무소 ZIP)는 Path 1 베타 이후, 암호화 Path 3은 범위 밖임을 안내 | 책임 경계 |
 | Next Action List | 신고 전 blocker와 해당 워크스페이스 CTA | danger/warn/ok dot + 라우팅 |
 | Common Foundation Cards | 자료수집 -> 기장검토 공통 기반의 입력·산출 상태 | 누락/검토대기/원장 준비 상태칩 |
-| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/Path 1 양식·파일 상태 |
+| Track Cards | 원천세·부가세·지급명세서/연말정산·지방소득세·사업장현황신고 병렬 트랙 | 입력/산출/Path 1a 양식·파일 또는 1b 직접입력 정리 상태 |
 | Schedule Strip | 다가오는 마감·D-day | 일정은 보조 정보, 중심 프레임 아님 |
-| Responsibility Boundary | Path 1 책임 경계·자동제출·직접입력 경로 제외 | accent 안내 박스 |
+| Responsibility Boundary | Path 1 책임 경계·자동제출 제외·1b는 값 정리 표시까지(단계별 위치 안내 아님) | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
 
-- 화면의 중심 질문은 "홈택스·위택스에 넣을 확정 데이터가 준비됐는가"이며, **실행 우선순위는 Path 1(홈택스 업로드용 양식·파일 작성)** 이다 ([Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)).
-- 홈택스 화면에 값을 옮겨 적도록 안내하는 직접입력 경로는 제공하지 않는다.
+- 화면의 중심 질문은 "홈택스·위택스에 넣을 확정 데이터가 준비됐는가"이며, **실행 우선순위는 Path 1**이다 — 공식 양식이 있으면 1a(양식·파일 작성), 없으면 1b(항목=값 직접입력 정리) ([Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)).
+- 홈택스 메뉴·입력칸 위치를 단계별로 안내하는 가이드는 제공하지 않는다. 1b는 확정값을 항목=값으로 정리해 보여주는 데까지다.
 - 세무 일정은 하단 보조 섹션으로만 둔다.
 - 자동제출·신규 산출 엔진·신규 DB는 JC-029 Preview 범위 밖이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).

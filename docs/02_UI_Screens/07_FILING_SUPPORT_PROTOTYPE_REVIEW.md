@@ -1,6 +1,6 @@
 # Filing Support Prototype Review
 > Created: 2026-07-01 22:10
-> Last Updated: 2026-07-10 22:14 KST
+> Last Updated: 2026-07-11 KST
 
 ## 1. HTML UI Preview
 - Preview: [신고지원](./previews/05_filing_support.html)
@@ -29,19 +29,23 @@
 - Displayed data: 신고 항목 상태(준비됨/대기/확인 필요), 신고 준비값 확인 값, 접수증 보관 목록, 사후 체크리스트.
 - Mutations / saved data: 패키지 생성, 접수증 업로드·보관, 체크리스트 상태 갱신.
 - Internal dependencies: 부가세(JC-011)·급여(JC-012) 산출물(선행 화면의 내부 데이터).
-- External dependencies: Path 1 파일 지원 세목은 홈택스·국세청의 공식 비암호화 업로드 양식과 직접 수용 경로가 필요하다. **자동 홈택스 제출·자동 납부는 제공하지 않음** — 실제 제출/납부는 회사가 직접 수행.
+- External dependencies: Path 1a 파일 지원 세목은 홈택스·국세청의 공식 비암호화 업로드 양식과 직접 수용 경로가 필요하다. 양식이 없는 세목은 Path 1b(직접입력 정리) 대상으로 두며, **1b 값 정리 화면은 아직 구현하지 않았다**(현재 앱은 준비값·검증 패널만 표시). **자동 홈택스 제출·자동 납부는 제공하지 않음** — 실제 제출/납부는 회사가 직접 수행.
 
 ## 6. 책임 경계 (명시)
-- 지원 범위: 신고 준비값 검증 · 공식 비암호화 업로드 양식이 확인된 세목의 파일 생성 · 제출 접수증 보관 · 사후 체크리스트.
-- 비지원: 홈택스 직접입력 가이드, 회계프로그램 변환파일 추정, 암호화 파일, 신고서 자동 제출, 세금 자동 납부, 홈택스 자격증명 서버 저장.
+- 지원 범위: 신고 준비값 검증 · 공식 비암호화 업로드 양식이 확인된 세목의 파일 생성(Path 1a) · 양식이 없는 세목의 `항목 = 값` 직접입력 정리(Path 1b) · 제출 접수증 보관 · 사후 체크리스트.
+- 비지원: 홈택스 메뉴·입력칸 위치 단계별 안내(1b는 값 정리 표시까지), 회계프로그램 변환파일 추정, 암호화 파일, 신고서 자동 제출, 세금 자동 납부, 홈택스 자격증명 서버 저장.
 - 이 경계는 화면 상단 배너·하단 안내·Preview 문구에 반복 노출한다.
 
-### 6.1 Current Contract Caveat (2026-07-10)
+### 6.1 Current Contract Caveat (2026-07-11)
 
-- 원천징수이행상황신고서는 준비값 검증만 유지한다. 공식 경로가 직접작성 또는
-  비밀번호 기반 회계프로그램 변환파일로 확인되어 현재 Path 1 파일 지원은 `closed blocked`다.
+- 원천징수이행상황신고서는 공식 경로가 직접작성 또는 비밀번호 기반 회계프로그램
+  변환파일로 확인되어 공식 비암호화 업로드 양식이 없으므로 **Path 1b(직접입력 정리)
+  대상으로 결정**했다. 목표는 확정 A01 집계를 `항목 = 값`으로 보여주는 것이고 파일
+  generator는 만들지 않는다. **1b 값 정리 화면은 아직 구현하지 않았다**(현재 앱은 검증 패널만 표시).
 - 부가세는 현재 홈택스 회계프로그램 파일변환 메뉴와 일부 첨부서류 도구까지만
-  확인했다. 최신 비암호화 수용 여부가 확인되기 전에는 파일 생성 UI를 활성화하지 않는다.
+  확인했다. 최신 비암호화 수용 여부가 확인되기 전에는 부가세도 **Path 1b 대상**이고
+  (1b 값 정리 화면 미구현), 1a 파일 생성 UI는 활성화하지 않는다. Stage A는 1a 승격용 선택 조사다.
+- 어떤 세목도 `blocked`로 두지 않는다.
 - Preview의 기존 화면 구조 승인은 유지하되, 파일 생성 가능 여부와 책임 경계 문구는
   최신 [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)을 따른다.
 
@@ -62,5 +66,5 @@
 - **UI_Screens**: [VAT Prototype Review](./05_VAT_PROTOTYPE_REVIEW.md) - 연동 화면(부가세)
 - **UI_Screens**: [Payroll Prototype Review](./06_PAYROLL_PROTOTYPE_REVIEW.md) - 연동 화면(급여)
 - **UI_Screens**: [HTML Preview](./previews/05_filing_support.html) - 브라우저 확인용 프로토타입
-- **Technical_Specs**: [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) - 세목별 지원·차단 상태
+- **Technical_Specs**: [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) - 세목별 1a(양식)/1b(직접입력 정리) 상태
 - **Technical_Specs**: [VAT Stage A Audit](../03_Technical_Specs/43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) - 부가세 공개 근거와 외부 확인 항목
