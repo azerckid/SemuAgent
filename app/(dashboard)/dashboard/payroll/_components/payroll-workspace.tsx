@@ -10,6 +10,7 @@ import type {
 } from '@/lib/payroll-workspace/summary'
 import { cn } from '@/lib/utils'
 import { PayrollCloseButton } from './payroll-actions'
+import { WithholdingBreakdownCell } from './withholding-breakdown-cell'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 
@@ -216,9 +217,12 @@ function PayrollRegisterSection({ summary }: PayrollWorkspaceProps) {
                   <td className="px-3.5 py-2.5 text-right text-[12.5px] font-bold tabular-nums">
                     {formatCurrency(totals.grossPayKrw)}
                   </td>
-                  <td className="px-3.5 py-2.5 text-right text-[12.5px] font-bold tabular-nums">
-                    {formatCurrency(totals.withholdingTaxKrw)}
-                  </td>
+                  <WithholdingBreakdownCell
+                    strong
+                    incomeTaxKrw={sumBy(summary.registerRows, (row) => row.incomeTaxKrw)}
+                    localIncomeTaxKrw={sumBy(summary.registerRows, (row) => row.localIncomeTaxKrw)}
+                    withholdingTaxKrw={totals.withholdingTaxKrw}
+                  />
                   <td className="px-3.5 py-2.5 text-right text-[12.5px] font-bold tabular-nums">
                     {formatCurrency(totals.socialInsuranceKrw)}
                   </td>
@@ -263,7 +267,11 @@ function PayrollRegisterTableRow({ row }: { readonly row: PayrollRegisterRow }) 
       <MoneyCell value={row.baseSalaryKrw} />
       <MoneyCell value={row.allowanceKrw} />
       <MoneyCell value={row.grossPayKrw} strong />
-      <MoneyCell value={row.withholdingTaxKrw} danger />
+      <WithholdingBreakdownCell
+        incomeTaxKrw={row.incomeTaxKrw}
+        localIncomeTaxKrw={row.localIncomeTaxKrw}
+        withholdingTaxKrw={row.withholdingTaxKrw}
+      />
       <MoneyCell value={row.socialInsuranceKrw} danger />
       <MoneyCell value={row.deductionTotalKrw} danger strong />
       <MoneyCell value={row.netPayKrw} strong />
