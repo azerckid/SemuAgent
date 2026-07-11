@@ -4,7 +4,7 @@ export default function LocalIncomeTaxError({ reset }: { readonly reset: () => v
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <div className="border-b border-company-border bg-company-surface px-7 py-3.5">
-        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 신고 준비 › 지방소득세</p>
+        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 급여·지급 › 지방소득세</p>
         <h1 className="text-base font-semibold tracking-tight text-foreground">지방소득세</h1>
       </div>
       <div className="px-7 pt-6">

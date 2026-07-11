@@ -60,9 +60,9 @@ function PayrollTopbar({ summary }: PayrollWorkspaceProps) {
         <p className="text-[12.5px] font-medium text-company-fg-subtle">
           <Link href="/dashboard" className="hover:text-company-fg-muted hover:underline">회사 홈</Link>
           <span aria-hidden="true"> › </span>
-          <span>급여</span>
+          <span>급여·지급</span>
         </p>
-        <h1 className="text-base font-semibold tracking-tight text-foreground">급여</h1>
+        <h1 className="text-base font-semibold tracking-tight text-foreground">급여·지급</h1>
       </div>
       <span className="text-[13px] font-medium text-company-fg-muted">{companyName}</span>
       <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -379,7 +379,7 @@ function PreviewNote() {
       <b className="text-company-fg-muted">Preview 안내</b> — 이 화면은 <b className="text-company-fg-muted">급여</b> UI 확인용 정적 프리뷰입니다.
       데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 급여·개인정보가 아닙니다. 구성: 급여 요약(지급·공제·실지급·마감상태) ·
       확인 필요 직원 알림 · 급여대장(직원별 지급/공제/실지급) · 공제 상세(원천세·4대보험) · 급여명세서/지급명세서 ·
-      마감·확정 · 상태(로딩/빈/오류) 예시. 원천징수 지급명세서는 <b className="text-company-fg-muted">신고지원</b> 화면으로 전달됩니다.
+      마감·확정 · 상태(로딩/빈/오류) 예시. 원천징수 지급명세서는 <b className="text-company-fg-muted">원천세</b> 화면으로 전달됩니다.
     </p>
   )
 }

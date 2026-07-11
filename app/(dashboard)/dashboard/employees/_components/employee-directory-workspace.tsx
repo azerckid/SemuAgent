@@ -13,7 +13,7 @@ export function EmployeeDirectoryWorkspace({ summary }: EmployeeDirectoryWorkspa
     <div className="flex min-h-full flex-col bg-company-bg">
       <div className="flex items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
         <div>
-          <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 직원 명부</p>
+          <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 급여·지급 › 직원 명부</p>
           <h1 className="text-base font-semibold tracking-tight text-foreground">직원 명부</h1>
         </div>
         <span className="text-[13px] font-medium text-company-fg-muted">{summary.tenant.name}</span>

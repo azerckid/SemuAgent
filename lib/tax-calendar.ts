@@ -226,3 +226,56 @@ export function buildTaxCalendarMonth(params: {
     occurrences,
   }
 }
+
+export type UpcomingScheduleItem = {
+  id: string
+  dDay: number
+  dateLabel: string
+  title: string
+  category: string
+  soon: boolean
+  href: string
+}
+
+// JC-036: 회사 홈 "다가오는 신고" 항목의 CTA 대상. 신고 유형별 실제 준비 화면으로 보낸다
+// (cadence IA상 급여·지급/부가세/연간신고 그룹과 무관하게 라우트 자체는 바뀌지 않았다).
+const SCHEDULE_RULE_HREF: Record<string, string> = {
+  'monthly-withholding-tax': '/dashboard/filing-support',
+  'monthly-social-insurance': '/dashboard/payroll',
+  'monthly-labor-confirmation': '/dashboard/payroll',
+  'january-vat-final': '/dashboard/vat',
+  'april-vat-preliminary': '/dashboard/vat',
+  'july-vat-final': '/dashboard/vat',
+  'october-vat-preliminary': '/dashboard/vat',
+  'march-corporate-tax': '/dashboard/filing-preparation',
+  'may-global-income-tax': '/dashboard/filing-preparation',
+  'may-income-total-report': '/dashboard/payroll',
+  'may-simplified-payment-statement': '/dashboard/filing-preparation/payment-statements',
+}
+
+// 다가오는 신고 일정: 이번 달·다음 달 마감 중 미래 항목 상위 N건(기본 3).
+// 세목·tenant에 무관한 정적 규칙 기반 계산이라 회사 홈·연간신고 등 여러 화면에서 공유한다.
+export function buildUpcomingSchedule(today: DateTime, limit = 3): UpcomingScheduleItem[] {
+  const start = today.startOf('day')
+  const nextMonth = today.plus({ months: 1 })
+  const occurrences = [
+    ...expandTaxSchedulesForMonth(today.year, today.month),
+    ...expandTaxSchedulesForMonth(nextMonth.year, nextMonth.month),
+  ]
+
+  return occurrences
+    .filter((occ) => occ.date.startOf('day') >= start)
+    .slice(0, limit)
+    .map((occ) => {
+      const dDay = Math.ceil(occ.date.startOf('day').diff(start, 'days').days)
+      return {
+        id: `${occ.id}-${occ.dateISO}`,
+        dDay,
+        dateLabel: `${occ.date.month}/${occ.date.day}`,
+        title: occ.title,
+        category: occ.category,
+        soon: dDay <= 7,
+        href: SCHEDULE_RULE_HREF[occ.id] ?? '/dashboard',
+      } satisfies UpcomingScheduleItem
+    })
+}

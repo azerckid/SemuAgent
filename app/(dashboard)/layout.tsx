@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth'
 import { loadBookkeepingReviewPendingCount } from '@/lib/bookkeeping-review/summary'
 import { db } from '@/lib/db'
 import { tenant } from '@/lib/db/schema'
-import { loadFilingPreparationAttentionCount } from '@/lib/filing-preparation/summary'
+import { loadFilingPreparationAttentionCount, loadPrimaryBusinessEntityType } from '@/lib/filing-preparation/summary'
 import { loadFilingSupportAttentionCount } from '@/lib/filing-support/summary'
 import { loadFirstRunSampleState } from '@/lib/first-run-sample/summary'
 import { loadInternalReminderAttentionCount } from '@/lib/internal-reminders/summary'
@@ -40,6 +40,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     filingPrepAttentionCount,
     reminderAttentionCount,
     firstRunSampleState,
+    businessType,
   ] = await Promise.all([
     loadBookkeepingReviewPendingCount(tenantId),
     loadPayrollSidebarEmployeeCount(tenantId),
@@ -47,6 +48,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     loadFilingPreparationAttentionCount(tenantId),
     loadInternalReminderAttentionCount(tenantId, session.user.id),
     loadFirstRunSampleState(tenantId),
+    loadPrimaryBusinessEntityType(tenantId),
   ])
 
   return (
@@ -59,6 +61,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         filingAttentionCount={filingAttentionCount}
         filingPrepAttentionCount={filingPrepAttentionCount}
         reminderAttentionCount={reminderAttentionCount}
+        businessType={businessType}
       />
       <main className="flex min-w-0 flex-col bg-company-bg">
         <SampleDataBanner state={firstRunSampleState} />

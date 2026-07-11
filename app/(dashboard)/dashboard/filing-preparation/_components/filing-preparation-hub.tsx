@@ -27,8 +27,8 @@ export function FilingPreparationBusinessEntityEmptyState({ tenantName }: { read
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <div className="border-b border-company-border bg-company-surface px-7 py-3.5">
-        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 신고 준비</p>
-        <h1 className="text-base font-semibold tracking-tight text-foreground">신고 준비</h1>
+        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 연간신고</p>
+        <h1 className="text-base font-semibold tracking-tight text-foreground">연간신고</h1>
       </div>
       <div className="px-7 pt-6">
         <div className="max-w-[720px] rounded-xl border border-company-border bg-company-surface p-6 shadow-company-card">
@@ -43,15 +43,15 @@ export function FilingPreparationBusinessEntityEmptyState({ tenantName }: { read
 }
 
 export function FilingPreparationHub({ summary }: { readonly summary: FilingPrepSummary }) {
-  const { period, hero, blockers, foundation, tracks, schedule, businessEntity } = summary
+  const { period, hero, blockers, foundation, tracks, businessEntity } = summary
   const typeLabel = businessEntity ? businessTypeLabel(businessEntity.businessType) : '미지정'
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <div className="flex items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
         <div className="min-w-0">
-          <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 신고 준비</p>
-          <h1 className="text-base font-semibold tracking-tight text-foreground">신고 준비</h1>
+          <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 연간신고</p>
+          <h1 className="text-base font-semibold tracking-tight text-foreground">연간신고</h1>
         </div>
         <span className="ml-auto text-[13px] font-medium text-company-fg-muted">{summary.tenant.name}</span>
         <span className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
@@ -78,7 +78,7 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
           <div className="grid gap-2">
             <HeroMetric label="전체 준비율" value={`${hero.readinessPercent}%`} />
             <HeroMetric label="확인 필요" value={`${hero.attentionCount}건`} />
-            <HeroMetric label="신고지원 handoff" value={`${hero.handoffReadyCount}개 준비`} />
+            <HeroMetric label="신고 handoff" value={`${hero.handoffReadyCount}개 준비`} />
           </div>
         </section>
 
@@ -112,30 +112,10 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
         </section>
 
         {/* 병렬 신고 트랙 */}
-        <SectionHead title="병렬 신고 트랙" hint="각 트랙은 입력 → 산출 → 신고지원 handoff로 읽습니다" />
+        <SectionHead title="병렬 신고 트랙" hint="각 트랙은 입력 → 산출 → 신고 handoff로 읽습니다" />
         <section className="grid gap-4 lg:grid-cols-2">
           {tracks.map((track) => (
             <TrackCard key={track.id} track={track} />
-          ))}
-        </section>
-
-        {/* 다가오는 세무 일정 (보조) */}
-        <SectionHead title="다가오는 세무 일정" hint="일정은 신고 준비 안의 보조 정보입니다" />
-        <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
-          {schedule.length === 0 && (
-            <p className="px-[18px] py-4 text-[12.5px] text-company-fg-muted">다가오는 세무 일정이 없습니다.</p>
-          )}
-          {schedule.map((item) => (
-            <div key={item.id} className="grid grid-cols-[64px_1fr] items-center gap-3.5 border-b border-company-border px-[18px] py-3 last:border-b-0">
-              <div className="text-center">
-                <p className={`text-[15px] font-extrabold ${item.soon ? 'text-[#dc2626]' : ''}`}>D-{item.dDay}</p>
-                <p className="text-[10px] text-company-fg-subtle">{item.dateLabel}</p>
-              </div>
-              <div>
-                <p className="text-[13.5px] font-semibold">{item.title}</p>
-                <p className="mt-0.5 text-[11.5px] text-company-fg-subtle">신고 준비 완료 후 홈택스·위택스에서 직접 신고합니다.</p>
-              </div>
-            </div>
           ))}
         </section>
 

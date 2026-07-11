@@ -14,7 +14,7 @@ import {
 } from '@/lib/internal-reminders/summary'
 import { loadLocalIncomeTaxAttentionCount } from '@/lib/local-income-tax/summary'
 import { loadPaymentStatementAttentionCount } from '@/lib/payment-statements/summary'
-import { expandTaxSchedulesForMonth } from '@/lib/tax-calendar'
+import { buildUpcomingSchedule, type UpcomingScheduleItem } from '@/lib/tax-calendar'
 import { now } from '@/lib/time'
 import type { TaxEntityType } from '@/lib/validations/business-entity'
 import { loadVatSummary } from '@/lib/vat/summary'
@@ -66,14 +66,9 @@ export type FilingPrepTrackCard = {
   href: string | null
 }
 
-export type FilingPrepScheduleItem = {
-  id: string
-  dDay: number
-  dateLabel: string
-  title: string
-  category: string
-  soon: boolean
-}
+// 다가오는 신고 일정 계산은 lib/tax-calendar.ts에 있다(회사 홈과 공유, 순환 import 회피).
+export type FilingPrepScheduleItem = UpcomingScheduleItem
+export { buildUpcomingSchedule } from '@/lib/tax-calendar'
 
 export type FilingPrepSummary = {
   tenant: { id: string; name: string; timezone: string }
@@ -274,6 +269,19 @@ export async function loadFilingPreparationAttentionCount(tenantId: string): Pro
   return buildFilingPreparationBlockers(attentions).length
 }
 
+// 사이드바 연간신고 하위 메뉴(법인세/종합소득세/사업장현황신고) 조건부 노출용 경량 조회.
+// 미지정(null)이면 unknown → 사이드바는 하위 메뉴 없이 상위 항목만 노출한다(과잉 추정 방지).
+export async function loadPrimaryBusinessEntityType(tenantId: string): Promise<FilingPrepBusinessType> {
+  const { db } = await import('@/lib/db')
+  const rows = await db
+    .select({ taxEntityType: client.taxEntityType })
+    .from(client)
+    .where(eq(client.tenantId, tenantId))
+    .orderBy(asc(client.createdAt))
+    .limit(1)
+  return rows[0]?.taxEntityType ?? 'unknown'
+}
+
 export function buildFoundation(
   attentions: InternalReminderAttention[],
   reconciliationGate: ReconciliationPath1Gate,
@@ -424,31 +432,6 @@ export function buildTracks(
         : null,
     },
   ]
-}
-
-// 다가오는 세무 일정(보조 섹션): tax-calendar에서 이번 달·다음 달 마감 중 미래 3건.
-export function buildUpcomingSchedule(today: DateTime, limit = 3): FilingPrepScheduleItem[] {
-  const start = today.startOf('day')
-  const nextMonth = today.plus({ months: 1 })
-  const occurrences = [
-    ...expandTaxSchedulesForMonth(today.year, today.month),
-    ...expandTaxSchedulesForMonth(nextMonth.year, nextMonth.month),
-  ]
-
-  return occurrences
-    .filter((occ) => occ.date.startOf('day') >= start)
-    .slice(0, limit)
-    .map((occ) => {
-      const dDay = Math.ceil(occ.date.startOf('day').diff(start, 'days').days)
-      return {
-        id: `${occ.id}-${occ.dateISO}`,
-        dDay,
-        dateLabel: `${occ.date.month}/${occ.date.day}`,
-        title: occ.title,
-        category: occ.category,
-        soon: dDay <= 7,
-      } satisfies FilingPrepScheduleItem
-    })
 }
 
 function formatKrw(value: number): string {
