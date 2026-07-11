@@ -25,6 +25,7 @@ import {
   sampleEntityRef,
   sourceBatch,
   staff,
+  tenantBillingProfile,
   uploadFile,
   uploadSession,
   vatDeductionReview,
@@ -315,7 +316,7 @@ type SampleEmployeeSpec = {
 // 표시값은 모두 "확정값" 성격의 샘플이며, 이 앱은 세액을 계산하지 않는다. 아래 4대보험
 // 근사 요율(sampleDeductionsFor)은 데모를 그럴듯하게 보이기 위한 표시용일 뿐 공식 확정 요율이 아니다.
 const FIRST_RUN_SAMPLE_EMPLOYEES: SampleEmployeeSpec[] = [
-  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 650_000, needsReview: true },
+  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 650_000 },
   { code: 'E002', name: '이수민', department: '영업', jobTitle: '팀장', employmentType: '정규직', baseSalaryKrw: 4_200_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 255_000 },
   { code: 'E003', name: '박지훈', department: '운영', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_400_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 142_000 },
   { code: 'E004', name: '최민준', department: '제품', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 74_000 },
@@ -717,11 +718,11 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     socialInsuranceKrw: payrollLines.reduce((sum, line) => sum + (line.socialInsuranceKrw ?? 0), 0),
     deductionTotalKrw: payrollLines.reduce((sum, line) => sum + (line.deductionTotalKrw ?? 0), 0),
     netPayKrw: payrollLines.reduce((sum, line) => sum + (line.netPayKrw ?? 0), 0),
-    noticeImportStatus: 'partial',
-    closeStatus: 'blocked',
+    noticeImportStatus: 'matched',
+    closeStatus: 'closed',
     payslipStatus: 'ready',
     withholdingStatementStatus: 'ready',
-    insuranceStatementStatus: 'not_generated',
+    insuranceStatementStatus: 'ready',
     createdAt: params.timestamp,
     updatedAt: params.timestamp,
   }]
@@ -732,7 +733,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     uploadSessionId: payrollSessionId,
     sourceBatchId: payrollSourceBatchId,
     requestEventId: null,
-    status: 'needs_review',
+    status: 'completed',
     sourceUploadFileIds: '[]',
     model: 'first-run-sample',
     createdByStaffId: params.staffId,
@@ -756,12 +757,12 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     bonus: 0,
     mealAllowance: 200_000,
     deductionAmount: 1_280_930,
-    memo: '4대보험 취득일 확인 필요',
+    memo: '4대보험 취득일 확인 완료',
     sourceReference: JSON.stringify({ source: 'first_run_sample' }),
-    confidence: 'medium',
-    aiVerdict: 'fail',
-    aiVerdictReason: '신규 입사자 4대보험 취득일이 없어 확인이 필요합니다.',
-    reviewStatus: 'needs_review',
+    confidence: 'high',
+    aiVerdict: 'pass',
+    aiVerdictReason: '급여자료와 4대보험 고지내역이 일치합니다.',
+    reviewStatus: 'confirmed',
     createdAt: params.timestamp,
     updatedAt: params.timestamp,
   }]
@@ -810,10 +811,9 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
       sourceModule: 'payroll',
       sourceRefId: payrollSummaryId,
       title: '4대보험 확인',
-      description: '고지내역 확인 후 보관하세요.',
-      status: 'needs_review',
-      packageStatus: 'locked',
-      lockReason: '4대보험 고지내역 확인 필요',
+      description: '고지내역 확인이 완료되었습니다.',
+      status: 'ready',
+      packageStatus: 'ready',
       createdAt: params.timestamp,
       updatedAt: params.timestamp,
     },
@@ -904,7 +904,29 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     },
   ]
 
+  // 샘플 사업자 프로필: 원천세 화면의 사업자등록번호·대표자명 확인 항목을 채워
+  // 데모가 "확정·마감" 상태에서 경고 없이 정합하게 보이도록 한다(전부 가공값).
+  const billingProfiles: Array<typeof tenantBillingProfile.$inferInsert> = [{
+    id: firstRunSampleId(params.tenantId, 'billing_profile'),
+    tenantId: params.tenantId,
+    businessRegistrationNumber: '1234567890',
+    businessName: '샘플컴퍼니(주)',
+    representativeName: '김대표',
+    businessAddress: '서울특별시 중구 샘플로 10',
+    businessType: '서비스',
+    businessItem: '소프트웨어 개발',
+    taxInvoiceEmail: 'tax@example.invalid',
+    billingContactName: '김대표',
+    billingContactPhone: '02-0000-0000',
+    memo: null,
+    createdByStaffId: params.staffId,
+    updatedByStaffId: params.staffId,
+    createdAt: params.timestamp,
+    updatedAt: params.timestamp,
+  }]
+
   const groups = [
+    ['tenant_billing_profile', billingProfiles, 300],
     ['upload_session', uploadSessions, 600],
     ['source_batch', sourceBatches, 650],
     ['upload_file', uploadFiles, 700],
@@ -934,6 +956,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
 
   return {
     clientRow,
+    billingProfiles,
     uploadSessions,
     sourceBatches,
     uploadFiles,
@@ -1070,6 +1093,8 @@ export async function ensureFirstRunSampleDataset({
         })
       }
 
+      // 이미 사업자 프로필이 있으면(실사용자) 건드리지 않는다.
+      await tx.insert(tenantBillingProfile).values(plan.billingProfiles).onConflictDoNothing()
       await tx.insert(uploadSession).values(plan.uploadSessions)
       await tx.insert(sourceBatch).values(plan.sourceBatches)
       await tx.insert(uploadFile).values(plan.uploadFiles)

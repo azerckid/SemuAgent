@@ -55,10 +55,13 @@ describe('payroll workspace static contract (JC-012)', () => {
 
   it('keeps the payroll close button visibly locked when closeAction is locked (S-50)', () => {
     expect(workspaceSource).toContain('PayrollCloseButton')
-    expect(workspaceSource).toContain('summary.closeAction.locked')
+    expect(workspaceSource).toContain('closeAction={summary.closeAction}')
+    expect(actionsSource).toContain('closeAction.locked')
     expect(actionsSource).toContain('aria-disabled={disabled}')
     expect(actionsSource).toContain('급여 마감·확정 · 잠김')
-    expect(workspaceSource).toContain('확인 필요 1건을 처리해야 마감할 수 있습니다.')
+    // 마감 사유 문구는 하드코딩("1건")이 아니라 closeAction에서 계산된 lockReason을 노출한다.
+    expect(workspaceSource).toContain('summary.closeAction.canClose')
+    expect(workspaceSource).toContain('summary.closeAction.lockReason')
   })
 
   it('wires payroll mutations to tenant-scoped API routes (S-50~54)', () => {

@@ -55,14 +55,14 @@ describe('first-run sample seed plan', () => {
       grossPayKrw: 35_740_000,
       deductionTotalKrw: 3_686_030,
       netPayKrw: 32_053_970,
-      issueCount: 1,
+      issueCount: 0,
     })
     expect(summary.employees).toEqual({
       total: 11,
       active: 11,
       terminated: 0,
       payrollEligible: 11,
-      insuranceNeedsReview: 1,
+      insuranceNeedsReview: 0,
     })
     expect(summary.refs).toBeGreaterThan(400)
   })

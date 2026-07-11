@@ -109,9 +109,13 @@ export function buildWithholdingEfilingSummary(params: {
     payrollLabel: formatPayrollPeriodLabel(panelInput.payrollPeriodKey),
     paymentPeriodKey,
     paymentLabel: paymentPeriodKey ? formatMonthLabel(paymentPeriodKey) : '급여 지급일 확인 필요',
+    // A01 ④⑤⑥은 모두 확정 라인(needs_review 제외) 기준으로 통일한다.
+    // 미확정 직원은 A01 집계에서 빠지므로(W-V-02), 인원·총지급액·소득세가 같은
+    // 모집단이어야 그대로 홈택스에 입력해도 서로 어긋나지 않는다. 기간요약과의
+    // 차이는 W-V-02/W-V-03 경고로 사용자에게 별도 고지된다.
     a01: {
-      employeeCount: panelInput.periodEmployeeCount,
-      grossPayKrw: panelInput.periodGrossPayKrw,
+      employeeCount: panelInput.confirmedEmployeeCount,
+      grossPayKrw: panelInput.confirmedGrossPayKrw,
       incomeTaxKrw: panelInput.confirmedIncomeTaxKrw,
     },
     stats: {
