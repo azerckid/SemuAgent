@@ -14,7 +14,7 @@ JC-034는 **Filing Path 2** 를 구현한다. 회사가 확정한 신고 준비 
 - **JC-030 Validation** 을 Path 1·2 공통 게이트로 재사용한다. blocking 오류 시 export 차단.
 - 소득자 식별정보는 [JC-030 PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)와 동일 — **일회성 입력·서버 미저장**.
 - 생성 ZIP·plain SC 첨부는 **v1 기본: 다운로드 후 서버 미보관**.
-- UI·문구는 Path 1a 베타 이후 신규 Preview로 다시 승인한다. 기존 [08_filing_preparation.html](../02_UI_Screens/previews/08_filing_preparation.html) `#jc-034-handoff-export` 패널은 Path 1-only preview로 supersede되었다.
+- UI·문구는 Path 1 베타 이후 신규 Preview로 다시 승인한다. 기존 [08_filing_preparation.html](../02_UI_Screens/previews/08_filing_preparation.html) `#jc-034-handoff-export` 패널은 Path 1-only preview로 supersede되었다.
 - 제품·범위 게이트: [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [Product Baseline §3](../01_Concept_Design/01_PRODUCT_BASELINE.md).
 
 ## 0.1 Flow Status
@@ -22,9 +22,9 @@ JC-034는 **Filing Path 2** 를 구현한다. 회사가 확정한 신고 준비 
 ```text
 [Flow]
 현재: Filing Path 2 — JC-034 Pre-Code Brief 보존, 구현 착수 보류
-Gate: Path 1a 베타 안정화 선행
-미완료: UI-First Gate — Path 1a 베타 이후 신규 Preview 재승인 필요
-다음: Path 1a 베타 후 JC-034 Scope/Preview 재검토
+Gate: Path 1 베타 안정화 선행
+미완료: UI-First Gate — Path 1 베타 이후 신규 Preview 재승인 필요
+다음: Path 1 베타 후 JC-034 Scope/Preview 재검토
 v1 최소 트랙: 간이지급 반기 + 원천세 summary + 부가세 summary
 ```
 
@@ -32,7 +32,7 @@ v1 최소 트랙: 간이지급 반기 + 원천세 summary + 부가세 summary
 
 ### 포함 (v1)
 
-1. 신고 준비 허브 `/dashboard/filing-preparation` 내 **Path 2 handoff export 패널** (Path 1a 베타 이후 신규 Preview 필요)
+1. 신고 준비 허브 `/dashboard/filing-preparation` 내 **Path 2 handoff export 패널** (Path 1 베타 이후 신규 Preview 필요)
 2. 트랙 선택(체크박스) + 기간 컨텍스트 + 수신 사무소명 확인
 3. **manifest.json** (Zod 검증) + 트랙별 **CSV** + **README-handoff.txt** ZIP
 4. v1 최소 트랙 3종:

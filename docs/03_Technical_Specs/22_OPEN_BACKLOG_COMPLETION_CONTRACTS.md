@@ -167,7 +167,7 @@ not shipped. The fixed order and completion lines are in
 [Path 1 Roadmap §§2–4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
 **Beta focus is Path 1 only** (1a form upload where a form exists, 1b direct-entry
-summary otherwise). Path 2 is after Path 1a beta. Path 3 encryption, fcrypt and
+summary otherwise). Path 2 is after the full Path 1 beta (1a files + 1b summary screens). Path 3 encryption, fcrypt and
 certification tooling are outside the current product scope. Step-by-step Hometax
 menu/field-location guidance is also excluded — Path 1b provides the value summary
 only.
@@ -179,7 +179,7 @@ only.
 | **Validation** | Path 1 & 2 공통 | Implemented for simplified wage; repeated per tax type |
 | **Path 1a** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | In progress — simplified wage form implemented; withholding no form, VAT Stage A is the 1a upgrade check |
 | **Path 1b** | 공식 양식 없을 때 확정값 `항목 = 값` 직접입력 정리 화면 | 원천세·부가세 등 양식 미확인 세목이 **대상으로 결정**됨 · **화면 구현 대기**; 값 정리 표시까지 (`blocked` 없음) |
-| **Path 2** | 세무사무소 handoff ZIP | Deferred until Path 1a beta |
+| **Path 2** | 세무사무소 handoff ZIP | Deferred until full Path 1 beta (1a + 1b) |
 | **Path 3** | 인증·암호화 업로드 파일 | Excluded from current product scope |
 
 #### Validation — 공통 검증 (Path 1 & 2)
@@ -194,7 +194,7 @@ Done means:
 
 Remaining:
 
-- [ ] JC-034 v1 consumes validation output in ZIP (after Path 1a beta)
+- [ ] JC-034 v1 consumes validation output in ZIP (after full Path 1 beta, 1a + 1b)
 - [ ] UI shows Path 1 (1a/1b) as active, Path 2 as deferred and encrypted Path 3 as out of scope where mentioned
 
 #### Path 1a — 홈택스 업로드용 양식·파일 작성 지원 (양식 있을 때)
@@ -303,11 +303,11 @@ Non-goals before done:
 ### JC-034 — GIWA handoff package (Path 2 · ZIP Export v1)
 
 Current gate: scope fixed in [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md), but
-**implementation deferred** until Path 1a beta is stable ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)). The earlier 08 preview handoff panel is superseded by the Path 1-only filing-preparation preview.
+**implementation deferred** until the full Path 1 beta (1a files + 1b summary screens) is stable ([Path 1 Roadmap §2.2](./36_PATH1_FORM_FILL_ROADMAP.md)). JC-034's required deliverables are the per-tax summary CSVs (withholding, VAT, etc.), which depend on the 1b summary work; Path 1a files are only optional ZIP attachments, so Path 1a beta alone does not gate Path 2. The earlier 08 preview handoff panel is superseded by the Path 1-only filing-preparation preview.
 
 May start implementation only after:
 
-- [ ] UI-First Gate for handoff export panel — Path 1a beta 이후 신규 Preview로 재승인
+- [ ] UI-First Gate for handoff export panel — 전체 Path 1 베타(1a+1b) 이후 신규 Preview로 재승인
 - [x] Pre-Code Brief with manifest Zod schema and per-track CSV/Excel columns — [35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md), approved 2026-07-07
 - [ ] Copy approved: existing firm only, no marketplace/referral language
 - [ ] JC-030 Validation integrated for 간이지급 v1 scope

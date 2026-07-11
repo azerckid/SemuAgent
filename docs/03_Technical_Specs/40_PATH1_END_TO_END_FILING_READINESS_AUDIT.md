@@ -203,7 +203,7 @@ The authoritative sequence and completion lines are in
    an official form is confirmed, for local-income special collection, business-status
    report and annual payment statement.**
 6. **Run Path 1a beta after simplified wage and one additional compatible tax
-   type satisfy the per-tax 1a completion line; Path 1b coverage is already usable.**
+   type satisfy the per-tax 1a completion line; Path 1b screens remain pending.**
 
 Path 2, encrypted Path 3, step-by-step direct-entry guidance and automatic
 submission do not interrupt this sequence.
@@ -215,9 +215,9 @@ submission do not interrupt this sequence.
 | Reconciliation Phase 2 | Brief 41 §9 complete and VAT gate/provenance consumers implemented — **done** |
 | One tax type (Path 1a) | Roadmap 36 §2.1 all conditions pass |
 | Path 1a beta | Simplified wage + one additional tax type pass official non-encrypted upload verification and beta flow |
-| Path 1b coverage | Every tax type without a confirmed form shows a confirmed `항목 = 값` direct-entry summary; no tax type ends `blocked` |
-| Planned tax matrix decision | Withholding, VAT, local income, business status and annual statement each pass §2.1 (Path 1a) or are provided through Path 1b with official Stage A evidence that no form exists |
-| Path 2 restart | Path 1a beta is stable and a new UI-First Gate is approved |
+| Path 1b coverage | Every tax type without a confirmed form is assigned to Path 1b and its `항목 = 값` direct-entry summary screen is built (currently pending for withholding/VAT); no tax type ends `blocked` |
+| Planned tax matrix decision | Withholding, VAT, local income, business status and annual statement each pass §2.1 (Path 1a) or are assigned to Path 1b with official Stage A evidence that no form exists |
+| Path 2 restart | Full Path 1 beta (1a files + 1b summary screens) is stable and a new UI-First Gate is approved |
 
 ## 8. Documentation Sync
 
@@ -225,7 +225,7 @@ This audit supersedes wording that presents Path 1, Path 2, and Path 3 as equal
 current choices. For beta:
 
 - Path 1 is the product path, with 1a (official form upload) and 1b (direct-entry value summary) branches; no tax type ends `blocked`.
-- Path 2 is after Path 1a beta.
+- Path 2 is after the full Path 1 beta (1a files + 1b summary screens); JC-034's required outputs are the per-tax summary CSVs that depend on 1b work, with Path 1a files only optional attachments.
 - Encrypted Path 3 is outside the current product scope.
 - Step-by-step Hometax menu/field-location guidance is excluded (1b is value display only).
 
