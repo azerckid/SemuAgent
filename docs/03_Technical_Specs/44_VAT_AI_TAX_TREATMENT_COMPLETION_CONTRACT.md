@@ -30,8 +30,9 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 - VAI-3b 완료: single-provider AI·timeout/fallback·PII/소비자 격리
 - VAI-4a 완료: additive audit schema·사용자 확정 transaction, migration 0068 dev/prod 적용
 - VAI-4b 완료: 적용/다르게/보류/전문가 확인 UI·최근 작업 undo, migration 0069 dev/prod 적용
-- 현재: VAI-5 고위험 multi-provider consensus·Claude 중재·비차단 fallback 구현 완료
-- 다음: VAI-5 오너 확인 뒤 VAI-6 확정 결과 gate 소비·closeout
+- VAI-5 완료: 고위험 multi-provider consensus·Claude 중재·비차단 fallback
+- 현재: VAI-6a 사용자 세무판단 gate를 VAT 화면·rebuild API·package API에 공통 연결 완료
+- 다음: VAI-6b 영세율·면세 필수 증빙 확인 입력과 감사 기록 구현 뒤 JC-035 최종 완료 처리
 
 ## 0.1 Current Status
 
@@ -180,7 +181,8 @@ type VatTaxTreatmentRecommendation = {
 | **VAI-3 · Read-only Recommendation** | deterministic + 이전 확정 패턴 + 필요한 행만 single AI | 실제 데이터에서 추천·근거·증빙요건 표시, 저장 없음 |
 | **VAI-4 · User Confirmation** | 적용/다르게/보류/전문가 확인, 최종 결정 저장·이력 | AI 추천과 사용자 확정이 분리 저장되고 undo/감사 가능 |
 | **VAI-5 · Risk Escalation** | 고위험 multi-provider consensus·timeout·fallback | 불일치/실패가 비차단 `확인 필요`로 전환됨 |
-| **VAI-6 · VAT Gate Closeout** | 확정 결과를 VAT rebuild/package gate에서 소비 | 미확정 판단이 있으면 차단, 확정 결과만 세액·패키지에 반영, QA·문서 동기화 |
+| **VAI-6a · VAT Gate Connection** | 확정 결과를 VAT rebuild/package gate에서 소비 | 미확정 판단이 있으면 차단하고 확정 결과만 세액·패키지에 반영 |
+| **VAI-6b · Evidence Attestation** | 영세율·면세 법정 증빙을 사용자가 확인 완료로 기록 | 증빙 항목·확인자·확인시각을 감사 가능하게 저장하고 재조회 시 `present`로 파생 |
 
 VAI-1 승인 전 VAI-2 Pre-Code Brief와 코드 구현을 시작하지 않는다. VAI-3의 read-only
 결과를 브라우저에서 검증하기 전 VAI-4 mutation을 붙이지 않는다.
@@ -193,6 +195,7 @@ JC-035는 다음을 **모두** 만족할 때만 `done`이다.
 - [x] 공제/불공제/안분/과세/영세율/면세 공식 규칙 매트릭스의 출처·버전·적용일이 고정됐다.
 - [x] 규칙·패턴·AI·consensus·수동 판단의 source와 근거가 화면에 구분된다.
 - [x] 영세율·면세는 필수 증빙이 없으면 사용자 확정과 downstream gate가 차단된다.
+- [ ] 사용자가 영세율·면세 필수 증빙을 확인 완료로 기록하고, 감사 이력과 함께 재조회할 수 있다.
 - [x] AI가 판단하지 못하거나 timeout/error가 나도 화면과 수동 검토가 계속 동작한다.
 - [x] 사용자 확인 없이 VAT fact·공제 decision·세액·package gate가 변경되지 않는다.
 - [x] 같은 tenant·사업장·기간만 사용하고, 이전 확정 패턴도 같은 범위로 격리된다.

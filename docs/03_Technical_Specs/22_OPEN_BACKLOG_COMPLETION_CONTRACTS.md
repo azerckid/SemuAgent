@@ -237,12 +237,13 @@ Non-goals (all JC-030 layers):
 
 Type: 세무판단 보조. 신고 준비 품질 기능이며 JC-030 파일 생성과 분리한다.
 
-Current gate: **VAI-2 규칙·저장 계약 승인 대기.** VAI-1 Preview는 승인됐고, 완료선과
-고정 순서는 [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md),
+Current gate: **VAI-0~6a 구현 완료·PR 머지 대기, VAI-6b 영세율·면세 증빙 확인 입력 필수.**
+규칙/패턴/조건부 AI/사용자 확정과 VAT rebuild/package gate 연결은 구현됐고,
+완료선과 고정 순서는 [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md),
 [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md),
 [Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md)에 있다.
 
-May start implementation only after:
+Implementation preconditions:
 
 - 기존 JC-011 화면과 구분되는 JC-035 Preview를 프로젝트 오너가 승인한다.
 - 공제/불공제/안분/과세/영세율/면세 공식 규칙 매트릭스의 출처·버전·적용일이 고정된다.
@@ -253,9 +254,11 @@ Done means:
 
 - AI가 판단 가능성, 근거, 필요한 증빙, 부족한 사실을 한 행에서 설명한다.
 - 영세율·면세와 고위험 판단은 필수 증빙 또는 사용자 확인 없이는 확정되지 않는다.
+- 사용자가 영세율·면세 필수 증빙을 확인 완료로 기록하고 그 확인자·시각을 감사할 수 있다.
 - 사용자 확인 없이 VAT fact·공제 decision·세액·package gate가 변경되지 않는다.
 - AI가 실패해도 VAT 화면·수동 검토·기존 mutation이 계속 동작한다.
 - 추천과 최종 결정, 규칙 버전, 확정자, 확정시각을 감사할 수 있다.
+- 미확정·보류·전문가 확인·필수 증빙·안분 미완료가 있으면 rebuild/package gate가 차단된다.
 - tenant·사업장·기간·이전 패턴이 격리되고 대표 브라우저 E2E와 전체 회귀가 통과한다.
 
 Non-goals before done:

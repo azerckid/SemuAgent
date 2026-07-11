@@ -29,6 +29,17 @@ const verifiedProvenance = {
   message: '현재 fingerprint가 일치합니다.',
 }
 
+const readyTaxTreatment = {
+  isReady: true,
+  blockerCount: 0,
+  unconfirmedCount: 0,
+  heldCount: 0,
+  expertReviewCount: 0,
+  evidenceIncompleteCount: 0,
+  prorationIncompleteCount: 0,
+  targetRoute: '/dashboard/vat' as const,
+}
+
 function buildGate(overrides: Partial<Parameters<typeof buildVatPackageGate>[0]> = {}) {
   return buildVatPackageGate({
     periodKey: '2026-H1',
@@ -36,6 +47,7 @@ function buildGate(overrides: Partial<Parameters<typeof buildVatPackageGate>[0]>
     sourceCompleteness: readySource,
     reconciliationGate: readyReconciliation,
     pendingDeductionCount: 0,
+    taxTreatmentGate: readyTaxTreatment,
     provenanceState: blockedProvenance,
     ...overrides,
   })
@@ -98,6 +110,32 @@ describe('VAT package composite gate', () => {
     })
   })
 
+  it('blocks rebuild and package generation while VAT user decisions are unresolved', () => {
+    const gate = buildGate({
+      provenanceState: verifiedProvenance,
+      taxTreatmentGate: {
+        ...readyTaxTreatment,
+        isReady: false,
+        blockerCount: 2,
+        unconfirmedCount: 2,
+      },
+    })
+
+    expect(gate).toMatchObject({
+      isReady: false,
+      blockerCount: 2,
+      taxTreatment: {
+        isReady: false,
+        blockerCount: 2,
+      },
+      reasons: [{
+        code: 'vat_tax_treatment_incomplete',
+        count: 2,
+        targetRoute: '/dashboard/vat?period=2026-H1',
+      }],
+    })
+  })
+
   it('reports a missing VAT summary independently from the other gates', () => {
     const gate = buildGate({ hasSummary: false, provenanceState: verifiedProvenance })
 
@@ -125,6 +163,15 @@ describe('VAT package composite gate', () => {
     expect(buildGate({
       provenanceState: rebuildState,
       reconciliationGate: { ...readyReconciliation, isReady: false, blockerCount: 2 },
+    }).provenance.canRebuild).toBe(false)
+    expect(buildGate({
+      provenanceState: rebuildState,
+      taxTreatmentGate: {
+        ...readyTaxTreatment,
+        isReady: false,
+        blockerCount: 1,
+        unconfirmedCount: 1,
+      },
     }).provenance.canRebuild).toBe(false)
   })
 

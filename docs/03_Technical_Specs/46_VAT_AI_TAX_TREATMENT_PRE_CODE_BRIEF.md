@@ -301,6 +301,16 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 
 추천 개수나 AI confidence만으로 gate를 해제하지 않는다.
 
+### 9.1 Known Limitation and Required Follow-up
+
+VAI-6a 시점에는 `export_or_zero_rate_documents`와 `exemption_qualification`을
+`present`로 바꾸는 사용자 입력 경로가 없다. 따라서 영세율·면세 매출이 있는 사업자는
+안전하게 package gate가 계속 차단된다. 이 상태를 JC-035 완료로 세지 않는다.
+
+VAI-6b는 사용자가 법정 증빙 항목을 확인 완료로 기록하는 명시적 입력을 제공해야 한다.
+확인 기록은 tenant·사업장·기간·거래 행·증빙 코드·확인자·확인시각을 포함하고, 서버가
+재검증한 뒤에만 `present`로 파생한다. 파일 원문이나 AI 판단만으로 자동 완료하지 않는다.
+
 ## 10. Implementation Order
 
 | 순서 | PR 범위 | 완료선 |
@@ -310,7 +320,8 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 | VAI-4a | **구현 완료** — additive audit schema + migration + API transaction | 사용자 확정 저장·tenant guard·rollback 테스트 |
 | VAI-4b | **구현 완료** — 적용/다르게/보류/전문가 확인 UI + 최근 작업 undo | dev DB 서비스 E2E·감사 이력 확인, migration 0069 dev/prod 적용 |
 | VAI-5 | **구현 완료** — 고위험 consensus + Claude 중재 | 불일치·실패 비차단, 화면·저장 재검증 공통 파이프라인 |
-| VAI-6 | rebuild/package gate 소비 + closeout | 확정값만 세액 반영, 문서·QA 동기화 |
+| VAI-6a | **구현 완료·PR 머지 대기** — rebuild/package gate 소비 | 확정값만 세액 반영, 미확정·증빙 미완료 fail-closed |
+| VAI-6b | **필수 후속** — 영세율·면세 증빙 확인 입력 + 감사 기록 | 사용자가 증빙을 확인 완료로 기록하고 재조회·gate 재계산까지 검증 |
 
 각 행은 별도 PR과 프로젝트 오너 확인을 거친다. 여러 작업 단위를 한 PR에 합치지 않는다.
 
@@ -384,6 +395,28 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 - [x] 화면 read model과 사용자 확정 시 recommendation fingerprint 재검증이 같은 AI 파이프라인 사용
 - [x] 합의 결과도 `finalDecision: null`을 유지하며 사용자 확인 없이 canonical VAT fact·공제 decision을 변경하지 않음
 - [x] 합의·Claude 중재·provider 장애·완전 불일치·단일 AI 유지·공통 파이프라인 회귀 테스트 추가
+
+### 11.6 VAI-6a Implementation Result
+
+- [x] validated VAT 판단 행에서 사용자 미확정·보류·전문가 확인·필수 증빙·안분 미완료를 파생하는 `VatTaxTreatmentGate` 추가
+- [x] 여러 조건이 겹치는 한 거래는 blocker 한 건으로만 계산
+- [x] VAT 화면은 이미 로드한 AI/규칙 판단 행으로 gate를 계산하고 중복 AI 호출을 하지 않음
+- [x] rebuild/package API는 동일한 server gate loader를 사용하고 AI provider를 호출하지 않음
+- [x] 미확정 판단이 있으면 provenance 재계산과 package 생성 모두 차단
+- [x] 사용자 확정 canonical VAT fact 또는 deduction decision만 gate를 통과
+- [x] 영세율·면세 필수 증빙 미확인과 안분 근거 미완료는 final decision 표기가 있어도 fail-closed
+- [x] 신규 migration·schema 변경·자동 재계산·자동 package 생성 없음
+- [x] gate 순수 단위 테스트와 VAT page/rebuild/package 공통 경로 정적 회귀 테스트 추가
+- [ ] 프로젝트 오너가 `/dashboard/vat?period=2026-H1`에서 판단 미확정 잠금 사유를 확인
+
+### 11.7 VAI-6b Required Follow-up
+
+- [ ] 영세율·면세 필수 증빙별 확인 완료 입력 UI와 서버 mutation 계약을 고정
+- [ ] tenant·사업장·기간·거래 행·증빙 코드·확인자·확인시각을 감사 가능하게 저장
+- [ ] 저장된 확인 기록을 validated 판단 행의 required evidence `present` 상태로 파생
+- [ ] 증빙 확인 전에는 확정·rebuild·package를 계속 차단하고 확인 후에만 gate 재계산
+- [ ] fixture·서비스 E2E·브라우저에서 영세율·면세 대표 행의 잠금 해제 흐름 검증
+- [ ] VAI-6b 머지 후에만 JC-035 `done` 및 최종 문서 정합 확인
 
 ## 12. Related Documents
 

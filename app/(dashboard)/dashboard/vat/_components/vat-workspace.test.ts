@@ -15,6 +15,7 @@ const vatPageSource = readFileSync(new URL('../page.tsx', import.meta.url), 'utf
 const vatSummarySource = readFileSync(new URL('../../../../../lib/vat/summary.ts', import.meta.url), 'utf8')
 const internalReminderSummarySource = readFileSync(new URL('../../../../../lib/internal-reminders/summary.ts', import.meta.url), 'utf8')
 const filingPreparationSummarySource = readFileSync(new URL('../../../../../lib/filing-preparation/summary.ts', import.meta.url), 'utf8')
+const packageGateSource = readFileSync(new URL('../../../../../lib/vat/package-gate.ts', import.meta.url), 'utf8')
 
 describe('VAT workspace static contract', () => {
   it('does not import or render the GIWA reviews workspace (S-70)', () => {
@@ -118,5 +119,16 @@ describe('VAT workspace static contract', () => {
     expect(rebuildRouteSource).toContain('rebuildVatPeriodSummaryFromConfirmedLedger')
     expect(rebuildRouteSource).toContain('packageGate.provenance.canRebuild')
     expect(rebuildRouteSource).toContain("code: 'vat_provenance_rebuild_blocked'")
+  })
+
+  it('uses the same VAI-6 tax-treatment gate in the VAT page, rebuild API, and package API (S-99)', () => {
+    expect(vatPageSource).toContain('buildVatTaxTreatmentGate(summary.taxTreatmentRows)')
+    expect(packageGateSource).toContain('loadVatTaxTreatmentGate')
+    expect(packageGateSource).toContain('params.taxTreatmentGate.isReady')
+    expect(packageGateSource).toContain("code: 'vat_tax_treatment_incomplete'")
+    expect(packageRouteSource).toContain('loadVatPackageGate')
+    expect(packageRouteSource).toContain('if (!packageGate.isReady)')
+    expect(rebuildRouteSource).toContain('loadVatPackageGate')
+    expect(rebuildRouteSource).toContain('if (!packageGate.provenance.canRebuild)')
   })
 })
