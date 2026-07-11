@@ -8,7 +8,7 @@ function formatKrw(value: number): string {
 }
 
 // 급여대장 원천세 금액을 클릭하면 소득세·지방소득세 구성과 출처를 보여준다.
-// 표시되는 값은 모두 업로드된 급여자료의 확정값이며, 앱이 간이세액표로 재계산하지 않는다.
+// 표시값은 급여자료의 확정값(세액표 기준 산정)이며, 이 앱이 다시 계산하지 않는다.
 // withholdingTaxKrw = incomeTaxKrw + localIncomeTaxKrw (lib/payroll-workspace/summary.ts) 이므로
 // 팝오버 합계는 셀에 표시된 원천세 금액과 항상 일치한다.
 export function WithholdingBreakdownCell({
@@ -45,7 +45,10 @@ export function WithholdingBreakdownCell({
             <span className="text-[13px] font-bold tabular-nums text-[#dc2626]">{formatKrw(withholdingTaxKrw)}</span>
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-company-fg-subtle">
-            출처: 급여자료 확정값 · 간이세액표로 재계산한 값이 아닙니다. 지방소득세는 위택스에 별도 신고합니다.
+            출처: 급여자료 확정값(세액표 기준 산정). 지방소득세는 지방세로 별도 신고합니다.
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-company-fg-subtle">
+            부양가족 공제 최종금액은 연말정산에서 확정됩니다.
           </p>
         </PopoverContent>
       </Popover>
