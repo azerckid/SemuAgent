@@ -38,7 +38,13 @@ export async function PATCH(req: Request) {
       if (reminderIssue) {
         return NextResponse.json({ error: '1~14 사이의 일수를 입력해 주세요.' }, { status: 400 })
       }
-      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+      const firstIssue = parsed.error.issues[0]
+      const message = firstIssue?.path[0] === 'name'
+        ? '회사명을 입력해 주세요.'
+        : firstIssue?.path[0] === 'timezone'
+          ? '타임존을 선택해 주세요.'
+          : '입력값을 확인해 주세요.'
+      return NextResponse.json({ error: message }, { status: 400 })
     }
     const { name, timezone, reminderDaysBefore } = parsed.data
     await db

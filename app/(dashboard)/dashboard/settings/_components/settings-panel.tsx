@@ -76,6 +76,12 @@ const TIMEZONE_OPTIONS = [
   { value: 'Europe/London', label: 'Europe/London (GMT)' },
 ]
 
+// API가 예상과 다른 형태의 에러(예: Zod flatten() 객체)를 반환해도 React child로
+// 그대로 렌더링해 화면이 죽지 않도록 문자열만 통과시킨다.
+function toErrorMessage(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.trim() ? value : fallback
+}
+
 const PLAN_LABEL: Record<string, string> = {
   free: '무료',
   starter: 'Starter',
@@ -126,7 +132,7 @@ export function SettingsPanel({
     setPhoneSaving(false)
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      setPhoneError(data.error ?? '저장에 실패했습니다')
+      setPhoneError(toErrorMessage(data.error, '저장에 실패했습니다'))
     } else {
       setSavedPhone(myPhone)
       setEditingMyPhone(false)
@@ -158,7 +164,7 @@ export function SettingsPanel({
     if (!res.ok) {
       setTenantSaving(false)
       const data = await res.json().catch(() => ({}))
-      setTenantError(data.error ?? '저장에 실패했습니다')
+      setTenantError(toErrorMessage(data.error, '저장에 실패했습니다'))
       return
     }
     // 사업자 유형은 사업장(client) 필드라 별도 엔드포인트로 저장한다(빈 값 → 미지정 null).
@@ -170,7 +176,7 @@ export function SettingsPanel({
     setTenantSaving(false)
     if (!bizRes.ok) {
       const data = await bizRes.json().catch(() => ({}))
-      setTenantError(data.error ?? '사업자 유형 저장에 실패했습니다')
+      setTenantError(toErrorMessage(data.error, '사업자 유형 저장에 실패했습니다'))
       return
     }
     toast.success(successMessage)
@@ -194,7 +200,7 @@ export function SettingsPanel({
     setAddLoading(false)
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      setAddError(data.error ?? '추가에 실패했습니다')
+      setAddError(toErrorMessage(data.error, '추가에 실패했습니다'))
     } else {
       setAddEmail('')
       startTransition(() => router.refresh())
