@@ -1,16 +1,16 @@
 # JC-030 Withholding Official Upload Form Pre-Code Technical Brief
 > Created: 2026-07-07 04:40 KST
-> Last Updated: 2026-07-10 22:14 KST
+> Last Updated: 2026-07-11 KST
 
 ## 0.1 Flow Status
 
 ```text
 [Flow]
 완료: Slice 0b 서식 조사·Part A 매핑, Slice 1a 검증 패널, W0 공식 경로 감사
-판정: 원천세 W0 closed blocked — 직접작성 또는 비밀번호 기반 변환파일만 공식 확인
-종료: W1~W5 generator 구현 미착수·현재 계약에서 재개 금지
-현재: 부가세 Stage A 공개 자료 감사 완료, 로그인 화면·126 외부 확인 대기
-재개: 최신 공식 비암호화 원본과 직접 수용 메뉴가 새로 확인될 때만 본 Brief 활성화
+판정: 원천세 1a 양식 없음 → 1b(직접입력 정리)로 제공. 공식 안내는 직접작성/비밀번호 변환파일뿐
+현재: A01 확정 집계를 1b `항목 = 값` 화면으로 제공(파일 generator 없음)
+1a 승격: 최신 공식 비암호화 원본과 직접 수용 메뉴가 새로 확인되면 본 Brief(W1~W5)를 활성화
+제외: 바이너리 레코드 추정, fcrypt·암호화 파일, 단계별 위치 안내
 ```
 
 ## 0. Governing Principle
@@ -22,7 +22,7 @@ JC-030 Path 1 **2번 세목 후보**는 JC-012·JC-013이 준비한 **월별 원
 - **자동 제출·자격증명 저장 없음** (JC-023 원칙).
 - **self-filing 보조** — 사용자가 홈택스 원천세 신고에서 준비된 파일을 직접 업로드·제출.
 - v1은 **근로소득 간이세액(A01) 집계 행**만; 환급조정·부표·타 소득구분 제외.
-- 공식 비암호화 업로드 양식 **미확인**이며 W0는 `closed blocked` — [Final Audit](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md). 아래 구현 범위는 재개 조건 충족 전 비활성 계약이다.
+- 공식 비암호화 업로드 양식 **미확인** → 원천세는 **1b(직접입력 정리)로 제공** — [Final Audit](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md). 아래 1a 파일 구현 범위는 공식 양식 확인 전 비활성이며, 그동안 A01 값 정리 화면으로 제공한다.
 
 ## 1. Scope
 
@@ -48,7 +48,7 @@ JC-030 Path 1 **2번 세목 후보**는 JC-012·JC-013이 준비한 **월별 원
 - `국세청 검증 완료` UI
 - 직원별 주민번호(집계 신고서)
 - 암호화 전자파일·NTS-CRYPTO·전자신고 암호
-- 홈택스 직접입력 안내·자동제출
+- 홈택스 메뉴·입력칸 위치 단계별 안내·자동제출 (1b는 값 정리 표시까지)
 
 ## 2. Route and Component Boundary
 
@@ -131,7 +131,7 @@ Response: W0에서 확인된 공식 파일의 content type 또는 `422` + valida
 | **1b-W3** | generate API + 다운로드 UI | tenant/client/month scope, 서버 미보관, blocker 우회 불가 |
 | **1b-W4** | file/browser/Hometax verification | 파일 구조 fixture와 실제 비암호화 업로드 검증 통과 |
 | **1b-W5** | docs/QA closeout | Roadmap §2.1, Backlog, QA, Audit 동기화 |
-| **blocked branch** | W0 실패 | 원천세 generator 미구현, 다음 세목 Stage A로 이동 |
+| **1b branch** | 공식 양식 없음 | 1a generator 미구현, 확정 A01을 직접입력 정리 화면으로 제공 |
 
 Slice 1b는 W0부터 W5까지 완료되어야 끝난다. W0·W1 전에는 W2 generator
 코드를 작성하지 않는다.
@@ -146,7 +146,7 @@ Slice 1b는 W0부터 W5까지 완료되어야 끝난다. W0·W1 전에는 W2 gen
 - [ ] 다른 tenant·사업장·귀속월 데이터가 섞이지 않는다.
 - [ ] 브라우저 다운로드와 대표 파일의 홈택스 비암호화 업로드 검증이 통과한다.
 - [ ] 파일·PII·자격증명은 서버에 영구 저장되지 않는다.
-- [ ] 사용자가 직접 업로드·제출하며 직접입력·자동제출 문구가 없다.
+- [ ] 사용자가 직접 업로드(1a)·직접 입력(1b)·제출하며 단계별 위치 안내·자동제출 문구가 없다.
 - [ ] QA·Backlog·Completion Contract·Audit가 main 상태와 일치한다.
 
 ## 8. Preconditions (착수 전)
