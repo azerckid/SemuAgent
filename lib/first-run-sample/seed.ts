@@ -301,6 +301,8 @@ type SampleEmployeeSpec = {
   employmentType: SampleEmploymentType
   baseSalaryKrw: number
   allowanceKrw: number
+  // 비과세 식대(월 20만원 한도). 지급계에는 포함되지만 과세소득·4대보험 기준에서는 제외한다.
+  mealAllowanceKrw?: number
   // 정규직은 급여자료에 기재된 확정 소득세(샘플 표시값). 프리랜서는 3.3%, 일용직은 일급 기준 산식으로 산출.
   incomeTaxKrw?: number
   // 일용직 전용: 일용근로소득세 산식 입력값 (일급·근무일수).
@@ -313,12 +315,12 @@ type SampleEmployeeSpec = {
 // 표시값은 모두 "확정값" 성격의 샘플이며, 이 앱은 세액을 계산하지 않는다. 아래 4대보험
 // 근사 요율(sampleDeductionsFor)은 데모를 그럴듯하게 보이기 위한 표시용일 뿐 공식 확정 요율이 아니다.
 const FIRST_RUN_SAMPLE_EMPLOYEES: SampleEmployeeSpec[] = [
-  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, incomeTaxKrw: 650_000, needsReview: true },
-  { code: 'E002', name: '이수민', department: '영업', jobTitle: '팀장', employmentType: '정규직', baseSalaryKrw: 4_200_000, allowanceKrw: 200_000, incomeTaxKrw: 255_000 },
-  { code: 'E003', name: '박지훈', department: '운영', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_400_000, allowanceKrw: 200_000, incomeTaxKrw: 142_000 },
-  { code: 'E004', name: '최민준', department: '제품', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_000_000, allowanceKrw: 0, incomeTaxKrw: 74_000 },
-  { code: 'E005', name: '정하늘', department: '영업', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_600_000, allowanceKrw: 200_000, incomeTaxKrw: 47_000 },
-  { code: 'E006', name: '오세린', department: '운영', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_400_000, allowanceKrw: 0, incomeTaxKrw: 26_000 },
+  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 650_000, needsReview: true },
+  { code: 'E002', name: '이수민', department: '영업', jobTitle: '팀장', employmentType: '정규직', baseSalaryKrw: 4_200_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 255_000 },
+  { code: 'E003', name: '박지훈', department: '운영', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_400_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 142_000 },
+  { code: 'E004', name: '최민준', department: '제품', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 74_000 },
+  { code: 'E005', name: '정하늘', department: '영업', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_600_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 47_000 },
+  { code: 'E006', name: '오세린', department: '운영', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_400_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 26_000 },
   { code: 'E007', name: '한유진', department: '제품', jobTitle: '외주 디자이너', employmentType: '프리랜서', baseSalaryKrw: 3_500_000, allowanceKrw: 0 },
   { code: 'E008', name: '서도윤', department: '제품', jobTitle: '외주 개발', employmentType: '프리랜서', baseSalaryKrw: 2_000_000, allowanceKrw: 0 },
   { code: 'E009', name: '문가람', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_200_000, allowanceKrw: 0, dailyWageKrw: 200_000, workDays: 11 },
@@ -338,6 +340,7 @@ type SampleDeductions = {
   employmentInsuranceKrw: number
 }
 
+// grossPayKrw는 과세소득 기준(기본급+기타수당, 비과세 식대 제외)을 받는다.
 function sampleDeductionsFor(spec: SampleEmployeeSpec, grossPayKrw: number): SampleDeductions {
   if (spec.employmentType === '프리랜서') {
     // 사업소득 원천징수 3.3% (소득세 3% + 지방소득세 0.3%), 4대보험 없음
@@ -382,8 +385,11 @@ function sampleDeductionsFor(spec: SampleEmployeeSpec, grossPayKrw: number): Sam
 
 function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
   return FIRST_RUN_SAMPLE_EMPLOYEES.map((spec, i): typeof payrollEmployeeLine.$inferInsert => {
-    const grossPayKrw = spec.baseSalaryKrw + spec.allowanceKrw
-    const d = sampleDeductionsFor(spec, grossPayKrw)
+    const mealAllowanceKrw = spec.mealAllowanceKrw ?? 0
+    // 과세소득(기본급+기타수당)으로 4대보험·소득세 근사를 계산하고, 지급계는 비과세 식대까지 더한다.
+    const taxableGrossKrw = spec.baseSalaryKrw + spec.allowanceKrw
+    const grossPayKrw = taxableGrossKrw + mealAllowanceKrw
+    const d = sampleDeductionsFor(spec, taxableGrossKrw)
     const socialInsuranceKrw = d.nationalPensionKrw + d.healthInsuranceKrw + d.longTermCareKrw + d.employmentInsuranceKrw
     const withholdingTaxKrw = d.incomeTaxKrw + d.localIncomeTaxKrw
     const deductionTotalKrw = withholdingTaxKrw + socialInsuranceKrw
@@ -402,6 +408,7 @@ function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
       jobTitle: spec.jobTitle,
       jobType: spec.employmentType,
       baseSalaryKrw: spec.baseSalaryKrw,
+      mealAllowanceKrw,
       allowanceKrw: spec.allowanceKrw,
       grossPayKrw,
       incomeTaxKrw: d.incomeTaxKrw,
@@ -747,7 +754,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     jobType: '정규직',
     baseSalary: 6_000_000,
     bonus: 0,
-    mealAllowance: 0,
+    mealAllowance: 200_000,
     deductionAmount: 1_280_930,
     memo: '4대보험 취득일 확인 필요',
     sourceReference: JSON.stringify({ source: 'first_run_sample' }),

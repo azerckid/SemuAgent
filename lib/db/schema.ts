@@ -1725,6 +1725,8 @@ export const payrollEmployeeLine = sqliteTable('payroll_employee_line', {
   jobTitle: text('job_title'),
   jobType: text('job_type'),
   baseSalaryKrw: integer('base_salary_krw').notNull().default(0),
+  // 비과세 식대(월 20만원 한도). 지급계에는 포함되지만 allowanceKrw(기타수당)와는 분리해 표시한다.
+  mealAllowanceKrw: integer('meal_allowance_krw').notNull().default(0),
   allowanceKrw: integer('allowance_krw').notNull().default(0),
   grossPayKrw: integer('gross_pay_krw').notNull().default(0),
   incomeTaxKrw: integer('income_tax_krw').notNull().default(0),

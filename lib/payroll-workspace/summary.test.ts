@@ -21,6 +21,7 @@ function line(overrides: Partial<Parameters<typeof buildPayrollRegisterRow>[0]> 
     jobTitle: '매니저',
     jobType: '정규직',
     baseSalaryKrw: 3_000_000,
+    mealAllowanceKrw: 0,
     allowanceKrw: 200_000,
     incomeTaxKrw: 120_000,
     localIncomeTaxKrw: 12_000,

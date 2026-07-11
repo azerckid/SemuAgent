@@ -42,6 +42,7 @@ export type PayrollRegisterRow = {
   jobTitle: string | null
   jobType: string | null
   baseSalaryKrw: number
+  mealAllowanceKrw: number
   allowanceKrw: number
   grossPayKrw: number
   incomeTaxKrw: number
@@ -124,6 +125,7 @@ type PayrollEmployeeLineInput = {
   jobTitle: string | null
   jobType: string | null
   baseSalaryKrw: number
+  mealAllowanceKrw: number
   allowanceKrw: number
   incomeTaxKrw: number
   localIncomeTaxKrw: number
@@ -233,8 +235,9 @@ export function buildPayrollRegisterRow(
   canViewEmployeeNames = true,
 ): PayrollRegisterRow {
   const baseSalaryKrw = line.baseSalaryKrw
+  const mealAllowanceKrw = line.mealAllowanceKrw
   const allowanceKrw = line.allowanceKrw
-  const grossPayKrw = baseSalaryKrw + allowanceKrw
+  const grossPayKrw = baseSalaryKrw + mealAllowanceKrw + allowanceKrw
   const withholdingTaxKrw = line.incomeTaxKrw + line.localIncomeTaxKrw
   const socialInsuranceKrw = (
     line.nationalPensionKrw +
@@ -255,6 +258,7 @@ export function buildPayrollRegisterRow(
     jobTitle: line.jobTitle,
     jobType: line.jobType,
     baseSalaryKrw,
+    mealAllowanceKrw,
     allowanceKrw,
     grossPayKrw,
     incomeTaxKrw: line.incomeTaxKrw,
@@ -522,6 +526,7 @@ export async function loadPayrollWorkspaceSummary({
       jobTitle: payrollEmployeeLine.jobTitle,
       jobType: payrollEmployeeLine.jobType,
       baseSalaryKrw: payrollEmployeeLine.baseSalaryKrw,
+      mealAllowanceKrw: payrollEmployeeLine.mealAllowanceKrw,
       allowanceKrw: payrollEmployeeLine.allowanceKrw,
       incomeTaxKrw: payrollEmployeeLine.incomeTaxKrw,
       localIncomeTaxKrw: payrollEmployeeLine.localIncomeTaxKrw,

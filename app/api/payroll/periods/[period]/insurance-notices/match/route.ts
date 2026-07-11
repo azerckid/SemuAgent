@@ -99,6 +99,7 @@ export async function POST(
           jobTitle: payrollEmployeeLine.jobTitle,
           jobType: payrollEmployeeLine.jobType,
           baseSalaryKrw: payrollEmployeeLine.baseSalaryKrw,
+          mealAllowanceKrw: payrollEmployeeLine.mealAllowanceKrw,
           allowanceKrw: payrollEmployeeLine.allowanceKrw,
           incomeTaxKrw: payrollEmployeeLine.incomeTaxKrw,
           localIncomeTaxKrw: payrollEmployeeLine.localIncomeTaxKrw,

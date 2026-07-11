@@ -197,11 +197,12 @@ function PayrollRegisterSection({ summary }: PayrollWorkspaceProps) {
       )}
       <div className={panelClass}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse">
+          <table className="w-full min-w-[940px] border-collapse">
             <thead>
               <tr className="border-b border-company-border bg-[#fafafa]">
                 <TableHead>직원</TableHead>
                 <TableHead className="text-right">기본급</TableHead>
+                <TableHead className="text-right">식대(비과세)</TableHead>
                 <TableHead className="text-right">수당</TableHead>
                 <TableHead className="text-right">지급계</TableHead>
                 <TableHead className="text-right">원천세</TableHead>
@@ -215,7 +216,7 @@ function PayrollRegisterSection({ summary }: PayrollWorkspaceProps) {
                 <EditablePayrollRow key={row.id} row={row} />
               )) : (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-[13px] text-company-fg-muted">
+                  <td colSpan={9} className="px-4 py-10 text-center text-[13px] text-company-fg-muted">
                     이 급여월에 집계된 급여대장이 없습니다. 자료수집에서 급여 자료를 먼저 업로드해 주세요.
                   </td>
                 </tr>
@@ -229,6 +230,9 @@ function PayrollRegisterSection({ summary }: PayrollWorkspaceProps) {
                   </td>
                   <td className="px-3.5 py-2.5 text-right text-[12.5px] font-bold tabular-nums">
                     {formatCurrency(sumBy(summary.registerRows, (row) => row.baseSalaryKrw))}
+                  </td>
+                  <td className="px-3.5 py-2.5 text-right text-[12.5px] font-bold tabular-nums">
+                    {formatCurrency(sumBy(summary.registerRows, (row) => row.mealAllowanceKrw))}
                   </td>
                   <td className="px-3.5 py-2.5 text-right text-[12.5px] font-bold tabular-nums">
                     {formatCurrency(sumBy(summary.registerRows, (row) => row.allowanceKrw))}
