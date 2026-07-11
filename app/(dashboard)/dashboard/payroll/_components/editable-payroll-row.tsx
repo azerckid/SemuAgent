@@ -79,6 +79,8 @@ export function EditablePayrollRow({ row }: { readonly row: PayrollRegisterRow }
         incomeTaxKrw={row.incomeTaxKrw}
         localIncomeTaxKrw={row.localIncomeTaxKrw}
         withholdingTaxKrw={row.withholdingTaxKrw}
+        jobType={jobType}
+        dependentCount={row.dependentCount}
       />
       <td className="px-3.5 py-2.5 text-right text-[12.5px] tabular-nums whitespace-nowrap">
         <InlineEditPopover

@@ -23,6 +23,7 @@ function line(overrides: Partial<Parameters<typeof buildPayrollRegisterRow>[0]> 
     baseSalaryKrw: 3_000_000,
     mealAllowanceKrw: 0,
     allowanceKrw: 200_000,
+    dependentCount: 1,
     incomeTaxKrw: 120_000,
     localIncomeTaxKrw: 12_000,
     nationalPensionKrw: 140_000,

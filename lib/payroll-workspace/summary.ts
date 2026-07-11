@@ -47,6 +47,7 @@ export type PayrollRegisterRow = {
   baseSalaryKrw: number
   mealAllowanceKrw: number
   allowanceKrw: number
+  dependentCount: number
   grossPayKrw: number
   incomeTaxKrw: number
   localIncomeTaxKrw: number
@@ -131,6 +132,7 @@ type PayrollEmployeeLineInput = {
   baseSalaryKrw: number
   mealAllowanceKrw: number
   allowanceKrw: number
+  dependentCount: number
   incomeTaxKrw: number
   localIncomeTaxKrw: number
   nationalPensionKrw: number
@@ -264,6 +266,7 @@ export function buildPayrollRegisterRow(
     baseSalaryKrw,
     mealAllowanceKrw,
     allowanceKrw,
+    dependentCount: line.dependentCount,
     grossPayKrw,
     incomeTaxKrw: line.incomeTaxKrw,
     localIncomeTaxKrw: line.localIncomeTaxKrw,
@@ -534,6 +537,7 @@ export async function loadPayrollWorkspaceSummary({
       baseSalaryKrw: payrollEmployeeLine.baseSalaryKrw,
       mealAllowanceKrw: payrollEmployeeLine.mealAllowanceKrw,
       allowanceKrw: payrollEmployeeLine.allowanceKrw,
+      dependentCount: payrollEmployeeLine.dependentCount,
       incomeTaxKrw: payrollEmployeeLine.incomeTaxKrw,
       localIncomeTaxKrw: payrollEmployeeLine.localIncomeTaxKrw,
       nationalPensionKrw: payrollEmployeeLine.nationalPensionKrw,
