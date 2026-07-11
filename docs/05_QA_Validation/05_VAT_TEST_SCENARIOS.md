@@ -144,6 +144,22 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-104 | 사용자가 방금 적용·변경·보류·전문가 확인한 판단을 잘못 처리 | 최신 toast에서 `되돌리기` | 일회용 토큰이 일치하고 canonical 값이 다시 바뀌지 않은 경우에만 이전 canonical·감사 상태를 원자적으로 복원 | PASS·VAI-4b 단위/dev 서비스 E2E |
 | S-105 | 영세율·면세 매출의 필수 법정 증빙이 실제로 준비됨 | 사용자가 증빙 항목을 확인 완료로 저장 | 확인자·시각이 감사 기록에 남고 재조회 시 required evidence가 `present`로 파생되어 해당 blocker만 해제; 확인 취소 시 감사 기록 유지·재잠금 | PASS·VAI-6b SQLite transaction/read model/gate·UI/API 정적·브라우저 확인 |
 
+### 2.11 JC-037 VAT AI 비차단 로딩·결과 재사용
+
+아래 시나리오는 [VAT AI Loading and Result Reuse Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md)를 기준으로 구현한다.
+
+| # | Given | When | Then | Result |
+|:---|:---|:---|:---|:---:|
+| S-106 | 동일 fingerprint/version의 AI 결과가 저장됨 | 같은 VAT 화면을 10회 재진입 | 저장 결과를 즉시 표시하고 추가 provider 호출 0회 | Pending·VAI-7b/7d |
+| S-107 | AI 결과가 없거나 stale인 행이 존재 | VAT page 최초 진입 | VAT 표를 먼저 렌더하고 해당 행만 `확인 중`; 최초 서버 렌더 provider 호출 0회 | Pending·VAI-7a/7c |
+| S-108 | 거래 사실·증빙·VAT fact·규칙 또는 prompt version 변경 | 화면 재진입 | 이전 결과를 stale로 표시하고 해당 scope/fingerprint 신규 실행을 정확히 1회 생성 | Pending·VAI-7b |
+| S-109 | 같은 사용자가 같은 기간 VAT 화면을 여러 탭에서 동시에 엶 | 비동기 판단 시작 | 동일 scope/fingerprint의 활성 실행은 하나이고 나머지는 기존 상태를 재사용 | Pending·VAI-7b/7c |
+| S-110 | provider timeout·quota·invalid schema·전체 실패 | 비동기 판단 중 | 전체 화면 loading 없이 해당 행만 수동 확인으로 전환하고 표·mutation 계속 사용 | Pending·VAI-7c/7d |
+| S-111 | 저장 결과가 있으나 사용자가 새 판단을 원함 | `AI 다시 확인` 클릭 | 명시적 신규 실행 1회, 기존 사용자 확정값·canonical VAT fact 미변경 | Pending·VAI-7c |
+| S-112 | 사용자 최종 확정 행 | 자동 비동기 판단 대상 계산 | provider 호출 대상에서 제외, 규칙 변경은 기존 결정 덮기 대신 재검토 상태만 표시 | Pending·VAI-7b/7c |
+| S-113 | 다른 tenant·사업장·기간의 동일 거래처/금액 또는 민감 원문 존재 | 결과 저장·재사용 | scope 밖 결과 미사용, 원문 prompt/provider 응답·민감 식별정보 미저장 | Pending·VAI-7b |
+| S-114 | VAT package/rebuild gate 평가 | AI가 실행 중이거나 실패 | live LLM을 기다리지 않고 canonical 사용자 확정값만으로 결정 | Pending·VAI-7a/7d |
+
 ## 3. 자동화 계획
 
 - **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/vat/package-gate.test.ts`, `lib/vat/provenance.test.ts`, `lib/validations/vat.test.ts`): S-03, S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~67, S-74~78.
@@ -151,10 +167,12 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **브라우저 수동 검증 완료**: 승인 Preview와 실제 `/dashboard/vat?period=2026-H1` 캡처 비교. 숫자/상태/잠금 버튼/인라인 안분 UI 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 전표 생성부터 VAT summary 생성까지의 도메인 E2E는 별도 회계 시드 준비 후 검증한다.
 - **JC-035 자동화 계획**: VAI-3a에서 Zod·deterministic 규칙·이전 확정 패턴·read model을, VAI-3b에서 provider mock·timeout/quota·invalid schema fallback·PII·batch/소비자 격리를 자동화했다. VAI-4a에서 tenant·stale fingerprint·필수 증빙·canonical/audit transaction rollback을, VAI-4b에서 사용자 액션 UI·API 응답 Zod·latest-only undo·dev 서비스 E2E를 자동화했다. VAI-5에서 Gemini·OpenAI 합의·Claude 중재·provider 장애·완전 불일치 fallback·화면/저장 공통 파이프라인을 자동화했다. VAI-6a에서 사용자 세무판단 gate의 행 단위 중복 제거와 VAT page/rebuild/package 공통 경로를 자동화했다. VAI-6b에서 migration 실적용 SQLite, tenant·stale 차단, 확인·취소 감사, read model·fingerprint·gate 재계산, UI/API 경계를 자동화했다.
+- **JC-037 자동화 계획**: VAI-7a에서 최초 렌더 provider 0회와 호출 계측을, VAI-7b에서 fingerprint/version 재사용·stale invalidation·동시 실행 idempotency를, VAI-7c에서 비동기 상태·명시 재확인·timeout fallback을, VAI-7d에서 브라우저 성능·10회 재진입 호출 0회·package/rebuild live-AI 비의존을 검증한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)
 - **Technical_Specs**: [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
 - **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [VAI-2 Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) - JC-035 VAI-0~6 완료선·규칙·저장 계약
+- **Technical_Specs**: [VAI-7 Loading and Result Reuse Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) - JC-037 초기 화면 비차단·fingerprint 결과 재사용·비동기 실행 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-011 Context Lock
 - **QA_Validation**: [Bookkeeping Review Test Scenarios](./04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) - 선행 전표 확정 흐름

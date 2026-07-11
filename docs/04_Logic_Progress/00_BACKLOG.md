@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-11
+> Last Updated: 2026-07-12
 
 ## Status Legend
 
@@ -46,6 +46,7 @@
 | JC-030 | todo | 전자신고 검증 및 파일 생성 (Validation / Path 1a·1b) | `lib/efiling-*`, JC-024·013 | **최우선 — Path 1 세목 확대.** 자료대조 Phase 2와 간이지급 파일(1a) 후보 구현 완료. **원천세는 공식 양식 미확인 → Path 1b(직접입력 정리) 화면 구현 완료; 부가세도 Path 1b 대상이며(값 정리 화면 미구현) Stage A는 1a 승격용 외부 확인 대기.** 공식 비암호화 전체 신고 양식이 확인되면 해당 세목만 1a(파일)로 승격하고, 그전에는 `항목 = 값` 직접입력 정리 대상으로 둔다(값 정리 화면 구현은 후속, `blocked` 세목 없음). Stage A 통과 전 generator를 만들지 않는다. Path 3 암호화 파일은 범위 밖. [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [VAT Stage A Audit](../03_Technical_Specs/43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) |
 | JC-035 | done | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **완료(done) · VAI-0~6b 구현·머지(PR #200)·dev/prod migration `0070`·브라우저 E2E 완료.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·단계별 직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
 | JC-036 | done | Cadence 기반 내비게이션 재구성 | `sidebar.tsx`, 회사 홈, 기존 filing routes | **runtime 구현 완료(2026-07-11).** 상위 메뉴를 급여·지급(월) / 부가세(분기·반기) / 연간신고(연)로 재구성하고 신고지원·신고 준비 상위 메뉴를 제거했다. 직원 명부·원천세·지급명세서·지방소득세는 급여·지급 하위, 법인세/종합소득세/사업장현황신고는 사업자 유형(`client.taxEntityType`)에 따라 연간신고 하위에 조건부 노출한다. 회사 홈에 다가오는 신고 스트립(세목별 CTA 포함)을 추가하고 기존 신고 준비 허브의 "다가오는 세무 일정" 섹션은 제거했다. 기존 URL은 하나도 바꾸지 않아 redirect/alias가 필요 없다. [Cadence Navigation Review](../02_UI_Screens/13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) |
+| JC-037 | todo | 부가세 AI 비차단 로딩·결과 재사용 | JC-035 fingerprint·provider orchestration·VAT read model | **긴급 성능/사용성 결함.** 새 데이터가 없어도 VAT page 진입마다 미확정 행의 AI를 동기 재호출하는 현재 경로를 제거한다. 화면을 먼저 렌더하고 저장 결과를 fingerprint/version 기준으로 재사용하며, 변경된 행과 사용자 명시 재확인만 비동기 실행한다. 동일 데이터 재방문 provider 호출 0회, timeout 중 화면 사용 가능, multi-tab 중복 방지, gate의 live-AI 비의존을 완료선으로 한다. [Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
@@ -754,6 +755,40 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 확정된 결과만 VAT rebuild와 package gate가 소비한다.
   - [x] 대표 브라우저 E2E·tsc·전체 테스트·lint·whitespace·문서 sync가 통과한다.
 - Document Sync Check: 2026-07-11 VAI-6a는 PR #199, VAI-6b는 PR #200으로 머지 완료. VAI-6b는 거래 행·증빙 코드별 additive 감사 테이블(migration `0070`), 확인 완료·확인 취소 mutation, 활성 확인 기록의 `present` 합성, fingerprint·gate 재계산, VAT 판단 표 인라인 액션을 구현했다. 확인 취소는 감사 row를 삭제하지 않고 `revoked`로 보존한다. migration `0070` dev/prod 적용을 완료했으며 production은 13개 컬럼·3개 명시 인덱스·5개 FK, 위반 0건·초기 행 0건을 확인했다. 브라우저 E2E(`/dashboard/vat`에서 영세율 행 확인 완료→확인 취소→재확인 라운드트립과 `부가세 사용자 판단` 게이트 사유 노출 확인, 샘플데이터 원상복구)와 PR #200 머지를 완료해 JC-035를 `done`으로 전환한다. JC-030 부가세 양식 업로드 Stage A는 병렬 외부 확인 대기로 유지한다.
+
+### JC-037 · 부가세 AI 비차단 로딩·결과 재사용 (긴급)
+
+- Related Domain: JC-035 부가세 AI 세무판단 보조.
+- Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) - 기존 VAT 화면 유지. VAI-7c 상태 UI는 다음 VAT 화면 개선 논의와 함께 별도 승인.
+- Related HTML Preview: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - 현재 구조 참조. 이번 docs PR은 화면을 수정하지 않음.
+- Related Technical Docs: [VAT AI Loading and Result Reuse Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) · [JC-035 Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)
+- Related QA Docs: [VAT Test Scenarios `2.11](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
+- Current Gap:
+  - VAT page 최초 요청이 실시간 provider 판단을 기다린다.
+  - 데이터·규칙·prompt가 그대로여도 페이지 재진입마다 미확정 행을 다시 판단한다.
+  - transient AI 결과 재사용 저장소와 비동기 화면 상태 경계가 없다.
+- Fixed Order: VAI-7a read/AI 분리·계측 -> VAI-7b 결과 저장·fingerprint invalidation -> VAI-7c 비동기 상태 UI·명시 재확인 -> VAI-7d 동기 경로 제거·실환경 검증.
+- Implementation Preconditions:
+  - [x] 현재 동기 provider 호출·결과 미재사용·초기 화면 차단 경로를 코드로 확인했다.
+  - [x] 새 데이터와 version 변경이 없으면 provider를 재호출하지 않는 제품 원칙을 프로젝트 오너가 승인했다.
+  - [ ] VAI-7a에서 현재 VAT 초기 응답 시간과 provider 호출 수 baseline을 기록한다.
+  - [ ] VAI-7b additive schema·fingerprint·backoff·idempotency 계약을 코드 착수 전에 재검토한다.
+  - [ ] VAI-7c의 `확인 중`·`수동 확인`·`다시 확인 필요`·`AI 다시 확인` 상태를 다음 VAT UI 논의와 함께 프로젝트 오너가 확인한다.
+  - [ ] migration이 필요하면 dev/prod 적용 순서와 rollback을 확정한다.
+- Acceptance Criteria:
+  - [ ] VAT 최초 서버 렌더 경로에서 provider 호출이 0회다.
+  - [ ] 동일 fingerprint/version의 저장 결과가 있으면 페이지 10회 재진입에도 추가 provider 호출이 0회다.
+  - [ ] 원천 사실·규칙·prompt version 변경 시 해당 행만 stale 처리하고 신규 실행을 정확히 1회 만든다.
+  - [ ] 다중 탭·동시 요청에서도 동일 scope/fingerprint 실행은 하나다.
+  - [ ] provider timeout·quota·전체 실패 중에도 VAT 표·검색·사용자 mutation을 사용할 수 있다.
+  - [ ] 사용자가 `AI 다시 확인`을 명시적으로 요청할 수 있고 기존 확정값은 바뀌지 않는다.
+  - [ ] 사용자 확정 행은 자동 AI 재판단 대상에서 제외된다.
+  - [ ] tenant·사업장·기간·행 격리와 PII 최소화, 원문 prompt/응답 미저장을 지킨다.
+  - [ ] rebuild/package gate는 live AI 응답을 기다리지 않고 추천만으로 해제되지 않는다.
+  - [ ] 브라우저 E2E와 계측으로 초기 렌더 시간·provider 호출 수·stale 재실행을 증명한다.
+- Scope Boundary: VAT 화면의 시각적 정보구조 개편은 후속 논의로 분리하며 JC-037에 섞지 않는다.
+- Document Sync Check (2026-07-12): 신규 Brief 47, Backlog JC-037, VAT QA S-106~S-114, JC-035 Completion Contract의 post-completion correction을 동기화했다. 코드·DB·Preview 변경은 없으며 구현 상태는 `todo`다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 
