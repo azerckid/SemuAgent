@@ -237,7 +237,7 @@ Non-goals (all JC-030 layers):
 
 Type: 세무판단 보조. 신고 준비 품질 기능이며 JC-030 파일 생성과 분리한다.
 
-Current gate: **VAI-0~6b 코드 구현·migration 0070 dev/prod 적용 완료, 브라우저 확인·PR 머지 대기.**
+Current gate: **JC-035 완료(`done`).** VAI-0~6b 구현·머지(PR #199 VAI-6a, PR #200 VAI-6b)·migration 0070 dev/prod 적용·브라우저 E2E 완료.
 규칙/패턴/조건부 AI/사용자 확정과 VAT rebuild/package gate 연결은 구현됐고,
 완료선과 고정 순서는 [VAT AI Tax Treatment Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md),
 [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md),

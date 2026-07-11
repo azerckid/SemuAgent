@@ -136,13 +136,13 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-96 | 공통매입에 실지귀속 정보 존재 | 안분 판단 | 실지귀속을 우선 사용하고 단순 비율 안분을 자동 적용하지 않음 | PARTIAL·VAI-3a 안분 확인 표시, 실지귀속 소비 후속 |
 | S-97 | provider timeout·quota·invalid schema·전체 실패 | VAT 화면 사용 | 무한 loading 없이 해당 행만 수동 확인, 표·검색·기존 mutation 계속 동작 | PASS·VAI-3b 단위/정적 |
 | S-98 | AI 추천과 사용자 판단이 다름 | 사용자가 `다르게` 확정 | 사용자 최종 결정이 저장되고 추천·규칙 버전·확정자·시각을 별도로 감사 가능 | PASS·VAI-4a transaction/VAI-4b UI·단위/dev 서비스 E2E |
-| S-99 | 미확정·보류·전문가 확인·필수 증빙·안분 미완료 판단이 1건 이상 | rebuild/package gate | 추천만으로 gate 해제되지 않고, 사용자 확정된 VAT fact/decision만 소비 | PASS·VAI-6 단위/공통 경로 정적, 브라우저 확인 대기 |
+| S-99 | 미확정·보류·전문가 확인·필수 증빙·안분 미완료 판단이 1건 이상 | rebuild/package gate | 추천만으로 gate 해제되지 않고, 사용자 확정된 VAT fact/decision만 소비 | PASS·VAI-6 단위/공통 경로 정적·브라우저 확인 |
 | S-100 | 법령 규칙 버전 변경 | 기존 확정 행 로드 | 기존 결정을 몰래 변경하지 않고 재검토 필요 여부와 새 규칙 버전을 표시 | Pending |
 | S-101 | 실제 홈택스 조회자료를 가져오지 않음 | VAT 판단 표 렌더 | `홈택스 현재값`·실제 차액을 표시하지 않고 `자동채움 예상`과 확인·수정 행동만 표시 | PASS·VAI-3a 정적 |
 | S-102 | 사업용 카드 매입의 SemuAgent 판단이 불공제 가능성 높음 | 행 렌더 | `공제·불공제 확인`을 표시하고 사용자 확정 전 기존 decision을 바꾸지 않음 | PASS·VAI-3a 단위 |
 | S-103 | 계좌·핀테크 매출이 전자증빙 집계에서 누락될 가능성 | 행 렌더 | `금액 추가·수정 확인`과 누락 매출 근거를 표시, 홈택스 현재 누락으로 단정하지 않음 | Pending |
 | S-104 | 사용자가 방금 적용·변경·보류·전문가 확인한 판단을 잘못 처리 | 최신 toast에서 `되돌리기` | 일회용 토큰이 일치하고 canonical 값이 다시 바뀌지 않은 경우에만 이전 canonical·감사 상태를 원자적으로 복원 | PASS·VAI-4b 단위/dev 서비스 E2E |
-| S-105 | 영세율·면세 매출의 필수 법정 증빙이 실제로 준비됨 | 사용자가 증빙 항목을 확인 완료로 저장 | 확인자·시각이 감사 기록에 남고 재조회 시 required evidence가 `present`로 파생되어 해당 blocker만 해제; 확인 취소 시 감사 기록 유지·재잠금 | PASS·VAI-6b SQLite transaction/read model/gate·UI/API 정적, 브라우저 대기 |
+| S-105 | 영세율·면세 매출의 필수 법정 증빙이 실제로 준비됨 | 사용자가 증빙 항목을 확인 완료로 저장 | 확인자·시각이 감사 기록에 남고 재조회 시 required evidence가 `present`로 파생되어 해당 blocker만 해제; 확인 취소 시 감사 기록 유지·재잠금 | PASS·VAI-6b SQLite transaction/read model/gate·UI/API 정적·브라우저 확인 |
 
 ## 3. 자동화 계획
 

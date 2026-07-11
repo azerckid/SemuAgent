@@ -32,7 +32,8 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 - VAI-4b 완료: 적용/다르게/보류/전문가 확인 UI·최근 작업 undo, migration 0069 dev/prod 적용
 - VAI-5 완료: 고위험 multi-provider consensus·Claude 중재·비차단 fallback
 - VAI-6a 완료: 사용자 세무판단 gate를 VAT 화면·rebuild API·package API에 공통 연결
-- 현재: VAI-6b 영세율·면세 필수 증빙 확인 입력·감사 기록 코드 구현 및 migration `0070` dev/prod 적용 완료, 브라우저 확인·PR 머지 대기
+- VAI-6b 완료: 영세율·면세 필수 증빙 확인 입력·감사 기록, migration `0070` dev/prod 적용, 브라우저 E2E, PR #200 머지
+- 완료: **JC-035 `done`** — VAI-0~6b 전 단계 구현·검증·문서 정합 완료
 
 ## 0.1 Current Status
 
@@ -201,8 +202,8 @@ JC-035는 다음을 **모두** 만족할 때만 `done`이다.
 - [x] 같은 tenant·사업장·기간만 사용하고, 이전 확정 패턴도 같은 범위로 격리된다.
 - [x] 규칙 버전, 추천, 사용자 최종 결정, 확정자, 확정시각의 감사 추적이 가능하다.
 - [x] 대표 fixture로 deterministic/pattern/single-AI/consensus/fallback/수동 확정을 검증한다.
-- [ ] 브라우저 E2E, tsc, 전체 테스트, lint, whitespace가 통과한다.
-- [ ] Backlog·Screen Flow·UI Design·Prototype Review·QA가 main 코드와 일치한다.
+- [x] 브라우저 E2E, tsc, 전체 테스트, lint, whitespace가 통과한다.
+- [x] Backlog·Screen Flow·UI Design·Prototype Review·QA가 main 코드와 일치한다.
 
 다음은 JC-035 완료에 포함하지 않는다.
 

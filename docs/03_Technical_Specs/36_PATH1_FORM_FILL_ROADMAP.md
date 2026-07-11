@@ -160,7 +160,7 @@ W1~W5를 재개하지 않는다.
 3. **VAI-2** — 공식 규칙 매트릭스 + Pre-Code Brief. 승인 완료.
 4. **VAI-3~5** — read-only 추천 → 사용자 확정 → 고위험 consensus/fallback. 구현 완료.
 5. **VAI-6a** — 확정 결과를 VAT rebuild/package gate에 연결. 구현·머지 완료.
-6. **VAI-6b** — 영세율·면세 필수 증빙 확인 입력과 감사 기록. 코드 구현·dev/prod migration 완료, 브라우저 확인·PR 머지 대기.
+6. **VAI-6b** — 영세율·면세 필수 증빙 확인 입력과 감사 기록. 구현·머지(PR #200)·dev/prod migration·브라우저 E2E 완료 → **JC-035 `done`**.
 
 JC-035는 공식 업로드 파일을 만들지 않고, 직접입력 가이드도 제공하지 않는다.
 
