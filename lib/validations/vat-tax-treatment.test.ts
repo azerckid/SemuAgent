@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  vatTaxTreatmentEvidenceMutationSchema,
+  vatTaxTreatmentEvidenceMutationSuccessSchema,
   vatTaxTreatmentMutationSchema,
   vatTaxTreatmentMutationSuccessSchema,
   vatTaxTreatmentRecommendationSchema,
@@ -151,6 +153,28 @@ describe('VAT tax treatment validation', () => {
       action: 'undo',
       undoToken: 'not-a-token',
     }).success).toBe(false)
+  })
+
+  it('validates VAI-6b evidence confirmation and revocation inputs', () => {
+    const base = {
+      periodKey: '2026-H1',
+      recommendationFingerprint: 'a'.repeat(64),
+      evidenceCode: 'export_or_zero_rate_documents',
+    }
+
+    expect(vatTaxTreatmentEvidenceMutationSchema.safeParse({ ...base, action: 'confirm' }).success).toBe(true)
+    expect(vatTaxTreatmentEvidenceMutationSchema.safeParse({ ...base, action: 'revoke' }).success).toBe(true)
+    expect(vatTaxTreatmentEvidenceMutationSchema.safeParse({
+      ...base,
+      evidenceCode: 'arbitrary_document',
+      action: 'confirm',
+    }).success).toBe(false)
+    expect(vatTaxTreatmentEvidenceMutationSuccessSchema.safeParse({
+      ok: true,
+      evidenceCode: 'export_or_zero_rate_documents',
+      status: 'present',
+      confirmedAt: '2026-07-11 15:00:00',
+    }).success).toBe(true)
   })
 
   it('validates the browser mutation response before the UI consumes it', () => {

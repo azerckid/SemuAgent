@@ -29,6 +29,7 @@ import {
   uploadSession,
   vatDeductionReview,
   vatPeriodSummary,
+  vatTaxTreatmentEvidenceAttestation,
   vatTaxTreatmentReview,
 } from '@/lib/db/schema'
 import { now, toDBString } from '@/lib/time'
@@ -1131,6 +1132,14 @@ export async function refreshFirstRunSampleBookkeepingData({
       const oldRowIds = oldRows.map((row) => row.id)
 
       if (oldRowIds.length > 0) {
+        await tx
+          .delete(vatTaxTreatmentEvidenceAttestation)
+          .where(and(
+            eq(vatTaxTreatmentEvidenceAttestation.tenantId, tenantId),
+            eq(vatTaxTreatmentEvidenceAttestation.clientId, activeDataset.clientId),
+            inArray(vatTaxTreatmentEvidenceAttestation.classificationRowId, oldRowIds),
+          ))
+
         await tx
           .delete(vatTaxTreatmentReview)
           .where(and(

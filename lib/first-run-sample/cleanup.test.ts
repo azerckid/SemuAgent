@@ -22,6 +22,11 @@ describe('first-run sample cleanup safety', () => {
     expect(source.indexOf('.delete(vatTaxTreatmentReview)')).toBeLessThan(
       source.indexOf('for (const ref of refs)'),
     )
+    expect(source).toContain('.delete(vatTaxTreatmentEvidenceAttestation)')
+    expect(source).toContain('inArray(vatTaxTreatmentEvidenceAttestation.classificationRowId, sampleClassificationRowIds)')
+    expect(source.indexOf('.delete(vatTaxTreatmentEvidenceAttestation)')).toBeLessThan(
+      source.indexOf('for (const ref of refs)'),
+    )
   })
 
   it('does not build arbitrary SQL delete strings (S-71)', () => {

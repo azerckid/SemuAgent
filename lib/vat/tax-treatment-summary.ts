@@ -6,6 +6,7 @@ import {
   bookkeepingClassificationRun,
   bookkeepingTransactionClassification,
   vatDeductionReview,
+  vatTaxTreatmentEvidenceAttestation,
   vatTaxTreatmentReview,
 } from '@/lib/db/schema'
 import { listActiveSourceBatchSessions } from '@/lib/source-batch/scope'
@@ -75,6 +76,14 @@ export type VatTaxTreatmentAuditRow = Pick<
   | 'finalDecision'
   | 'finalReason'
   | 'confirmedByStaffId'
+  | 'confirmedAt'
+>
+
+export type VatTaxTreatmentEvidenceAttestationRow = Pick<
+  typeof vatTaxTreatmentEvidenceAttestation.$inferSelect,
+  | 'classificationRowId'
+  | 'evidenceCode'
+  | 'status'
   | 'confirmedAt'
 >
 
@@ -340,6 +349,40 @@ export function applyVatTaxTreatmentAuditStates(params: {
   })
 }
 
+export function applyVatTaxTreatmentEvidenceAttestations(params: {
+  rows: VatTaxTreatmentDisplayRow[]
+  attestations: VatTaxTreatmentEvidenceAttestationRow[]
+}) {
+  const activeByEvidence = new Map(
+    params.attestations
+      .filter((attestation) => attestation.status === 'present')
+      .map((attestation) => [
+        `${attestation.classificationRowId}:${attestation.evidenceCode}`,
+        attestation,
+      ]),
+  )
+
+  return params.rows.map((row) => {
+    let changed = false
+    const requiredEvidence = row.requiredEvidence.map((item) => {
+      const attestation = activeByEvidence.get(`${row.classificationRowId}:${item.code}`)
+      if (!attestation) return item
+      changed = true
+      return {
+        ...item,
+        status: 'present' as const,
+        attestedAt: attestation.confirmedAt,
+      }
+    })
+    if (!changed) return row
+
+    return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
+      ...row,
+      requiredEvidence,
+    }))
+  })
+}
+
 export async function loadVatTaxTreatmentDisplayRows(params: {
   tenantId: string
   businessEntityId: string
@@ -445,6 +488,24 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
       ))
     : []
 
+  const evidenceAttestations = classificationRowIds.length > 0
+    ? await db
+      .select({
+        classificationRowId: vatTaxTreatmentEvidenceAttestation.classificationRowId,
+        evidenceCode: vatTaxTreatmentEvidenceAttestation.evidenceCode,
+        status: vatTaxTreatmentEvidenceAttestation.status,
+        confirmedAt: vatTaxTreatmentEvidenceAttestation.confirmedAt,
+      })
+      .from(vatTaxTreatmentEvidenceAttestation)
+      .where(and(
+        eq(vatTaxTreatmentEvidenceAttestation.tenantId, params.tenantId),
+        eq(vatTaxTreatmentEvidenceAttestation.clientId, params.businessEntityId),
+        eq(vatTaxTreatmentEvidenceAttestation.periodKey, params.period.key),
+        eq(vatTaxTreatmentEvidenceAttestation.status, 'present'),
+        inArray(vatTaxTreatmentEvidenceAttestation.classificationRowId, classificationRowIds),
+      ))
+    : []
+
   const rows = buildVatTaxTreatmentDisplayRows({
     tenantId: params.tenantId,
     businessEntityId: params.businessEntityId,
@@ -455,5 +516,9 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
   const recommendedRows = params.includeAi
     ? await enhanceVatTaxTreatmentRowsWithAi({ rows })
     : rows
-  return applyVatTaxTreatmentAuditStates({ rows: recommendedRows, auditRows })
+  const rowsWithAttestations = applyVatTaxTreatmentEvidenceAttestations({
+    rows: recommendedRows,
+    attestations: evidenceAttestations,
+  })
+  return applyVatTaxTreatmentAuditStates({ rows: rowsWithAttestations, auditRows })
 }

@@ -27,6 +27,10 @@ export const vatTaxTreatmentAiRuntimeStatusSchema = z.enum([
   'deferred',
 ])
 export const vatTaxTreatmentEvidenceStatusSchema = z.enum(['present', 'missing', 'needs_review'])
+export const vatTaxTreatmentAttestableEvidenceCodeSchema = z.enum([
+  'export_or_zero_rate_documents',
+  'exemption_qualification',
+])
 export const vatTaxTreatmentHometaxActionSchema = z.enum([
   'expected_no_change',
   'review_deduction',
@@ -55,6 +59,7 @@ export const vatTaxTreatmentRequiredEvidenceSchema = z.object({
   code: z.string().min(1).max(100),
   label: z.string().min(1).max(120),
   status: vatTaxTreatmentEvidenceStatusSchema,
+  attestedAt: z.string().min(1).optional(),
 })
 
 export const vatTaxTreatmentAiTraceSchema = z.object({
@@ -243,9 +248,26 @@ export const vatTaxTreatmentMutationSuccessSchema = z.object({
   undoToken: z.string().uuid().nullable(),
 })
 
+export const vatTaxTreatmentEvidenceMutationSchema = z.object({
+  periodKey: vatPeriodKeySchema,
+  recommendationFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+  evidenceCode: vatTaxTreatmentAttestableEvidenceCodeSchema,
+  action: z.enum(['confirm', 'revoke']),
+})
+
+export const vatTaxTreatmentEvidenceMutationSuccessSchema = z.object({
+  ok: z.literal(true),
+  evidenceCode: vatTaxTreatmentAttestableEvidenceCodeSchema,
+  status: z.enum(['present', 'revoked']),
+  confirmedAt: z.string().min(1).nullable(),
+})
+
 export type VatTaxTreatmentRecommendation = z.infer<typeof vatTaxTreatmentRecommendationSchema>
 export type VatTaxTreatmentDisplayRow = z.infer<typeof vatTaxTreatmentDisplayRowSchema>
 export type VatTaxTreatmentRequiredEvidence = z.infer<typeof vatTaxTreatmentRequiredEvidenceSchema>
 export type VatTaxTreatmentFinalDecision = z.infer<typeof vatTaxTreatmentFinalDecisionSchema>
 export type VatTaxTreatmentMutationInput = z.infer<typeof vatTaxTreatmentMutationSchema>
 export type VatTaxTreatmentMutationSuccess = z.infer<typeof vatTaxTreatmentMutationSuccessSchema>
+export type VatTaxTreatmentAttestableEvidenceCode = z.infer<typeof vatTaxTreatmentAttestableEvidenceCodeSchema>
+export type VatTaxTreatmentEvidenceMutationInput = z.infer<typeof vatTaxTreatmentEvidenceMutationSchema>
+export type VatTaxTreatmentEvidenceMutationSuccess = z.infer<typeof vatTaxTreatmentEvidenceMutationSuccessSchema>

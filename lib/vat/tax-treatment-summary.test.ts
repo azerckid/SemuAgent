@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
+  applyVatTaxTreatmentEvidenceAttestations,
   applyVatTaxTreatmentAuditStates,
   buildVatTaxTreatmentDisplayRows,
   type VatTaxTreatmentAuditRow,
@@ -196,6 +197,51 @@ describe('VAT tax treatment read model', () => {
       userActionReason: null,
     })
   })
+
+  it('merges only active evidence attestations and recalculates the fingerprint', () => {
+    const [base] = build({
+      classificationRows: [classification({
+        vatDirection: 'sale',
+        vatTaxType: 'zero_rated',
+        vatSupplyAmountKrw: 110_000,
+        vatTaxAmountKrw: 0,
+        vatGrossAmountKrw: 110_000,
+        amountKrw: 110_000,
+      })],
+    })
+    const [confirmed] = applyVatTaxTreatmentEvidenceAttestations({
+      rows: [base!],
+      attestations: [{
+        classificationRowId: base!.classificationRowId,
+        evidenceCode: 'export_or_zero_rate_documents',
+        status: 'present',
+        confirmedAt: '2026-07-11 15:00:00',
+      }],
+    })
+
+    expect(confirmed!.requiredEvidence).toContainEqual(expect.objectContaining({
+      code: 'export_or_zero_rate_documents',
+      status: 'present',
+      attestedAt: '2026-07-11 15:00:00',
+    }))
+    expect(confirmed!.recommendationFingerprint).not.toBe(base!.recommendationFingerprint)
+
+    const [revoked] = applyVatTaxTreatmentEvidenceAttestations({
+      rows: [base!],
+      attestations: [{
+        classificationRowId: base!.classificationRowId,
+        evidenceCode: 'export_or_zero_rate_documents',
+        status: 'revoked',
+        confirmedAt: '2026-07-11 15:00:00',
+      }],
+    })
+    expect(revoked!.requiredEvidence).toContainEqual(expect.objectContaining({
+      code: 'export_or_zero_rate_documents',
+      status: 'needs_review',
+    }))
+    expect(revoked!.requiredEvidence.find((item) => item.code === 'export_or_zero_rate_documents'))
+      .not.toHaveProperty('attestedAt')
+  })
 })
 
 describe('VAT tax treatment loader boundaries', () => {
@@ -209,6 +255,8 @@ describe('VAT tax treatment loader boundaries', () => {
     expect(source).toContain('eq(vatDeductionReview.clientId, params.businessEntityId)')
     expect(source).toContain('eq(vatTaxTreatmentReview.tenantId, params.tenantId)')
     expect(source).toContain('eq(vatTaxTreatmentReview.clientId, params.businessEntityId)')
+    expect(source).toContain('eq(vatTaxTreatmentEvidenceAttestation.tenantId, params.tenantId)')
+    expect(source).toContain('eq(vatTaxTreatmentEvidenceAttestation.clientId, params.businessEntityId)')
     expect(source).not.toContain('.insert(')
     expect(source).not.toContain('.update(')
     expect(source).not.toContain('.delete(')

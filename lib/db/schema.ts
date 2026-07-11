@@ -1292,6 +1292,38 @@ export const vatTaxTreatmentReview = sqliteTable('vat_tax_treatment_review', {
 }))
 
 // ---------------------------------------------------------------------------
+// vat_tax_treatment_evidence_attestation
+// JC-035 VAI-6b: 영세율·면세 법정 증빙을 사용자가 확인한 사실을 최종
+// 세무판단 snapshot과 분리해 보존한다. status='present'만 read model에 합성한다.
+// ---------------------------------------------------------------------------
+export const vatTaxTreatmentEvidenceAttestation = sqliteTable('vat_tax_treatment_evidence_attestation', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  periodKey: text('period_key').notNull(),
+  classificationRowId: text('classification_row_id')
+    .notNull()
+    .references(() => bookkeepingTransactionClassification.id, { onDelete: 'cascade' }),
+  evidenceCode: text('evidence_code', {
+    enum: ['export_or_zero_rate_documents', 'exemption_qualification'],
+  }).notNull(),
+  status: text('status', { enum: ['present', 'revoked'] }).notNull().default('present'),
+  confirmedByStaffId: text('confirmed_by_staff_id').notNull().references(() => staff.id),
+  confirmedAt: text('confirmed_at').notNull(),
+  revokedByStaffId: text('revoked_by_staff_id').references(() => staff.id),
+  revokedAt: text('revoked_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  scopeUidx: uniqueIndex('vat_tax_treatment_evidence_attestation_scope_uidx')
+    .on(t.tenantId, t.clientId, t.periodKey, t.classificationRowId, t.evidenceCode),
+  statusIdx: index('vat_tax_treatment_evidence_attestation_status_idx')
+    .on(t.tenantId, t.clientId, t.periodKey, t.status),
+  classificationIdx: index('vat_tax_treatment_evidence_attestation_classification_idx')
+    .on(t.tenantId, t.classificationRowId),
+}))
+
+// ---------------------------------------------------------------------------
 // client_request_event  (캘린더 요청 인스턴스)
 // upload_session_id: event → session 단방향 FK. 역방향은 upload_session.request_event_id (text only).
 // ---------------------------------------------------------------------------

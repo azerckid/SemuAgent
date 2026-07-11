@@ -142,7 +142,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-102 | 사업용 카드 매입의 SemuAgent 판단이 불공제 가능성 높음 | 행 렌더 | `공제·불공제 확인`을 표시하고 사용자 확정 전 기존 decision을 바꾸지 않음 | PASS·VAI-3a 단위 |
 | S-103 | 계좌·핀테크 매출이 전자증빙 집계에서 누락될 가능성 | 행 렌더 | `금액 추가·수정 확인`과 누락 매출 근거를 표시, 홈택스 현재 누락으로 단정하지 않음 | Pending |
 | S-104 | 사용자가 방금 적용·변경·보류·전문가 확인한 판단을 잘못 처리 | 최신 toast에서 `되돌리기` | 일회용 토큰이 일치하고 canonical 값이 다시 바뀌지 않은 경우에만 이전 canonical·감사 상태를 원자적으로 복원 | PASS·VAI-4b 단위/dev 서비스 E2E |
-| S-105 | 영세율·면세 매출의 필수 법정 증빙이 실제로 준비됨 | 사용자가 증빙 항목을 확인 완료로 저장 | 확인자·시각이 감사 기록에 남고 재조회 시 required evidence가 `present`로 파생되어 해당 blocker만 해제 | Pending·VAI-6b |
+| S-105 | 영세율·면세 매출의 필수 법정 증빙이 실제로 준비됨 | 사용자가 증빙 항목을 확인 완료로 저장 | 확인자·시각이 감사 기록에 남고 재조회 시 required evidence가 `present`로 파생되어 해당 blocker만 해제; 확인 취소 시 감사 기록 유지·재잠금 | PASS·VAI-6b SQLite transaction/read model/gate·UI/API 정적, 브라우저 대기 |
 
 ## 3. 자동화 계획
 
@@ -150,7 +150,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **정적 검증 완료** (`vat-workspace.test.ts`): Preview 구조(S-01), 라우트(S-02), reviews 미import(S-70), 책임 경계 문구(S-71~72), mutation tenant guard(S-53), composite package guard(S-63~65), explicit rebuild route/action(S-78).
 - **브라우저 수동 검증 완료**: 승인 Preview와 실제 `/dashboard/vat?period=2026-H1` 캡처 비교. 숫자/상태/잠금 버튼/인라인 안분 UI 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 전표 생성부터 VAT summary 생성까지의 도메인 E2E는 별도 회계 시드 준비 후 검증한다.
-- **JC-035 자동화 계획**: VAI-3a에서 Zod·deterministic 규칙·이전 확정 패턴·read model을, VAI-3b에서 provider mock·timeout/quota·invalid schema fallback·PII·batch/소비자 격리를 자동화했다. VAI-4a에서 tenant·stale fingerprint·필수 증빙·canonical/audit transaction rollback을, VAI-4b에서 사용자 액션 UI·API 응답 Zod·latest-only undo·dev 서비스 E2E를 자동화했다. VAI-5에서 Gemini·OpenAI 합의·Claude 중재·provider 장애·완전 불일치 fallback·화면/저장 공통 파이프라인을 자동화했다. VAI-6a에서 사용자 세무판단 gate의 행 단위 중복 제거와 VAT page/rebuild/package 공통 경로를 자동화했다. VAI-6b에서는 영세율·면세 증빙 확인 mutation·감사 기록·재조회·gate 해제를 자동화한다.
+- **JC-035 자동화 계획**: VAI-3a에서 Zod·deterministic 규칙·이전 확정 패턴·read model을, VAI-3b에서 provider mock·timeout/quota·invalid schema fallback·PII·batch/소비자 격리를 자동화했다. VAI-4a에서 tenant·stale fingerprint·필수 증빙·canonical/audit transaction rollback을, VAI-4b에서 사용자 액션 UI·API 응답 Zod·latest-only undo·dev 서비스 E2E를 자동화했다. VAI-5에서 Gemini·OpenAI 합의·Claude 중재·provider 장애·완전 불일치 fallback·화면/저장 공통 파이프라인을 자동화했다. VAI-6a에서 사용자 세무판단 gate의 행 단위 중복 제거와 VAT page/rebuild/package 공통 경로를 자동화했다. VAI-6b에서 migration 실적용 SQLite, tenant·stale 차단, 확인·취소 감사, read model·fingerprint·gate 재계산, UI/API 경계를 자동화했다.
 
 ## 4. Related Documents
 - **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)
