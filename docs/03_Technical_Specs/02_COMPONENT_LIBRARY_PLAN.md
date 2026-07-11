@@ -249,7 +249,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 자료수집 Pre-Code Brief: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md) (JC-009 구현·머지 완료).
 - 기장검토 Pre-Code Brief: [06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md](./06_BOOKKEEPING_REVIEW_PRE_CODE_BRIEF.md) (JC-010 구현·머지 완료).
 - 부가세 Pre-Code Brief: [07_VAT_PRE_CODE_BRIEF.md](./07_VAT_PRE_CODE_BRIEF.md) (JC-011 구현·머지 완료).
-- 부가세 AI 판단 VAI-2: [45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) (JC-035 규칙·저장 계약 승인 대기).
+- 부가세 AI 판단(JC-035): [45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) (VAI-0~6b 구현·머지 완료, `done`).
 - 급여 Pre-Code Brief: [08_PAYROLL_PRE_CODE_BRIEF.md](./08_PAYROLL_PRE_CODE_BRIEF.md) (JC-012 구현·머지 완료).
 - 신고지원 Pre-Code Brief: [09_FILING_SUPPORT_PRE_CODE_BRIEF.md](./09_FILING_SUPPORT_PRE_CODE_BRIEF.md) (JC-013 게이트 완료, 구현 PR에서 물리 migration·workspace 적용).
 - First-run Sample Data Pre-Code Brief: [12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md](./12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md) (JC-019 게이트 완료 후 구현 PR에서 migration·seed/delete API 적용).
