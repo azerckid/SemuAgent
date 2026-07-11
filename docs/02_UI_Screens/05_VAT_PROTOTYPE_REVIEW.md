@@ -1,6 +1,6 @@
 # VAT Prototype Review
 > Created: 2026-07-01 20:50
-> Last Updated: 2026-07-11
+> Last Updated: 2026-07-12
 
 ## 1. HTML UI Preview
 - Preview: [부가세](./previews/03_vat.html)
@@ -40,7 +40,7 @@
 - HTML Preview 확인 여부: 확인함 (브라우저 열람, 신고 패키지 생성 버튼 잠금 표현 확인)
 - 확인자: 프로젝트 오너
 - 확인 일시: 2026-07-01
-- 보완 필요 사항: 없음 (잠금 버튼 수정 반영 후 승인).
+- 당시 기능 승인 기준 보완 사항: 없음. 현재 정보량·중복·배치 재검토는 §6.2에서 별도 진행.
 
 ### 6.1 JC-035 VAT AI Extension Review
 
@@ -52,6 +52,15 @@
 - 현재 구현: VAI-3a 공식 규칙·이전 확정 패턴, VAI-3b single-provider AI 보강, VAI-4a/4b 사용자 확정·되돌리기, VAI-5 조건부 multi-provider 합의, VAI-6a 공통 gate에 이어 VAI-6b가 영세율·면세 필수 증빙 `확인 완료`·`확인 취소`와 감사 기록을 판단 행에 연결한다. exact VAT fact가 없는 행은 억지로 추정하지 않고, 사용자 확정 전에는 rebuild/package를 차단한다.
 - 확인 경로: `/dashboard/vat?period=2026-H1`의 영세율·불공제·안분·공제·면세 대표 행에서 액션 버튼, 판단 근거 대화상자, 최근 작업 되돌리기를 확인한다.
 - 검증 완료: 실제 브라우저에서 영세율 대표 행의 확인 완료→확인 취소→재확인 라운드트립과 `부가세 사용자 판단` 게이트 사유 노출을 확인했다(샘플데이터 원상복구). migration `0070` dev/prod 적용·PR #200 머지 완료 → **JC-035 `done`**.
+
+### 6.2 JC-038 Simplification Review Pending
+
+- 기존 승인은 JC-035의 판단 기능·사용자 확정·gate 흐름에 대한 승인이다.
+- 현재 runtime의 전체 정보량과 영역 배치가 최종 승인됐다는 뜻은 아니다.
+- 프로젝트 오너는 중복 정보와 시각적 부담을 줄이는 재검토를 요청했다.
+- `화면 상태 예시`, 중복 매입 공제 표, 반복 차단 안내, 동작하지 않는 control을 우선 감사한다.
+- 정확한 유지/통합/접기/삭제 결정과 단순화 Preview 승인은 VUI-1a/1b에서 Pending이다.
+- 계약: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md)
 
 ## 7. Feedback & Improvements
 - (반영) 신고 패키지 생성 버튼을 승인 전 잠금 상태로 표현: `is-disabled` + `disabled` + `aria-disabled="true"`, muted 스타일, 잠김 라벨.
@@ -69,3 +78,4 @@
 - **UI_Screens**: [Bookkeeping Review Prototype Review](./04_BOOKKEEPING_REVIEW_PROTOTYPE_REVIEW.md) - 선행 화면(기장검토)
 - **UI_Screens**: [HTML Preview](./previews/03_vat.html) - 브라우저 확인용 프로토타입
 - **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) - JC-035 완료선·실행 순서
+- **Technical_Specs**: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - JC-038 중복 제거·삭제 원칙·Preview 재승인

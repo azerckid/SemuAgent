@@ -160,6 +160,19 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-113 | 다른 tenant·사업장·기간의 동일 거래처/금액 또는 민감 원문 존재 | 결과 저장·재사용 | scope 밖 결과 미사용, 원문 prompt/provider 응답·민감 식별정보 미저장 | Pending·VAI-7b |
 | S-114 | VAT package/rebuild gate 평가 | AI가 실행 중이거나 실패 | live LLM을 기다리지 않고 canonical 사용자 확정값만으로 결정 | Pending·VAI-7a/7d |
 
+### 2.12 JC-038 VAT 화면 단순화·중복 제거
+
+아래 시나리오는 [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md)를 기준으로 하며, 정확한 삭제 목록은 VUI-1a 오너 결정 뒤 확정한다.
+
+| # | Given | When | Then | Result |
+|:---|:---|:---|:---|:---:|
+| S-115 | live VAT 화면 진입 | 기본 화면 렌더 | Loading·Empty·Error 예시 카드 같은 Preview 전용 콘텐츠를 상시 표시하지 않음 | Pending·VUI-1c |
+| S-116 | 같은 매입 거래가 AI 판단과 공제 검토 대상 | 화면 렌더·사용자 확정 | 공제 판단을 단일 작업 위치에서 처리하고 같은 거래를 두 표에 반복하지 않음 | Pending·VUI-1b/1c |
+| S-117 | 같은 처리 건수·차단 이유가 여러 summary에 존재 | 기본 화면 렌더 | 하나의 primary 위치만 강조하고 나머지는 제거·축약·상세로 이동 | Pending·VUI-1b/1c |
+| S-118 | 사용자가 VAT 화면을 처음 엶 | 첫 viewport 확인 | 예상 세액과 지금 처리할 거래가 보조 통계·부속명세·package 상세보다 우선 | Pending·VUI-1b/1d |
+| S-119 | 단순화 과정에서 표·카드 삭제·통합 | 기존 사용자 작업 수행 | 판단 확정·다르게·보류·증빙 확인·undo·gate·세액 계산이 회귀하지 않음 | Pending·VUI-1c/1d |
+| S-120 | desktop/mobile 대표 viewport | visual QA | 텍스트·표·버튼·팝오버 겹침, 페이지 수평 overflow, 빈 control 없음 | Pending·VUI-1d |
+
 ## 3. 자동화 계획
 
 - **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/vat/package-gate.test.ts`, `lib/vat/provenance.test.ts`, `lib/validations/vat.test.ts`): S-03, S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~67, S-74~78.
@@ -168,11 +181,13 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 전표 생성부터 VAT summary 생성까지의 도메인 E2E는 별도 회계 시드 준비 후 검증한다.
 - **JC-035 자동화 계획**: VAI-3a에서 Zod·deterministic 규칙·이전 확정 패턴·read model을, VAI-3b에서 provider mock·timeout/quota·invalid schema fallback·PII·batch/소비자 격리를 자동화했다. VAI-4a에서 tenant·stale fingerprint·필수 증빙·canonical/audit transaction rollback을, VAI-4b에서 사용자 액션 UI·API 응답 Zod·latest-only undo·dev 서비스 E2E를 자동화했다. VAI-5에서 Gemini·OpenAI 합의·Claude 중재·provider 장애·완전 불일치 fallback·화면/저장 공통 파이프라인을 자동화했다. VAI-6a에서 사용자 세무판단 gate의 행 단위 중복 제거와 VAT page/rebuild/package 공통 경로를 자동화했다. VAI-6b에서 migration 실적용 SQLite, tenant·stale 차단, 확인·취소 감사, read model·fingerprint·gate 재계산, UI/API 경계를 자동화했다.
 - **JC-037 자동화 계획**: VAI-7a에서 최초 렌더 provider 0회와 호출 계측을, VAI-7b에서 fingerprint/version 재사용·stale invalidation·동시 실행 idempotency를, VAI-7c에서 비동기 상태·명시 재확인·timeout fallback을, VAI-7d에서 브라우저 성능·10회 재진입 호출 0회·package/rebuild live-AI 비의존을 검증한다.
+- **JC-038 자동화 계획**: VUI-1b에서 승인 Preview의 섹션·정보 중복을 정적 검증하고, VUI-1c에서 삭제 컴포넌트 부재와 기존 mutation/gate 회귀를, VUI-1d에서 desktop/mobile screenshot·overflow·핵심 작업 동선을 검증한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)
 - **Technical_Specs**: [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
 - **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [VAI-2 Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) - JC-035 VAI-0~6 완료선·규칙·저장 계약
 - **Technical_Specs**: [VAI-7 Loading and Result Reuse Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) - JC-037 초기 화면 비차단·fingerprint 결과 재사용·비동기 실행 계약
+- **Technical_Specs**: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - JC-038 중복 제거·삭제 결정·Preview 승인 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-011 Context Lock
 - **QA_Validation**: [Bookkeeping Review Test Scenarios](./04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) - 선행 전표 확정 흐름

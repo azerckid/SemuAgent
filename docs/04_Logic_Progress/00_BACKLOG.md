@@ -47,6 +47,7 @@
 | JC-035 | done | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **완료(done) · VAI-0~6b 구현·머지(PR #200)·dev/prod migration `0070`·브라우저 E2E 완료.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·단계별 직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
 | JC-036 | done | Cadence 기반 내비게이션 재구성 | `sidebar.tsx`, 회사 홈, 기존 filing routes | **runtime 구현 완료(2026-07-11).** 상위 메뉴를 급여·지급(월) / 부가세(분기·반기) / 연간신고(연)로 재구성하고 신고지원·신고 준비 상위 메뉴를 제거했다. 직원 명부·원천세·지급명세서·지방소득세는 급여·지급 하위, 법인세/종합소득세/사업장현황신고는 사업자 유형(`client.taxEntityType`)에 따라 연간신고 하위에 조건부 노출한다. 회사 홈에 다가오는 신고 스트립(세목별 CTA 포함)을 추가하고 기존 신고 준비 허브의 "다가오는 세무 일정" 섹션은 제거했다. 기존 URL은 하나도 바꾸지 않아 redirect/alias가 필요 없다. [Cadence Navigation Review](../02_UI_Screens/13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) |
 | JC-037 | todo | 부가세 AI 비차단 로딩·결과 재사용 | JC-035 fingerprint·provider orchestration·VAT read model | **긴급 성능/사용성 결함.** 새 데이터가 없어도 VAT page 진입마다 미확정 행의 AI를 동기 재호출하는 현재 경로를 제거한다. 화면을 먼저 렌더하고 저장 결과를 fingerprint/version 기준으로 재사용하며, 변경된 행과 사용자 명시 재확인만 비동기 실행한다. 동일 데이터 재방문 provider 호출 0회, timeout 중 화면 사용 가능, multi-tab 중복 방지, gate의 live-AI 비의존을 완료선으로 한다. [Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) |
+| JC-038 | todo | 부가세 화면 단순화·중복 정보 제거 | 현재 VAT workspace·Preview·JC-035 기능 | **UI 정리 사전 계약.** 같은 판단·상태·차단 이유의 반복, Preview 전용 상태 예시, 동작하지 않는 control, AI 판단 표와 매입 공제 검토 표의 중복을 제거·통합한다. 실제 삭제 전 프로젝트 오너가 각 영역을 유지/통합/접기/삭제로 확정하고 단순화 Preview를 승인한다. [Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
@@ -763,7 +764,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) - 기존 VAT 화면 유지. VAI-7c 상태 UI는 다음 VAT 화면 개선 논의와 함께 별도 승인.
 - Related HTML Preview: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - 현재 구조 참조. 이번 docs PR은 화면을 수정하지 않음.
 - Related Technical Docs: [VAT AI Loading and Result Reuse Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) · [JC-035 Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)
-- Related QA Docs: [VAT Test Scenarios `2.11](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
+- Related QA Docs: [VAT Test Scenarios §2.11](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
 - Current Gap:
   - VAT page 최초 요청이 실시간 provider 판단을 기다린다.
   - 데이터·규칙·prompt가 그대로여도 페이지 재진입마다 미확정 행을 다시 판단한다.
@@ -789,6 +790,35 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 브라우저 E2E와 계측으로 초기 렌더 시간·provider 호출 수·stale 재실행을 증명한다.
 - Scope Boundary: VAT 화면의 시각적 정보구조 개편은 후속 논의로 분리하며 JC-037에 섞지 않는다.
 - Document Sync Check (2026-07-12): 신규 Brief 47, Backlog JC-037, VAT QA S-106~S-114, JC-035 Completion Contract의 post-completion correction을 동기화했다. 코드·DB·Preview 변경은 없으며 구현 상태는 `todo`다.
+
+### JC-038 · 부가세 화면 단순화·중복 정보 제거
+
+- Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
+- Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
+- Related HTML Preview: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - 현재 상태 기준, VUI-1b에서 단순화안으로 갱신 후 프로젝트 오너 승인 필요.
+- Related Technical Docs: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) · [JC-037 Loading Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md)
+- Related QA Docs: [VAT Test Scenarios §2.12](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
+- Current Gap:
+  - live 화면에 Preview/QA용 `화면 상태 예시`가 상시 노출된다.
+  - 같은 매입 공제 판단이 AI 부가세 판단 표와 매입세액 공제 검토 표에 반복된다.
+  - 예정치·차단 이유·책임 경계·package 안내가 여러 영역에서 중복된다.
+  - 동작하지 않는 control과 넓은 보조 카드가 핵심 처리 거래보다 먼저 시선을 차지한다.
+- Fixed Order: VUI-1a 영역별 결정 -> VUI-1b Preview 단순화·오너 승인 -> JC-037 로딩 개선 -> VUI-1c runtime 삭제·통합 -> VUI-1d visual/workflow QA.
+- Implementation Preconditions:
+  - [x] 현재 runtime과 Preview의 화면 영역 inventory를 작성했다.
+  - [x] 중복 제거·정보량 축소 필요성을 프로젝트 오너가 제기했다.
+  - [ ] 각 영역을 유지/통합/접기/삭제 중 하나로 프로젝트 오너가 확정한다.
+  - [ ] 단순화된 HTML Preview를 실제 크기 브라우저에서 확인한다.
+  - [ ] AI 판단·공제 mutation·증빙 확인·undo·gate 회귀 범위를 고정한다.
+- Acceptance Criteria:
+  - [ ] live 화면에서 Preview 전용 상태 예시가 제거된다.
+  - [ ] 같은 매입 거래의 공제 판단이 두 표에 중복되지 않는다.
+  - [ ] 동일 숫자·상태·차단 이유는 한 위치에서만 주로 표시한다.
+  - [ ] 예상 세액과 지금 처리할 거래가 첫 화면 우선순위다.
+  - [ ] 동작하지 않는 control·미래 기능 placeholder가 없다.
+  - [ ] 삭제 후 기존 사용자 mutation·gate·세액 계산이 유지된다.
+  - [ ] desktop/mobile visual QA와 문서 정합을 통과한다.
+- Document Sync Check (2026-07-12): Brief 48, Backlog JC-038, Prototype Review의 재검토 상태, VAT QA S-115~S-120을 추가했다. 정확한 삭제 목록과 Preview 변경은 다음 프로젝트 오너 논의 전까지 Pending이며 코드 변경 없음.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 
