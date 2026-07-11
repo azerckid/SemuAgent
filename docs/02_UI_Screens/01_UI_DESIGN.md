@@ -128,6 +128,7 @@
 | Hometax Review Action | 홈택스 자동채움에서 확인·수정할 항목 | 그대로 확인 / 공제·불공제 확인 / 과세유형 확인 / 금액 추가·수정 / 안분 확인; 실제 자료 미연결 시 `자동채움 예상` 표시 |
 | Tax Treatment Source Mark | 판단 출처를 설명 | 공식 규칙 / 이전 패턴 / AI 보강 / AI 합의를 작은 source mark로 표시 |
 | Required Evidence Tags | 영세율·면세·공제 판단에 필요한 증빙 상태 | 있음(neutral) / 확인 필요(danger); 누락 시 확정·gate 해제 금지 |
+| Statutory Evidence Attestation | 영세율·면세 법정 증빙 사용자 확인 | 증빙 tag 옆 `확인 완료`; 사용자 확인 건만 `확인 취소`, 저장 중 행 단위 spinner |
 | AI Failure Fallback | timeout·quota·provider 오류 시 비차단 수동 검토 | 표 유지 + 해당 행 `수동 확인 필요` + 제한된 다시 시도 |
 | Tax Treatment Actions | AI·규칙 판단에 대한 사용자 최종 처리 | 행 안의 적용/다르게/보류/전문가 확인; 저장 중 행 단위 spinner, 확정 행은 변경만 노출 |
 | Tax Treatment Decision Dialog | 추천과 다른 판단·보류·전문가 확인 근거 입력 | 방향별 결정 select + 근거 textarea + 안분율 input; 영세율·면세 증빙 누락 시 저장 차단 |
@@ -141,6 +142,7 @@
 - **검토 자료 마감 잠금**: 자료수집·자료대조·사용자 세무판단·확정 원장 fingerprint 중 하나라도 미완이면 `is-disabled` + `disabled` + `aria-disabled="true"` muted 버튼으로 잠금을 명시하고, 위에 사유(locknote)를 함께 노출한다. exact 입력은 유효하지만 snapshot만 stale인 경우에만 별도 재계산 버튼을 제공한다.
   - 구현 노트: disabled 버튼의 `title` 툴팁은 브라우저별 표시가 일관되지 않으므로, React 구현 시 비활성 버튼을 래퍼(tooltip 컴포넌트)로 감싸 잠금 사유를 접근성 있게 노출한다.
 - **판단 정보 계층**: 한 줄 결론을 먼저 보여주고, 바로 아래에 근거와 필요한 증빙을 둔다. AI 신뢰도 숫자만 단독으로 보여주지 않는다. `AI 판단`과 `사용자 확정` 라벨을 구분한다.
+- **증빙 확인 경계**: `확인 완료`는 증빙파일 생성·AI 자동확정이 아니라 사용자가 법정 증빙 준비를 직접 확인했다는 기록이다. 확인 취소 시 세무판단·package gate를 다시 잠근다.
 - **자동 홈택스 제출은 범위 밖**이다. 부가세 공식 비암호화 업로드 파일은 Stage A 외부 확인 전 미제공이며, 세액은 사용자 판단 완료 전 "예정"으로 표기한다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 

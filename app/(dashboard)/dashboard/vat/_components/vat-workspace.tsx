@@ -30,6 +30,7 @@ import {
   VatProvenanceRebuildButton,
 } from './vat-actions'
 import { VatTaxTreatmentActions } from './vat-tax-treatment-actions'
+import { VatTaxTreatmentEvidenceAction } from './vat-tax-treatment-evidence-action'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 
@@ -154,15 +155,11 @@ function TaxTreatmentSection({ rows }: { readonly rows: VatTaxTreatmentDisplayRo
                     ) : null}
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {row.requiredEvidence.map((item) => (
-                        <span
+                        <VatTaxTreatmentEvidenceAction
                           key={item.code}
-                          className={cn(
-                            'rounded-md border px-2 py-0.5 text-[11px] font-medium',
-                            taxTreatmentEvidenceClass(item.status),
-                          )}
-                        >
-                          {item.label}
-                        </span>
+                          row={row}
+                          evidence={item}
+                        />
                       ))}
                     </div>
                   </TableCell>
@@ -633,12 +630,6 @@ function taxTreatmentConfidenceLabel(value: VatTaxTreatmentDisplayRow['confidenc
   if (value === 'high') return '높음'
   if (value === 'medium') return '중간'
   return '낮음'
-}
-
-function taxTreatmentEvidenceClass(value: VatTaxTreatmentDisplayRow['requiredEvidence'][number]['status']) {
-  if (value === 'present') return 'border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]'
-  if (value === 'missing') return 'border-[#fecaca] bg-[#fef2f2] text-[#dc2626]'
-  return 'border-[#fde68a] bg-[#fffbeb] text-[#b45309]'
 }
 
 function taxTreatmentHometaxActionLabel(value: VatTaxTreatmentDisplayRow['hometaxAction']) {

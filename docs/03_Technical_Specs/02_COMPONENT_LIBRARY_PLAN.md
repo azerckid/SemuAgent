@@ -142,6 +142,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 | Tax Treatment Basis | 커스텀 `VatTaxTreatmentBasis` | 한 줄 결론 + 공식 규칙/이전 패턴/AI 근거 + 부족한 사실 |
 | Hometax Review Action | `VatTaxTreatmentTable` 행 셀 확장 | 자동채움 예상 기준 그대로 확인/공제·불공제/과세유형/금액/안분 확인; 실제값으로 오표시 금지 |
 | Required Evidence List | `VatTaxTreatmentBasis` 내부 목록 | 증빙 있음/누락/확인 필요, 영세율·면세 누락 시 확정 차단 |
+| Statutory Evidence Action | 커스텀 `VatTaxTreatmentEvidenceAction` | 기존 `Button` + `CheckCircle2`/`RotateCcw`; 영세율·면세 확인 완료·취소, 행 단위 pending |
 | AI Failure Fallback | 커스텀 `VatAiFallbackState` | 행 단위 `수동 확인 필요` + 제한 재시도; 표 전체 비차단 |
 | Tax Treatment Actions | 커스텀 `VatTaxTreatmentActions` | 기존 `Button` + 행 단위 pending; 적용/다르게/보류/전문가 확인, 확정 행은 변경만 노출 |
 | Tax Treatment Decision Dialog | 커스텀 `VatTaxTreatmentDecisionDialog` | 기존 `Dialog`·`Select`·`Textarea`·`Input`; 근거·안분율·필수 증빙 차단 |
