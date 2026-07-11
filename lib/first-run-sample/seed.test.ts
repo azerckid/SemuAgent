@@ -52,9 +52,9 @@ describe('first-run sample seed plan', () => {
     })
     expect(summary.payroll).toEqual({
       employeeCount: 11,
-      grossPayKrw: 34_500_000,
-      deductionTotalKrw: 3_694_470,
-      netPayKrw: 30_805_530,
+      grossPayKrw: 34_540_000,
+      deductionTotalKrw: 3_686_030,
+      netPayKrw: 30_853_970,
       issueCount: 1,
     })
     expect(summary.employees).toEqual({

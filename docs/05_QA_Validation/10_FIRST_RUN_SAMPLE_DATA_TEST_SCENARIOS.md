@@ -26,7 +26,7 @@
 | S-11 | Data Contract | 자료수집 sample을 조회한다. | 자료 23/24, 카드 1건 미수집, 영수증 정규화 대기 3, 파싱 오류 1이 표시된다. | PASS · unit |
 | S-12 | Data Contract | 기장검토 sample을 조회한다. | 324/342 확정, 검토 대기 18, 신뢰도 낮음 5가 표시된다. | PASS · unit |
 | S-13 | Data Contract | 부가세 sample을 조회한다. | 매출세액 32,000,000 - 매입세액 18,000,000 = 납부 예정 14,000,000으로 표시된다. | PASS · unit |
-| S-14 | Data Contract | 급여 sample을 조회한다. | 대상 11명(정규직 6·프리랜서 2·일용직 3), 지급 34,500,000, 공제 3,694,470, 실지급 30,805,530, 확인 필요 1이 표시된다. | PASS · unit |
+| S-14 | Data Contract | 급여 sample을 조회한다. | 대상 11명(정규직 6·프리랜서 2·일용직 3), 지급 34,540,000, 공제 3,686,030, 실지급 30,853,970, 확인 필요 1이 표시된다. | PASS · unit |
 | S-15 | Data Contract | 신고지원 sample을 조회한다. | 부가세 패키지 잠금, 원천세 준비됨, 4대보험 확인 필요, 접수증 대기가 표시된다. | PASS · unit |
 | S-16 | Data Contract | 직원 명부 sample을 조회한다. | 전체 11명, 재직 11, 퇴사 0, 급여 대상 11, 4대보험 확인 필요 1이 표시된다. | PASS · unit |
 | S-17 | Data Contract | 리마인드 sample을 조회한다. | 활성 규칙 3, 대상 2, 실패 1과 provider missing 상태 예시가 표시된다. | PASS · unit |

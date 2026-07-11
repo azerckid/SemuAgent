@@ -301,8 +301,11 @@ type SampleEmployeeSpec = {
   employmentType: SampleEmploymentType
   baseSalaryKrw: number
   allowanceKrw: number
-  // 정규직·일용직은 급여자료에 기재된 확정 소득세(샘플 표시값). 프리랜서는 3.3% 규칙으로 산출.
+  // 정규직은 급여자료에 기재된 확정 소득세(샘플 표시값). 프리랜서는 3.3%, 일용직은 일급 기준 산식으로 산출.
   incomeTaxKrw?: number
+  // 일용직 전용: 일용근로소득세 산식 입력값 (일급·근무일수).
+  dailyWageKrw?: number
+  workDays?: number
   needsReview?: boolean
 }
 
@@ -318,9 +321,9 @@ const FIRST_RUN_SAMPLE_EMPLOYEES: SampleEmployeeSpec[] = [
   { code: 'E006', name: '오세린', department: '운영', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_400_000, allowanceKrw: 0, incomeTaxKrw: 26_000 },
   { code: 'E007', name: '한유진', department: '제품', jobTitle: '외주 디자이너', employmentType: '프리랜서', baseSalaryKrw: 3_500_000, allowanceKrw: 0 },
   { code: 'E008', name: '서도윤', department: '제품', jobTitle: '외주 개발', employmentType: '프리랜서', baseSalaryKrw: 2_000_000, allowanceKrw: 0 },
-  { code: 'E009', name: '문가람', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_200_000, allowanceKrw: 0, incomeTaxKrw: 14_850 },
-  { code: 'E010', name: '장서우', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_600_000, allowanceKrw: 0, incomeTaxKrw: 17_550 },
-  { code: 'E011', name: '윤태오', department: '물류', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_000_000, allowanceKrw: 0, incomeTaxKrw: 8_000 },
+  { code: 'E009', name: '문가람', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_200_000, allowanceKrw: 0, dailyWageKrw: 200_000, workDays: 11 },
+  { code: 'E010', name: '장서우', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_600_000, allowanceKrw: 0, dailyWageKrw: 200_000, workDays: 13 },
+  { code: 'E011', name: '윤태오', department: '물류', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_040_000, allowanceKrw: 0, dailyWageKrw: 170_000, workDays: 12 },
 ]
 
 // 정수 분자로 계산해 부동소수점(예: 0.03) 절사 오차를 피한다.
@@ -347,13 +350,16 @@ function sampleDeductionsFor(spec: SampleEmployeeSpec, grossPayKrw: number): Sam
       employmentInsuranceKrw: 0,
     }
   }
-  const incomeTaxKrw = spec.incomeTaxKrw ?? 0
-  const localIncomeTaxKrw = floorToTen(incomeTaxKrw / 10)
   if (spec.employmentType === '일용직') {
-    // 일용근로소득: 국민연금·건강보험은 단기 근로로 미적용, 고용보험만 부과(샘플)
+    // 일용근로소득세 = (일급 − 150,000) × 6% × (1 − 55%) = (일급 − 150,000) × 2.7% (원단위 절사)
+    // 하루 소득세가 1,000원 미만이면 소액부징수로 징수하지 않는다.
+    const perDayTaxRaw = (Math.max(0, (spec.dailyWageKrw ?? 0) - 150_000) * 27) / 1000
+    const perDayTaxKrw = perDayTaxRaw < 1000 ? 0 : floorToTen(perDayTaxRaw)
+    const dailyIncomeTaxKrw = perDayTaxKrw * (spec.workDays ?? 0)
+    // 국민연금·건강보험은 단기 근로로 미적용, 고용보험만 부과(샘플)
     return {
-      incomeTaxKrw,
-      localIncomeTaxKrw,
+      incomeTaxKrw: dailyIncomeTaxKrw,
+      localIncomeTaxKrw: floorToTen(dailyIncomeTaxKrw / 10),
       nationalPensionKrw: 0,
       healthInsuranceKrw: 0,
       longTermCareKrw: 0,
@@ -361,6 +367,8 @@ function sampleDeductionsFor(spec: SampleEmployeeSpec, grossPayKrw: number): Sam
     }
   }
   // 정규직: 근로소득 + 4대보험 (샘플 표시용 근사 요율)
+  const incomeTaxKrw = spec.incomeTaxKrw ?? 0
+  const localIncomeTaxKrw = floorToTen(incomeTaxKrw / 10)
   const healthInsuranceKrw = floorToTen((grossPayKrw * 357) / 10000)
   return {
     incomeTaxKrw,
