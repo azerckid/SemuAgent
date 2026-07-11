@@ -321,7 +321,7 @@ VAI-6b는 사용자가 법정 증빙 항목을 확인 완료로 기록하는 명
 | VAI-4b | **구현 완료** — 적용/다르게/보류/전문가 확인 UI + 최근 작업 undo | dev DB 서비스 E2E·감사 이력 확인, migration 0069 dev/prod 적용 |
 | VAI-5 | **구현 완료** — 고위험 consensus + Claude 중재 | 불일치·실패 비차단, 화면·저장 재검증 공통 파이프라인 |
 | VAI-6a | **구현·머지 완료** — rebuild/package gate 소비 | 확정값만 세액 반영, 미확정·증빙 미완료 fail-closed |
-| VAI-6b | **코드 구현·dev migration 완료, prod/브라우저/PR 대기** — 영세율·면세 증빙 확인 입력 + 감사 기록 | 사용자가 증빙을 확인 완료로 기록하고 재조회·gate 재계산까지 검증 |
+| VAI-6b | **코드 구현·dev/prod migration 완료, 브라우저/PR 대기** — 영세율·면세 증빙 확인 입력 + 감사 기록 | 사용자가 증빙을 확인 완료로 기록하고 재조회·gate 재계산까지 검증 |
 
 각 행은 별도 PR과 프로젝트 오너 확인을 거친다. 여러 작업 단위를 한 PR에 합치지 않는다.
 
@@ -419,7 +419,7 @@ VAI-6b는 사용자가 법정 증빙 항목을 확인 완료로 기록하는 명
 - [x] 증빙 확인 전에는 확정·rebuild·package를 계속 차단하고 확인 후에만 fingerprint·gate 재계산
 - [x] migration 실적용 SQLite transaction/read model/gate 테스트와 UI/API 정적 회귀 테스트
 - [x] migration `0070` dev 적용 및 13개 컬럼·3개 명시 인덱스 확인
-- [ ] migration `0070` prod 적용
+- [x] migration `0070` prod 적용 — 13개 컬럼·3개 명시 인덱스·5개 FK, 위반 0건·초기 행 0건 확인
 - [ ] 실제 브라우저에서 영세율·면세 대표 행의 확인 완료→확정→잠금 해제와 확인 취소→재잠금 검증
 - [ ] VAI-6b 머지 후에만 JC-035 `done` 및 최종 문서 정합 확인
 

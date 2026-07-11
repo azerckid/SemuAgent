@@ -32,7 +32,7 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 - VAI-4b 완료: 적용/다르게/보류/전문가 확인 UI·최근 작업 undo, migration 0069 dev/prod 적용
 - VAI-5 완료: 고위험 multi-provider consensus·Claude 중재·비차단 fallback
 - VAI-6a 완료: 사용자 세무판단 gate를 VAT 화면·rebuild API·package API에 공통 연결
-- 현재: VAI-6b 영세율·면세 필수 증빙 확인 입력·감사 기록 코드 구현 및 migration `0070` dev 적용 완료, prod·브라우저 확인·PR 머지 대기
+- 현재: VAI-6b 영세율·면세 필수 증빙 확인 입력·감사 기록 코드 구현 및 migration `0070` dev/prod 적용 완료, 브라우저 확인·PR 머지 대기
 
 ## 0.1 Current Status
 

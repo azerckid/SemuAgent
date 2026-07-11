@@ -51,7 +51,7 @@
 - 승인일: 2026-07-11
 - 현재 구현: VAI-3a 공식 규칙·이전 확정 패턴, VAI-3b single-provider AI 보강, VAI-4a/4b 사용자 확정·되돌리기, VAI-5 조건부 multi-provider 합의, VAI-6a 공통 gate에 이어 VAI-6b가 영세율·면세 필수 증빙 `확인 완료`·`확인 취소`와 감사 기록을 판단 행에 연결한다. exact VAT fact가 없는 행은 억지로 추정하지 않고, 사용자 확정 전에는 rebuild/package를 차단한다.
 - 확인 경로: `/dashboard/vat?period=2026-H1`의 영세율·불공제·안분·공제·면세 대표 행에서 액션 버튼, 판단 근거 대화상자, 최근 작업 되돌리기를 확인한다.
-- 다음 작업: migration `0070` prod 적용과 실제 브라우저에서 영세율·면세 대표 행의 확인 완료→확정→잠금 해제와 확인 취소→재잠금을 검증한다. dev 적용은 완료됐다.
+- 다음 작업: 실제 브라우저에서 영세율·면세 대표 행의 확인 완료→확정→잠금 해제와 확인 취소→재잠금을 검증한다. migration `0070` dev/prod 적용은 완료됐다.
 
 ## 7. Feedback & Improvements
 - (반영) 신고 패키지 생성 버튼을 승인 전 잠금 상태로 표현: `is-disabled` + `disabled` + `aria-disabled="true"`, muted 스타일, 잠김 라벨.
