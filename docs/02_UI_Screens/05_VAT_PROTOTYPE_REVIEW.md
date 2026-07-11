@@ -58,6 +58,9 @@
 - 기존 승인은 JC-035의 판단 기능·사용자 확정·gate 흐름에 대한 승인이다.
 - 현재 runtime의 전체 정보량과 영역 배치가 최종 승인됐다는 뜻은 아니다.
 - 프로젝트 오너는 중복 정보와 시각적 부담을 줄이는 재검토를 요청했다.
+- 기본 모델은 전체 거래 재검토가 아니라 예외 검토다. 홈택스 미리채움과 deterministic rule이
+  명확한 정상 건은 건수·합계로 접고, 영세율·면세·불공제·안분·누락·취소·중복·불일치만 펼친다.
+- 정상 자동 정리는 세무 자동확정이 아니며 사용자가 기간 단위 요약과 신고 내용을 최종 확인한다.
 - `화면 상태 예시`, 중복 매입 공제 표, 반복 차단 안내, 동작하지 않는 control을 우선 감사한다.
 - 정확한 유지/통합/접기/삭제 결정과 단순화 Preview 승인은 VUI-1a/1b에서 Pending이다.
 - 계약: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md)

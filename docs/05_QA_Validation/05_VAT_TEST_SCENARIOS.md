@@ -172,6 +172,11 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-118 | 사용자가 VAT 화면을 처음 엶 | 첫 viewport 확인 | 예상 세액과 지금 처리할 거래가 보조 통계·부속명세·package 상세보다 우선 | Pending·VUI-1b/1d |
 | S-119 | 단순화 과정에서 표·카드 삭제·통합 | 기존 사용자 작업 수행 | 판단 확정·다르게·보류·증빙 확인·undo·gate·세액 계산이 회귀하지 않음 | Pending·VUI-1c/1d |
 | S-120 | desktop/mobile 대표 viewport | visual QA | 텍스트·표·버튼·팝오버 겹침, 페이지 수평 overflow, 빈 control 없음 | Pending·VUI-1d |
+| S-121 | 전자증빙·정확한 금액·deterministic rule이 일치하고 위험 신호가 없는 정상 거래 다수 | VAT 기본 화면 렌더 | 거래별 행을 기본 펼침하지 않고 `정상 반영 예정 N건`과 합계로 접어 표시 | Pending·VUI-1b/1c |
+| S-122 | 영세율·면세·불공제·안분·누락·취소·중복·금액 불일치 거래가 존재 | VAT 기본 화면 렌더 | 해당 예외만 `확인 필요` 작업대에 펼치고 정상 건과 섞지 않음 | Pending·VUI-1b/1c |
+| S-123 | AI만 정상 가능성을 제안하고 전자증빙 또는 deterministic 근거가 부족 | 자동 정리 자격 판정 | 정상 건으로 숨기지 않고 예외 큐에 유지, 사용자 확정값 미변경 | Pending·VUI-1c |
+| S-124 | 예외 거래 0건 | VAT 기본 화면 렌더 | 긴 판단표를 숨기고 정상 반영 건수·합계와 신고 준비 상태만 표시 | Pending·VUI-1b/1d |
+| S-125 | 정상 자동 정리 건이 존재 | 사용자가 신고 준비를 마감 | 거래별 반복 확정 대신 기간 단위 정상 반영 요약과 최종 신고 내용을 명시적으로 확인 | Pending·VUI-1c/1d |
 
 ## 3. 자동화 계획
 
