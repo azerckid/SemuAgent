@@ -178,6 +178,23 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-124 | 예외 거래 0건 | VAT 기본 화면 렌더 | 긴 판단표를 숨기고 정상 반영 건수·합계와 신고 준비 상태만 표시 | Pending·VUI-1b/1d |
 | S-125 | 정상 자동 정리 건이 존재 | 사용자가 신고 준비를 마감 | 거래별 반복 확정 대신 기간 단위 정상 반영 요약과 최종 신고 내용을 명시적으로 확인 | Pending·VUI-1c/1d |
 
+### 2.13 JC-039 VAT AI 근거 탐색·명확 판단
+
+아래 시나리오는 [VAT AI Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)를 기준으로 한다. 현재 runtime의 generic `needs_review/manual_fallback`은 VAI-8 구현 전 과도기 상태다.
+
+| # | Given | When | Then | Result |
+|:---|:---|:---|:---|:---:|
+| S-126 | 거래 사실·연결 증빙·공식 규칙이 한 결론을 지지 | AI 판단 완료 | 명확한 잠정 결론, 실제 source/reference, 근거 요약, 홈택스 권장 행동을 함께 표시 | Pending·VAI-8b/8c |
+| S-127 | 영세율 또는 면세 가능성을 탐색했으나 필수 요건·증빙을 찾지 못함 | 판단 완료 | generic 확인 필요가 아니라 `특례 해당 없음`과 과세 잠정 방향을 제시 | Pending·VAI-8c |
+| S-128 | 매입 공제 가능성을 탐색했으나 적격 증빙 또는 사업 관련 근거를 찾지 못함 | 판단 완료 | 공제 가능성 미정이 아니라 불공제 잠정 방향과 찾지 못한 근거를 제시 | Pending·VAI-8c |
+| S-129 | confidence가 낮지만 필수 사실·공식 규칙·근거가 충분 | 판단 완료 | 낮은 confidence만으로 담당자 이관하지 않고 잠정 결론을 제시 | Pending·VAI-8c/8d |
+| S-130 | provider 한 곳 timeout·quota·invalid schema | 다른 규칙·패턴·provider 경로가 남아 있음 | 해당 경로를 계속 사용하고, 전체 실패 시에도 `AI 일시 오류` workflow만 표시하며 거짓 근거·담당자 결론을 만들지 않음 | Pending·VAI-8c/8d |
+| S-131 | 원장·증빙·과거 확정 또는 공식 규칙이 서로 다른 결론을 지지 | Human Handoff Gate 평가 | 담당자 이관을 허용하되 잠정 결론·확인 자료·충돌 근거·정확한 질문·결론 변경 조건을 모두 표시 | Pending·VAI-8d |
+| S-132 | 결론에 필수적인 외부 사실이 모든 정해진 소스에 없음 | Human Handoff Gate 평가 | 부족한 사실을 하나의 구체적 질문으로 요청하고 답에 따른 결론 변화까지 표시 | Pending·VAI-8d |
+| S-133 | 필수 source 중 하나 이상 탐색 기록이 없음 | 판단 결과 완료 저장 | schema/service가 완료 상태를 거부하고 미탐색 source를 식별 | Pending·VAI-8a/8b |
+| S-134 | 다른 tenant·사업장·기간의 유사 거래와 민감 원문이 존재 | evidence 탐색·결과 저장 | scope 밖 자료를 사용하지 않고 원문 prompt/provider 응답·민감 식별정보를 저장하지 않음 | Pending·VAI-8b/8e |
+| S-135 | 예외 행이 화면에 표시 | 사용자가 판단 내용을 읽음 | 단독 `확인 필요`·`전문가 확인`보다 잠정 결론 -> 근거 -> 홈택스 행동 -> 적용/변경 순서가 먼저 보임 | Pending·VAI-8e |
+
 ## 3. 자동화 계획
 
 - **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/vat/package-gate.test.ts`, `lib/vat/provenance.test.ts`, `lib/validations/vat.test.ts`): S-03, S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~67, S-74~78.
@@ -187,6 +204,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **JC-035 자동화 계획**: VAI-3a에서 Zod·deterministic 규칙·이전 확정 패턴·read model을, VAI-3b에서 provider mock·timeout/quota·invalid schema fallback·PII·batch/소비자 격리를 자동화했다. VAI-4a에서 tenant·stale fingerprint·필수 증빙·canonical/audit transaction rollback을, VAI-4b에서 사용자 액션 UI·API 응답 Zod·latest-only undo·dev 서비스 E2E를 자동화했다. VAI-5에서 Gemini·OpenAI 합의·Claude 중재·provider 장애·완전 불일치 fallback·화면/저장 공통 파이프라인을 자동화했다. VAI-6a에서 사용자 세무판단 gate의 행 단위 중복 제거와 VAT page/rebuild/package 공통 경로를 자동화했다. VAI-6b에서 migration 실적용 SQLite, tenant·stale 차단, 확인·취소 감사, read model·fingerprint·gate 재계산, UI/API 경계를 자동화했다.
 - **JC-037 자동화 계획**: VAI-7a에서 최초 렌더 provider 0회와 호출 계측을, VAI-7b에서 fingerprint/version 재사용·stale invalidation·동시 실행 idempotency를, VAI-7c에서 비동기 상태·명시 재확인·timeout fallback을, VAI-7d에서 브라우저 성능·10회 재진입 호출 0회·package/rebuild live-AI 비의존을 검증한다.
 - **JC-038 자동화 계획**: VUI-1b에서 승인 Preview의 섹션·정보 중복을 정적 검증하고, VUI-1c에서 삭제 컴포넌트 부재와 기존 mutation/gate 회귀를, VUI-1d에서 desktop/mobile screenshot·overflow·핵심 작업 동선을 검증한다.
+- **JC-039 자동화 계획**: VAI-8a에서 judgment/workflow enum 분리와 generic 최종 답변 schema 거부를, VAI-8b에서 source 탐색 완료·reference·tenant/PII를, VAI-8c에서 특례 근거 있음/없음의 명확 결론을, VAI-8d에서 handoff 허용 조건·required payload를, VAI-8e에서 결론 우선 UI와 브라우저 E2E를 검증한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)
@@ -194,5 +212,6 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **Technical_Specs**: [VAT AI Tax Treatment Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [VAI-2 Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) - JC-035 VAI-0~6 완료선·규칙·저장 계약
 - **Technical_Specs**: [VAI-7 Loading and Result Reuse Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) - JC-037 초기 화면 비차단·fingerprint 결과 재사용·비동기 실행 계약
 - **Technical_Specs**: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - JC-038 중복 제거·삭제 결정·Preview 승인 계약
+- **Technical_Specs**: [VAT AI Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - JC-039 근거 탐색·명확 판단·담당자 이관 게이트 계약
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-011 Context Lock
 - **QA_Validation**: [Bookkeeping Review Test Scenarios](./04_BOOKKEEPING_REVIEW_TEST_SCENARIOS.md) - 선행 전표 확정 흐름

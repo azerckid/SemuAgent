@@ -1,7 +1,13 @@
 # VAT AI Tax Treatment Rule Matrix
 > Created: 2026-07-11
-> Last Updated: 2026-07-11
+> Last Updated: 2026-07-12
 > Backlog: JC-035 · VAI-2
+
+> Target clarification (2026-07-12): 이 문서의 `needs_review`, 수동 확인, 전문가 확인 fixture는
+> 현재 JC-035 runtime과 구현 당시 계약을 기록한다. 목표 모델에서는 이를 AI의 최종 판단값으로
+> 유지하지 않는다. [JC-039 · VAI-8](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)이
+> AI 잠정 결론과 workflow 상태를 분리하고, 근거 탐색 뒤 명확한 결론 또는 엄격한 담당자 이관
+> payload를 제공하는 후속 계약이다. 이 docs PR은 기존 runtime 규칙을 이미 변경했다고 주장하지 않는다.
 > Rule Snapshot: `vat-kr-2026.07-v1`
 
 ## 0. Decision
@@ -169,7 +175,7 @@ P-01은 `공제 확정`이 아니라 `공제 가능성 높음`이다. 국세청 
 ## 9. Related Documents
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조와 사용자 최종 책임 경계
-- **Technical_Specs**: [JC-035 Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) · [VAT Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md)
+- **Technical_Specs**: [JC-035 Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) · [VAI-8 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) · [VAT Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md)
 - **UI_Screens**: [VAT Preview](../02_UI_Screens/previews/03_vat.html) · [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md)
 - **Logic_Progress**: [Backlog JC-035](../04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)

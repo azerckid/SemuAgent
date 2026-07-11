@@ -1,8 +1,14 @@
 # VAT AI Tax Treatment Pre-Code Brief
 > Created: 2026-07-11
-> Last Updated: 2026-07-11
+> Last Updated: 2026-07-12
 > Backlog: JC-035 · VAI-2
 > Governing Rule: [VAT AI Tax Treatment Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md)
+
+> Target clarification (2026-07-12): 이 문서의 `recommendation: needs_review`,
+> `manual_fallback`, 전문가 확인 UI는 현재 JC-035 구현 계약을 설명한다. 프로젝트 오너의 후속
+> 결정에 따라 [JC-039 · VAI-8](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)에서
+> AI 잠정 결론과 workflow 상태를 분리하고, generic handoff를 실제 근거 탐색·명확 판단·엄격한
+> 담당자 이관 게이트로 교체한다. VAI-8 구현 전까지는 현재 runtime 사실을 지우거나 완료로 표시하지 않는다.
 
 ## 0. Decision
 
@@ -426,7 +432,7 @@ VAI-6b는 사용자가 법정 증빙 항목을 확인 완료로 기록하는 명
 ## 12. Related Documents
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조와 사용자 최종 책임 경계
-- **Technical_Specs**: [JC-035 Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAT Base Brief](./07_VAT_PRE_CODE_BRIEF.md)
+- **Technical_Specs**: [JC-035 Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-8 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) · [VAT Base Brief](./07_VAT_PRE_CODE_BRIEF.md)
 - **UI_Screens**: [VAT Preview](../02_UI_Screens/previews/03_vat.html) · [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
 - **Logic_Progress**: [Backlog JC-035](../04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [VAT Test Scenarios §2.10](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)

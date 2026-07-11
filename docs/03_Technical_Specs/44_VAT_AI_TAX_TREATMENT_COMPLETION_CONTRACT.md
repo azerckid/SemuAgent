@@ -1,12 +1,18 @@
 # VAT AI Tax Treatment Completion Contract
 > Created: 2026-07-10
-> Last Updated: 2026-07-11
+> Last Updated: 2026-07-12
 > Backlog: JC-035
 
 > Post-completion performance correction (2026-07-12): JC-035의 세무판단 기능 완료 판정은
 > 유지한다. 다만 VAT page가 동일 미확정 데이터를 페이지 진입마다 동기 AI 재호출해 최초
 > 화면을 지연시키는 사용성 결함은 [JC-037 · VAI-7](./47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md)에서
 > 긴급 후속으로 수정한다. `JC-035 done`은 결과 재사용·비차단 초기 렌더까지 완료됐다는 뜻이 아니다.
+
+> Post-completion judgment correction (2026-07-12): 현재 JC-035는 `needs_review`와
+> `manual_fallback`을 AI 추천 결론과 workflow 상태에 함께 사용한다. 프로젝트 오너 결정에 따라
+> [JC-039 · VAI-8](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)에서 AI 잠정 결론과
+> 사용자 확인·담당자 이관 상태를 분리하고, 실제 근거를 찾은 뒤 명확한 처리 방향을 제시하도록
+> 보강한다. `JC-035 done`은 근거 탐색 기반 명확 판단 계약까지 완료됐다는 뜻이 아니다.
 
 ## 0. Decision
 
@@ -219,6 +225,6 @@ JC-035는 다음을 **모두** 만족할 때만 `done`이다.
 ## 8. Related Documents
 
 - **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) · [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [Screen Flow §4d](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
-- **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) · [VAI-2 Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) · [VAI-7 Loading and Result Reuse Brief](./47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) · [VAT Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) · [VAT Stage A Audit](./43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) · [Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
+- **Technical_Specs**: [VAT Pre-Code Brief](./07_VAT_PRE_CODE_BRIEF.md) · [VAI-2 Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) · [VAI-7 Loading and Result Reuse Brief](./47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) · [VAI-8 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) · [VAT Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md) · [VAT Stage A Audit](./43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) · [Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
 - **Logic_Progress**: [Backlog JC-035](../04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)

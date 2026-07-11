@@ -1,0 +1,194 @@
+# VAT AI Evidence-Backed Decisive Judgment Brief
+> Created: 2026-07-12
+> Last Updated: 2026-07-12
+> Backlog: JC-039 · VAI-8
+> Status: docs-only target contract; current generic needs_review behavior remains until implementation
+
+## 0. Decision
+
+부가세 AI에게 판단을 요청했는데 결과가 단순히 **확인 필요**, **담당자 판단 필요**,
+**전문가 확인**으로 끝나면 AI 판단 기능의 가치가 없다.
+
+AI는 사용 가능한 자료와 공식 규칙을 먼저 찾아본 뒤 반드시 다음을 제공한다.
+
+1. 가장 가능성이 높은 명확한 잠정 결론
+2. 결론을 뒷받침하는 실제 근거 자료
+3. 찾아본 자료와 찾지 못한 자료
+4. 홈택스에서 유지하거나 수정할 권장 행동
+
+확인 필요는 AI의 결론이 아니라 **사용자가 아직 최종 확정하지 않았다는 workflow 상태**로만
+사용한다. 담당자 이관은 근거 탐색을 마친 뒤에도 필수 사실이 없거나 자료가 충돌하는 경우의
+최후 수단이다.
+
+## 1. Terminology Contract
+
+### 1.1 Judgment and Workflow Must Be Separate
+
+| 구분 | 의미 | 허용 예시 |
+|:---|:---|:---|
+| AI 잠정 결론 | AI가 자료와 규칙을 적용해 내린 세무 처리 방향 | 공제 가능성 높음, 불공제 가능성 높음, 과세, 영세율, 면세, 안분 필요, 해당 없음 |
+| workflow 상태 | 사용자가 최종 확정했는지와 추가 행동이 있는지 | 사용자 확인 대기, 근거 없음 기본처리, 담당자 해결 필요, AI 일시 오류 |
+| 사용자 최종 결정 | canonical VAT fact·공제 decision에 반영되는 사람의 결정 | 공제 확정, 불공제 확정, 과세 확정, 영세율 확정, 면세 확정 |
+
+AI 잠정 결론 값으로 needs_review, 담당자 판단 필요, 전문가 확인을 사용하지 않는다.
+이 표현은 workflow 상태 또는 사용자 행동으로만 존재할 수 있다.
+
+### 1.2 Forbidden Final Answers
+
+다음 응답은 AI 판단 완료로 인정하지 않는다.
+
+- 확인이 필요합니다.
+- 담당자가 판단해야 합니다.
+- 전문가에게 문의하세요.
+- 정보가 부족합니다.
+- 확신할 수 없습니다.
+
+위 문구가 필요하면 반드시 잠정 결론, 탐색 근거, 정확히 부족한 사실, 결론이 바뀌는 조건을
+함께 제공해야 한다.
+
+## 2. Evidence Search Order
+
+AI는 판단 전에 다음 소스를 순서대로 검사한다.
+
+1. **현재 거래의 구조화 사실**
+   - 거래 방향, 일자, 거래처, 공급가액, 세액, 합계액, 계정항목, 적요
+2. **연결 증빙**
+   - 전자세금계산서, 카드 승인, 현금영수증, 첨부 문서, 증빙 연결 상태
+3. **exact VAT fact와 자료대조 결과**
+   - 과세유형, 금액 산술, 원장 연결, 누락·중복·취소·기간 오류
+4. **같은 tenant·사업장의 사용자 확정 이력**
+   - 동일 거래처·거래 성격의 과거 결정과 근거
+5. **versioned 공식 규칙**
+   - Rule Matrix에 등록된 법령·시행령·국세청 안내와 적용일
+6. **조건부 provider 판단**
+   - 위 사실을 규칙에 대입하기 어려운 경우에만 사용
+
+AI는 존재하지 않는 증빙, 법령 조항, 과거 결정을 만들어내면 안 된다. 판단 결과에는 사용한
+근거의 source type, 식별 가능한 row/document reference, 근거 요약, 발견 여부를 남긴다.
+민감 원문 전체와 provider 원문 응답은 저장하지 않는다.
+
+## 3. No Evidence Means No Special Treatment
+
+영세율·면세·공제·안분처럼 일반 처리에서 벗어나는 특례 또는 예외는 **적극적인 근거가
+확인될 때만** 추천한다.
+
+| 검토 대상 | 근거를 찾은 경우 | 근거를 찾지 못한 경우의 잠정 결론 |
+|:---|:---|:---|
+| 영세율 | 수출·국외용역 사실과 필수 증빙을 확인 | 영세율 해당 없음, 과세 방향 |
+| 면세 | 법정 면세 요건·인허가·실질 용역을 확인 | 면세 해당 없음, 과세 방향 |
+| 매입세액 공제 | 적격 증빙·사업 관련성·과세사업 귀속을 확인 | 공제 해당 없음, 불공제 방향 |
+| 공통매입 안분 | 과세·면세 공통 사용 사실과 안분 근거를 확인 | 안분을 자동 적용하지 않음 |
+| 신고대상 제외 | 공식 제외 규칙과 거래 구조를 확인 | 제외 해당 없음, 신고대상 방향 |
+
+해당 없음은 자료를 찾아보지 않았다는 뜻이 아니다. 정해진 소스를 모두 확인했지만 해당
+요건을 입증하는 근거를 발견하지 못했다는 판단이어야 한다.
+
+안분처럼 근거가 없다고 하나의 숫자를 안전하게 만들 수 없는 경우에는 숫자를 추정하지 않는다.
+대신 현재 사실로 가능한 잠정 방향과 부족한 단 하나의 귀속 사실을 명시한 뒤 담당자 이관
+조건을 적용한다.
+
+## 4. Human Handoff Gate
+
+담당자 해결 필요는 다음 중 하나일 때만 허용한다.
+
+1. **필수 사실 부재**
+   - 모든 정해진 소스를 확인했지만 결론에 필수적인 외부 사실이 시스템에 없다.
+2. **근거 충돌**
+   - 증빙·원장·과거 확정·공식 규칙이 서로 다른 결론을 지지한다.
+3. **공식 규칙 공백 또는 합의 실패**
+   - versioned 규칙으로 다룰 수 없는 거래 구조이고 multi-provider 중재 후에도 결론이 갈린다.
+
+낮은 confidence, provider 한 곳의 실패, timeout, 어려운 거래라는 이유만으로 담당자에게
+넘길 수 없다. provider 장애는 AI 일시 오류 상태이며 AI의 판단 결과가 아니다.
+
+### 4.1 Required Handoff Payload
+
+담당자 이관에는 다음 항목이 모두 있어야 한다.
+
+- 잠정 결론
+- 확인한 자료 목록
+- 찾지 못했거나 충돌한 근거
+- 담당자가 확인할 정확한 한 가지 사실
+- 그 사실의 답에 따라 결론이 어떻게 바뀌는지
+
+예시:
+
+> 잠정 결론: 불공제 방향<br>
+> 확인 자료: 카드 승인, 계정항목, 거래처 과거 3건<br>
+> 부족 사실: 이번 지출의 참석자와 업무 목적<br>
+> 확인 질문: 외부 거래처 접대 목적의 지출입니까?<br>
+> 예이면 기업업무추진비 불공제, 아니면 업무용 증빙을 추가해 공제 재검토
+
+## 5. Target Data Contract
+
+현재 recommendation의 needs_review와 workflow 상태가 섞여 있다. VAI-8 구현에서는 최소한
+다음 구조로 분리한다.
+
+| 필드 | 목적 |
+|:---|:---|
+| provisionalJudgment | 공제/불공제/과세/영세율/면세/안분/해당 없음 중 잠정 결론 |
+| workflowStatus | 사용자 확인 대기/근거 없음 기본처리/담당자 해결 필요/AI 일시 오류 |
+| evidenceTrace | 확인한 source·reference·발견 상태·근거 요약 |
+| searchedSources | 소스별 탐색 완료 기록 |
+| missingEssentialFact | 담당자 이관을 허용한 단일 필수 사실 |
+| handoffReason | essential_fact_missing/evidence_conflict/rule_gap/no_consensus |
+| recommendedHometaxAction | 유지·수정·추가·제외 등 사용자의 다음 행동 |
+| confidence / ruleVersion / promptVersion | 재현·stale·감사 추적 |
+
+기존 canonical VAT fact, deduction decision, 사용자 확정 감사 테이블은 그대로 유지한다.
+VAI-8 결과는 추천·workflow 계층이며 사용자 확인 없이 canonical 값을 변경하지 않는다.
+
+## 6. UI Contract
+
+각 예외 행은 다음 순서로 표시한다.
+
+1. **AI 잠정 결론**
+2. **근거 자료**
+3. **홈택스 권장 행동**
+4. 사용자 적용/변경
+
+담당자 해결 필요는 Human Handoff Gate를 통과한 행에만 표시한다. 이 경우에도 잠정 결론과
+근거 탐색 결과를 먼저 보여준다. 단독 확인 필요 칩과 단독 전문가 확인 문구는 금지한다.
+
+## 7. Fixed Implementation Order
+
+| 작업 단위 | 내용 | 완료선 |
+|:---|:---|:---|
+| **VAI-8a · Judgment/Workflow Contract** | 결과 enum·Zod·API·UI 용어 분리 | needs_review가 AI 결론에서 제거되고 migration 경계 승인 |
+| **VAI-8b · Evidence Resolver** | 정해진 소스 탐색·evidence trace·공식 규칙 reference | 각 결론이 실제 source reference를 가짐 |
+| **VAI-8c · Decisive Recommendation** | 근거 기반 잠정 결론과 근거 없음 기본처리 | 일반 답변에 generic handoff 없음 |
+| **VAI-8d · Handoff Gate** | 필수 사실 부재·충돌·규칙 공백/합의 실패만 이관 | required handoff payload가 없으면 schema 거부 |
+| **VAI-8e · UI and E2E** | 결론→근거→행동 표시, 적용/변경·담당자 이관 검증 | 대표 거래에서 근거 링크·결론·최종 사용자 확인 증명 |
+
+JC-037 결과 저장은 evidence trace와 새 judgment/workflow 구조를 저장할 수 있어야 한다.
+JC-038 Preview는 VAI-8의 결론 우선 정보 계층을 반영한 뒤 runtime을 수정한다.
+
+## 8. Acceptance Criteria
+
+- [ ] AI 판단 결과가 확인 필요·담당자 판단 필요·전문가 확인으로만 끝나지 않는다.
+- [ ] 모든 AI 잠정 결론에 실제 근거 source와 reference가 하나 이상 있다.
+- [ ] 지정된 소스를 모두 탐색하지 않은 결과는 완료 상태가 될 수 없다.
+- [ ] 영세율·면세·공제·안분·신고 제외는 적극적인 근거가 있을 때만 추천한다.
+- [ ] 특례·예외 근거가 없으면 해당 없음과 보수적 기본 방향을 제시한다.
+- [ ] 낮은 confidence만으로 담당자 이관하지 않는다.
+- [ ] 담당자 이관은 세 가지 허용 조건과 required payload를 모두 만족한다.
+- [ ] provider timeout은 AI 일시 오류로 표시하고 거짓 판단 근거를 만들지 않는다.
+- [ ] 사용자 확인 전 canonical VAT fact·deduction decision·gate를 변경하지 않는다.
+- [ ] tenant·사업장·기간 격리와 PII 최소화를 유지한다.
+- [ ] 대표 fixture와 브라우저 E2E에서 결론·근거·권장 행동·이관 질문을 확인한다.
+
+## 9. Out of Scope
+
+- AI 자동 세무확정
+- 근거 없는 법령·증빙 생성
+- 세무사 자문 또는 법적 책임 대체
+- 홈택스 자동 제출·자동 수정
+- 공식 Rule Matrix에 없는 법령을 실시간 웹 검색 결과만으로 적용
+
+## 10. Related Documents
+
+- **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조와 사용자 최종 책임 경계
+- **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VAI-8e 결론 우선 예외 작업대의 UI-first 검증 대상
+- **Technical_Specs**: [JC-035 Completion Contract](./44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](./46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) · [JC-037 Loading Brief](./47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) · [JC-038 Screen Brief](./48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md)
+- **Logic_Progress**: [Backlog JC-039](../04_Logic_Progress/00_BACKLOG.md)
+- **QA_Validation**: [VAT Test Scenarios](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
