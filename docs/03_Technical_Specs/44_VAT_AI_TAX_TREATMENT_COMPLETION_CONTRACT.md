@@ -30,8 +30,9 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 - VAI-3b 완료: single-provider AI·timeout/fallback·PII/소비자 격리
 - VAI-4a 완료: additive audit schema·사용자 확정 transaction, migration 0068 dev/prod 적용
 - VAI-4b 완료: 적용/다르게/보류/전문가 확인 UI·최근 작업 undo, migration 0069 dev/prod 적용
-- 현재: VAI-5 고위험 multi-provider consensus·Claude 중재·비차단 fallback 구현 완료
-- 다음: VAI-5 오너 확인 뒤 VAI-6 확정 결과 gate 소비·closeout
+- VAI-5 완료: 고위험 multi-provider consensus·Claude 중재·비차단 fallback
+- 현재: VAI-6 사용자 세무판단 gate를 VAT 화면·rebuild API·package API에 공통 연결 완료
+- 다음: VAI-6 오너 브라우저 확인·PR 머지 뒤 JC-035 최종 완료 처리
 
 ## 0.1 Current Status
 

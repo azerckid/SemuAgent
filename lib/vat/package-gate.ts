@@ -11,6 +11,11 @@ import {
   type VatProvenanceState,
 } from './provenance'
 import type { VatPackagePreview } from './summary'
+import {
+  loadVatTaxTreatmentGate,
+  vatTaxTreatmentGateSchema,
+  type VatTaxTreatmentGate,
+} from './tax-treatment-gate'
 
 const VAT_ROUTE = '/dashboard/vat' as const
 const SOURCE_COLLECTION_ROUTE = '/dashboard/direct-upload' as const
@@ -21,6 +26,7 @@ export const vatPackageGateReasonCodeSchema = z.enum([
   'source_collection_normalization_pending',
   'reconciliation_incomplete',
   'vat_deduction_incomplete',
+  'vat_tax_treatment_incomplete',
   'confirmed_ledger_provenance_rebuild_required',
   'confirmed_ledger_provenance_unverified',
 ])
@@ -51,6 +57,7 @@ export const vatPackageGateSchema = z.object({
     isReady: z.boolean(),
     pendingCount: z.number().int().nonnegative(),
   }),
+  taxTreatment: vatTaxTreatmentGateSchema,
   provenance: z.object({
     status: z.enum(['verified', 'rebuild_required', 'blocked']),
     isReady: z.boolean(),
@@ -73,6 +80,7 @@ type BuildVatPackageGateParams = {
   >
   reconciliationGate: Pick<ReconciliationPath1Gate, 'isReady' | 'blockerCount' | 'targetRoute'>
   pendingDeductionCount: number
+  taxTreatmentGate: VatTaxTreatmentGate
   provenanceState: VatProvenanceState
 }
 
@@ -132,6 +140,14 @@ export function buildVatPackageGate(params: BuildVatPackageGateParams): VatPacka
       targetRoute: periodRoute(VAT_ROUTE, params.periodKey),
     })
   }
+  if (!params.taxTreatmentGate.isReady) {
+    reasons.push({
+      code: 'vat_tax_treatment_incomplete',
+      count: Math.max(1, params.taxTreatmentGate.blockerCount),
+      message: `부가세 사용자 판단 ${params.taxTreatmentGate.blockerCount}건을 확정해야 합니다.`,
+      targetRoute: periodRoute(params.taxTreatmentGate.targetRoute, params.periodKey),
+    })
+  }
   if (params.provenanceState.status === 'rebuild_required') {
     reasons.push({
       code: 'confirmed_ledger_provenance_rebuild_required',
@@ -152,11 +168,13 @@ export function buildVatPackageGate(params: BuildVatPackageGateParams): VatPacka
     && sourceReady
     && params.reconciliationGate.isReady
     && deductionReady
+    && params.taxTreatmentGate.isReady
     && params.provenanceState.isReady
   const canRebuildProvenance = params.hasSummary
     && sourceReady
     && params.reconciliationGate.isReady
     && deductionReady
+    && params.taxTreatmentGate.isReady
     && params.provenanceState.canRebuild
 
   return vatPackageGateSchema.parse({
@@ -178,6 +196,7 @@ export function buildVatPackageGate(params: BuildVatPackageGateParams): VatPacka
       isReady: deductionReady,
       pendingCount: params.pendingDeductionCount,
     },
+    taxTreatment: params.taxTreatmentGate,
     provenance: {
       ...params.provenanceState,
       canRebuild: canRebuildProvenance,
@@ -194,7 +213,7 @@ export function applyVatPackageGateToPreview(
 
   return {
     ...preview,
-    description: '자료수집·자료대조·공제검토·확정 원장 출처 확인 후 생성할 수 있습니다.',
+    description: '자료수집·자료대조·공제검토·부가세 판단·확정 원장 출처 확인 후 생성할 수 있습니다.',
     locked: true,
     lockReason: `${gate.reasons.length}개 생성 조건을 먼저 완료해 주세요.`,
     canGenerate: false,
@@ -207,6 +226,7 @@ export async function loadVatPackageGate({
   periodKey,
   hasSummary,
   pendingDeductionCount,
+  taxTreatmentGate,
   today,
 }: {
   tenantId: string
@@ -214,11 +234,18 @@ export async function loadVatPackageGate({
   periodKey: string
   hasSummary: boolean
   pendingDeductionCount: number
+  taxTreatmentGate?: VatTaxTreatmentGate
   today?: DateTime
 }): Promise<VatPackageGate> {
-  const [sourceSummary, reconciliationGate, provenanceState] = await Promise.all([
+  const [sourceSummary, reconciliationGate, resolvedTaxTreatmentGate, provenanceState] = await Promise.all([
     loadSourceCollectionSummary({ tenantId, periodKey, today }),
     loadReconciliationPath1Gate({ tenantId, periodKey, today }),
+    taxTreatmentGate ?? loadVatTaxTreatmentGate({
+      tenantId,
+      businessEntityId: clientId,
+      periodKey,
+      today,
+    }),
     loadVatConfirmedLedgerProvenanceState({ tenantId, clientId, periodKey }),
   ])
 
@@ -228,6 +255,7 @@ export async function loadVatPackageGate({
     sourceCompleteness: sourceSummary.completeness,
     reconciliationGate,
     pendingDeductionCount,
+    taxTreatmentGate: resolvedTaxTreatmentGate,
     provenanceState,
   })
 }
