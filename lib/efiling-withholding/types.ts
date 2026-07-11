@@ -30,6 +30,7 @@ export type WithholdingFormA01 = {
 
 export type ValidateWithholdingPanelInput = {
   payrollPeriodKey: string
+  paymentDate: string | null
   closeStatus: 'open' | 'blocked' | 'closed'
   periodEmployeeCount: number
   periodGrossPayKrw: number

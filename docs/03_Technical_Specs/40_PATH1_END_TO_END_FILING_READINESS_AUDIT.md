@@ -45,7 +45,7 @@ is implemented; VAT's 1b screen is decided but not yet implemented.
 | 세목별 신고 준비 데이터 | Live for core tracks | VAT, payroll/withholding, payment statements, local income, business status read models | A ready data screen is the Path 1b endpoint; Path 1a additionally needs an official upload file |
 | 양식에 채워질 값 확인 | Live for simplified wage and withholding | `lib/efiling-simplified-wage`, `lib/efiling-withholding` | Withholding has no confirmed official form → Path 1b value-summary screen live; VAT Path 1a form is a Stage A upgrade only |
 | 홈택스 업로드용 파일 (Path 1a) | Live for simplified wage only | simplified-wage generate API and upload guide | Withholding is Path 1b (no file, by design); VAT, local income, business status and annual statement 1a files remain conditional on a confirmed form |
-| 홈택스 직접입력 정리 (Path 1b) | **Live for withholding; decided but not yet implemented for VAT** | 확정 `항목 = 값` read model | Withholding's 1b screen is done; VAT's is pending. 1b is value-list display only |
+| 홈택스 직접입력 정리 (Path 1b) | **Live for withholding; decided but not yet implemented for VAT** | 확정값 + 메뉴 경로·화면명·행/칸 위치 매핑 | Withholding's 1b input guide is done; VAT's is pending |
 | 최종 제출 | User only | Product Baseline, Roadmap 36 | Auto-submit and credential storage remain excluded |
 
 The useful status is therefore qualitative, not a single percentage:

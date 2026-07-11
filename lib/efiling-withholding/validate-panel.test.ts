@@ -5,6 +5,7 @@ import type { ValidateWithholdingPanelInput, WithholdingPayrollLine } from './ty
 function baseInput(over: Partial<ValidateWithholdingPanelInput> = {}): ValidateWithholdingPanelInput {
   return {
     payrollPeriodKey: '2026-06',
+    paymentDate: '2026-06-25',
     closeStatus: 'closed',
     periodEmployeeCount: 12,
     periodGrossPayKrw: 42_600_000,

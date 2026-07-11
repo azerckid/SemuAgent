@@ -9,6 +9,7 @@ import {
   buildFilingReceipts,
   buildFilingChecklist,
   buildFilingItemId,
+  countWithholdingAttentionItems,
   formatKrw,
   type FilingSupportItem,
 } from './summary'
@@ -293,5 +294,16 @@ describe('filing item persistence shape', () => {
       packageStorageKey: null,
     })
     expect(formatKrw(14_000_000)).toBe('14,000,000원')
+  })
+})
+
+describe('withholding navigation attention count', () => {
+  it('does not include VAT or social-insurance blockers in the withholding badge', () => {
+    const items = buildPreviewItems()
+
+    expect(countWithholdingAttentionItems(items)).toBe(0)
+    expect(countWithholdingAttentionItems(items.map((item) => (
+      item.type === 'withholding' ? { ...item, status: 'locked' as const } : item
+    )))).toBe(1)
   })
 })

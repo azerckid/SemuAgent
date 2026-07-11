@@ -17,6 +17,8 @@ export type EfilingValidationDisplayItem = {
 export type WithholdingEfilingSummary = {
   payrollPeriodKey: string
   payrollLabel: string
+  paymentPeriodKey: string | null
+  paymentLabel: string
   a01: WithholdingFormA01
   stats: {
     confirmedCount: number
@@ -26,10 +28,24 @@ export type WithholdingEfilingSummary = {
   validationItems: EfilingValidationDisplayItem[]
   hasBlockingDataIssues: boolean
   businessRegistrationMasked: string | null
+  businessName: string
+  representativeName: string | null
   downloadAvailable: false
   binaryLayoutReady: false
   // 참고용(A01 서식 밖) — 원천세 특별징수분 지방소득세.
   localIncomeTaxKrw: number
+}
+
+function paymentPeriodKeyOf(paymentDate: string | null): string | null {
+  if (!paymentDate) return null
+  const matched = /^(\d{4})-(\d{2})/.exec(paymentDate)
+  return matched ? `${matched[1]}-${matched[2]}` : null
+}
+
+function formatMonthLabel(periodKey: string): string {
+  const [year, month] = periodKey.split('-')
+  if (!year || !month) return periodKey
+  return `${year}년 ${Number(month)}월`
 }
 
 export type WithholdingBusinessContext = {
@@ -86,10 +102,13 @@ export function buildWithholdingEfilingSummary(params: {
   }
 
   const attentionCount = panelInput.lines.filter((line) => line.status === 'needs_review').length
+  const paymentPeriodKey = paymentPeriodKeyOf(panelInput.paymentDate)
 
   return {
     payrollPeriodKey: panelInput.payrollPeriodKey,
     payrollLabel: formatPayrollPeriodLabel(panelInput.payrollPeriodKey),
+    paymentPeriodKey,
+    paymentLabel: paymentPeriodKey ? formatMonthLabel(paymentPeriodKey) : '급여 지급일 확인 필요',
     a01: {
       employeeCount: panelInput.periodEmployeeCount,
       grossPayKrw: panelInput.periodGrossPayKrw,
@@ -103,6 +122,8 @@ export function buildWithholdingEfilingSummary(params: {
     validationItems,
     hasBlockingDataIssues: hasBlockingIssues(dataIssues),
     businessRegistrationMasked: business.maskedBusinessRegistrationNumber,
+    businessName: business.businessName,
+    representativeName: business.representativeName,
     downloadAvailable: false,
     binaryLayoutReady: false,
     localIncomeTaxKrw: panelInput.localIncomeTaxKrw,

@@ -5,6 +5,7 @@ import type { ValidateWithholdingPanelInput } from './types'
 function panelInput(over: Partial<ValidateWithholdingPanelInput> = {}): ValidateWithholdingPanelInput {
   return {
     payrollPeriodKey: '2026-06',
+    paymentDate: '2026-06-25',
     closeStatus: 'closed',
     periodEmployeeCount: 12,
     periodGrossPayKrw: 42_600_000,
@@ -44,6 +45,24 @@ describe('buildWithholdingEfilingSummary', () => {
     expect(summary.downloadAvailable).toBe(false)
     expect(summary.binaryLayoutReady).toBe(false)
     expect(summary.payrollLabel).toBe('2026년 6월 귀속')
+    expect(summary.paymentPeriodKey).toBe('2026-06')
+    expect(summary.paymentLabel).toBe('2026년 6월')
+    expect(summary.businessName).toBe('Sample Co')
+  })
+
+  it('requires confirmation instead of assuming a payment month when payment date is missing', () => {
+    const summary = buildWithholdingEfilingSummary({
+      panelInput: panelInput({ paymentDate: null }),
+      business: {
+        businessRegistrationNumber: '1234567890',
+        businessName: 'Sample Co',
+        representativeName: 'Kim Rep',
+        maskedBusinessRegistrationNumber: null,
+      },
+    })
+
+    expect(summary.paymentPeriodKey).toBeNull()
+    expect(summary.paymentLabel).toBe('급여 지급일 확인 필요')
   })
 
   it('marks blocking when payroll is not closed', () => {

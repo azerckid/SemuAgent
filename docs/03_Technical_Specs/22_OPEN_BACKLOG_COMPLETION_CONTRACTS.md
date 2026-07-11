@@ -178,7 +178,7 @@ only.
 |---|---|---|
 | **Validation** | Path 1 & 2 공통 | Implemented for simplified wage; repeated per tax type |
 | **Path 1a** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | In progress — simplified wage form implemented; withholding no form, VAT Stage A is the 1a upgrade check |
-| **Path 1b** | 공식 양식 없을 때 확정값 `항목 = 값` 직접입력 정리 화면 | 원천세: **구현 완료(2026-07-12)**. 부가세 등 나머지 양식 미확인 세목: **대상으로 결정됨 · 화면 구현 대기**; 값 정리 표시까지 (`blocked` 없음) |
+| **Path 1b** | 공식 양식 없을 때 확정값과 신고 메뉴·화면·행/칸 위치를 함께 제공 | 원천세: **구현 완료(2026-07-12)**. 부가세 등 나머지 양식 미확인 세목: **대상으로 결정됨 · 화면 구현 대기** (`blocked` 없음) |
 | **Path 2** | 세무사무소 handoff ZIP | Deferred until full Path 1 beta (1a + 1b) |
 | **Path 3** | 인증·암호화 업로드 파일 | Excluded from current product scope |
 
@@ -249,9 +249,8 @@ blocked.
 Done means (Path 1b, per tax type):
 
 - User sees the confirmed values as an on-screen `항목 = 값` summary sourced from the same read model used for validation.
-- The summary lets the user type the values into Hometax directly.
-- No file is generated (no B~G generator/verification) and no step-by-step Hometax
-  menu/field-location walkthrough is shown — 1b is value-list display only.
+- The summary shows the Hometax filing route, screen, row/field location and value so the user can enter it without guessing.
+- No file is generated (no B~G generator/verification). Screenshot-by-screenshot click tutorials and automatic entry remain out of scope.
 - 신고 양식(해당 시 화면 명칭), 귀속기간, 사업자, 합계가 화면에 표시된다.
 - tenant/business/period isolation과 PII 비저장이 유지된다.
 

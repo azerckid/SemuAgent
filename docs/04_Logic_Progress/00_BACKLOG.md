@@ -312,6 +312,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] **자동 홈택스 제출·자동 납부·자격증명 서버 저장은 제공하지 않는다**(책임 경계를 화면에 반복 노출).
   - [x] 로딩·빈·오류 상태가 화면에 구현된다. (`loading.tsx`, `error.tsx`, 빈 상태)
 - Document Sync Check: Screen Flow 4f / UI Design 4.6 / Prototype Review / Preview / Component Plan 7.6 / DB Schema 4.3 / Filing Support Pre-Code Brief / QA Scenarios 상호 링크됨. 구현 파일: `lib/db/schema.ts`, `drizzle/0055_add_filing_support_tables.sql`, `lib/filing-support/summary.ts`, `lib/filing-support/summary.test.ts`, `lib/validations/filing-support.ts`, `app/(dashboard)/dashboard/filing-support/page.tsx`, `_components/filing-support-workspace.tsx`, `_components/filing-actions.tsx`, `_components/filing-support-workspace.test.ts`, `loading.tsx`, `error.tsx`, `app/api/filing/receipts/route.ts`, `app/api/filing/receipts/[receiptId]/route.ts`, `app/api/filing/checklist-items/[itemId]/route.ts`.
+- Runtime UI Update (2026-07-12): 위 AC는 JC-013 통합 신고지원 구현 이력이다. cadence IA 이후 `/dashboard/filing-support`는 원천세 전용 화면이며, 부가세·4대보험 패키지·중복 준비 단계·혼합 체크리스트는 렌더에서 제거했다. 기존 테이블/API는 이력 호환을 위해 유지하고 원천세 접수증 업로드/삭제만 현재 화면에서 사용한다.
 
 ### JC-015 · Build employee directory (직원 명부) — 신규
 
@@ -700,7 +701,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 자료대조원장 Phase 2 완료 — Brief 41 §9 2a~2d-3c, shared reconciliation gate, VAT package gate/provenance
   - [x] 남은 Path 1 구현 순서·세목별 완료선 고정 — [Roadmap §§1–4](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)
   - [x] **원천세 W0 판정 완료** — 공식 안내는 홈택스 직접작성 또는 회계프로그램 파일의 변환검증·비밀번호 입력 경로. 공식 비암호화 업로드 양식이 없어 **Path 1b(직접입력 정리) 대상으로 결정**([37](../03_Technical_Specs/37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md))
-  - [x] **원천세 1b 직접입력 정리 화면** — 확정 A01 집계(인원·총지급액·소득세)를 `항목 = 값`으로 정리하고 지방소득세 참고값을 함께 표시(파일 generator 없음). 기존 `WithholdingEfilingPanel`(`app/(dashboard)/dashboard/filing-support/_components/withholding-efiling-panel.tsx`)이 1a-pending(바이너리 레이아웃 대기·변환제출 안내·비활성 다운로드) 카피였던 것을 1b 확정 카피로 재작성(2026-07-12)
+  - [x] **원천세 1b 홈택스 입력 안내 화면** — 홈택스 신고 경로·기본정보(신고구분·귀속연월·지급연월·사업자)·근로소득 간이세액(A01) ④인원·⑤총지급액·⑥소득세 위치와 확정값을 한 표로 제공. 지급연월은 실제 `payment_date`에서 파생하고 누락 시 추정하지 않음. 지방소득세는 위택스 별도 신고로 분리. 다른 세목 패키지·중복 준비 단계·혼합 사후 체크리스트는 원천세 화면에서 제거(파일 generator 없음, 2026-07-12)
   - [ ] **원천세 1a W1~W5** — 미착수. 최신 공식 비암호화 원본과 직접 수용 메뉴가 새로 확인될 때만 1a(파일)로 승격
   - [x] **부가세 Stage A 공개 자료 감사** — 현재 홈택스 `파일 변환신고(회계프로그램)` 메뉴와 국세청 v1.51 일부 첨부서류 Excel 도구 확인. 전체 신고 비암호화 규격과 2026년 수용 여부는 미확인 → 부가세는 **Path 1b 대상으로 결정**(1b 값 정리 화면 미구현)([43](../03_Technical_Specs/43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md))
   - [ ] **부가세 1b 직접입력 정리 화면** — 확정 VAT 값을 `항목 = 값`으로 제공
@@ -719,7 +720,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 세무대리로 포지셔닝하지 않고 self-filing 보조 경계를 유지한다
 - Per-tax Done: 세목마다 두 경로 중 하나로 완결한다. **Path 1a(양식 있음):** [Roadmap §2.1](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)의 공식 비암호화 업로드 양식·매핑·UI/Brief·동일 read model·파일 형식·브라우저·실제 업로드 검증·문서 동기화를 모두 통과. **Path 1b(양식 없음):** 확정값을 `항목 = 값`으로 정리한 직접입력 화면을 **구현**(파일 generator·업로드 검증 없음). 세목 매트릭스 의사결정은 §2.1 통과(1a) 또는 공식 Stage A 근거로 양식이 없어 1b 대상 확정으로 닫으며, **`blocked` 세목은 없다.** 원천세는 1b 값 정리 화면 구현을 완료했고(2026-07-12), 부가세 등 나머지 1b 대상 세목은 현재 **미구현**이다. Path 1a 베타 세목 수에는 1a 완료 세목만 포함한다.
 - Document Sync Check (2026-07-11): **간이지급 세목 1a 후보 구현 완료 ≠ 공식 업로드 검증 완료 ≠ JC-030 epic 완료.** 자료대조원장 Phase 2와 부가세 확정 원장 gate/provenance는 기반으로 완료됐다. 원천세 W0 공식 감사를 완료했고, 직접작성 또는 비밀번호 기반 회계프로그램 변환파일만 확인되어 공식 비암호화 업로드 양식이 없으므로 **Path 1b(직접입력 정리) 대상으로 결정**했다(당시 1b 값 정리 화면은 미구현·후속 작업). 1a W1~W5는 미착수다. 부가세 Stage A 공개 자료 감사에서는 현재 홈택스 `파일 변환신고(회계프로그램)` 메뉴와 국세청 v1.51 일부 첨부서류 Excel 도구를 확인했다. 이 도구는 전체 신고서 생성기가 아니며, 최신 전체 신고 비암호화 규격과 2026년 수용 여부는 미확인이라 부가세도 **Path 1b 대상**이며(1b 값 정리 화면 미구현) Stage A 외부 확인은 1a 승격용 선택 조사로 유지한다. Stage A가 양식을 확인하기 전에는 1a B~G를 시작하지 않는다. **어떤 세목도 `blocked`로 두지 않는다.** Path 1a 베타는 간이지급과 추가 1개 호환 세목의 실제 비암호화 업로드 검증 통과(파일 생성 하위 마일스톤)이며, Path 2(JC-034)는 원천세·부가세 summary CSV가 필수라 1b 요약까지 포함한 전체 Path 1 베타(1a+1b) 이후에 검토한다. Path 3 암호화 파일은 범위 밖이다. [Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [VAT Stage A Audit](../03_Technical_Specs/43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) · [E2E Audit](../03_Technical_Specs/40_PATH1_END_TO_END_FILING_READINESS_AUDIT.md).
-- Document Sync Check Update (2026-07-12): **원천세 1b 직접입력 정리 화면 구현 완료.** `WithholdingEfilingPanel`(`app/(dashboard)/dashboard/filing-support/_components/withholding-efiling-panel.tsx`)이 A01(인원·총지급액·소득세) `항목 = 값` 정리와 지방소득세 참고값을 표시한다. 기존 컴포넌트가 남아 있던 1a-pending 카피(바이너리 레이아웃 대기·변환제출 5단계 안내·비활성 다운로드 버튼)를 W0 최종 판정(공식 양식 없음 확정)에 맞는 1b 확정 카피로 재작성했고, 더 이상 유효하지 않은 검증 이슈(`pendingSubmissionMetaIssues`/`pendingBinaryLayoutIssue`, W-V-06·W-V-09)를 제거했다. 부가세 1b 화면은 별도 후속 작업으로 남는다. tsc/lint 0 errors, vitest 240 files/1666 tests 통과, 브라우저 검증 완료.
+- Document Sync Check Update (2026-07-12): **원천세 1b 홈택스 입력 안내 화면 구현 완료.** `WithholdingEfilingPanel`은 값 목록에서 끝나지 않고 `세금신고 → 원천세 신고 → 일반 신고 → 정기신고` 경로, 기본정보, A01 ④⑤⑥의 정확한 입력 위치와 값을 함께 표시한다. 지방소득세는 위택스 별도 신고로 분리하고, 제출 후에는 원천세 접수증 PDF 보관만 남긴다. 기존 1a-pending 카피와 다른 세목 패키지·중복 단계·혼합 체크리스트는 제거했다. 부가세 1b 화면은 별도 후속 작업으로 남는다.
 
 ### JC-035 · 부가세 AI 세무판단 보조 — 공제·과세유형 판단 작업대 (완료)
 
