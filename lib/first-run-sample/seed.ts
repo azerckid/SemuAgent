@@ -291,21 +291,96 @@ function buildSampleVatReviews(params: SeedParams) {
   }))
 }
 
+type SampleEmploymentType = '정규직' | '프리랜서' | '일용직'
+
+type SampleEmployeeSpec = {
+  code: string
+  name: string
+  department: string
+  jobTitle: string
+  employmentType: SampleEmploymentType
+  baseSalaryKrw: number
+  allowanceKrw: number
+  // 정규직·일용직은 급여자료에 기재된 확정 소득세(샘플 표시값). 프리랜서는 3.3% 규칙으로 산출.
+  incomeTaxKrw?: number
+  needsReview?: boolean
+}
+
+// 고용형태별 샘플 직원. 정규직 6 / 프리랜서 2 / 일용직 3, 기본급 200만~600만 분포.
+// 표시값은 모두 "확정값" 성격의 샘플이며, 이 앱은 세액을 계산하지 않는다. 아래 4대보험
+// 근사 요율(sampleDeductionsFor)은 데모를 그럴듯하게 보이기 위한 표시용일 뿐 공식 확정 요율이 아니다.
+const FIRST_RUN_SAMPLE_EMPLOYEES: SampleEmployeeSpec[] = [
+  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, incomeTaxKrw: 650_000, needsReview: true },
+  { code: 'E002', name: '이수민', department: '영업', jobTitle: '팀장', employmentType: '정규직', baseSalaryKrw: 4_200_000, allowanceKrw: 200_000, incomeTaxKrw: 255_000 },
+  { code: 'E003', name: '박지훈', department: '운영', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_400_000, allowanceKrw: 200_000, incomeTaxKrw: 142_000 },
+  { code: 'E004', name: '최민준', department: '제품', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_000_000, allowanceKrw: 0, incomeTaxKrw: 74_000 },
+  { code: 'E005', name: '정하늘', department: '영업', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_600_000, allowanceKrw: 200_000, incomeTaxKrw: 47_000 },
+  { code: 'E006', name: '오세린', department: '운영', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_400_000, allowanceKrw: 0, incomeTaxKrw: 26_000 },
+  { code: 'E007', name: '한유진', department: '제품', jobTitle: '외주 디자이너', employmentType: '프리랜서', baseSalaryKrw: 3_500_000, allowanceKrw: 0 },
+  { code: 'E008', name: '서도윤', department: '제품', jobTitle: '외주 개발', employmentType: '프리랜서', baseSalaryKrw: 2_000_000, allowanceKrw: 0 },
+  { code: 'E009', name: '문가람', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_200_000, allowanceKrw: 0, incomeTaxKrw: 14_850 },
+  { code: 'E010', name: '장서우', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_600_000, allowanceKrw: 0, incomeTaxKrw: 17_550 },
+  { code: 'E011', name: '윤태오', department: '물류', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_000_000, allowanceKrw: 0, incomeTaxKrw: 8_000 },
+]
+
+// 정수 분자로 계산해 부동소수점(예: 0.03) 절사 오차를 피한다.
+const floorToTen = (value: number) => Math.floor(value / 10) * 10
+
+type SampleDeductions = {
+  incomeTaxKrw: number
+  localIncomeTaxKrw: number
+  nationalPensionKrw: number
+  healthInsuranceKrw: number
+  longTermCareKrw: number
+  employmentInsuranceKrw: number
+}
+
+function sampleDeductionsFor(spec: SampleEmployeeSpec, grossPayKrw: number): SampleDeductions {
+  if (spec.employmentType === '프리랜서') {
+    // 사업소득 원천징수 3.3% (소득세 3% + 지방소득세 0.3%), 4대보험 없음
+    return {
+      incomeTaxKrw: floorToTen((grossPayKrw * 3) / 100),
+      localIncomeTaxKrw: floorToTen((grossPayKrw * 3) / 1000),
+      nationalPensionKrw: 0,
+      healthInsuranceKrw: 0,
+      longTermCareKrw: 0,
+      employmentInsuranceKrw: 0,
+    }
+  }
+  const incomeTaxKrw = spec.incomeTaxKrw ?? 0
+  const localIncomeTaxKrw = floorToTen(incomeTaxKrw / 10)
+  if (spec.employmentType === '일용직') {
+    // 일용근로소득: 국민연금·건강보험은 단기 근로로 미적용, 고용보험만 부과(샘플)
+    return {
+      incomeTaxKrw,
+      localIncomeTaxKrw,
+      nationalPensionKrw: 0,
+      healthInsuranceKrw: 0,
+      longTermCareKrw: 0,
+      employmentInsuranceKrw: floorToTen((grossPayKrw * 9) / 1000),
+    }
+  }
+  // 정규직: 근로소득 + 4대보험 (샘플 표시용 근사 요율)
+  const healthInsuranceKrw = floorToTen((grossPayKrw * 357) / 10000)
+  return {
+    incomeTaxKrw,
+    localIncomeTaxKrw,
+    nationalPensionKrw: floorToTen((Math.min(grossPayKrw, 6_170_000) * 45) / 1000),
+    healthInsuranceKrw,
+    longTermCareKrw: floorToTen((healthInsuranceKrw * 1295) / 10000),
+    employmentInsuranceKrw: floorToTen((grossPayKrw * 9) / 1000),
+  }
+}
+
 function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
-  const names = ['김대표', '이수민', '박지훈', '최민준', '정하늘', '오세린', '한유진', '서도윤', '문가람', '장서우', '윤태오', '강하린']
-  const rows: Array<typeof payrollEmployeeLine.$inferInsert> = []
-  for (let i = 0; i < names.length; i += 1) {
-    const gross = i < 10 ? 3_500_000 : 3_800_000
-    const withholding = 175_000
-    const incomeTax = 159_100
-    const localIncomeTax = 15_900
-    const social = i < 8 ? 312_000 : 311_000
-    const national = i < 8 ? 135_000 : 134_500
-    const health = 120_000
-    const care = 15_000
-    const employment = social - national - health - care
-    const deduction = withholding + social
-    rows.push({
+  return FIRST_RUN_SAMPLE_EMPLOYEES.map((spec, i): typeof payrollEmployeeLine.$inferInsert => {
+    const grossPayKrw = spec.baseSalaryKrw + spec.allowanceKrw
+    const d = sampleDeductionsFor(spec, grossPayKrw)
+    const socialInsuranceKrw = d.nationalPensionKrw + d.healthInsuranceKrw + d.longTermCareKrw + d.employmentInsuranceKrw
+    const withholdingTaxKrw = d.incomeTaxKrw + d.localIncomeTaxKrw
+    const deductionTotalKrw = withholdingTaxKrw + socialInsuranceKrw
+    const needsReview = spec.needsReview ?? false
+    return {
       id: firstRunSampleId(params.tenantId, `payroll_line_${String(i + 1).padStart(2, '0')}`),
       tenantId: params.tenantId,
       clientId: params.clientId,
@@ -313,52 +388,50 @@ function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
       sourceBatchId: null,
       sourceRowId: null,
       uploadSessionId: null,
-      employeeCode: `E${String(i + 1).padStart(3, '0')}`,
-      employeeName: names[i],
-      department: i === 0 ? '경영' : i % 3 === 0 ? '영업' : i % 3 === 1 ? '운영' : '제품',
-      jobTitle: i === 0 ? '대표' : '매니저',
-      jobType: '정규직',
-      baseSalaryKrw: gross - (i % 3 === 0 ? 200_000 : 100_000),
-      allowanceKrw: i % 3 === 0 ? 200_000 : 100_000,
-      grossPayKrw: gross,
-      incomeTaxKrw: incomeTax,
-      localIncomeTaxKrw: localIncomeTax,
-      nationalPensionKrw: national,
-      healthInsuranceKrw: health,
-      longTermCareKrw: care,
-      employmentInsuranceKrw: employment,
-      socialInsuranceKrw: social,
+      employeeCode: spec.code,
+      employeeName: spec.name,
+      department: spec.department,
+      jobTitle: spec.jobTitle,
+      jobType: spec.employmentType,
+      baseSalaryKrw: spec.baseSalaryKrw,
+      allowanceKrw: spec.allowanceKrw,
+      grossPayKrw,
+      incomeTaxKrw: d.incomeTaxKrw,
+      localIncomeTaxKrw: d.localIncomeTaxKrw,
+      nationalPensionKrw: d.nationalPensionKrw,
+      healthInsuranceKrw: d.healthInsuranceKrw,
+      longTermCareKrw: d.longTermCareKrw,
+      employmentInsuranceKrw: d.employmentInsuranceKrw,
+      socialInsuranceKrw,
       otherDeductionKrw: 0,
-      deductionTotalKrw: deduction,
-      netPayKrw: gross - deduction,
-      noticeMatchStatus: i === 0 ? 'missing_notice' : 'matched',
-      status: i === 0 ? 'needs_review' : 'ready',
-      issueCode: i === 0 ? 'insurance_start_date_missing' : null,
-      issueMessage: i === 0 ? '신규 입사자 4대보험 취득일 확인 필요' : null,
+      deductionTotalKrw,
+      netPayKrw: grossPayKrw - deductionTotalKrw,
+      noticeMatchStatus: needsReview ? 'missing_notice' : 'matched',
+      status: needsReview ? 'needs_review' : 'ready',
+      issueCode: needsReview ? 'insurance_start_date_missing' : null,
+      issueMessage: needsReview ? '신규 입사자 4대보험 취득일 확인 필요' : null,
       createdAt: params.timestamp,
       updatedAt: params.timestamp,
-    })
-  }
-  return rows
+    }
+  })
 }
 
 function buildSampleEmployees(params: SeedParams) {
-  const baseNames = ['김대표', '이수민', '박지훈', '최민준', '정하늘', '오세린', '한유진', '서도윤', '문가람', '장서우', '윤태오', '강하린', '백은서', '남지호']
-  return baseNames.map((displayName, index): typeof employeeProfile.$inferInsert => {
-    const terminated = index >= 12
+  return FIRST_RUN_SAMPLE_EMPLOYEES.map((spec, index): typeof employeeProfile.$inferInsert => {
+    const insuranceApplies = spec.employmentType === '정규직'
     return {
       id: firstRunSampleId(params.tenantId, `employee_${String(index + 1).padStart(2, '0')}`),
       tenantId: params.tenantId,
       clientId: params.clientId,
-      employeeCode: `E${String(index + 1).padStart(3, '0')}`,
-      displayName,
-      department: index === 0 ? '경영' : index % 3 === 0 ? '영업' : index % 3 === 1 ? '운영' : '제품',
-      jobTitle: index === 0 ? '대표' : '매니저',
-      employeeStatus: terminated ? 'terminated' : 'active',
-      payrollEligibility: index === 11 || terminated ? 'excluded' : 'eligible',
-      insuranceEnrollmentStatus: index === 0 ? 'needs_review' : terminated ? 'not_applicable' : 'enrolled',
+      employeeCode: spec.code,
+      displayName: spec.name,
+      department: spec.department,
+      jobTitle: spec.jobTitle,
+      employeeStatus: 'active',
+      payrollEligibility: 'eligible',
+      insuranceEnrollmentStatus: spec.needsReview ? 'needs_review' : insuranceApplies ? 'enrolled' : 'not_applicable',
       hireDate: `2025-${String((index % 12) + 1).padStart(2, '0')}-01`,
-      terminationDate: terminated ? '2026-05-31' : null,
+      terminationDate: null,
       workEmail: `sample.employee${index + 1}@example.invalid`,
       notificationEnabled: index < 2,
       createdByStaffId: params.staffId,
@@ -622,13 +695,13 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     clientId: params.clientId,
     payrollPeriod: FIRST_RUN_SAMPLE_PAYROLL_PERIOD_KEY,
     paymentDate: '2026-06-25',
-    employeeCount: 12,
-    issueCount: 1,
-    grossPayKrw: 42_600_000,
-    withholdingTaxKrw: 2_100_000,
-    socialInsuranceKrw: 3_740_000,
-    deductionTotalKrw: 5_840_000,
-    netPayKrw: 36_760_000,
+    employeeCount: payrollLines.length,
+    issueCount: payrollLines.filter((line) => line.status === 'needs_review').length,
+    grossPayKrw: payrollLines.reduce((sum, line) => sum + (line.grossPayKrw ?? 0), 0),
+    withholdingTaxKrw: payrollLines.reduce((sum, line) => sum + (line.incomeTaxKrw ?? 0) + (line.localIncomeTaxKrw ?? 0), 0),
+    socialInsuranceKrw: payrollLines.reduce((sum, line) => sum + (line.socialInsuranceKrw ?? 0), 0),
+    deductionTotalKrw: payrollLines.reduce((sum, line) => sum + (line.deductionTotalKrw ?? 0), 0),
+    netPayKrw: payrollLines.reduce((sum, line) => sum + (line.netPayKrw ?? 0), 0),
     noticeImportStatus: 'partial',
     closeStatus: 'blocked',
     payslipStatus: 'ready',
@@ -664,10 +737,10 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     department: '경영',
     jobTitle: '대표',
     jobType: '정규직',
-    baseSalary: 4_000_000,
+    baseSalary: 6_000_000,
     bonus: 0,
-    mealAllowance: 200_000,
-    deductionAmount: 700_000,
+    mealAllowance: 0,
+    deductionAmount: 1_280_930,
     memo: '4대보험 취득일 확인 필요',
     sourceReference: JSON.stringify({ source: 'first_run_sample' }),
     confidence: 'medium',

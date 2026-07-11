@@ -51,16 +51,16 @@ describe('first-run sample seed plan', () => {
       pendingDeductionCount: 3,
     })
     expect(summary.payroll).toEqual({
-      employeeCount: 12,
-      grossPayKrw: 42_600_000,
-      deductionTotalKrw: 5_840_000,
-      netPayKrw: 36_760_000,
+      employeeCount: 11,
+      grossPayKrw: 34_500_000,
+      deductionTotalKrw: 3_694_470,
+      netPayKrw: 30_805_530,
       issueCount: 1,
     })
     expect(summary.employees).toEqual({
-      total: 14,
-      active: 12,
-      terminated: 2,
+      total: 11,
+      active: 11,
+      terminated: 0,
       payrollEligible: 11,
       insuranceNeedsReview: 1,
     })
