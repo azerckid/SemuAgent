@@ -185,17 +185,16 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 | 화면 컴포넌트 | 구현 방식 | 기반 |
 |:---|:---|:---|
-| Responsibility Banner | 커스텀 `FilingResponsibilityBanner` | `card` 계열 컨테이너 + 상태 아이콘 |
-| Withholding Period Summary | 커스텀 `WithholdingPeriodSummary` | `card` + `badge` |
-| Path 1b Value List | 커스텀 `DirectEntryValueList` | `항목 = 값` list + copy action |
+| Hometax Route | `WithholdingEfilingPanel` | 한 줄 경로 |
+| Hometax Input Table | `WithholdingEfilingPanel` + `InputGuideRow` | 기본정보·A01 ④⑤⑥ 3열 표 |
+| Wetax Separate Value | `WithholdingEfilingPanel` | 지방소득세 분리 안내 |
 | Receipt Storage | 커스텀 `FilingReceiptList` / `ReceiptUploadButton` | 파일 입력 + `button` + `badge` |
-| Post-filing Checklist | 커스텀 `FilingChecklist` | checkbox/버튼형 토글 + 상태 텍스트 |
-| State(로딩/빈/오류) | 공용 재사용 | `skeleton` + `button` |
 
 - 신규 shadcn 없음. 기존 `card`/`badge`/`button`/`input`/`skeleton` 재사용.
 - 기존 `/dashboard/filing-support`의 원천세 값은 급여·지급 하위 원천세 route로 이동한다. redirect/alias 정책 확정 전 기존 URL은 삭제하지 않는다.
 - 원천세 화면은 급여(JC-012)의 `payroll_period_summary`만 내부 의존성으로 읽는다. 부가세는 부가세 화면에서 처리한다.
-- 자동 홈택스 제출·자동 납부·홈택스/EDI 자격증명 저장 UI는 만들지 않는다. 책임 경계 배너와 하단 안내에서 사용자가 직접 제출/납부함을 명시한다.
+- 자동 홈택스 입력·제출·납부·홈택스/EDI 자격증명 저장 UI는 만들지 않는다. 입력표 하단에서 사용자가 직접 수행함을 명시한다.
+- 기존 부가세·4대보험 패키지, 중복 준비 단계, 혼합 체크리스트는 원천세 route에서 렌더하지 않는다.
 - 접수증은 private storage에 저장하고 화면에는 안전한 파일명·제출일·보관 상태만 표시한다. `storageKey`/Blob URL은 렌더하지 않는다.
 
 ### 7.6a Cadence Navigation / 연간신고
@@ -254,7 +253,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 - 회사 홈: **읽기 전용** — Server Component에서 데이터 페치, 클라이언트 상태 최소.
 - 자료수집: 업로드/정규화 **mutation 발생** — 업로드 진행·오류는 로컬 컴포넌트 상태 + `sonner` 토스트. 목록 갱신은 서버 재검증.
 - 급여: 직원 line 수정·고지액 import/match·명세서 생성·마감 **mutation 발생** — 로컬 입력 상태 + `sonner` 토스트, 성공 후 서버 재검증.
-- 원천세: 접수증 업로드/삭제·체크리스트 토글 **mutation 발생** — 성공 후 서버 재검증. Path 1b 값 복사는 JC-030 후속.
+- 원천세: 홈택스 입력표는 read-only. 원천세 접수증 업로드/삭제만 **mutation 발생** — 성공 후 서버 재검증.
 - 기간 컨텍스트는 URL 파라미터로 관리(전역 스토어 미도입).
 
 ## 10. 미결/후속

@@ -1,19 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import {
-  pendingBinaryLayoutIssue,
-  validateWithholdingPanel,
-} from './validate-panel'
+import { validateWithholdingPanel } from './validate-panel'
 import type { ValidateWithholdingPanelInput, WithholdingPayrollLine } from './types'
 
 function baseInput(over: Partial<ValidateWithholdingPanelInput> = {}): ValidateWithholdingPanelInput {
   return {
     payrollPeriodKey: '2026-06',
+    paymentDate: '2026-06-25',
     closeStatus: 'closed',
     periodEmployeeCount: 12,
     periodGrossPayKrw: 42_600_000,
     confirmedEmployeeCount: 12,
     confirmedGrossPayKrw: 42_600_000,
     confirmedIncomeTaxKrw: 1_910_000,
+    localIncomeTaxKrw: 191_000,
     guideEmployeeCount: 12,
     guideGrossPayKrw: 42_600_000,
     guideIncomeTaxKrw: 1_910_000,
@@ -80,13 +79,5 @@ describe('validateWithholdingPanel', () => {
   it('passes when A01 matches JC-013 guide values', () => {
     const issues = validateWithholdingPanel(baseInput({ lines: [line()] }))
     expect(issues.filter((i) => i.severity === 'error')).toHaveLength(0)
-  })
-})
-
-describe('pendingBinaryLayoutIssue', () => {
-  it('returns warn severity for missing binary spec', () => {
-    const issue = pendingBinaryLayoutIssue()
-    expect(issue.severity).toBe('warn')
-    expect(issue.ruleId).toBe('W-V-06')
   })
 })

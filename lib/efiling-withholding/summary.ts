@@ -1,5 +1,4 @@
 export type {
-  EfilingFormatCheck,
   EfilingPanelTone,
   EfilingValidationDisplayItem,
   WithholdingBusinessContext,

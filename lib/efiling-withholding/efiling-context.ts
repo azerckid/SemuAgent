@@ -74,6 +74,7 @@ export async function loadWithholdingEfilingContext(params: {
   const payrollRows = await db
     .select({
       id: payrollPeriodSummary.id,
+      paymentDate: payrollPeriodSummary.paymentDate,
       employeeCount: payrollPeriodSummary.employeeCount,
       grossPayKrw: payrollPeriodSummary.grossPayKrw,
       withholdingTaxKrw: payrollPeriodSummary.withholdingTaxKrw,
@@ -113,12 +114,14 @@ export async function loadWithholdingEfilingContext(params: {
 
   const panelInput: ValidateWithholdingPanelInput = {
     payrollPeriodKey: period.payrollPeriodKey,
+    paymentDate: payrollBase.paymentDate,
     closeStatus: payrollBase.closeStatus,
     periodEmployeeCount: payrollBase.employeeCount,
     periodGrossPayKrw: payrollBase.grossPayKrw,
     confirmedEmployeeCount: localIncomeTaxTotals.readyEmployees,
     confirmedGrossPayKrw: localIncomeTaxTotals.grossPayKrw,
     confirmedIncomeTaxKrw: localIncomeTaxTotals.incomeTaxKrw,
+    localIncomeTaxKrw: localIncomeTaxTotals.localIncomeTaxKrw,
     guideEmployeeCount: payroll.employeeCount,
     guideGrossPayKrw: payroll.grossPayKrw,
     guideIncomeTaxKrw: payroll.incomeTaxKrw,

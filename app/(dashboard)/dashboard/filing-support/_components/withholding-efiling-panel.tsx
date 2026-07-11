@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import type { WithholdingEfilingSummary } from '@/lib/efiling-withholding/summary'
-import { HOMETAX_WITHHOLDING_UPLOAD_STEPS } from '@/lib/efiling-withholding/hometax-guide'
 
 const LIST_TONE: Record<string, string> = {
   ok: 'text-[#16a34a]',
@@ -9,168 +8,125 @@ const LIST_TONE: Record<string, string> = {
   muted: 'text-company-fg-subtle',
 }
 
-const STAT_SUB = 'text-[11px] text-company-fg-subtle'
+const HOMETAX_WITHHOLDING_PATH = '세금신고 → 원천세 신고 → 일반 신고 → 정기신고'
 
 function formatKrw(value: number): string {
   return `${value.toLocaleString('ko-KR')}원`
 }
 
 export function WithholdingEfilingPanel({ efiling }: { readonly efiling: WithholdingEfilingSummary }) {
-  const { stats, formatChecks, validationItems, a01 } = efiling
+  const { validationItems, a01 } = efiling
 
   return (
     <section
       id="jc-030-withholding-efiling-panel"
-      className="overflow-hidden rounded-xl border border-[#ddd6fe] bg-gradient-to-b from-[#faf5ff] to-company-surface shadow-company-card"
-      aria-label="원천징수이행상황신고서 전자신고 패널"
+      className="overflow-hidden rounded-xl border border-[#ddd6fe] bg-company-surface shadow-company-card"
+      aria-label="원천징수이행상황신고서 홈택스 직접입력 안내"
     >
-      <div className="flex flex-col gap-4 border-b border-[#e9e5ff] px-[18px] py-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0">
-          <h3 className="text-[15px] font-semibold text-foreground">원천징수이행상황신고서 전자신고 파일 후보</h3>
-          <p className="mt-1 max-w-[720px] text-[12.5px] leading-relaxed text-company-fg-muted">
-            {efiling.payrollLabel} A01 간이세액 집계를 바탕으로 홈택스 <b className="font-semibold text-foreground">변환 파일제출</b>용 파일을 준비합니다.
-            현재는 서식·JC-013 가이드 사전검증만 제공하며, 바이너리 레이아웃 입수 전까지 다운로드는 비활성입니다.
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <a
-            href="#jc-030-withholding-validation-results"
-            className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-xs font-semibold"
-          >
-            검증 결과 보기
-          </a>
-        </div>
+      <div className="border-b border-company-border px-[18px] py-4">
+        <h2 className="text-[15px] font-semibold text-foreground">홈택스 원천세 입력 안내</h2>
+        <p className="mt-1 text-[12.5px] text-company-fg-muted">
+          아래 경로를 연 뒤, 표에 표시된 위치에 확정값을 입력하세요.
+        </p>
       </div>
 
-      <div className="grid gap-3 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-3">
-        <EfilingStat label="A01 확정 인원" value={`${a01.employeeCount}명`} sub={`확정 라인 ${stats.confirmedCount}명`} />
-        <EfilingStat label="A01 총지급액" value={formatKrw(a01.grossPayKrw)} sub="별지 제21호 ⑤" />
-        <EfilingStat label="A01 소득세 등" value={formatKrw(a01.incomeTaxKrw)} sub="별지 제21호 ⑥ · 지방소득세 별도" />
+      <div className="border-b border-company-border bg-[#f8fafc] px-[18px] py-3.5">
+        <p className="text-[11px] font-semibold text-company-fg-subtle">홈택스 이동 경로</p>
+        <p className="mt-1 text-[13px] font-semibold text-foreground">{HOMETAX_WITHHOLDING_PATH}</p>
+        <p className="mt-1 text-[11px] text-company-fg-subtle">
+          2026년 7월 홈택스 화면 기준이며, 메뉴명은 홈택스 개편에 따라 달라질 수 있습니다.
+        </p>
       </div>
 
-      <div className="grid gap-2 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StepCard step={1} active title="서식·집계 확인" desc="A01 ↔ JC-013 가이드 대조" />
-        <StepCard step={2} title="바이너리 레이아웃" desc="전자신고 이용안내 입수 대기" />
-        <StepCard step={3} title="사전검증" desc="변환제출 전 정합성 확인" />
-        <StepCard step={4} title="다운로드 · 홈택스" desc="사용자 직접 변환제출" />
+      <div className="overflow-x-auto border-b border-company-border px-[18px] py-4">
+        <table className="w-full min-w-[680px] table-fixed border-collapse text-left text-[12.5px]">
+          <colgroup>
+            <col className="w-[22%]" />
+            <col className="w-[46%]" />
+            <col className="w-[32%]" />
+          </colgroup>
+          <thead>
+            <tr className="border-b border-company-border text-[11px] text-company-fg-subtle">
+              <th className="px-3 py-2 font-semibold">홈택스 화면</th>
+              <th className="px-3 py-2 font-semibold">입력 위치</th>
+              <th className="px-3 py-2 font-semibold">입력·확인할 값</th>
+            </tr>
+          </thead>
+          <tbody>
+            <InputGuideRow screen="기본정보" field="① 신고구분" value="매월" />
+            <InputGuideRow screen="기본정보" field="② 귀속연월" value={efiling.payrollLabel.replace(' 귀속', '')} />
+            <InputGuideRow
+              screen="기본정보"
+              field="③ 지급연월"
+              value={efiling.paymentLabel}
+              needsReview={!efiling.paymentPeriodKey}
+            />
+            <InputGuideRow
+              screen="기본정보"
+              field="사업자"
+              value={[efiling.businessName, efiling.representativeName, efiling.businessRegistrationMasked].filter(Boolean).join(' · ')}
+            />
+            <InputGuideRow screen="원천징수이행상황신고서" field="근로소득 → 간이세액(A01) → ④ 인원" value={`${a01.employeeCount}명`} />
+            <InputGuideRow screen="원천징수이행상황신고서" field="근로소득 → 간이세액(A01) → ⑤ 총지급액" value={formatKrw(a01.grossPayKrw)} />
+            <InputGuideRow screen="원천징수이행상황신고서" field="근로소득 → 간이세액(A01) → ⑥ 소득세 등" value={formatKrw(a01.incomeTaxKrw)} />
+          </tbody>
+        </table>
       </div>
 
-      <div className="grid gap-4 px-[18px] py-4 lg:grid-cols-2">
-        <div className="rounded-[10px] border border-company-border bg-company-surface p-3.5">
-          <h4 className="text-[13px] font-semibold">파일 규격 상태</h4>
-          <ul className="mt-2.5 space-y-1.5 text-[12.5px]">
-            {formatChecks.map((item) => (
-              <li key={item.id} className={LIST_TONE[item.tone] ?? LIST_TONE.muted}>
-                {item.label}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div id="jc-030-withholding-validation-results" className="rounded-[10px] border border-company-border bg-company-surface p-3.5">
-          <h4 className="text-[13px] font-semibold">사전검증 결과</h4>
+      <div className="grid gap-4 px-[18px] py-4 lg:grid-cols-[1fr_auto] lg:items-start">
+        <div id="jc-030-withholding-validation-results" className="rounded-lg border border-company-border p-3.5">
+          <h3 className="text-[13px] font-semibold">입력 전 확인</h3>
           {validationItems.length === 0 ? (
             <p className="mt-2.5 text-[12.5px] text-company-fg-muted">검증할 급여 데이터가 없습니다.</p>
           ) : (
             <ul className="mt-2.5 space-y-1.5 text-[12.5px]">
               {validationItems.map((item) => (
                 <li key={item.id} className={LIST_TONE[item.tone]}>
-                  {item.employeeName ? (
-                    <>
-                      <span className="font-semibold">{item.employeeName}</span>
-                      {' — '}
-                      {item.message}
-                    </>
-                  ) : (
-                    item.message
-                  )}
+                  {item.employeeName ? <><span className="font-semibold">{item.employeeName}</span>{' — '}{item.message}</> : item.message}
                 </li>
               ))}
             </ul>
           )}
         </div>
-      </div>
 
-      <div className="border-t border-[#e9e5ff] px-[18px] py-4">
-        <h4 className="text-[13px] font-semibold text-foreground">홈택스 변환제출 안내</h4>
-        <ol className="mt-2.5 space-y-1.5 text-[12px] text-company-fg-muted">
-          {HOMETAX_WITHHOLDING_UPLOAD_STEPS.map((step) => (
-            <li key={step.order}>
-              <span className="font-semibold text-foreground">{step.order}.</span>
-              {' '}
-              {step.label}
-            </li>
-          ))}
-        </ol>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            title="바이너리 레이아웃 입수 후 활성화됩니다"
-            className="cursor-not-allowed rounded-lg border border-company-border bg-[#f1f1f2] px-3 py-2 text-[12px] font-semibold text-company-fg-subtle"
-          >
-            전자신고 파일 다운로드 (준비 중)
-          </button>
-          <Link
-            href={`/dashboard/payroll?period=${efiling.payrollPeriodKey}`}
-            className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-2 text-[12px] font-semibold text-foreground hover:bg-company-nav-hover"
-          >
-            급여 열기
-          </Link>
+        <div className="rounded-lg border border-[#fed7aa] bg-[#fff7ed] p-3.5 text-[12.5px] text-[#9a3412]">
+          <p className="font-semibold">위택스 별도 신고</p>
+          <p className="mt-1">지방소득세 특별징수분: <b>{formatKrw(efiling.localIncomeTaxKrw)}</b></p>
+          <p className="mt-1 text-[11px]">홈택스 원천세 신고서에 합산하지 않습니다.</p>
         </div>
       </div>
 
-      <div className="border-t border-[#e9e5ff] bg-[#faf5ff] px-[18px] py-3.5 text-[12px] leading-relaxed text-[#4c1d95]">
-        <b className="text-[#3b0764]">책임 경계</b>
-        {' — '}
-        본 기능은 A01 서식 집계·JC-013 가이드 사전검증까지입니다.
-        홈택스 제출 보장·자동 신고·「국세청 검증 완료」 표시는 하지 않습니다.
-        {efiling.businessRegistrationMasked ? (
-          <>
-            {' '}
-            사업자등록번호: {efiling.businessRegistrationMasked}
-          </>
-        ) : null}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-company-border px-[18px] py-4">
+        <p className="text-[11.5px] text-company-fg-subtle">입력·제출·납부는 사용자가 홈택스에서 직접 진행합니다.</p>
+        <Link
+          href={`/dashboard/payroll?period=${efiling.payrollPeriodKey}`}
+          className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-2 text-[12px] font-semibold text-foreground hover:bg-company-nav-hover"
+        >
+          급여 열기
+        </Link>
       </div>
     </section>
   )
 }
 
-function EfilingStat({ label, value, sub }: { label: string; value: string; sub: string }) {
-  return (
-    <div className="rounded-[10px] border border-[#e9e5ff] bg-company-surface px-3 py-2.5">
-      <p className={`${STAT_SUB} font-medium`}>{label}</p>
-      <p className="mt-0.5 text-xl font-bold tracking-tight">{value}</p>
-      <p className={STAT_SUB}>{sub}</p>
-    </div>
-  )
-}
-
-function StepCard({
-  step,
-  title,
-  desc,
-  active,
+function InputGuideRow({
+  screen,
+  field,
+  value,
+  needsReview = false,
 }: {
-  step: number
-  title: string
-  desc: string
-  active?: boolean
+  readonly screen: string
+  readonly field: string
+  readonly value: string
+  readonly needsReview?: boolean
 }) {
   return (
-    <div
-      className={`rounded-[10px] border px-3 py-2.5 ${
-        active
-          ? 'border-[#7c3aed] bg-[#f5f3ff]'
-          : 'border-company-border bg-company-surface opacity-80'
-      }`}
-    >
-      <p className={`text-[10px] font-bold uppercase tracking-wide ${active ? 'text-[#7c3aed]' : 'text-company-fg-subtle'}`}>
-        STEP {step}
-      </p>
-      <p className="mt-0.5 text-[12.5px] font-semibold">{title}</p>
-      <p className="mt-0.5 text-[11px] text-company-fg-subtle">{desc}</p>
-    </div>
+    <tr className="border-b border-company-border last:border-b-0">
+      <td className="px-3 py-2.5 text-company-fg-muted">{screen}</td>
+      <td className="px-3 py-2.5 font-medium text-foreground">{field}</td>
+      <td className={`px-3 py-2.5 font-semibold tabular-nums ${needsReview ? 'text-[#d97706]' : 'text-[#2563eb]'}`}>
+        {value}
+      </td>
+    </tr>
   )
 }

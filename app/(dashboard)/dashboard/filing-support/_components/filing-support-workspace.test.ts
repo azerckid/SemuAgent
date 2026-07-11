@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 const componentsDir = new URL('.', import.meta.url)
 const workspaceRoot = join(componentsDir.pathname, '../../../../..')
 const workspaceSource = readFileSync(new URL('./filing-support-workspace.tsx', import.meta.url), 'utf8')
+const withholdingPanelSource = readFileSync(new URL('./withholding-efiling-panel.tsx', import.meta.url), 'utf8')
 const actionsSource = readFileSync(new URL('./filing-actions.tsx', import.meta.url), 'utf8')
 const pageSource = readFileSync(new URL('../page.tsx', import.meta.url), 'utf8')
 const summarySource = readFileSync(join(workspaceRoot, 'lib/filing-support/summary.ts'), 'utf8')
@@ -17,15 +18,10 @@ const layoutSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/layout.ts
 const companyHomeSummarySource = readFileSync(join(workspaceRoot, 'lib/company-home/summary.ts'), 'utf8')
 
 describe('filing support workspace static contract (JC-013)', () => {
-  it('renders the approved Preview 4.6 section order (S-01, S-71)', () => {
+  it('renders the withholding input guide before its receipt storage', () => {
     const sectionOrder = [
-      'ResponsibilityBanner',
-      'FilingItemsSection',
-      'PreparationValuesCard',
+      'WithholdingEfilingPanel',
       'ReceiptsCard',
-      'ChecklistSection',
-      'StateCoverageSection',
-      'PreviewNote',
     ]
     const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
 
@@ -41,11 +37,9 @@ describe('filing support workspace static contract (JC-013)', () => {
   })
 
   it('keeps the responsibility boundary visible and avoids misleading submission/payment CTAs (S-04, S-60~63)', () => {
-    const renderSource = `${workspaceSource}\n${summarySource}\n${actionsSource}`
+    const renderSource = `${workspaceSource}\n${withholdingPanelSource}\n${summarySource}\n${actionsSource}`
 
-    expect(renderSource).toContain('신고서 제출을 대행하지 않습니다')
-    expect(renderSource).toContain('자동 제출 아님')
-    expect(renderSource).toContain('신고서 자동 제출·세금 자동 납부는 제공하지 않습니다')
+    expect(renderSource).toContain('입력·제출·납부는 사용자가 홈택스에서 직접 진행합니다')
 
     for (const forbidden of [
       '홈택스 제출하기',
@@ -88,11 +82,18 @@ describe('filing support workspace static contract (JC-013)', () => {
     }
   })
 
-  it('keeps locked package buttons disabled with visible lock notes (S-20, S-72)', () => {
-    expect(workspaceSource).toContain('aria-disabled="true"')
-    expect(workspaceSource).toContain('disabled')
-    expect(workspaceSource).toContain('item.lockReason')
-    expect(summarySource).toContain('패키지 · 잠김')
+  it('does not render cross-tax package cards or duplicated filing checklists on the withholding route', () => {
+    for (const removed of [
+      'FilingItemsSection',
+      'PreparationValuesCard',
+      'ChecklistSection',
+      'StateCoverageSection',
+      'PreviewNote',
+      '신고 항목 · 첨부 패키지',
+      '사후 체크리스트',
+    ]) {
+      expect(workspaceSource).not.toContain(removed)
+    }
   })
 
   it('wires receipt and checklist mutations to tenant-scoped API routes (S-40~43, S-50~53)', () => {
@@ -117,18 +118,16 @@ describe('filing support workspace static contract (JC-013)', () => {
     expect(actionsSource).not.toContain('storageKey')
   })
 
-  it('keeps visible copy aligned to the approved static preview', () => {
-    const renderSource = `${workspaceSource}\n${summarySource}\n${actionsSource}`
+  it('keeps visible copy aligned to the focused withholding preview', () => {
+    const renderSource = `${workspaceSource}\n${withholdingPanelSource}\n${summarySource}\n${actionsSource}`
 
     for (const token of [
-      '신고 항목 · 첨부 패키지',
-      '신고 준비값 확인 · 원천세',
-      '급여 산출물 확인',
+      '홈택스 원천세 입력 안내',
+      '원천징수이행상황신고서',
+      '간이세액(A01)',
+      '2026년 7월 홈택스 화면 기준',
       '제출 접수증 보관',
-      '사후 체크리스트',
-      '화면 상태 예시',
       '아직 신고할 항목이 없습니다',
-      '책임 경계',
     ]) {
       expect(renderSource).toContain(token)
     }

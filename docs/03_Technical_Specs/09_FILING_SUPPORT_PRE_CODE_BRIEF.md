@@ -1,6 +1,12 @@
 # Filing Support Pre-Code Technical Brief
 > Created: 2026-07-02 20:23
-> Last Updated: 2026-07-03 20:24
+> Last Updated: 2026-07-12 KST
+
+> **Superseded UI contract:** 이 문서는 JC-013 통합 신고지원의 구현 이력을 보존한다.
+> cadence 내비게이션 이후 `/dashboard/filing-support`는 `급여·지급 > 원천세` 전용 화면으로
+> 재배치됐다. 현재 UI 계약은 [Screen Flow §4f](../02_UI_Screens/00_SCREEN_FLOW.md),
+> [UI Design §4.6](../02_UI_Screens/01_UI_DESIGN.md), [원천세 Brief 39](./39_JC030_WITHHOLDING_EFILING_PRE_CODE_BRIEF.md)를 따른다.
+> 기존 `filing_item`·`filing_checklist_item` 데이터/API는 이력 호환을 위해 남지만 원천세 화면에는 렌더하지 않는다.
 
 ## 0. Governing Principle - Preview UI가 계약이다
 

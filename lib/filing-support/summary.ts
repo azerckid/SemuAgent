@@ -764,5 +764,12 @@ export async function loadFilingSupportSummary({
 export async function loadFilingSupportAttentionCount(tenantId: string) {
   const summary = await loadFilingSupportSummary({ tenantId })
 
-  return summary.items.filter((item) => item.status === 'locked' || item.status === 'needs_review').length
+  return countWithholdingAttentionItems(summary.items)
+}
+
+export function countWithholdingAttentionItems(items: FilingSupportItem[]) {
+  return items.filter((item) => (
+    item.type === 'withholding'
+    && (item.status === 'locked' || item.status === 'needs_review')
+  )).length
 }
