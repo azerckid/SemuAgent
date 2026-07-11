@@ -1,6 +1,6 @@
 # JC-030 Withholding Official Upload Form Pre-Code Technical Brief
 > Created: 2026-07-07 04:40 KST
-> Last Updated: 2026-07-11 KST
+> Last Updated: 2026-07-12 KST
 
 ## 0.1 Flow Status
 
@@ -8,7 +8,7 @@
 [Flow]
 완료: Slice 0b 서식 조사·Part A 매핑, Slice 1a 검증 패널, W0 공식 경로 감사
 판정: 원천세 1a 양식 없음 → 1b(직접입력 정리) 대상으로 결정. 공식 안내는 직접작성/비밀번호 변환파일뿐
-다음(미구현): A01 확정 집계를 1b `항목 = 값` 화면으로 정리(파일 generator 없음)
+완료: A01 확정 집계를 1b `항목 = 값` 화면으로 정리(지방소득세 참고값 포함·파일 generator 없음)
 1a 승격: 최신 공식 비암호화 원본과 직접 수용 메뉴가 새로 확인되면 본 Brief(W1~W5)를 활성화
 제외: 바이너리 레코드 추정, fcrypt·암호화 파일, 단계별 위치 안내
 ```
@@ -22,7 +22,7 @@ JC-030 Path 1 **2번 세목 후보**는 JC-012·JC-013이 준비한 **월별 원
 - **자동 제출·자격증명 저장 없음** (JC-023 원칙).
 - **self-filing 보조** — 사용자가 홈택스 원천세 신고에서 준비된 파일을 직접 업로드·제출.
 - v1은 **근로소득 간이세액(A01) 집계 행**만; 환급조정·부표·타 소득구분 제외.
-- 공식 비암호화 업로드 양식 **미확인** → 원천세는 **1b(직접입력 정리) 대상으로 결정** — [Final Audit](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md). 아래 1a 파일 구현 범위는 공식 양식 확인 전 비활성이다. 1b A01 값 정리 화면은 아직 구현하지 않았고(현재 앱은 검증 패널만 표시) 후속 구현 과제다.
+- 공식 비암호화 업로드 양식 **미확인** → 원천세는 **1b(직접입력 정리) 대상으로 결정** — [Final Audit](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md). 아래 1a 파일 구현 범위는 공식 양식 확인 전 비활성이다. 1b A01 값 정리 화면(지방소득세 참고값 포함)은 `/dashboard/filing-support` 원천세 패널에 구현 완료됐다.
 
 ## 1. Scope
 
@@ -131,7 +131,7 @@ Response: W0에서 확인된 공식 파일의 content type 또는 `422` + valida
 | **1b-W3** | generate API + 다운로드 UI | tenant/client/month scope, 서버 미보관, blocker 우회 불가 |
 | **1b-W4** | file/browser/Hometax verification | 파일 구조 fixture와 실제 비암호화 업로드 검증 통과 |
 | **1b-W5** | docs/QA closeout | Roadmap §2.1, Backlog, QA, Audit 동기화 |
-| **1b branch** | 공식 양식 없음 | 1a generator 미구현, 확정 A01을 직접입력 정리 화면으로 표시하는 것이 목표(1b 화면 미구현) |
+| **1b branch** | 공식 양식 없음 | 1a generator 미구현. 확정 A01을 직접입력 정리 화면으로 표시하는 값 정리 화면은 **구현 완료** |
 
 Slice 1b는 W0부터 W5까지 완료되어야 끝난다. W0·W1 전에는 W2 generator
 코드를 작성하지 않는다.

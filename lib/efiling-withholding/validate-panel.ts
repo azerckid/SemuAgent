@@ -14,7 +14,7 @@ function digitsOnly(value: string): string {
 }
 
 /**
- * Slice 1a — A01 서식·JC-013 가이드 정합성 검증. PII·바이너리 레코드는 범위 밖.
+ * A01 서식·JC-013 가이드 정합성 검증(1a/1b 공통). PII·바이너리 레코드는 범위 밖.
  */
 export function validateWithholdingPanel(input: ValidateWithholdingPanelInput): ValidationIssue[] {
   const issues: ValidationIssue[] = []
@@ -80,19 +80,4 @@ export function validateWithholdingPanel(input: ValidateWithholdingPanelInput): 
   }
 
   return issues
-}
-
-export function pendingSubmissionMetaIssues(): ValidationIssue[] {
-  return [
-    issue('W-V-09', 'warn', '세무서코드(3자리) — 바이너리 스펙 확정 후 파일 생성 시 입력 필요'),
-    issue('W-V-09', 'warn', '담당자 연락처 — 바이너리 스펙 확정 후 파일 생성 시 입력 필요'),
-  ]
-}
-
-export function pendingBinaryLayoutIssue(): ValidationIssue {
-  return issue(
-    'W-V-06',
-    'warn',
-    '바이너리 전자신고 레이아웃 미입수 — 파일 다운로드는 전자신고 이용안내·변환프로그램 번들 확정 후 가능',
-  )
 }

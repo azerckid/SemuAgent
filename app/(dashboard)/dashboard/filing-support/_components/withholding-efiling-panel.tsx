@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import type { WithholdingEfilingSummary } from '@/lib/efiling-withholding/summary'
-import { HOMETAX_WITHHOLDING_UPLOAD_STEPS } from '@/lib/efiling-withholding/hometax-guide'
 
 const LIST_TONE: Record<string, string> = {
   ok: 'text-[#16a34a]',
@@ -22,14 +21,15 @@ export function WithholdingEfilingPanel({ efiling }: { readonly efiling: Withhol
     <section
       id="jc-030-withholding-efiling-panel"
       className="overflow-hidden rounded-xl border border-[#ddd6fe] bg-gradient-to-b from-[#faf5ff] to-company-surface shadow-company-card"
-      aria-label="원천징수이행상황신고서 전자신고 패널"
+      aria-label="원천징수이행상황신고서 직접입력 정리 패널"
     >
       <div className="flex flex-col gap-4 border-b border-[#e9e5ff] px-[18px] py-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <h3 className="text-[15px] font-semibold text-foreground">원천징수이행상황신고서 전자신고 파일 후보</h3>
+          <h3 className="text-[15px] font-semibold text-foreground">원천징수이행상황신고서 직접입력 정리</h3>
           <p className="mt-1 max-w-[720px] text-[12.5px] leading-relaxed text-company-fg-muted">
-            {efiling.payrollLabel} A01 간이세액 집계를 바탕으로 홈택스 <b className="font-semibold text-foreground">변환 파일제출</b>용 파일을 준비합니다.
-            현재는 서식·JC-013 가이드 사전검증만 제공하며, 바이너리 레이아웃 입수 전까지 다운로드는 비활성입니다.
+            {efiling.payrollLabel} A01 간이세액 집계는 공식 비암호화 업로드 양식이 없어
+            확정값을 <b className="font-semibold text-foreground">항목 = 값</b>으로 정리합니다.
+            아래 값을 홈택스 원천세 신고 화면에 직접 입력해 주세요.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
@@ -42,22 +42,16 @@ export function WithholdingEfilingPanel({ efiling }: { readonly efiling: Withhol
         </div>
       </div>
 
-      <div className="grid gap-3 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-3">
+      <div className="grid gap-3 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-2 lg:grid-cols-4">
         <EfilingStat label="A01 확정 인원" value={`${a01.employeeCount}명`} sub={`확정 라인 ${stats.confirmedCount}명`} />
         <EfilingStat label="A01 총지급액" value={formatKrw(a01.grossPayKrw)} sub="별지 제21호 ⑤" />
-        <EfilingStat label="A01 소득세 등" value={formatKrw(a01.incomeTaxKrw)} sub="별지 제21호 ⑥ · 지방소득세 별도" />
-      </div>
-
-      <div className="grid gap-2 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StepCard step={1} active title="서식·집계 확인" desc="A01 ↔ JC-013 가이드 대조" />
-        <StepCard step={2} title="바이너리 레이아웃" desc="전자신고 이용안내 입수 대기" />
-        <StepCard step={3} title="사전검증" desc="변환제출 전 정합성 확인" />
-        <StepCard step={4} title="다운로드 · 홈택스" desc="사용자 직접 변환제출" />
+        <EfilingStat label="A01 소득세 등" value={formatKrw(a01.incomeTaxKrw)} sub="별지 제21호 ⑥" />
+        <EfilingStat label="지방소득세 (참고)" value={formatKrw(efiling.localIncomeTaxKrw)} sub="위택스 특별징수 별도 신고" />
       </div>
 
       <div className="grid gap-4 px-[18px] py-4 lg:grid-cols-2">
         <div className="rounded-[10px] border border-company-border bg-company-surface p-3.5">
-          <h4 className="text-[13px] font-semibold">파일 규격 상태</h4>
+          <h4 className="text-[13px] font-semibold">제공 경로 상태</h4>
           <ul className="mt-2.5 space-y-1.5 text-[12.5px]">
             {formatChecks.map((item) => (
               <li key={item.id} className={LIST_TONE[item.tone] ?? LIST_TONE.muted}>
@@ -92,26 +86,11 @@ export function WithholdingEfilingPanel({ efiling }: { readonly efiling: Withhol
       </div>
 
       <div className="border-t border-[#e9e5ff] px-[18px] py-4">
-        <h4 className="text-[13px] font-semibold text-foreground">홈택스 변환제출 안내</h4>
-        <ol className="mt-2.5 space-y-1.5 text-[12px] text-company-fg-muted">
-          {HOMETAX_WITHHOLDING_UPLOAD_STEPS.map((step) => (
-            <li key={step.order}>
-              <span className="font-semibold text-foreground">{step.order}.</span>
-              {' '}
-              {step.label}
-            </li>
-          ))}
-        </ol>
+        <h4 className="text-[13px] font-semibold text-foreground">직접입력 안내</h4>
+        <p className="mt-2.5 text-[12px] text-company-fg-muted">
+          위 값을 홈택스 원천세 신고 화면에 직접 입력한 뒤 제출하세요.
+        </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            title="바이너리 레이아웃 입수 후 활성화됩니다"
-            className="cursor-not-allowed rounded-lg border border-company-border bg-[#f1f1f2] px-3 py-2 text-[12px] font-semibold text-company-fg-subtle"
-          >
-            전자신고 파일 다운로드 (준비 중)
-          </button>
           <Link
             href={`/dashboard/payroll?period=${efiling.payrollPeriodKey}`}
             className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-2 text-[12px] font-semibold text-foreground hover:bg-company-nav-hover"
@@ -124,8 +103,8 @@ export function WithholdingEfilingPanel({ efiling }: { readonly efiling: Withhol
       <div className="border-t border-[#e9e5ff] bg-[#faf5ff] px-[18px] py-3.5 text-[12px] leading-relaxed text-[#4c1d95]">
         <b className="text-[#3b0764]">책임 경계</b>
         {' — '}
-        본 기능은 A01 서식 집계·JC-013 가이드 사전검증까지입니다.
-        홈택스 제출 보장·자동 신고·「국세청 검증 완료」 표시는 하지 않습니다.
+        본 기능은 A01 서식 집계·직접입력 정리(1b)까지입니다.
+        홈택스 메뉴·입력칸 위치 단계별 안내, 자동 신고, 「국세청 검증 완료」 표시는 제공하지 않습니다.
         {efiling.businessRegistrationMasked ? (
           <>
             {' '}
@@ -143,34 +122,6 @@ function EfilingStat({ label, value, sub }: { label: string; value: string; sub:
       <p className={`${STAT_SUB} font-medium`}>{label}</p>
       <p className="mt-0.5 text-xl font-bold tracking-tight">{value}</p>
       <p className={STAT_SUB}>{sub}</p>
-    </div>
-  )
-}
-
-function StepCard({
-  step,
-  title,
-  desc,
-  active,
-}: {
-  step: number
-  title: string
-  desc: string
-  active?: boolean
-}) {
-  return (
-    <div
-      className={`rounded-[10px] border px-3 py-2.5 ${
-        active
-          ? 'border-[#7c3aed] bg-[#f5f3ff]'
-          : 'border-company-border bg-company-surface opacity-80'
-      }`}
-    >
-      <p className={`text-[10px] font-bold uppercase tracking-wide ${active ? 'text-[#7c3aed]' : 'text-company-fg-subtle'}`}>
-        STEP {step}
-      </p>
-      <p className="mt-0.5 text-[12.5px] font-semibold">{title}</p>
-      <p className="mt-0.5 text-[11px] text-company-fg-subtle">{desc}</p>
     </div>
   )
 }

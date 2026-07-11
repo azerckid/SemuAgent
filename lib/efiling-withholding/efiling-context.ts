@@ -119,6 +119,7 @@ export async function loadWithholdingEfilingContext(params: {
     confirmedEmployeeCount: localIncomeTaxTotals.readyEmployees,
     confirmedGrossPayKrw: localIncomeTaxTotals.grossPayKrw,
     confirmedIncomeTaxKrw: localIncomeTaxTotals.incomeTaxKrw,
+    localIncomeTaxKrw: localIncomeTaxTotals.localIncomeTaxKrw,
     guideEmployeeCount: payroll.employeeCount,
     guideGrossPayKrw: payroll.grossPayKrw,
     guideIncomeTaxKrw: payroll.incomeTaxKrw,

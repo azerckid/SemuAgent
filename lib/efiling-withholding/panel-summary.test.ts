@@ -11,6 +11,7 @@ function panelInput(over: Partial<ValidateWithholdingPanelInput> = {}): Validate
     confirmedEmployeeCount: 12,
     confirmedGrossPayKrw: 42_600_000,
     confirmedIncomeTaxKrw: 1_910_000,
+    localIncomeTaxKrw: 191_000,
     guideEmployeeCount: 12,
     guideGrossPayKrw: 42_600_000,
     guideIncomeTaxKrw: 1_910_000,
@@ -23,7 +24,7 @@ function panelInput(over: Partial<ValidateWithholdingPanelInput> = {}): Validate
 }
 
 describe('buildWithholdingEfilingSummary', () => {
-  it('exposes A01 aggregate fields and disables download (Slice 1a)', () => {
+  it('exposes A01 aggregate fields and reference local income tax total (Path 1b)', () => {
     const summary = buildWithholdingEfilingSummary({
       panelInput: panelInput(),
       business: {
@@ -39,12 +40,13 @@ describe('buildWithholdingEfilingSummary', () => {
       grossPayKrw: 42_600_000,
       incomeTaxKrw: 1_910_000,
     })
+    expect(summary.localIncomeTaxKrw).toBe(191_000)
     expect(summary.downloadAvailable).toBe(false)
     expect(summary.binaryLayoutReady).toBe(false)
     expect(summary.payrollLabel).toBe('2026년 6월 귀속')
   })
 
-  it('includes binary layout gap in format checks', () => {
+  it('marks the missing official upload form as a confirmed 1b decision, not a pending gap', () => {
     const summary = buildWithholdingEfilingSummary({
       panelInput: panelInput(),
       business: {
@@ -55,8 +57,8 @@ describe('buildWithholdingEfilingSummary', () => {
       },
     })
 
-    expect(summary.formatChecks.some((c) => c.id === 'layout' && c.tone === 'warn')).toBe(true)
-    expect(summary.validationItems.some((i) => i.ruleId === 'W-V-06')).toBe(true)
+    expect(summary.formatChecks.some((c) => c.id === 'layout' && c.tone === 'ok')).toBe(true)
+    expect(summary.formatChecks.some((c) => c.tone === 'warn')).toBe(false)
   })
 
   it('marks blocking when payroll is not closed', () => {
