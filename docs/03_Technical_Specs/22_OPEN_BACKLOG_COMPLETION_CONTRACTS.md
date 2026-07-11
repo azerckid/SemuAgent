@@ -303,11 +303,11 @@ Non-goals before done:
 ### JC-034 — GIWA handoff package (Path 2 · ZIP Export v1)
 
 Current gate: scope fixed in [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md), but
-**implementation deferred** until Path 1 beta is stable ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)). The earlier 08 preview handoff panel is superseded by the Path 1-only filing-preparation preview.
+**implementation deferred** until Path 1a beta is stable ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)). The earlier 08 preview handoff panel is superseded by the Path 1-only filing-preparation preview.
 
 May start implementation only after:
 
-- [ ] UI-First Gate for handoff export panel — Path 1 beta 이후 신규 Preview로 재승인
+- [ ] UI-First Gate for handoff export panel — Path 1a beta 이후 신규 Preview로 재승인
 - [x] Pre-Code Brief with manifest Zod schema and per-track CSV/Excel columns — [35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md](./35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md), approved 2026-07-07
 - [ ] Copy approved: existing firm only, no marketplace/referral language
 - [ ] JC-030 Validation integrated for 간이지급 v1 scope
