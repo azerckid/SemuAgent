@@ -40,6 +40,7 @@ export function PayrollWorkspace({ summary }: PayrollWorkspaceProps) {
       <div className="flex w-full max-w-[1280px] flex-col gap-5 px-7 pt-6 pb-12">
         <PayrollSummaryHero summary={summary} />
         <IssueAlert summary={summary} />
+        <ConsistencyAlert summary={summary} />
         <PayrollRegisterSection summary={summary} />
         <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
           <DeductionBreakdownCard items={summary.deductionBreakdown} />
@@ -163,6 +164,30 @@ function IssueAlert({ summary }: PayrollWorkspaceProps) {
           확인하기
         </Link>
       )}
+    </section>
+  )
+}
+
+function ConsistencyAlert({ summary }: PayrollWorkspaceProps) {
+  const issues = summary.consistencyIssues
+  if (issues.length === 0) return null
+
+  return (
+    <section className="rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3.5">
+      <div className="flex items-center gap-3">
+        <span className="size-2 rounded-full bg-[#dc2626]" aria-hidden="true" />
+        <h2 className="text-[13.5px] font-semibold text-[#991b1b]">
+          4대보험 정합성 확인 필요 {issues.length}건 — 직원명부와 급여가 어긋납니다
+        </h2>
+      </div>
+      <ul className="mt-1.5 flex flex-col gap-1 pl-5">
+        {issues.map((issue) => (
+          <li key={issue.employeeLineId} className="text-[12.5px] text-[#b91c1c]">
+            <span className="font-semibold">{issue.employeeName}</span>
+            <span className="text-[#dc2626]/70"> · {issue.jobType ?? '고용형태 미상'}</span> — {issue.message}
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }

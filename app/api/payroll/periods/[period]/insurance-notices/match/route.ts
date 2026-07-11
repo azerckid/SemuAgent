@@ -101,6 +101,7 @@ export async function POST(
           baseSalaryKrw: payrollEmployeeLine.baseSalaryKrw,
           mealAllowanceKrw: payrollEmployeeLine.mealAllowanceKrw,
           allowanceKrw: payrollEmployeeLine.allowanceKrw,
+          dependentCount: payrollEmployeeLine.dependentCount,
           incomeTaxKrw: payrollEmployeeLine.incomeTaxKrw,
           localIncomeTaxKrw: payrollEmployeeLine.localIncomeTaxKrw,
           nationalPensionKrw: payrollEmployeeLine.nationalPensionKrw,

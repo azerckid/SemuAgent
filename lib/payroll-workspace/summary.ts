@@ -1,6 +1,9 @@
 import { and, asc, desc, eq } from 'drizzle-orm'
 import { DateTime } from 'luxon'
 import { client, payrollEmployeeLine, payrollPeriodSummary, tenant } from '@/lib/db/schema'
+import { detectPayrollInsuranceConsistencyIssues, type PayrollConsistencyIssue } from './consistency'
+
+export type { PayrollConsistencyIssue } from './consistency'
 
 export type PayrollTone = 'ok' | 'warn' | 'danger' | 'muted' | 'info'
 export type PayrollCloseStatus = 'open' | 'blocked' | 'closed'
@@ -44,6 +47,7 @@ export type PayrollRegisterRow = {
   baseSalaryKrw: number
   mealAllowanceKrw: number
   allowanceKrw: number
+  dependentCount: number
   grossPayKrw: number
   incomeTaxKrw: number
   localIncomeTaxKrw: number
@@ -99,6 +103,7 @@ export type PayrollWorkspaceSummary = {
   deductionBreakdown: PayrollDeductionBreakdownItem[]
   documents: PayrollDocumentPreview[]
   closeAction: PayrollCloseAction
+  consistencyIssues: PayrollConsistencyIssue[]
 }
 
 type PayrollPeriodSummaryInput = {
@@ -127,6 +132,7 @@ type PayrollEmployeeLineInput = {
   baseSalaryKrw: number
   mealAllowanceKrw: number
   allowanceKrw: number
+  dependentCount: number
   incomeTaxKrw: number
   localIncomeTaxKrw: number
   nationalPensionKrw: number
@@ -260,6 +266,7 @@ export function buildPayrollRegisterRow(
     baseSalaryKrw,
     mealAllowanceKrw,
     allowanceKrw,
+    dependentCount: line.dependentCount,
     grossPayKrw,
     incomeTaxKrw: line.incomeTaxKrw,
     localIncomeTaxKrw: line.localIncomeTaxKrw,
@@ -445,6 +452,7 @@ export async function loadPayrollWorkspaceSummary({
       deductionBreakdown: buildPayrollDeductionBreakdown([]),
       documents: buildPayrollDocuments(EMPTY_PERIOD_SUMMARY),
       closeAction: buildPayrollCloseAction(summaryTotals),
+      consistencyIssues: [],
     }
   }
 
@@ -514,6 +522,7 @@ export async function loadPayrollWorkspaceSummary({
       deductionBreakdown: buildPayrollDeductionBreakdown([]),
       documents: buildPayrollDocuments(EMPTY_PERIOD_SUMMARY),
       closeAction: buildPayrollCloseAction(summaryTotals),
+      consistencyIssues: [],
     }
   }
 
@@ -528,6 +537,7 @@ export async function loadPayrollWorkspaceSummary({
       baseSalaryKrw: payrollEmployeeLine.baseSalaryKrw,
       mealAllowanceKrw: payrollEmployeeLine.mealAllowanceKrw,
       allowanceKrw: payrollEmployeeLine.allowanceKrw,
+      dependentCount: payrollEmployeeLine.dependentCount,
       incomeTaxKrw: payrollEmployeeLine.incomeTaxKrw,
       localIncomeTaxKrw: payrollEmployeeLine.localIncomeTaxKrw,
       nationalPensionKrw: payrollEmployeeLine.nationalPensionKrw,
@@ -564,6 +574,7 @@ export async function loadPayrollWorkspaceSummary({
     deductionBreakdown: buildPayrollDeductionBreakdown(registerRows),
     documents: buildPayrollDocuments(periodSummaryRow),
     closeAction: buildPayrollCloseAction(summaryTotals),
+    consistencyIssues: detectPayrollInsuranceConsistencyIssues(registerRows),
   }
 }
 

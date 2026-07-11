@@ -34,6 +34,7 @@ import {
   vatTaxTreatmentReview,
 } from '@/lib/db/schema'
 import { now, toDBString } from '@/lib/time'
+import { lookupSimplifiedIncomeTax } from '@/lib/payroll/simplified-tax-table'
 import {
   buildReconciliationBankSampleRows,
 } from './reconciliation-bank-sample'
@@ -304,8 +305,9 @@ type SampleEmployeeSpec = {
   allowanceKrw: number
   // 비과세 식대(월 20만원 한도). 지급계에는 포함되지만 과세소득·4대보험 기준에서는 제외한다.
   mealAllowanceKrw?: number
-  // 정규직은 급여자료에 기재된 확정 소득세(샘플 표시값). 프리랜서는 3.3%, 일용직은 일급 기준 산식으로 산출.
-  incomeTaxKrw?: number
+  // 정규직 전용: 근로소득 간이세액표(별표2) 조회에 쓰는 공제대상가족수(본인 포함).
+  // 프리랜서는 3.3%, 일용직은 일급 기준 산식으로 산출하며 이 값을 쓰지 않는다.
+  dependentCount?: number
   // 일용직 전용: 일용근로소득세 산식 입력값 (일급·근무일수).
   dailyWageKrw?: number
   workDays?: number
@@ -313,15 +315,17 @@ type SampleEmployeeSpec = {
 }
 
 // 고용형태별 샘플 직원. 정규직 6 / 프리랜서 2 / 일용직 3, 기본급 200만~600만 분포.
-// 표시값은 모두 "확정값" 성격의 샘플이며, 이 앱은 세액을 계산하지 않는다. 아래 4대보험
-// 근사 요율(sampleDeductionsFor)은 데모를 그럴듯하게 보이기 위한 표시용일 뿐 공식 확정 요율이 아니다.
+// 정규직 소득세는 근로소득 간이세액표(별표2) 조회값(sampleDeductionsFor), 프리랜서는 3.3%,
+// 일용직은 일급 기준 산식으로 산출한다. 4대보험 근사 요율은 데모 표시용이다.
+// 정규직 과세소득(기본급+수당)은 전부 간이세액표에 담긴 급여 구간(240·280·300·360·440·600만원)에
+// 정확히 안착하도록 배치했다(dependentCount로 부양가족 효과 시연).
 const FIRST_RUN_SAMPLE_EMPLOYEES: SampleEmployeeSpec[] = [
-  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 650_000 },
-  { code: 'E002', name: '이수민', department: '영업', jobTitle: '팀장', employmentType: '정규직', baseSalaryKrw: 4_200_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 255_000 },
-  { code: 'E003', name: '박지훈', department: '운영', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_400_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 142_000 },
-  { code: 'E004', name: '최민준', department: '제품', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 74_000 },
-  { code: 'E005', name: '정하늘', department: '영업', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_600_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, incomeTaxKrw: 47_000 },
-  { code: 'E006', name: '오세린', department: '운영', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_400_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, incomeTaxKrw: 26_000 },
+  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, dependentCount: 4 },
+  { code: 'E002', name: '이수민', department: '영업', jobTitle: '팀장', employmentType: '정규직', baseSalaryKrw: 4_200_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, dependentCount: 3 },
+  { code: 'E003', name: '박지훈', department: '운영', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_400_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, dependentCount: 2 },
+  { code: 'E004', name: '최민준', department: '제품', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, dependentCount: 1 },
+  { code: 'E005', name: '정하늘', department: '영업', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_600_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, dependentCount: 2 },
+  { code: 'E006', name: '오세린', department: '운영', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_400_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, dependentCount: 1 },
   { code: 'E007', name: '한유진', department: '제품', jobTitle: '외주 디자이너', employmentType: '프리랜서', baseSalaryKrw: 3_500_000, allowanceKrw: 0 },
   { code: 'E008', name: '서도윤', department: '제품', jobTitle: '외주 개발', employmentType: '프리랜서', baseSalaryKrw: 2_000_000, allowanceKrw: 0 },
   { code: 'E009', name: '문가람', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_200_000, allowanceKrw: 0, dailyWageKrw: 200_000, workDays: 11 },
@@ -370,9 +374,17 @@ function sampleDeductionsFor(spec: SampleEmployeeSpec, grossPayKrw: number): Sam
       employmentInsuranceKrw: floorToTen((grossPayKrw * 9) / 1000),
     }
   }
-  // 정규직: 근로소득 + 4대보험 (샘플 표시용 근사 요율)
-  const incomeTaxKrw = spec.incomeTaxKrw ?? 0
-  const localIncomeTaxKrw = floorToTen(incomeTaxKrw / 10)
+  // 정규직: 소득세는 근로소득 간이세액표(별표2)를 과세소득·공제대상가족수로 직접 조회한다.
+  // 하드코딩 금액을 두지 않으며, 표 범위 밖이면 시드 생성을 즉시 실패시켜 잘못된 값을 막는다.
+  const lookup = lookupSimplifiedIncomeTax({
+    monthlyTaxableSalaryKrw: grossPayKrw,
+    dependentCount: spec.dependentCount ?? 1,
+  })
+  if (!lookup.inRange) {
+    throw new Error(`간이세액표 조회 범위 밖: ${spec.code} 과세소득 ${grossPayKrw}원`)
+  }
+  const incomeTaxKrw = lookup.incomeTaxKrw
+  const localIncomeTaxKrw = lookup.localIncomeTaxKrw
   const healthInsuranceKrw = floorToTen((grossPayKrw * 357) / 10000)
   return {
     incomeTaxKrw,
@@ -411,6 +423,7 @@ function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
       baseSalaryKrw: spec.baseSalaryKrw,
       mealAllowanceKrw,
       allowanceKrw: spec.allowanceKrw,
+      dependentCount: spec.dependentCount ?? 1,
       grossPayKrw,
       incomeTaxKrw: d.incomeTaxKrw,
       localIncomeTaxKrw: d.localIncomeTaxKrw,
@@ -434,7 +447,10 @@ function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
 
 function buildSampleEmployees(params: SeedParams) {
   return FIRST_RUN_SAMPLE_EMPLOYEES.map((spec, index): typeof employeeProfile.$inferInsert => {
-    const insuranceApplies = spec.employmentType === '정규직'
+    // 정규직은 4대보험 전부, 일용직은 고용보험(+산재) 대상이므로 둘 다 '가입'으로 본다.
+    // 프리랜서(사업소득)만 근로자 4대보험 비적용('해당 없음'). 급여의 4대보험 부과와
+    // 직원명부 표기가 어긋나지 않도록 맞춘다(일용직 명부 '해당 없음' ↔ 급여 고용보험 부정합 해소).
+    const insuranceApplies = spec.employmentType === '정규직' || spec.employmentType === '일용직'
     return {
       id: firstRunSampleId(params.tenantId, `employee_${String(index + 1).padStart(2, '0')}`),
       tenantId: params.tenantId,

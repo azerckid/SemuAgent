@@ -1728,6 +1728,9 @@ export const payrollEmployeeLine = sqliteTable('payroll_employee_line', {
   // 비과세 식대(월 20만원 한도). 지급계에는 포함되지만 allowanceKrw(기타수당)와는 분리해 표시한다.
   mealAllowanceKrw: integer('meal_allowance_krw').notNull().default(0),
   allowanceKrw: integer('allowance_krw').notNull().default(0),
+  // 근로소득 간이세액표(별표2) 조회에 쓰는 공제대상가족수(본인 포함). 정규직 소득세 산출 기준이며
+  // 프리랜서·일용직은 간이세액표 대상이 아니라 기본 1로 둔다.
+  dependentCount: integer('dependent_count').notNull().default(1),
   grossPayKrw: integer('gross_pay_krw').notNull().default(0),
   incomeTaxKrw: integer('income_tax_krw').notNull().default(0),
   localIncomeTaxKrw: integer('local_income_tax_krw').notNull().default(0),

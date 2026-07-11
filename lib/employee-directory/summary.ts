@@ -27,6 +27,8 @@ export type EmployeeDirectoryRow = {
   insuranceEnrollmentStatus: InsuranceEnrollmentStatus
   insuranceEnrollmentLabel: string
   insuranceEnrollmentTone: EmployeeTone
+  // 고용형태에서 유래한 보조 표기(예: 일용직 '고용보험만'). 없으면 null.
+  insuranceEnrollmentNote: string | null
   hireDate: string | null
   terminationDate: string | null
   workEmail: string | null
@@ -113,6 +115,15 @@ export function insuranceEnrollmentTone(status: InsuranceEnrollmentStatus): Empl
   }
 }
 
+// 일용직은 국민연금·건강보험 미적용, 고용보험(+산재)만 대상이라 '가입'이어도 범위를 명시한다.
+export function insuranceEnrollmentNote(
+  status: InsuranceEnrollmentStatus,
+  employmentType: string | null,
+): string | null {
+  if (status === 'enrolled' && employmentType === '일용직') return '고용보험만'
+  return null
+}
+
 export function buildEmployeeDirectoryStats(rows: EmployeeProfileInput[]): EmployeeDirectoryStats {
   return rows.reduce<EmployeeDirectoryStats>((stats, row) => {
     const status = normalizeEmployeeStatus(row.employeeStatus)
@@ -130,6 +141,7 @@ export function buildEmployeeDirectoryRow(
   row: EmployeeProfileInput,
   latestPayrollPeriod: string | null,
   canViewEmployeeNames = true,
+  employmentType: string | null = null,
 ): EmployeeDirectoryRow {
   const employeeStatus = normalizeEmployeeStatus(row.employeeStatus)
   const payrollEligibility = normalizePayrollEligibility(row.payrollEligibility)
@@ -152,6 +164,7 @@ export function buildEmployeeDirectoryRow(
     insuranceEnrollmentStatus,
     insuranceEnrollmentLabel: insuranceEnrollmentLabel(insuranceEnrollmentStatus),
     insuranceEnrollmentTone: insuranceEnrollmentTone(insuranceEnrollmentStatus),
+    insuranceEnrollmentNote: insuranceEnrollmentNote(insuranceEnrollmentStatus, employmentType),
     hireDate: row.hireDate,
     terminationDate: row.terminationDate,
     workEmail: row.workEmail,
@@ -230,6 +243,7 @@ export async function loadEmployeeDirectorySummary({
       .select({
         employeeCode: payrollEmployeeLine.employeeCode,
         payrollPeriod: payrollPeriodSummary.payrollPeriod,
+        jobType: payrollEmployeeLine.jobType,
       })
       .from(payrollEmployeeLine)
       .innerJoin(payrollPeriodSummary, eq(payrollEmployeeLine.periodSummaryId, payrollPeriodSummary.id))
@@ -240,12 +254,15 @@ export async function loadEmployeeDirectorySummary({
   ])
 
   // employee_code 기준 최근 급여 귀속월(읽기 전용 매칭). 별도 수동 연결 mutation은 없다.
+  // 같은 매칭에서 고용형태(jobType)도 끌어와 4대보험 보조 표기(일용직 '고용보험만')에 쓴다.
   const latestPayrollByCode = new Map<string, string>()
+  const jobTypeByCode = new Map<string, string | null>()
   for (const line of payrollLineRows) {
     if (!line.employeeCode || !line.payrollPeriod) continue
     const current = latestPayrollByCode.get(line.employeeCode)
     if (!current || line.payrollPeriod > current) {
       latestPayrollByCode.set(line.employeeCode, line.payrollPeriod)
+      jobTypeByCode.set(line.employeeCode, line.jobType)
     }
   }
 
@@ -253,6 +270,7 @@ export async function loadEmployeeDirectorySummary({
     row,
     row.employeeCode ? latestPayrollByCode.get(row.employeeCode) ?? null : null,
     canViewEmployeeNames,
+    row.employeeCode ? jobTypeByCode.get(row.employeeCode) ?? null : null,
   )))
 
   return {

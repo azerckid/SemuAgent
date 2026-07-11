@@ -106,7 +106,14 @@ export function EmployeeTable({ employees }: { readonly employees: EmployeeDirec
                   </td>
                   <td className="px-4 py-2.5"><Chip tone={emp.employeeStatusTone}>{emp.employeeStatusLabel}</Chip></td>
                   <td className="px-4 py-2.5"><Chip tone={emp.payrollEligibility === 'eligible' ? 'accent' : 'muted'}>{emp.payrollEligibilityLabel}</Chip></td>
-                  <td className="px-4 py-2.5"><Chip tone={emp.insuranceEnrollmentTone}>{emp.insuranceEnrollmentLabel}</Chip></td>
+                  <td className="px-4 py-2.5">
+                    <div className="flex flex-col items-start gap-0.5">
+                      <Chip tone={emp.insuranceEnrollmentTone}>{emp.insuranceEnrollmentLabel}</Chip>
+                      {emp.insuranceEnrollmentNote ? (
+                        <span className="text-[10.5px] text-company-fg-subtle">{emp.insuranceEnrollmentNote}</span>
+                      ) : null}
+                    </div>
+                  </td>
                   <td className="px-4 py-2.5 tabular-nums text-company-fg-muted">{emp.hireDate ?? '—'}</td>
                   <td className="px-4 py-2.5 tabular-nums text-company-fg-muted">{emp.latestPayrollPeriod ?? '—'}</td>
                   <td className="px-4 py-2.5 text-company-fg-muted">{emp.workEmail ?? '이메일 없음'}</td>
