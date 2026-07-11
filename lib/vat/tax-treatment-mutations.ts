@@ -15,8 +15,21 @@ import {
   type VatTaxTreatmentMutationInput,
 } from '@/lib/validations/vat-tax-treatment'
 import { manualVatFactInputSchema } from './facts'
+import { finalDecisionForVatRecommendation } from './tax-treatment-actions'
 import { enhanceVatTaxTreatmentRowsWithSingleAi } from './tax-treatment-ai'
 import { loadVatTaxTreatmentDisplayRows } from './tax-treatment-summary'
+import {
+  hashVatTaxTreatmentUndoToken,
+  vatTaxTreatmentUndoActionStateSchema,
+  vatTaxTreatmentUndoCanonicalStateSchema,
+  type VatTaxTreatmentUndoActionState,
+  type VatTaxTreatmentUndoCanonicalState,
+} from './tax-treatment-undo'
+import {
+  loadVatTaxTreatmentAudit,
+  undoVatTaxTreatmentMutation,
+  type VatTaxTreatmentAuditRow,
+} from './tax-treatment-mutation-undo'
 
 type MutationFailure = {
   ok: false
@@ -26,8 +39,9 @@ type MutationFailure = {
 
 type MutationSuccess = {
   ok: true
-  status: 'confirmed' | 'held' | 'expert_review'
+  status: 'pending' | 'confirmed' | 'held' | 'expert_review'
   finalDecision: VatTaxTreatmentFinalDecision | null
+  undoToken: string | null
 }
 
 type RecommendationLoader = (params: {
@@ -41,6 +55,7 @@ type RecommendationLoader = (params: {
 type VatTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 type ClassificationRow = typeof bookkeepingTransactionClassification.$inferSelect
 type DeductionReviewRow = typeof vatDeductionReview.$inferSelect
+type VatTaxTreatmentWriteInput = Exclude<VatTaxTreatmentMutationInput, { action: 'undo' }>
 type ResolvedMutationDecision = {
   status: 'confirmed' | 'held' | 'expert_review'
   finalDecision: VatTaxTreatmentFinalDecision | null
@@ -50,19 +65,8 @@ type ResolvedMutationDecision = {
 
 class VatTaxTreatmentMutationConflict extends Error {}
 
-function recommendationFinalDecision(
-  recommendation: VatTaxTreatmentDisplayRow['recommendation'],
-): VatTaxTreatmentFinalDecision | null {
-  if (recommendation === 'likely_deductible') return 'deductible'
-  if (recommendation === 'likely_non_deductible') return 'non_deductible'
-  if (recommendation === 'likely_taxable') return 'taxable'
-  if (recommendation === 'likely_zero_rated') return 'zero_rated'
-  if (recommendation === 'likely_exempt') return 'exempt'
-  return null
-}
-
 function mutationDecision(params: {
-  input: VatTaxTreatmentMutationInput
+  input: VatTaxTreatmentWriteInput
   recommendation: VatTaxTreatmentDisplayRow
 }): ResolvedMutationDecision | MutationFailure {
   if (params.input.action === 'hold') {
@@ -83,7 +87,7 @@ function mutationDecision(params: {
   }
 
   const finalDecision = params.input.action === 'apply_recommendation'
-    ? recommendationFinalDecision(params.recommendation.recommendation)
+    ? finalDecisionForVatRecommendation(params.recommendation.recommendation)
     : params.input.finalDecision
   if (!finalDecision) {
     return {
@@ -179,6 +183,68 @@ function deductionKind(finalDecision: 'deductible' | 'non_deductible' | 'prorate
   return 'deductible' as const
 }
 
+function captureCanonicalUndoState(params: {
+  recommendation: VatTaxTreatmentDisplayRow
+  liveRow: ClassificationRow
+  existingReview: DeductionReviewRow | null
+}): VatTaxTreatmentUndoCanonicalState {
+  if (params.recommendation.direction === 'purchase') {
+    if (!params.existingReview) return { kind: 'purchase_missing' }
+    return vatTaxTreatmentUndoCanonicalStateSchema.parse({
+      kind: 'purchase_existing',
+      reviewId: params.existingReview.id,
+      reviewKind: params.existingReview.kind,
+      decision: params.existingReview.decision,
+      reason: params.existingReview.reason,
+      prorationRateBps: params.existingReview.prorationRateBps,
+      confirmedByStaffId: params.existingReview.confirmedByStaffId,
+      confirmedAt: params.existingReview.confirmedAt,
+      updatedAt: params.existingReview.updatedAt,
+    })
+  }
+
+  return vatTaxTreatmentUndoCanonicalStateSchema.parse({
+    kind: 'sale',
+    vatTaxType: params.liveRow.vatTaxType,
+    vatFactSource: params.liveRow.vatFactSource,
+    vatFactSourceRef: params.liveRow.vatFactSourceRef,
+    vatFactStatus: params.liveRow.vatFactStatus,
+    confirmedByStaffId: params.liveRow.confirmedByStaffId,
+    confirmedAt: params.liveRow.confirmedAt,
+    updatedAt: params.liveRow.updatedAt,
+  })
+}
+
+function captureActionUndoState(params: {
+  recommendation: VatTaxTreatmentDisplayRow
+  existingReview: DeductionReviewRow | null
+  existingAudit: VatTaxTreatmentAuditRow | null
+}): VatTaxTreatmentUndoActionState {
+  if (params.existingAudit) {
+    return vatTaxTreatmentUndoActionStateSchema.parse({
+      status: params.existingAudit.status,
+      finalDecision: params.existingAudit.finalDecision,
+      finalReason: params.existingAudit.finalReason,
+      prorationRateBps: params.existingAudit.prorationRateBps,
+      confirmedByStaffId: params.existingAudit.confirmedByStaffId,
+      confirmedAt: params.existingAudit.confirmedAt,
+    })
+  }
+
+  return vatTaxTreatmentUndoActionStateSchema.parse({
+    status: params.recommendation.finalDecision ? 'confirmed' : 'pending',
+    finalDecision: params.recommendation.finalDecision,
+    finalReason: params.recommendation.direction === 'purchase'
+      ? params.existingReview?.reason || null
+      : null,
+    prorationRateBps: params.recommendation.direction === 'purchase'
+      ? params.existingReview?.prorationRateBps ?? null
+      : null,
+    confirmedByStaffId: params.recommendation.confirmedByStaffId,
+    confirmedAt: params.recommendation.confirmedAt,
+  })
+}
+
 async function assertCanonicalStateStillMatches(params: {
   tx: VatTransaction
   tenantId: string
@@ -245,6 +311,7 @@ async function writePurchaseDecision(params: {
     await params.tx
       .update(vatDeductionReview)
       .set({
+        kind: deductionKind(purchaseDecision),
         decision: purchaseDecision,
         reason: params.decision.reason ?? '',
         prorationRateBps: params.decision.prorationRateBps,
@@ -351,6 +418,9 @@ async function writeAuditSnapshot(params: {
   timestamp: string
   recommendation: VatTaxTreatmentDisplayRow
   decision: ResolvedMutationDecision
+  undoTokenHash: string
+  undoCanonicalState: VatTaxTreatmentUndoCanonicalState
+  undoActionState: VatTaxTreatmentUndoActionState
 }) {
   const snapshot = {
     direction: params.recommendation.direction,
@@ -374,6 +444,9 @@ async function writeAuditSnapshot(params: {
     prorationRateBps: params.decision.prorationRateBps,
     confirmedByStaffId: params.decision.status === 'confirmed' ? params.staffId : null,
     confirmedAt: params.decision.status === 'confirmed' ? params.timestamp : null,
+    undoTokenHash: params.undoTokenHash,
+    undoCanonicalStateJson: JSON.stringify(params.undoCanonicalState),
+    undoActionStateJson: JSON.stringify(params.undoActionState),
     recommendedAt: params.timestamp,
     updatedAt: params.timestamp,
   }
@@ -426,6 +499,16 @@ export async function applyVatTaxTreatmentMutation(params: {
     return { ok: false, status: 404, error: '부가세 판단 거래를 찾을 수 없습니다.' }
   }
 
+  if (params.input.action === 'undo') {
+    return undoVatTaxTreatmentMutation({
+      tenantId: params.tenantId,
+      clientId: scope.clientId,
+      rowId: params.rowId,
+      periodKey: params.input.periodKey,
+      undoToken: params.input.undoToken,
+    })
+  }
+
   const loadRecommendation = params.loadRecommendation ?? defaultRecommendationLoader
   const recommendation = await loadRecommendation({
     tenantId: params.tenantId,
@@ -445,6 +528,8 @@ export async function applyVatTaxTreatmentMutation(params: {
   if ('ok' in decision) return decision
 
   const timestamp = toDBString(now())
+  const undoToken = randomUUID()
+  const undoTokenHash = hashVatTaxTreatmentUndoToken(undoToken)
   try {
     await db.transaction(async (tx) => {
       const canonicalState = await assertCanonicalStateStillMatches({
@@ -454,6 +539,22 @@ export async function applyVatTaxTreatmentMutation(params: {
         periodKey: params.input.periodKey,
         rowId: params.rowId,
         recommendation,
+      })
+      const existingAudit = await loadVatTaxTreatmentAudit({
+        tx,
+        tenantId: params.tenantId,
+        clientId: scope.clientId,
+        periodKey: params.input.periodKey,
+        rowId: params.rowId,
+      })
+      const undoCanonicalState = captureCanonicalUndoState({
+        recommendation,
+        ...canonicalState,
+      })
+      const undoActionState = captureActionUndoState({
+        recommendation,
+        existingReview: canonicalState.existingReview,
+        existingAudit,
       })
       await writeCanonicalDecision({
         tx,
@@ -477,6 +578,9 @@ export async function applyVatTaxTreatmentMutation(params: {
         timestamp,
         recommendation,
         decision,
+        undoTokenHash,
+        undoCanonicalState,
+        undoActionState,
       })
     })
   } catch (error) {
@@ -490,5 +594,6 @@ export async function applyVatTaxTreatmentMutation(params: {
     ok: true,
     status: decision.status,
     finalDecision: decision.finalDecision,
+    undoToken,
   }
 }

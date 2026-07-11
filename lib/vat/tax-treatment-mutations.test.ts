@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -190,6 +191,9 @@ beforeAll(async () => {
       proration_rate_bps integer,
       confirmed_by_staff_id text,
       confirmed_at text,
+      undo_token_hash text,
+      undo_canonical_state_json text,
+      undo_action_state_json text,
       recommended_at text NOT NULL,
       created_at text NOT NULL,
       updated_at text NOT NULL
@@ -252,6 +256,7 @@ describe('VAI-4a VAT tax treatment mutation transaction', () => {
       ok: true,
       status: 'confirmed',
       finalDecision: 'deductible',
+      undoToken: expect.any(String),
     })
 
     const [canonical] = await testDb.select().from(vatDeductionReview)
@@ -272,7 +277,148 @@ describe('VAI-4a VAT tax treatment mutation transaction', () => {
       status: 'confirmed',
       finalDecision: 'deductible',
       confirmedByStaffId: STAFF,
+      undoTokenHash: expect.stringMatching(/^[0-9a-f]{64}$/),
+      undoCanonicalStateJson: expect.any(String),
+      undoActionStateJson: expect.any(String),
     })
+  })
+
+  it('undoes the latest purchase confirmation and clears its one-time token', async () => {
+    const recommendation = displayRow()
+    const applied = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'apply_recommendation',
+        periodKey: '2026-H1',
+        recommendationFingerprint: recommendation.recommendationFingerprint,
+      },
+      loadRecommendation: loader(recommendation),
+    })
+    expect(applied.ok).toBe(true)
+    if (!applied.ok || !applied.undoToken) throw new Error('undo token expected')
+
+    const undone = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'undo',
+        periodKey: '2026-H1',
+        undoToken: applied.undoToken,
+      },
+    })
+
+    expect(undone).toEqual({
+      ok: true,
+      status: 'pending',
+      finalDecision: null,
+      undoToken: null,
+    })
+    expect(await testDb.select().from(vatDeductionReview)).toHaveLength(0)
+    const [audit] = await testDb.select().from(vatTaxTreatmentReview)
+    expect(audit).toMatchObject({
+      status: 'pending',
+      finalDecision: null,
+      undoTokenHash: null,
+      undoCanonicalStateJson: null,
+      undoActionStateJson: null,
+    })
+  })
+
+  it('updates an existing purchase review kind and restores it on undo', async () => {
+    const recommendation = displayRow({
+      finalDecision: 'deductible',
+      confirmedByStaffId: STAFF,
+      confirmedAt: '2026-06-16 00:00:00',
+    })
+    await testDb.insert(vatDeductionReview).values({
+      id: 'review-existing',
+      tenantId: TENANT,
+      clientId: CLIENT,
+      periodKey: '2026-H1',
+      classificationRowId: ROW,
+      description: '업무용 SaaS 이용료',
+      counterparty: '클라우드서비스',
+      supplyAmountKrw: 100_000,
+      inputTaxKrw: 10_000,
+      kind: 'deductible',
+      decision: 'deductible',
+      reason: '기존 공제 확정',
+      confirmedByStaffId: STAFF,
+      confirmedAt: '2026-06-16 00:00:00',
+      createdAt: '2026-06-16 00:00:00',
+      updatedAt: '2026-06-16 00:00:00',
+    })
+
+    const applied = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'confirm_different',
+        periodKey: '2026-H1',
+        recommendationFingerprint: recommendation.recommendationFingerprint,
+        finalDecision: 'non_deductible',
+        reason: '업무 관련 증빙 부족',
+      },
+      loadRecommendation: loader(recommendation),
+    })
+    if (!applied.ok || !applied.undoToken) throw new Error('undo token expected')
+
+    const [changed] = await testDb.select().from(vatDeductionReview)
+    expect(changed).toMatchObject({
+      kind: 'non_deductible_candidate',
+      decision: 'non_deductible',
+      reason: '업무 관련 증빙 부족',
+    })
+
+    await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'undo',
+        periodKey: '2026-H1',
+        undoToken: applied.undoToken,
+      },
+    })
+
+    const [restored] = await testDb.select().from(vatDeductionReview)
+    expect(restored).toMatchObject({
+      kind: 'deductible',
+      decision: 'deductible',
+      reason: '기존 공제 확정',
+    })
+  })
+
+  it('rejects an invalid or already consumed undo token', async () => {
+    const recommendation = displayRow()
+    const applied = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'hold',
+        periodKey: '2026-H1',
+        recommendationFingerprint: recommendation.recommendationFingerprint,
+      },
+      loadRecommendation: loader(recommendation),
+    })
+    expect(applied.ok).toBe(true)
+
+    const rejected = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'undo',
+        periodKey: '2026-H1',
+        undoToken: randomUUID(),
+      },
+    })
+    expect(rejected).toMatchObject({ ok: false, status: 409 })
   })
 
   it('confirms a sale tax type in the existing exact VAT fact canonical row', async () => {
@@ -313,6 +459,57 @@ describe('VAI-4a VAT tax treatment mutation transaction', () => {
       vatFactSource: 'manual',
       vatFactStatus: 'confirmed',
       confirmedByStaffId: STAFF,
+    })
+  })
+
+  it('restores the original parser VAT fact when a sale confirmation is undone', async () => {
+    await testDb
+      .update(bookkeepingTransactionClassification)
+      .set({ direction: 'income', amountKrw: 110_000, vatDirection: 'sale' })
+      .where(eq(bookkeepingTransactionClassification.id, ROW))
+    const recommendation = displayRow({
+      direction: 'sale',
+      recommendation: 'likely_taxable',
+      basisLabel: '국내 과세 매출입니다.',
+      ruleReference: 'S-01',
+    })
+    const applied = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'apply_recommendation',
+        periodKey: '2026-H1',
+        recommendationFingerprint: recommendation.recommendationFingerprint,
+      },
+      loadRecommendation: loader(recommendation),
+    })
+    if (!applied.ok || !applied.undoToken) throw new Error('undo token expected')
+
+    const undone = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'undo',
+        periodKey: '2026-H1',
+        undoToken: applied.undoToken,
+      },
+    })
+    expect(undone).toMatchObject({ ok: true, status: 'pending', finalDecision: null })
+
+    const [row] = await testDb
+      .select()
+      .from(bookkeepingTransactionClassification)
+      .where(eq(bookkeepingTransactionClassification.id, ROW))
+    expect(row).toMatchObject({
+      vatTaxType: 'taxable',
+      vatFactSource: 'parser',
+      vatFactSourceRef: 'source-1',
+      vatFactStatus: 'derived',
+      confirmedByStaffId: null,
+      confirmedAt: null,
+      updatedAt: '2026-06-15',
     })
   })
 

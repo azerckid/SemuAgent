@@ -129,6 +129,9 @@
 | Tax Treatment Source Mark | 판단 출처를 설명 | 공식 규칙 / 이전 패턴 / AI 보강 / AI 합의를 작은 source mark로 표시 |
 | Required Evidence Tags | 영세율·면세·공제 판단에 필요한 증빙 상태 | 있음(neutral) / 확인 필요(danger); 누락 시 확정·gate 해제 금지 |
 | AI Failure Fallback | timeout·quota·provider 오류 시 비차단 수동 검토 | 표 유지 + 해당 행 `수동 확인 필요` + 제한된 다시 시도 |
+| Tax Treatment Actions | AI·규칙 판단에 대한 사용자 최종 처리 | 행 안의 적용/다르게/보류/전문가 확인; 저장 중 행 단위 spinner, 확정 행은 변경만 노출 |
+| Tax Treatment Decision Dialog | 추천과 다른 판단·보류·전문가 확인 근거 입력 | 방향별 결정 select + 근거 textarea + 안분율 input; 영세율·면세 증빙 누락 시 저장 차단 |
+| Recent Tax Treatment Undo | 방금 저장한 판단을 원래 canonical·감사 상태로 복원 | sonner `되돌리기`; 최신 1건·일회용 토큰·서버 current-state 검증 |
 | Schedules List | 부속 명세(합계표·수취명세서·불공제명세서) 준비 상태 | 서식별 준비됨/검토 대기 상태칩 |
 | Confirmed Ledger Rebuild | 현재 확정 VAT fact로 summary와 fingerprint를 재계산 | 다른 gate가 모두 ready이고 snapshot만 stale일 때 파란 outline `확정 원장 다시 계산`; 처리 중 spinner |
 | Filing Review Material | 확정 세액·사용자 판단·부속명세 검토 자료 | 공식 업로드 파일이 아님을 표시 + **생성 버튼 잠금**(판단 완료 전) |

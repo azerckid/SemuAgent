@@ -143,6 +143,9 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 | Hometax Review Action | `VatTaxTreatmentTable` 행 셀 확장 | 자동채움 예상 기준 그대로 확인/공제·불공제/과세유형/금액/안분 확인; 실제값으로 오표시 금지 |
 | Required Evidence List | `VatTaxTreatmentBasis` 내부 목록 | 증빙 있음/누락/확인 필요, 영세율·면세 누락 시 확정 차단 |
 | AI Failure Fallback | 커스텀 `VatAiFallbackState` | 행 단위 `수동 확인 필요` + 제한 재시도; 표 전체 비차단 |
+| Tax Treatment Actions | 커스텀 `VatTaxTreatmentActions` | 기존 `Button` + 행 단위 pending; 적용/다르게/보류/전문가 확인, 확정 행은 변경만 노출 |
+| Tax Treatment Decision Dialog | 커스텀 `VatTaxTreatmentDecisionDialog` | 기존 `Dialog`·`Select`·`Textarea`·`Input`; 근거·안분율·필수 증빙 차단 |
+| Recent Tax Treatment Undo | `sonner` action + 서버 undo mutation | 최신 1건만, 일회용 토큰 hash·canonical current-state 검증·transaction 복원 |
 | Deduction Action Controls | 커스텀 `VatDeductionActions` | `button` + `sonner` 피드백 |
 | Schedule Status List | 커스텀 `VatScheduleList` | `card` + 상태칩 |
 | Confirmed Ledger Rebuild | 커스텀 `VatProvenanceRebuildButton` | `button` + `RefreshCw` + `sonner`; exact inputs가 유효하고 snapshot만 stale일 때만 노출 |

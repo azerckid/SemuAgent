@@ -28,8 +28,9 @@ AI는 매입의 공제/불공제/안분과 매출의 과세/영세율/면세 가
 - VAI-2 완료: 규칙 매트릭스·Pre-Code Brief 프로젝트 오너 승인
 - VAI-3a 완료: Zod·deterministic rule·이전 확정 패턴·read-only 화면
 - VAI-3b 완료: single-provider AI·timeout/fallback·PII/소비자 격리
-- 현재: VAI-4a additive audit schema·사용자 확정 transaction 구현 완료, migration 0068 적용·검토 대기
-- 다음: VAI-4a 승인 뒤 VAI-4b 적용/다르게/보류/전문가 확인 UI·undo
+- VAI-4a 완료: additive audit schema·사용자 확정 transaction, migration 0068 dev/prod 적용
+- 현재: VAI-4b 적용/다르게/보류/전문가 확인 UI·최근 작업 undo 구현 완료, 오너 브라우저 확인·migration 0069 prod 적용 대기
+- 다음: VAI-4b 승인 뒤 VAI-5 고위험 multi-provider consensus
 
 ## 0.1 Current Status
 
@@ -190,7 +191,7 @@ JC-035는 다음을 **모두** 만족할 때만 `done`이다.
 - [x] AI가 판단하지 못하거나 timeout/error가 나도 화면과 수동 검토가 계속 동작한다.
 - [ ] 사용자 확인 없이 VAT fact·공제 decision·세액·package gate가 변경되지 않는다.
 - [ ] 같은 tenant·사업장·기간만 사용하고, 이전 확정 패턴도 같은 범위로 격리된다.
-- [ ] 규칙 버전, 추천, 사용자 최종 결정, 확정자, 확정시각의 감사 추적이 가능하다.
+- [x] 규칙 버전, 추천, 사용자 최종 결정, 확정자, 확정시각의 감사 추적이 가능하다.
 - [ ] 대표 fixture로 deterministic/pattern/single-AI/consensus/fallback/수동 확정을 검증한다.
 - [ ] 브라우저 E2E, tsc, 전체 테스트, lint, whitespace가 통과한다.
 - [ ] Backlog·Screen Flow·UI Design·Prototype Review·QA가 main 코드와 일치한다.

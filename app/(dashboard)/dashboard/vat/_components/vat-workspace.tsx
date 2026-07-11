@@ -29,6 +29,7 @@ import {
   VatPackageActionButton,
   VatProvenanceRebuildButton,
 } from './vat-actions'
+import { VatTaxTreatmentActions } from './vat-tax-treatment-actions'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
 
@@ -169,11 +170,9 @@ function TaxTreatmentSection({ rows }: { readonly rows: VatTaxTreatmentDisplayRo
                     <p className="text-[12.5px] font-semibold text-foreground">
                       홈택스: {taxTreatmentHometaxActionLabel(row.hometaxAction)}
                     </p>
-                    <p className="mt-1 text-[11.5px] text-company-fg-muted">
-                      {row.finalDecision
-                        ? `사용자 확정 · ${taxTreatmentFinalDecisionLabel(row.finalDecision)}`
-                        : '미확정 · 저장 기능은 VAI-4에서 연결'}
-                    </p>
+                    <div className="mt-1">
+                      <VatTaxTreatmentActions row={row} />
+                    </div>
                   </TableCell>
                 </tr>
               )) : (
@@ -649,16 +648,6 @@ function taxTreatmentHometaxActionLabel(value: VatTaxTreatmentDisplayRow['hometa
   if (value === 'add_or_correct_amount') return '금액 추가·수정 확인'
   if (value === 'review_proration') return '안분 확인'
   return '화면에서 비교'
-}
-
-function taxTreatmentFinalDecisionLabel(value: NonNullable<VatTaxTreatmentDisplayRow['finalDecision']>) {
-  if (value === 'deductible') return '공제'
-  if (value === 'non_deductible') return '불공제'
-  if (value === 'prorated') return '안분'
-  if (value === 'taxable') return '과세'
-  if (value === 'zero_rated') return '영세율'
-  if (value === 'exempt') return '면세'
-  return '비과세'
 }
 
 export function VatBusinessEntityEmptyState({ tenantName }: { readonly tenantName: string }) {

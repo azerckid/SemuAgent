@@ -44,6 +44,12 @@ export const vatTaxTreatmentFinalDecisionSchema = z.enum([
   'exempt',
   'non_taxable',
 ])
+export const vatTaxTreatmentUserActionStatusSchema = z.enum([
+  'pending',
+  'confirmed',
+  'held',
+  'expert_review',
+])
 
 export const vatTaxTreatmentRequiredEvidenceSchema = z.object({
   code: z.string().min(1).max(100),
@@ -158,7 +164,27 @@ export const vatTaxTreatmentDisplayRowSchema = vatTaxTreatmentRecommendationSche
   description: z.string().min(1).max(500),
   sourceType: z.enum(['tax_invoice', 'card', 'receipt']),
   accountLabel: z.string().min(1).max(120).nullable(),
-}))
+  userActionStatus: vatTaxTreatmentUserActionStatusSchema.default('pending'),
+  userActionReason: z.string().max(500).nullable().default(null),
+})).superRefine((value, context) => {
+  if (value.userActionStatus === 'confirmed' && !value.finalDecision) {
+    context.addIssue({
+      code: 'custom',
+      path: ['userActionStatus'],
+      message: '사용자 확정 상태에는 최종 결정이 필요합니다.',
+    })
+  }
+  if (
+    (value.userActionStatus === 'held' || value.userActionStatus === 'expert_review')
+    && value.finalDecision
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['userActionStatus'],
+      message: '보류·전문가 확인 상태에는 최종 결정이 없어야 합니다.',
+    })
+  }
+})
 
 const vatTaxTreatmentMutationBase = {
   periodKey: vatPeriodKeySchema,
@@ -187,6 +213,11 @@ export const vatTaxTreatmentMutationSchema = z.discriminatedUnion('action', [
     action: z.literal('expert_review'),
     reason: z.string().trim().max(500).optional(),
   }),
+  z.object({
+    periodKey: vatPeriodKeySchema,
+    action: z.literal('undo'),
+    undoToken: z.string().uuid(),
+  }),
 ]).superRefine((value, context) => {
   if (value.action !== 'confirm_different') return
   if (value.finalDecision === 'prorated' && value.prorationRateBps === undefined) {
@@ -205,8 +236,16 @@ export const vatTaxTreatmentMutationSchema = z.discriminatedUnion('action', [
   }
 })
 
+export const vatTaxTreatmentMutationSuccessSchema = z.object({
+  ok: z.literal(true),
+  status: vatTaxTreatmentUserActionStatusSchema,
+  finalDecision: vatTaxTreatmentFinalDecisionSchema.nullable(),
+  undoToken: z.string().uuid().nullable(),
+})
+
 export type VatTaxTreatmentRecommendation = z.infer<typeof vatTaxTreatmentRecommendationSchema>
 export type VatTaxTreatmentDisplayRow = z.infer<typeof vatTaxTreatmentDisplayRowSchema>
 export type VatTaxTreatmentRequiredEvidence = z.infer<typeof vatTaxTreatmentRequiredEvidenceSchema>
 export type VatTaxTreatmentFinalDecision = z.infer<typeof vatTaxTreatmentFinalDecisionSchema>
 export type VatTaxTreatmentMutationInput = z.infer<typeof vatTaxTreatmentMutationSchema>
+export type VatTaxTreatmentMutationSuccess = z.infer<typeof vatTaxTreatmentMutationSuccessSchema>

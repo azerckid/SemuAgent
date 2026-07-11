@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
+  applyVatTaxTreatmentAuditStates,
   buildVatTaxTreatmentDisplayRows,
+  type VatTaxTreatmentAuditRow,
   type VatTaxTreatmentClassificationRow,
   type VatTaxTreatmentDeductionRow,
 } from './tax-treatment-summary'
@@ -77,6 +79,7 @@ describe('VAT tax treatment read model', () => {
         source: 'deterministic_rule',
         hometaxComparisonMode: 'expected_prefill',
         finalDecision: null,
+        userActionStatus: 'pending',
       }),
     ])
   })
@@ -134,6 +137,63 @@ describe('VAT tax treatment read model', () => {
       recommendation: 'likely_non_deductible',
       finalDecision: 'non_deductible',
       confirmedByStaffId: 'staff-1',
+      userActionStatus: 'confirmed',
+    })
+  })
+
+  it('keeps a canonical purchase reason when no matching audit snapshot exists', () => {
+    const [row] = build({
+      deductionReviews: [review({
+        decision: 'non_deductible',
+        reason: '업무무관 지출로 확인',
+        confirmedByStaffId: 'staff-1',
+        confirmedAt: '2026-07-11 00:00:00',
+      })],
+    })
+
+    const [result] = applyVatTaxTreatmentAuditStates({ rows: [row!], auditRows: [] })
+
+    expect(result).toMatchObject({
+      userActionStatus: 'confirmed',
+      finalDecision: 'non_deductible',
+      userActionReason: '업무무관 지출로 확인',
+    })
+  })
+
+  it('applies a matching hold or expert-review audit state after recommendation calculation', () => {
+    const [row] = build()
+    const audit: VatTaxTreatmentAuditRow = {
+      classificationRowId: row.classificationRowId,
+      recommendationFingerprint: row.recommendationFingerprint,
+      status: 'held',
+      finalDecision: null,
+      finalReason: '거래처 확인서 대기',
+      confirmedByStaffId: null,
+      confirmedAt: null,
+    }
+
+    expect(applyVatTaxTreatmentAuditStates({ rows: [row], auditRows: [audit] })[0]).toMatchObject({
+      userActionStatus: 'held',
+      userActionReason: '거래처 확인서 대기',
+      finalDecision: null,
+    })
+  })
+
+  it('ignores a held audit when its recommendation fingerprint is stale', () => {
+    const [row] = build()
+    const audit: VatTaxTreatmentAuditRow = {
+      classificationRowId: row.classificationRowId,
+      recommendationFingerprint: 'f'.repeat(64),
+      status: 'expert_review',
+      finalDecision: null,
+      finalReason: '과거 판단',
+      confirmedByStaffId: null,
+      confirmedAt: null,
+    }
+
+    expect(applyVatTaxTreatmentAuditStates({ rows: [row], auditRows: [audit] })[0]).toMatchObject({
+      userActionStatus: 'pending',
+      userActionReason: null,
     })
   })
 })
@@ -147,6 +207,8 @@ describe('VAT tax treatment loader boundaries', () => {
     expect(source).toContain('eq(bookkeepingTransactionClassification.tenantId, params.tenantId)')
     expect(source).toContain('eq(vatDeductionReview.tenantId, params.tenantId)')
     expect(source).toContain('eq(vatDeductionReview.clientId, params.businessEntityId)')
+    expect(source).toContain('eq(vatTaxTreatmentReview.tenantId, params.tenantId)')
+    expect(source).toContain('eq(vatTaxTreatmentReview.clientId, params.businessEntityId)')
     expect(source).not.toContain('.insert(')
     expect(source).not.toContain('.update(')
     expect(source).not.toContain('.delete(')

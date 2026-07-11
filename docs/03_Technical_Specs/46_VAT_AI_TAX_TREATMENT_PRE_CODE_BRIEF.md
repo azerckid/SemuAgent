@@ -308,7 +308,7 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 | VAI-3a | **구현 완료** — Zod + deterministic rules + pattern + read model | 실제 VAT 화면이 validated read model 소비, fixture에서 근거·홈택스 행동 검증, DB 쓰기 0 |
 | VAI-3b | **구현 완료** — 필요한 행만 single AI + timeout/fallback | 실제 화면에서 AI/수동 상태 표시, DB 쓰기 0 |
 | VAI-4a | **구현 완료** — additive audit schema + migration + API transaction | 사용자 확정 저장·tenant guard·rollback 테스트 |
-| VAI-4b | 적용/다르게/보류/전문가 확인 UI + undo | 브라우저 E2E와 감사 이력 확인 |
+| VAI-4b | **구현 완료·오너 브라우저 확인 대기** — 적용/다르게/보류/전문가 확인 UI + 최근 작업 undo | dev DB 서비스 E2E·감사 이력 확인, migration 0069 prod 적용 대기 |
 | VAI-5 | 고위험 consensus + Claude 중재 | 불일치·실패 비차단 |
 | VAI-6 | rebuild/package gate 소비 + closeout | 확정값만 세액 반영, 문서·QA 동기화 |
 
@@ -356,8 +356,21 @@ VAI-6에서 아래 항목 중 하나라도 있으면 VAT rebuild/package gate를
 - [x] canonical write와 추천 snapshot audit upsert를 하나의 DB transaction으로 저장
 - [x] 영세율·면세 필수 증빙 누락, 방향 불일치, stale fingerprint를 서버에서 차단
 - [x] tenant 격리·stale 차단·canonical/audit 원자 rollback 통합 테스트 추가
-- [ ] migration `0068` dev/prod 적용 — PR 머지 전 운영 게이트
-- [ ] 적용/다르게/보류/전문가 확인 UI와 undo — VAI-4b
+- [x] migration `0068` dev/prod 적용
+
+### 11.4 VAI-4b Implementation Result
+
+- [x] 승인된 VAT 판단 표 안에서 `적용`·`다르게`·`보류`·`전문가 확인`을 행 단위로 제공
+- [x] `다르게` 선택 시 매입/매출 방향별 최종 판단, 판단 근거, 안분율을 명시적으로 입력
+- [x] 영세율·면세 필수 증빙 누락은 UI와 서버 양쪽에서 저장 차단
+- [x] API 성공 응답을 Zod로 검증하고 행 단위 pending·오류 상태를 격리
+- [x] 가장 최근 작업만 일회용 토큰으로 되돌리고 canonical 값·감사 상태를 하나의 transaction에서 복원
+- [x] 기존 매입 공제 검토의 `decision` 변경 시 `kind`도 함께 갱신하고 undo 시 원래 값까지 복원
+- [x] 보류·전문가 확인 상태를 recommendation fingerprint가 같은 경우에만 read model에 반영
+- [x] 승인 Preview의 영세율·불공제·안분·공제·면세 대표 5행을 exact VAT fact 샘플로 추가
+- [x] migration `0069` dev 적용 및 적용/보류→undo 서비스 E2E 후 원상복구 확인
+- [ ] migration `0069` prod 적용 — PR 머지 전 운영 게이트
+- [ ] 프로젝트 오너가 `/dashboard/vat?period=2026-H1`에서 VAI-4b 액션과 되돌리기를 확인
 
 ## 12. Related Documents
 

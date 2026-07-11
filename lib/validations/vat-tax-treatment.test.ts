@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   vatTaxTreatmentMutationSchema,
+  vatTaxTreatmentMutationSuccessSchema,
   vatTaxTreatmentRecommendationSchema,
 } from './vat-tax-treatment'
 
@@ -139,6 +140,31 @@ describe('VAT tax treatment validation', () => {
       finalDecision: 'deductible',
       reason: '업무용',
       prorationRateBps: 6_000,
+    }).success).toBe(false)
+    expect(vatTaxTreatmentMutationSchema.safeParse({
+      periodKey: '2026-H1',
+      action: 'undo',
+      undoToken: 'efb1bd6a-55b0-4e70-b957-7c6a89019422',
+    }).success).toBe(true)
+    expect(vatTaxTreatmentMutationSchema.safeParse({
+      periodKey: '2026-H1',
+      action: 'undo',
+      undoToken: 'not-a-token',
+    }).success).toBe(false)
+  })
+
+  it('validates the browser mutation response before the UI consumes it', () => {
+    expect(vatTaxTreatmentMutationSuccessSchema.safeParse({
+      ok: true,
+      status: 'confirmed',
+      finalDecision: 'deductible',
+      undoToken: 'efb1bd6a-55b0-4e70-b957-7c6a89019422',
+    }).success).toBe(true)
+    expect(vatTaxTreatmentMutationSuccessSchema.safeParse({
+      ok: true,
+      status: 'unexpected',
+      finalDecision: 'deductible',
+      undoToken: null,
     }).success).toBe(false)
   })
 })

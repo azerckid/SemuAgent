@@ -29,13 +29,14 @@ import {
   uploadSession,
   vatDeductionReview,
   vatPeriodSummary,
+  vatTaxTreatmentReview,
 } from '@/lib/db/schema'
 import { now, toDBString } from '@/lib/time'
 import {
   buildReconciliationBankSampleRows,
 } from './reconciliation-bank-sample'
 
-export const FIRST_RUN_SAMPLE_SEED_VERSION = '2026-07-08.v2'
+export const FIRST_RUN_SAMPLE_SEED_VERSION = '2026-07-11.v3'
 export const FIRST_RUN_SAMPLE_PERIOD_KEY = '2026-H1'
 export const FIRST_RUN_SAMPLE_PAYROLL_PERIOD_KEY = '2026-06'
 
@@ -253,6 +254,40 @@ function buildValidationFileLinks(params: SeedParams, validationRows: Array<type
 
 function buildSampleBookkeepingRows(params: SeedParams, sessionId: string, sourceBatchId: string, runId: string) {
   return buildReconciliationBankSampleRows(params, sessionId, sourceBatchId, runId)
+}
+
+function buildSampleVatReviews(params: SeedParams) {
+  const linkedClassificationRowId = (suffix: string) => {
+    if (suffix === 'proration' || suffix === 'entertainment') {
+      return firstRunSampleId(params.tenantId, `bk_vat_treatment_${suffix}`)
+    }
+    return null
+  }
+
+  return [
+    ['proration', '공통매입 안분 필요', '공용 SaaS 구독료', 2_000_000, 200_000, 'proration_required', 'pending', '과세·면세 공통매입 안분율 확인 필요'],
+    ['entertainment', '접대비 불공제 후보', '거래처 식대', 1_200_000, 120_000, 'non_deductible_candidate', 'pending', '접대비 성격 여부 확인 필요'],
+    ['vehicle', '비영업용 승용차 후보', '차량 유지비', 900_000, 90_000, 'non_deductible_candidate', 'pending', '업무용 승용차 여부 확인 필요'],
+    ['confirmed', '공제 확정 매입세액', '사무용 소모품', 3_124_000, 312_400, 'deductible', 'deductible', '전자세금계산서와 거래내역 일치'],
+  ].map(([suffix, description, counterparty, supply, inputTax, kind, decision, reason]): typeof vatDeductionReview.$inferInsert => ({
+    id: firstRunSampleId(params.tenantId, `vat_review_${suffix}`),
+    tenantId: params.tenantId,
+    clientId: params.clientId,
+    periodKey: FIRST_RUN_SAMPLE_PERIOD_KEY,
+    classificationRowId: linkedClassificationRowId(String(suffix)),
+    description: String(description),
+    counterparty: String(counterparty),
+    supplyAmountKrw: Number(supply),
+    inputTaxKrw: Number(inputTax),
+    kind: kind as 'deductible' | 'non_deductible_candidate' | 'proration_required',
+    decision: decision as 'pending' | 'deductible' | 'non_deductible' | 'prorated',
+    reason: String(reason),
+    prorationRateBps: suffix === 'proration' ? 5000 : null,
+    confirmedByStaffId: decision === 'deductible' ? params.staffId : null,
+    confirmedAt: decision === 'deductible' ? params.timestamp : null,
+    createdAt: params.timestamp,
+    updatedAt: params.timestamp,
+  }))
 }
 
 function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
@@ -578,29 +613,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     updatedAt: params.timestamp,
   }]
 
-  const vatReviews: Array<typeof vatDeductionReview.$inferInsert> = [
-    ['proration', '공통매입 안분 필요', '공용 SaaS 구독료', 2_000_000, 200_000, 'proration_required', 'pending', '과세·면세 공통매입 안분율 확인 필요'],
-    ['entertainment', '접대비 불공제 후보', '거래처 식대', 1_200_000, 120_000, 'non_deductible_candidate', 'pending', '접대비 성격 여부 확인 필요'],
-    ['vehicle', '비영업용 승용차 후보', '차량 유지비', 900_000, 90_000, 'non_deductible_candidate', 'pending', '업무용 승용차 여부 확인 필요'],
-    ['confirmed', '공제 확정 매입세액', '사무용 소모품', 3_124_000, 312_400, 'deductible', 'deductible', '전자세금계산서와 거래내역 일치'],
-  ].map(([suffix, description, counterparty, supply, inputTax, kind, decision, reason]) => ({
-    id: firstRunSampleId(params.tenantId, `vat_review_${suffix}`),
-    tenantId: params.tenantId,
-    clientId: params.clientId,
-    periodKey: FIRST_RUN_SAMPLE_PERIOD_KEY,
-    description: String(description),
-    counterparty: String(counterparty),
-    supplyAmountKrw: Number(supply),
-    inputTaxKrw: Number(inputTax),
-    kind: kind as 'deductible' | 'non_deductible_candidate' | 'proration_required',
-    decision: decision as 'pending' | 'deductible' | 'non_deductible' | 'prorated',
-    reason: String(reason),
-    prorationRateBps: suffix === 'proration' ? 5000 : null,
-    confirmedByStaffId: decision === 'deductible' ? params.staffId : null,
-    confirmedAt: decision === 'deductible' ? params.timestamp : null,
-    createdAt: params.timestamp,
-    updatedAt: params.timestamp,
-  }))
+  const vatReviews = buildSampleVatReviews(params)
 
   const payrollSummaries: Array<typeof payrollPeriodSummary.$inferInsert> = [{
     id: payrollSummaryId,
@@ -1102,6 +1115,7 @@ export async function refreshFirstRunSampleBookkeepingData({
     sourceBatchId,
     runId,
   )
+  const linkedVatReviews = buildSampleVatReviews(sampleParams).filter((review) => review.classificationRowId)
   const confirmedBookkeepingCount = bookkeepingRows.filter((row) => row.status === 'confirmed').length
   const pendingBookkeepingCount = bookkeepingRows.filter((row) => row.status !== 'confirmed' && row.status !== 'excluded').length
 
@@ -1117,6 +1131,14 @@ export async function refreshFirstRunSampleBookkeepingData({
       const oldRowIds = oldRows.map((row) => row.id)
 
       if (oldRowIds.length > 0) {
+        await tx
+          .delete(vatTaxTreatmentReview)
+          .where(and(
+            eq(vatTaxTreatmentReview.tenantId, tenantId),
+            eq(vatTaxTreatmentReview.clientId, activeDataset.clientId),
+            inArray(vatTaxTreatmentReview.classificationRowId, oldRowIds),
+          ))
+
         await tx
           .delete(bookkeepingJournalEntryVoucherLine)
           .where(and(
@@ -1171,6 +1193,10 @@ export async function refreshFirstRunSampleBookkeepingData({
         for (const chunk of chunkRows(rowsToInsert, 40)) {
           await tx.insert(bookkeepingTransactionClassification).values(chunk)
         }
+      }
+
+      for (const review of linkedVatReviews) {
+        await tx.insert(vatDeductionReview).values(review).onConflictDoNothing()
       }
 
       const firstPendingResolvedId = rowsToInsert.find((row) => row.status !== 'confirmed')?.id

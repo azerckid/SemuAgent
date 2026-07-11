@@ -14,6 +14,16 @@ describe('first-run sample cleanup safety', () => {
     expect(FIRST_RUN_SAMPLE_DELETE_TABLES).not.toContain('staff')
   })
 
+  it('removes dynamic VAT treatment audits before deleting their sample classification rows', () => {
+    const source = readFileSync(new URL('./cleanup.ts', import.meta.url), 'utf8')
+
+    expect(source).toContain('.delete(vatTaxTreatmentReview)')
+    expect(source).toContain('inArray(vatTaxTreatmentReview.classificationRowId, sampleClassificationRowIds)')
+    expect(source.indexOf('.delete(vatTaxTreatmentReview)')).toBeLessThan(
+      source.indexOf('for (const ref of refs)'),
+    )
+  })
+
   it('does not build arbitrary SQL delete strings (S-71)', () => {
     const source = readFileSync(new URL('./cleanup.ts', import.meta.url), 'utf8')
 

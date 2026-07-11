@@ -6,6 +6,7 @@ import {
   bookkeepingClassificationRun,
   bookkeepingTransactionClassification,
   vatDeductionReview,
+  vatTaxTreatmentReview,
 } from '@/lib/db/schema'
 import { listActiveSourceBatchSessions } from '@/lib/source-batch/scope'
 import {
@@ -64,6 +65,17 @@ export type VatTaxTreatmentDeductionRow = Pick<
   | 'confirmedByStaffId'
   | 'confirmedAt'
   | 'updatedAt'
+>
+
+export type VatTaxTreatmentAuditRow = Pick<
+  typeof vatTaxTreatmentReview.$inferSelect,
+  | 'classificationRowId'
+  | 'recommendationFingerprint'
+  | 'status'
+  | 'finalDecision'
+  | 'finalReason'
+  | 'confirmedByStaffId'
+  | 'confirmedAt'
 >
 
 type ExactVatTaxTreatmentRow = VatTaxTreatmentClassificationRow & {
@@ -275,6 +287,10 @@ export function buildVatTaxTreatmentDisplayRows(params: {
         aiTrace: null,
         aiRuntimeStatus: 'not_requested',
         ...finalState,
+        userActionStatus: finalState.finalDecision ? 'confirmed' : 'pending',
+        userActionReason: finalState.finalDecision && row.vatDirection === 'purchase'
+          ? review?.reason || null
+          : null,
         transactionDate: row.transactionDate,
         counterparty: row.merchantName?.trim() || '상대처 미확인',
         description: row.description?.trim() || row.merchantName?.trim() || '거래 내용 미확인',
@@ -287,6 +303,41 @@ export function buildVatTaxTreatmentDisplayRows(params: {
       || right.currentVatFact.grossAmountKrw - left.currentVatFact.grossAmountKrw
       || left.rowId.localeCompare(right.rowId)
     ))
+}
+
+export function applyVatTaxTreatmentAuditStates(params: {
+  rows: VatTaxTreatmentDisplayRow[]
+  auditRows: VatTaxTreatmentAuditRow[]
+}) {
+  const auditByRowId = new Map(params.auditRows.map((row) => [row.classificationRowId, row]))
+
+  return params.rows.map((row) => {
+    const audit = auditByRowId.get(row.classificationRowId)
+    if (row.finalDecision) {
+      const matchingConfirmedAudit = audit?.status === 'confirmed'
+        && audit.recommendationFingerprint === row.recommendationFingerprint
+      return vatTaxTreatmentDisplayRowSchema.parse({
+        ...row,
+        userActionStatus: 'confirmed',
+        userActionReason: matchingConfirmedAudit ? audit.finalReason : row.userActionReason,
+      })
+    }
+    if (
+      audit?.recommendationFingerprint === row.recommendationFingerprint
+      && (audit.status === 'held' || audit.status === 'expert_review')
+    ) {
+      return vatTaxTreatmentDisplayRowSchema.parse({
+        ...row,
+        userActionStatus: audit.status,
+        userActionReason: audit.finalReason,
+      })
+    }
+    return vatTaxTreatmentDisplayRowSchema.parse({
+      ...row,
+      userActionStatus: 'pending',
+      userActionReason: null,
+    })
+  })
 }
 
 export async function loadVatTaxTreatmentDisplayRows(params: {
@@ -374,6 +425,26 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
       .orderBy(desc(vatDeductionReview.updatedAt), desc(vatDeductionReview.id))
     : []
 
+  const auditRows = classificationRowIds.length > 0
+    ? await db
+      .select({
+        classificationRowId: vatTaxTreatmentReview.classificationRowId,
+        recommendationFingerprint: vatTaxTreatmentReview.recommendationFingerprint,
+        status: vatTaxTreatmentReview.status,
+        finalDecision: vatTaxTreatmentReview.finalDecision,
+        finalReason: vatTaxTreatmentReview.finalReason,
+        confirmedByStaffId: vatTaxTreatmentReview.confirmedByStaffId,
+        confirmedAt: vatTaxTreatmentReview.confirmedAt,
+      })
+      .from(vatTaxTreatmentReview)
+      .where(and(
+        eq(vatTaxTreatmentReview.tenantId, params.tenantId),
+        eq(vatTaxTreatmentReview.clientId, params.businessEntityId),
+        eq(vatTaxTreatmentReview.periodKey, params.period.key),
+        inArray(vatTaxTreatmentReview.classificationRowId, classificationRowIds),
+      ))
+    : []
+
   const rows = buildVatTaxTreatmentDisplayRows({
     tenantId: params.tenantId,
     businessEntityId: params.businessEntityId,
@@ -381,7 +452,8 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
     classificationRows,
     deductionReviews,
   })
-  return params.includeAi
-    ? enhanceVatTaxTreatmentRowsWithSingleAi({ rows })
+  const recommendedRows = params.includeAi
+    ? await enhanceVatTaxTreatmentRowsWithSingleAi({ rows })
     : rows
+  return applyVatTaxTreatmentAuditStates({ rows: recommendedRows, auditRows })
 }

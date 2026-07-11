@@ -39,6 +39,7 @@ export async function PATCH(
       ok: true,
       status: result.status,
       finalDecision: result.finalDecision,
+      undoToken: result.undoToken,
     })
   } catch (error) {
     console.error('[PATCH /api/vat/tax-treatments/[rowId]]', error)

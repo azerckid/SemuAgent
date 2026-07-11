@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import {
   bookkeepingClassificationRun,
@@ -24,6 +24,7 @@ import {
   uploadSession,
   vatDeductionReview,
   vatPeriodSummary,
+  vatTaxTreatmentReview,
 } from '@/lib/db/schema'
 import { now, toDBString } from '@/lib/time'
 
@@ -178,6 +179,20 @@ export async function deleteFirstRunSampleDataset({ tenantId }: { tenantId: stri
         eq(sampleEntityRef.sampleDatasetId, activeDataset.id),
       ))
       .orderBy(desc(sampleEntityRef.deleteOrder), desc(sampleEntityRef.createdAt), desc(sampleEntityRef.id))
+
+    const sampleClassificationRowIds = refs
+      .filter((ref) => ref.entityTable === 'bookkeeping_transaction_classification')
+      .map((ref) => ref.entityId)
+    if (sampleClassificationRowIds.length > 0) {
+      const result = await tx
+        .delete(vatTaxTreatmentReview)
+        .where(and(
+          eq(vatTaxTreatmentReview.tenantId, tenantId),
+          eq(vatTaxTreatmentReview.clientId, activeDataset.clientId),
+          inArray(vatTaxTreatmentReview.classificationRowId, sampleClassificationRowIds),
+        ))
+      deletedRowCount += result.rowsAffected
+    }
 
     for (const ref of refs) {
       const deleted = await deleteWhitelistedRow(tx, tenantId, ref)

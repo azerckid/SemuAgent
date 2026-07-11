@@ -8,6 +8,7 @@ import {
   RECONCILIATION_CARD_SAMPLE_COUNT,
   RECONCILIATION_ORPHAN_TAX_INVOICE_COUNT,
   RECONCILIATION_TAX_INVOICE_SAMPLE_COUNT,
+  VAT_TAX_TREATMENT_SAMPLE_COUNT,
   buildReconciliationBankSampleRows,
   summarizeReconciliationBankSample,
 } from './reconciliation-bank-sample'
@@ -33,16 +34,41 @@ describe('reconciliation bank sample rows', () => {
     expect(RECONCILIATION_CARD_SAMPLE_COUNT).toBe(105)
     expect(RECONCILIATION_ORPHAN_TAX_INVOICE_COUNT).toBe(14)
     expect(summary.bankCount).toBe(245)
-    expect(summary.cardCount).toBe(105)
-    expect(summary.taxInvoiceCount).toBe(RECONCILIATION_TAX_INVOICE_SAMPLE_COUNT)
+    expect(summary.cardCount).toBe(106)
+    expect(summary.taxInvoiceCount).toBe(RECONCILIATION_TAX_INVOICE_SAMPLE_COUNT + 4)
     expect(summary.matchRate).toBeGreaterThanOrEqual(0.95)
     expect(summary.aiHighConfidenceCount).toBeGreaterThanOrEqual(600)
     expect(rows.length).toBe(
       RECONCILIATION_BANK_SAMPLE_COUNT
       + RECONCILIATION_CARD_SAMPLE_COUNT
-      + RECONCILIATION_TAX_INVOICE_SAMPLE_COUNT,
+      + RECONCILIATION_TAX_INVOICE_SAMPLE_COUNT
+      + VAT_TAX_TREATMENT_SAMPLE_COUNT,
     )
     expect(RECONCILIATION_BANK_MATCHED_COUNT).toBe(238)
+  })
+
+  it('adds five exact VAT treatment rows matching the approved VAT preview', () => {
+    const rows = buildReconciliationBankSampleRows(
+      params,
+      firstRunSampleId(params.tenantId, 'upload_session_2026h1'),
+      firstRunSampleId(params.tenantId, 'source_batch_2026h1'),
+      firstRunSampleId(params.tenantId, 'bookkeeping_run_2026h1'),
+    )
+    const treatmentRows = rows.filter((row) => row.id.includes('bk_vat_treatment_'))
+
+    expect(treatmentRows).toHaveLength(VAT_TAX_TREATMENT_SAMPLE_COUNT)
+    expect(treatmentRows.every((row) => (
+      row.status === 'confirmed'
+      && row.vatFactStatus === 'derived'
+      && row.vatSupplyAmountKrw != null
+      && row.vatTaxAmountKrw != null
+      && row.vatSupplyAmountKrw + row.vatTaxAmountKrw === row.vatGrossAmountKrw
+    ))).toBe(true)
+    expect(treatmentRows.map((row) => row.vatTaxType)).toEqual(expect.arrayContaining([
+      'taxable',
+      'zero_rated',
+      'exempt',
+    ]))
   })
 
   it('pairs bank and tax rows by same date and amount', () => {
