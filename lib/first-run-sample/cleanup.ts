@@ -20,6 +20,7 @@ import {
   sampleDataset,
   sampleEntityRef,
   sourceBatch,
+  tenantBillingProfile,
   uploadFile,
   uploadSession,
   vatDeductionReview,
@@ -51,6 +52,7 @@ export const FIRST_RUN_SAMPLE_DELETE_TABLES = [
   'payroll_period_summary',
   'employee_profile',
   'internal_reminder_rule',
+  'tenant_billing_profile',
 ] as const
 
 export type FirstRunSampleDeleteTable = (typeof FIRST_RUN_SAMPLE_DELETE_TABLES)[number]
@@ -137,6 +139,9 @@ async function deleteWhitelistedRow(tx: Parameters<Parameters<typeof db.transact
       return true
     case 'internal_reminder_rule':
       await tx.delete(internalReminderRule).where(and(eq(internalReminderRule.tenantId, tenantId), eq(internalReminderRule.id, ref.entityId)))
+      return true
+    case 'tenant_billing_profile':
+      await tx.delete(tenantBillingProfile).where(and(eq(tenantBillingProfile.tenantId, tenantId), eq(tenantBillingProfile.id, ref.entityId)))
       return true
     default:
       return false

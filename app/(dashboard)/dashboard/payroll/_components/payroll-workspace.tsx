@@ -299,9 +299,12 @@ function DeductionBreakdownCard({ items }: { readonly items: PayrollDeductionBre
 }
 
 function PayrollDocumentsCard({ summary }: PayrollWorkspaceProps) {
-  const closeNote = summary.closeAction.locked
-    ? '확인 필요 1건을 처리해야 마감할 수 있습니다.'
-    : '급여 마감이 가능합니다.'
+  // 마감 사유는 closeAction에서 이미 정확히 계산된다(마감 완료 / 확인 N건 처리 필요).
+  // locked만 보고 문구를 고정하면 이미 마감된 경우에도 "확인 필요"로 잘못 표시되므로
+  // lockReason을 그대로 노출한다.
+  const closeNote = summary.closeAction.canClose
+    ? '급여 마감이 가능합니다.'
+    : summary.closeAction.lockReason ?? '확인 후 마감할 수 있습니다.'
 
   return (
     <section className={cn(panelClass, 'p-[18px]')}>

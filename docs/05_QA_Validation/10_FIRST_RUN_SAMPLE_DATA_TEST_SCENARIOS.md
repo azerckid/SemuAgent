@@ -22,13 +22,13 @@
 | S-03 | First-run | 기존 tenant 사용자가 다시 로그인한다. | sample이 자동 생성되지 않는다. | PASS · unit |
 | S-04 | First-run | sample을 삭제한 tenant가 다시 로그인한다. | sample이 자동 재생성되지 않는다. | PASS · unit |
 | S-05 | First-run | seed 중 일부 domain row 생성이 실패한다. | 온보딩은 완료되고 재시도 가능한 sample 생성 오류 상태가 표시된다. | PASS · unit |
-| S-10 | Data Contract | 회사 홈 sample을 조회한다. | 미수집 1/24, 분류 대기 18/342, 부가세 공제 검토 3, 급여 확인 필요 1이 표시된다. | PASS · unit |
+| S-10 | Data Contract | 회사 홈 sample을 조회한다. | 미수집 1/24, 분류 대기 18/342, 부가세 공제 검토 3, 급여 확인 필요 0(마감 완료)이 표시된다. | PASS · unit |
 | S-11 | Data Contract | 자료수집 sample을 조회한다. | 자료 23/24, 카드 1건 미수집, 영수증 정규화 대기 3, 파싱 오류 1이 표시된다. | PASS · unit |
 | S-12 | Data Contract | 기장검토 sample을 조회한다. | 324/342 확정, 검토 대기 18, 신뢰도 낮음 5가 표시된다. | PASS · unit |
 | S-13 | Data Contract | 부가세 sample을 조회한다. | 매출세액 32,000,000 - 매입세액 18,000,000 = 납부 예정 14,000,000으로 표시된다. | PASS · unit |
-| S-14 | Data Contract | 급여 sample을 조회한다. | 대상 11명(정규직 6·프리랜서 2·일용직 3), 지급 35,740,000(비과세 식대 포함), 공제 3,686,030, 실지급 32,053,970, 확인 필요 1이 표시된다. | PASS · unit |
-| S-15 | Data Contract | 신고지원 sample을 조회한다. | 부가세 패키지 잠금, 원천세 준비됨, 4대보험 확인 필요, 접수증 대기가 표시된다. | PASS · unit |
-| S-16 | Data Contract | 직원 명부 sample을 조회한다. | 전체 11명, 재직 11, 퇴사 0, 급여 대상 11, 4대보험 확인 필요 1이 표시된다. | PASS · unit |
+| S-14 | Data Contract | 급여 sample을 조회한다. | 대상 11명(정규직 6·프리랜서 2·일용직 3), 지급 35,740,000(비과세 식대 포함), 공제 3,686,030, 실지급 32,053,970, 확인 필요 0(전원 확정·기간 마감)이 표시된다. | PASS · unit |
+| S-15 | Data Contract | 신고지원 sample을 조회한다. | 부가세 패키지 잠금, 원천세 준비됨(사업자 프로필 채움), 4대보험 확인 완료, 접수증 대기가 표시된다. | PASS · unit |
+| S-16 | Data Contract | 직원 명부 sample을 조회한다. | 전체 11명, 재직 11, 퇴사 0, 급여 대상 11, 4대보험 확인 필요 0이 표시된다. | PASS · unit |
 | S-17 | Data Contract | 리마인드 sample을 조회한다. | 활성 규칙 3, 대상 2, 실패 1과 provider missing 상태 예시가 표시된다. | PASS · unit |
 | S-20 | Labeling | sample active 상태에서 각 dashboard 화면을 연다. | 전역 banner 또는 badge가 샘플 데이터임을 명확히 표시한다. | PASS · unit |
 | S-21 | Labeling | sample banner의 삭제 CTA를 확인한다. | "샘플 데이터 삭제하고 실제 사용 시작" CTA가 표시된다. | PASS · unit |
