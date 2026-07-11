@@ -9,6 +9,11 @@ const companyHomePreview = readFileSync(join(workspaceRoot, 'docs/02_UI_Screens/
 describe('dashboard sidebar cadence navigation (JC-036)', () => {
   const payrollChildRoutes = [
     {
+      href: '/dashboard/payroll',
+      previewHref: '04_payroll.html',
+      label: '급여',
+    },
+    {
       href: '/dashboard/employees',
       previewHref: '06_employee_directory.html',
       label: '직원 명부',

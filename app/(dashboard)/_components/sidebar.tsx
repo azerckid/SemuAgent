@@ -22,7 +22,10 @@ const BOOKKEEPING_CHILD_NAV = [
   { href: '/dashboard/bookkeeping/reconciliation-ledger', label: '자료대조원장' },
 ] as const
 
+// 상위 '급여·지급' 항목 자체가 /dashboard/payroll로 연결되지만, 카테고리 헤더처럼
+// 보여 발견성이 떨어진다는 피드백에 따라 하위에도 '급여'를 명시적으로 노출한다.
 const PAYROLL_CHILD_NAV = [
+  { href: '/dashboard/payroll', label: '급여' },
   { href: '/dashboard/employees', label: '직원 명부' },
   { href: '/dashboard/filing-support', label: '원천세' },
   { href: '/dashboard/filing-preparation/payment-statements', label: '지급명세서·연말정산' },
