@@ -779,7 +779,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] VAI-7a 구조 baseline(최대 7회 provider 호출·timeout 누적 약 40초), 결정적 호출 수 속성(`data-vat-initial-provider-calls`), localhost 3회 응답 측정을 기록했다. production P95는 VAI-7d 브라우저 검증에서 기록한다.
   - [x] VAI-7b additive schema·versioned payload·fingerprint invalidation·2분 lease·15분 fallback backoff·idempotency 계약을 코드와 DB 통합 테스트로 검토했다.
   - [ ] VAI-7c의 `확인 중`·`수동 확인`·`다시 확인 필요`·`AI 다시 확인` 상태를 다음 VAT UI 논의와 함께 프로젝트 오너가 확인한다.
-  - [x] additive migration `0073`을 준비하고 기존 canonical VAT fact·사용자 확정 감사 row를 변경하지 않는 적용 경계를 확정했다. dev/prod 적용은 PR 머지 전 수행한다.
+  - [x] additive migration `0073`을 dev/prod에 적용하고 기존 canonical VAT fact·사용자 확정 감사 row를 변경하지 않음을 확인했다.
 - Acceptance Criteria:
   - [x] VAT 최초 서버 렌더 경로에서 provider 호출이 0회다. (VAI-7a)
   - [ ] 동일 fingerprint/version의 저장 결과가 있으면 페이지 10회 재진입에도 추가 provider 호출이 0회다.
@@ -793,7 +793,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 브라우저 E2E와 계측으로 초기 렌더 시간·provider 호출 수·stale 재실행을 증명한다.
 - Scope Boundary: VAT 화면의 시각적 정보구조 개편은 후속 논의로 분리하며 JC-037에 섞지 않는다.
 - Document Sync Check (2026-07-12, VAI-7a 기준): VAT 최초 read에서 `includeTaxTreatmentAi`를 제거해 provider 0회를 고정하고 호출 수를 비가시 DOM 속성으로 노출했다. 당시에는 결과 저장소가 없어 deterministic rule·이전 확정·사용자 결정만 표시했으며 DB·migration·Preview 변경은 없었다.
-- Document Sync Check (2026-07-12): VAI-7b는 additive `vat_tax_treatment_ai_result`와 migration `0073`, versioned payload, fingerprint/version stale 처리, 2분 실행 lease, 15분 fallback backoff, active-scope partial unique index를 구현했다. VAT read는 증빙 확인을 먼저 합성한 뒤 동일 scope/fingerprint 저장 결과를 재사용하고 사용자 확정 audit를 마지막에 적용한다. 다중 요청·변경 fingerprint·fallback retry·확정 행 제외·tenant/business/period 격리·민감 원문 미저장을 DB/단위 테스트로 검증했다. migration dev/prod 적용과 VAI-7c 비동기 trigger/UI, VAI-7d 브라우저 계측이 남아 JC-037은 `todo`를 유지한다.
+- Document Sync Check (2026-07-12): VAI-7b는 additive `vat_tax_treatment_ai_result`와 migration `0073`, versioned payload, fingerprint/version stale 처리, 2분 실행 lease, 15분 fallback backoff, active-scope partial unique index를 구현했다. VAT read는 증빙 확인을 먼저 합성한 뒤 동일 scope/fingerprint 저장 결과를 재사용하고 사용자 확정 audit를 마지막에 적용한다. 다중 요청·변경 fingerprint·fallback retry·확정 행 제외·tenant/business/period 격리·민감 원문 미저장을 DB/단위 테스트로 검증했다. migration `0073`은 dev/prod 모두 21컬럼·명시 인덱스 4개·FK 3개·위반 0건·초기 행 0건으로 적용했다. VAI-7c 비동기 trigger/UI와 VAI-7d 브라우저 계측이 남아 JC-037은 `todo`를 유지한다.
 - Document Sync Check (2026-07-12): 저장 AI read를 기본 OFF로 고정했다. VAT 화면과 사용자 확정·증빙 mutation만 명시적으로 opt-in하고, filing-preparation·internal-reminders·package/rebuild gate는 명시적으로 opt-out해 불필요 SELECT와 추천 캐시의 gate 혼입을 차단한다.
 
 ### JC-038 · 부가세 화면 단순화·중복 정보 제거

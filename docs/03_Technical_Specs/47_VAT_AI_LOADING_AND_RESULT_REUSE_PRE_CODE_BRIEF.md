@@ -2,7 +2,7 @@
 > Created: 2026-07-12
 > Last Updated: 2026-07-12
 > Backlog: JC-037 · VAI-7
-> Status: VAI-7a implemented; VAI-7b code and migration 0073 ready; dev/prod migration and VAI-7c~7d pending
+> Status: VAI-7a~7b implemented; migration 0073 dev/prod applied; VAI-7c~7d pending
 
 ## 0. Decision
 
@@ -154,7 +154,7 @@ polling을 사용한다면 횟수·간격·전체 시간을 제한한다. durabl
 | 작업 단위 | 내용 | 완료선 |
 |:---|:---|:---|
 | **VAI-7a · Read/AI Split + Instrumentation** | 초기 read path와 provider path 분리, 구조 baseline·호출 0 경계 고정 | **구현 완료** · VAT 최초 렌더 provider 호출 0회, 기존 기능 회귀 없음 |
-| **VAI-7b · Result Reuse Storage** | additive 결과 저장, fingerprint/version invalidation, lease/backoff idempotency | **코드 완료** · 동일 입력 재사용, scope 변경 거부, stale 재실행 1회, 동시 실행 1개를 DB 통합 테스트로 검증. migration `0073` dev/prod 적용 대기 |
+| **VAI-7b · Result Reuse Storage** | additive 결과 저장, fingerprint/version invalidation, lease/backoff idempotency | **구현 완료** · 동일 입력 재사용, scope 변경 거부, stale 재실행 1회, 동시 실행 1개를 DB 통합 테스트로 검증. migration `0073` dev/prod 적용 완료 |
 | **VAI-7c · Async Trigger + Status UI** | 비동기 실행 API, 행 상태 갱신, 명시적 `AI 다시 확인` | 표를 먼저 사용하고 결과 행만 갱신, 실패 시 수동 확인 |
 | **VAI-7d · Cutover + Verification** | 남은 legacy 동기 fallback 정리, 브라우저 E2E·관측·문서 정합 | 호출 수·초기 렌더 시간·stale 재판단을 실제 환경에서 증명 |
 
