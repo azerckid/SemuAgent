@@ -58,13 +58,17 @@ const scheduleIcon: Record<VatSchedule['id'], ComponentType<{ className?: string
 export interface VatWorkspaceProps {
   readonly summary: VatSummary
   readonly packageGate: VatPackageGate
+  readonly initialProviderCallCount?: number
 }
 
-export function VatWorkspace({ summary, packageGate }: VatWorkspaceProps) {
+export function VatWorkspace({ summary, packageGate, initialProviderCallCount }: VatWorkspaceProps) {
   const packagePreview = applyVatPackageGateToPreview(summary.packagePreview, packageGate)
 
   return (
-    <div className="flex min-h-full flex-col bg-company-bg">
+    <div
+      className="flex min-h-full flex-col bg-company-bg"
+      data-vat-initial-provider-calls={initialProviderCallCount}
+    >
       <VatTopbar summary={summary} />
       <div className="flex w-full max-w-[1200px] flex-col gap-5 px-7 pt-6 pb-12">
         <TaxSummaryHero summary={summary} />

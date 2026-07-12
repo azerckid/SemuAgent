@@ -151,14 +151,14 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
 | S-106 | 동일 fingerprint/version의 AI 결과가 저장됨 | 같은 VAT 화면을 10회 재진입 | 저장 결과를 즉시 표시하고 추가 provider 호출 0회 | Pending·VAI-7b/7d |
-| S-107 | AI 결과가 없거나 stale인 행이 존재 | VAT page 최초 진입 | VAT 표를 먼저 렌더하고 해당 행만 `확인 중`; 최초 서버 렌더 provider 호출 0회 | Pending·VAI-7a/7c |
+| S-107 | AI 결과가 없거나 stale인 행이 존재 | VAT page 최초 진입 | VAT 표를 먼저 렌더하고 해당 행만 `확인 중`; 최초 서버 렌더 provider 호출 0회 | PARTIAL·VAI-7a provider 0회/표 선렌더 PASS, `확인 중`은 VAI-7c Pending |
 | S-108 | 거래 사실·증빙·VAT fact·규칙 또는 prompt version 변경 | 화면 재진입 | 이전 결과를 stale로 표시하고 해당 scope/fingerprint 신규 실행을 정확히 1회 생성 | Pending·VAI-7b |
 | S-109 | 같은 사용자가 같은 기간 VAT 화면을 여러 탭에서 동시에 엶 | 비동기 판단 시작 | 동일 scope/fingerprint의 활성 실행은 하나이고 나머지는 기존 상태를 재사용 | Pending·VAI-7b/7c |
 | S-110 | provider timeout·quota·invalid schema·전체 실패 | 비동기 판단 중 | 전체 화면 loading 없이 해당 행만 수동 확인으로 전환하고 표·mutation 계속 사용 | Pending·VAI-7c/7d |
 | S-111 | 저장 결과가 있으나 사용자가 새 판단을 원함 | `AI 다시 확인` 클릭 | 명시적 신규 실행 1회, 기존 사용자 확정값·canonical VAT fact 미변경 | Pending·VAI-7c |
 | S-112 | 사용자 최종 확정 행 | 자동 비동기 판단 대상 계산 | provider 호출 대상에서 제외, 규칙 변경은 기존 결정 덮기 대신 재검토 상태만 표시 | Pending·VAI-7b/7c |
 | S-113 | 다른 tenant·사업장·기간의 동일 거래처/금액 또는 민감 원문 존재 | 결과 저장·재사용 | scope 밖 결과 미사용, 원문 prompt/provider 응답·민감 식별정보 미저장 | Pending·VAI-7b |
-| S-114 | VAT package/rebuild gate 평가 | AI가 실행 중이거나 실패 | live LLM을 기다리지 않고 canonical 사용자 확정값만으로 결정 | Pending·VAI-7a/7d |
+| S-114 | VAT package/rebuild gate 평가 | AI가 실행 중이거나 실패 | live LLM을 기다리지 않고 canonical 사용자 확정값만으로 결정 | PASS·VAI-7a 정적 회귀 확인 |
 
 ### 2.12 JC-038 VAT 화면 단순화·중복 제거
 

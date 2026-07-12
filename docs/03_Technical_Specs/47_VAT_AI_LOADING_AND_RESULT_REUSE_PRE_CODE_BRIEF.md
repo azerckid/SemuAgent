@@ -2,7 +2,7 @@
 > Created: 2026-07-12
 > Last Updated: 2026-07-12
 > Backlog: JC-037 · VAI-7
-> Status: docs-only contract; runtime implementation pending
+> Status: VAI-7a initial read/provider split implemented; VAI-7b~7d pending
 
 ## 0. Decision
 
@@ -139,20 +139,46 @@ polling을 사용한다면 횟수·간격·전체 시간을 제한한다. durabl
 
 | 작업 단위 | 내용 | 완료선 |
 |:---|:---|:---|
-| **VAI-7a · Read/AI Split + Instrumentation** | 초기 read path와 provider path 분리, 현재 시간·호출 수 계측 | VAT 최초 렌더 provider 호출 0회, 기존 기능 회귀 없음 |
+| **VAI-7a · Read/AI Split + Instrumentation** | 초기 read path와 provider path 분리, 구조 baseline·호출 0 경계 고정 | **구현 완료** · VAT 최초 렌더 provider 호출 0회, 기존 기능 회귀 없음 |
 | **VAI-7b · Result Reuse Storage** | additive 결과 저장, fingerprint/version invalidation, idempotency | 동일 입력 재방문 저장 결과 재사용, 다중 탭 중복 실행 없음 |
 | **VAI-7c · Async Trigger + Status UI** | 비동기 실행 API, 행 상태 갱신, 명시적 `AI 다시 확인` | 표를 먼저 사용하고 결과 행만 갱신, 실패 시 수동 확인 |
-| **VAI-7d · Cutover + Verification** | 동기 AI 경로 제거, 브라우저 E2E·관측·문서 정합 | 호출 수·초기 렌더 시간·stale 재판단을 실제 환경에서 증명 |
+| **VAI-7d · Cutover + Verification** | 남은 legacy 동기 fallback 정리, 브라우저 E2E·관측·문서 정합 | 호출 수·초기 렌더 시간·stale 재판단을 실제 환경에서 증명 |
 
-VAI-7a에서 현재 provider 호출 수와 VAT 초기 응답 시간을 먼저 측정한다. VAI-7b migration이
-필요하면 additive SQL을 dev/prod에 코드 머지 전에 적용한다. VAI-7c 완료 전 동기 경로를
-제거하지 않고 VAI-7d에서 단일 경로로 전환한다.
+### 5.1 VAI-7a Transition State
+
+VAI-7a는 긴급 로딩 결함을 먼저 닫기 위해 `/dashboard/vat` 초기 read path에서 provider 호출을
+제거한다. 초기 화면은 DB 사실, deterministic rule, 이전 확정 패턴, 사용자 확정값만 사용한다.
+AI 결과 저장소와 비동기 실행이 아직 없는 VAI-7a~7b 전환 구간에는 새 AI 판단을 화면에서
+갱신하지 않으며, 애매한 행은 기존 `needs_review` 상태로 남는다. 이는 AI 결과가 있는 것처럼
+가장하지 않고 표를 먼저 사용할 수 있게 하는 의도된 임시 상태다.
+
+기존 `enhanceVatTaxTreatmentRowsWithAi` 서비스는 사용자 mutation·증빙 확인의 fingerprint
+호환과 VAI-7c 비동기 실행 재사용을 위해 유지한다. VAT 최초 페이지 read에서는 호출하지 않는다.
+VAI-7d는 비동기 경로가 준비된 뒤 남은 legacy 동기 fallback을 정리하고 단일 실행 경로를
+실환경에서 검증한다.
+
+### 5.2 VAI-7a Instrumentation
+
+- 변경 전 구조적 baseline: 한 요청에서 고위험 consensus, single-provider, 추가 consensus가
+  이어져 활성 provider와 행 조합에 따라 최대 7회 호출, provider timeout 누적은 약 40초까지
+  가능했다.
+- 변경 후 초기 read: provider 호출은 코드 경계상 0회다.
+- 초기 provider 호출 수는 VAT workspace root의 `data-vat-initial-provider-calls`로 노출한다.
+- 2026-07-12 localhost Webpack dev 브라우저 3회 새로고침 측정은 `responseStart`
+  2,118/1,664/1,996ms, `DOMContentLoaded` 2,620/2,051/2,500ms,
+  `loadEventEnd` 3,029/2,481/2,917ms였고 세 요청 모두 provider 호출 0회였다.
+- 서버 컴포넌트의 비결정적 렌더값이나 요청별 로그는 만들지 않는다. production P95는
+  VAI-7d 배포 환경 검증에서 기록한다.
+- 별도 `console` 로그나 요청별 DB write는 추가하지 않아 Vercel observability event와 저장 비용을
+  늘리지 않는다.
+
+VAI-7b migration이 필요하면 additive SQL을 dev/prod에 코드 머지 전에 적용한다.
 
 ## 6. Acceptance Criteria
 
-- [ ] 저장 결과가 완성된 동일 VAT 화면을 10회 새로고침해도 추가 provider 호출은 0회다.
+- [ ] 저장 결과가 완성된 동일 VAT 화면을 10회 새로고침해도 추가 provider 호출은 0회다. (VAI-7b/7d)
 - [ ] 최초 의미 있는 VAT 표 렌더 P95는 3초 이내를 목표로 하며 구현 PR에 전후 측정값을 남긴다.
-- [ ] provider timeout·quota·전체 실패가 VAT page 최초 렌더를 막지 않는다.
+- [x] VAT page 최초 서버 렌더는 provider를 호출하지 않으며 timeout·quota·전체 실패를 기다리지 않는다. (VAI-7a)
 - [ ] 데이터·규칙·prompt version 변경은 기존 결과를 stale로 만들고 신규 실행을 정확히 1회 만든다.
 - [ ] 같은 화면을 여러 탭에서 열어도 동일 scope/fingerprint 실행은 하나다.
 - [ ] 사용자 확정 행은 자동 provider 호출 대상에서 제외된다.
