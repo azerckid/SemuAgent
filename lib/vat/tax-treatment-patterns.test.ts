@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { applyPriorConfirmedVatPattern, type VatTaxTreatmentPatternRow } from './tax-treatment-patterns'
+import {
+  applyPriorConfirmedVatPattern,
+  findTiedVatPatternDecisionConflict,
+  type VatTaxTreatmentPatternRow,
+} from './tax-treatment-patterns'
 import type { VatTaxTreatmentRuleResult } from './tax-treatment-rules'
 
 const base: VatTaxTreatmentRuleResult = {
@@ -71,5 +75,22 @@ describe('VAT prior confirmed patterns', () => {
       recommendation: 'likely_non_deductible',
       source: 'deterministic_rule',
     })
+  })
+
+  it('reports only a top-count tie as a real prior-decision conflict', () => {
+    const deductible = prior()
+    const nonDeductible = prior({
+      classificationRowId: 'prior-2',
+      finalDecision: 'non_deductible',
+    })
+    expect(findTiedVatPatternDecisionConflict([deductible, nonDeductible])).toEqual({
+      decisions: ['deductible', 'non_deductible'],
+      references: ['classification:prior-1', 'classification:prior-2'],
+    })
+    expect(findTiedVatPatternDecisionConflict([
+      deductible,
+      prior({ classificationRowId: 'prior-3' }),
+      nonDeductible,
+    ])).toBeNull()
   })
 })

@@ -194,7 +194,7 @@ describe('VAT evidence-backed decisive defaults', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v4',
+        promptVersion: 'vat-tax-treatment-v5',
         consensusProviders: [],
       },
       aiRuntimeStatus: 'completed',

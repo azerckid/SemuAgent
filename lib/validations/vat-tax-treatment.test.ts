@@ -87,7 +87,7 @@ describe('VAT tax treatment validation', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v4',
+        promptVersion: 'vat-tax-treatment-v5',
         consensusProviders: [],
       },
     })).success).toBe(true)
@@ -103,7 +103,7 @@ describe('VAT tax treatment validation', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v4',
+        promptVersion: 'vat-tax-treatment-v5',
         consensusProviders: [],
       },
     })).success).toBe(false)
@@ -126,6 +126,36 @@ describe('VAT tax treatment validation', () => {
       provisionalJudgment: null,
       judgmentWorkflowStatus: 'ai_temporary_error',
       aiRuntimeStatus: 'manual_fallback',
+    })).success).toBe(false)
+  })
+
+  it('requires a complete handoff payload only for human-resolution workflow', () => {
+    const humanHandoff = {
+      reason: 'essential_fact_missing',
+      provisionalJudgment: 'proration_required',
+      reviewedEvidenceReferences: ['classification:row-1'],
+      evidenceIssue: '안분 기준이 없습니다.',
+      missingEssentialFact: '과세·면세 사업별 실제 사용 비율',
+      question: '과세·면세 사업에 각각 어떤 비율로 사용했습니까?',
+      decisionImpact: '확인된 비율로 안분합니다.',
+    }
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      recommendation: 'proration_required',
+      provisionalJudgment: 'proration_required',
+      judgmentWorkflowStatus: 'human_resolution_required',
+      humanHandoff,
+    })).success).toBe(true)
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      judgmentWorkflowStatus: 'human_resolution_required',
+      humanHandoff: null,
+    })).success).toBe(false)
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      humanHandoff: { ...humanHandoff, provisionalJudgment: 'non_deductible' },
+    })).success).toBe(false)
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      aiRuntimeStatus: 'no_consensus',
+      judgmentWorkflowStatus: 'human_resolution_required',
+      humanHandoff: { ...humanHandoff, reason: 'essential_fact_missing' },
     })).success).toBe(false)
   })
 

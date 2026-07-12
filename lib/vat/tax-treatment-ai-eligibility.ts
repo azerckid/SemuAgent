@@ -4,9 +4,14 @@ export const VAT_TAX_TREATMENT_HIGH_AMOUNT_KRW = 10_000_000
 
 export function isHighRiskVatTaxTreatmentRow(row: VatTaxTreatmentDisplayRow) {
   if (row.finalDecision || row.userActionStatus !== 'pending') return false
+  if (row.judgmentWorkflowStatus === 'human_resolution_required') return false
   if (row.judgmentWorkflowStatus === 'no_evidence_defaulted') return false
   if (row.source === 'ai_consensus') return false
-  if (row.aiRuntimeStatus === 'manual_fallback' || row.aiRuntimeStatus === 'deferred') return false
+  if (
+    row.aiRuntimeStatus === 'manual_fallback'
+    || row.aiRuntimeStatus === 'deferred'
+    || row.aiRuntimeStatus === 'no_consensus'
+  ) return false
 
   return row.recommendation === 'likely_zero_rated'
     || row.recommendation === 'likely_exempt'

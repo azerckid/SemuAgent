@@ -180,17 +180,17 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 ### 2.13 JC-039 VAT AI 근거 탐색·명확 판단
 
-아래 시나리오는 [VAT AI Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)를 기준으로 한다. VAI-8a~8c에서 잠정 결론/workflow·evidence trace·근거 없음 기본처리를 구현했으며, 담당자 이관과 최종 화면 E2E는 VAI-8d~8e에서 이어간다.
+아래 시나리오는 [VAT AI Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)를 기준으로 한다. VAI-8a~8d에서 잠정 결론/workflow·evidence trace·근거 없음 기본처리·담당자 이관 게이트를 구현했으며, 최종 화면 E2E는 VAI-8e에서 이어간다.
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
 | S-126 | 거래 사실·연결 증빙·공식 규칙이 한 결론을 지지 | AI 판단 완료 | 명확한 잠정 결론, 실제 source/reference, 근거 요약, 홈택스 권장 행동을 함께 표시 | PARTIAL·VAI-8b/8c 계약·단위 PASS, VAI-8e 화면 E2E pending |
 | S-127 | 영세율 또는 면세 가능성을 탐색했으나 필수 요건·증빙을 찾지 못함 | 판단 완료 | generic 확인 필요가 아니라 `특례 해당 없음`과 과세 잠정 방향을 제시 | PASS·VAI-8c 단위/summary 통합 |
 | S-128 | 매입 공제 가능성을 탐색했으나 적격 증빙 또는 사업 관련 근거를 찾지 못함 | 판단 완료 | 공제 가능성 미정이 아니라 불공제 잠정 방향과 찾지 못한 근거를 제시 | PASS·VAI-8c 단위/AI 결과 회귀 |
-| S-129 | confidence가 낮지만 필수 사실·공식 규칙·근거가 충분 | 판단 완료 | 낮은 confidence만으로 담당자 이관하지 않고 잠정 결론을 제시 | PARTIAL·VAI-8c 기본 결론 PASS, VAI-8d handoff gate pending |
-| S-130 | provider 한 곳 timeout·quota·invalid schema | 다른 규칙·패턴·provider 경로가 남아 있음 | 해당 경로를 계속 사용하고, 전체 실패 시에도 `AI 일시 오류` workflow만 표시하며 거짓 근거·담당자 결론을 만들지 않음 | PARTIAL·VAI-8a schema/UI, VAI-8c/8d pending |
-| S-131 | 원장·증빙·과거 확정 또는 공식 규칙이 서로 다른 결론을 지지 | Human Handoff Gate 평가 | 담당자 이관을 허용하되 잠정 결론·확인 자료·충돌 근거·정확한 질문·결론 변경 조건을 모두 표시 | Pending·VAI-8d |
-| S-132 | 결론에 필수적인 외부 사실이 모든 정해진 소스에 없음 | Human Handoff Gate 평가 | 부족한 사실을 하나의 구체적 질문으로 요청하고 답에 따른 결론 변화까지 표시 | Pending·VAI-8d |
+| S-129 | confidence가 낮지만 필수 사실·공식 규칙·근거가 충분 | 판단 완료 | 낮은 confidence만으로 담당자 이관하지 않고 잠정 결론을 제시 | PASS·VAI-8d 순수 resolver/eligibility 단위 |
+| S-130 | provider 한 곳 timeout·quota·invalid schema | 다른 규칙·패턴·provider 경로가 남아 있음 | 해당 경로를 계속 사용하고, 전체 실패 시에도 `AI 일시 오류` workflow만 표시하며 거짓 근거·담당자 결론을 만들지 않음 | PARTIAL·VAI-8d provider 장애/불합의 분리 PASS, VAI-8e 브라우저 E2E pending |
+| S-131 | 원장·증빙·과거 확정 또는 공식 규칙이 서로 다른 결론을 지지 | Human Handoff Gate 평가 | 담당자 이관을 허용하되 잠정 결론·확인 자료·충돌 근거·정확한 질문·결론 변경 조건을 모두 표시 | PASS·VAI-8d 패턴 충돌/다중 AI 불합의 단위·summary 통합 |
+| S-132 | 결론에 필수적인 외부 사실이 모든 정해진 소스에 없음 | Human Handoff Gate 평가 | 부족한 사실을 하나의 구체적 질문으로 요청하고 답에 따른 결론 변화까지 표시 | PASS·VAI-8d 안분 필수 사실/rule gap 단위·summary 통합 |
 | S-133 | 필수 source 중 하나 이상 탐색 기록이 없음 | 판단 결과 완료 저장 | schema/service가 완료 상태를 거부하고 미탐색 source를 식별 | PASS·VAI-8b Zod/단위 |
 | S-134 | 다른 tenant·사업장·기간의 유사 거래와 민감 원문이 존재 | evidence 탐색·결과 저장 | scope 밖 자료를 사용하지 않고 원문 prompt/provider 응답·민감 식별정보를 저장하지 않음 | PASS·VAI-8b tenant scope·prompt/저장 회귀 |
 | S-135 | 예외 행이 화면에 표시 | 사용자가 판단 내용을 읽음 | 단독 `확인 필요`·`전문가 확인`보다 잠정 결론 -> 근거 -> 홈택스 행동 -> 적용/변경 순서가 먼저 보임 | PARTIAL·VAI-8a 결론/workflow 용어 분리, VAI-8e pending |

@@ -40,6 +40,27 @@ export function findCompatibleVatPatternRows(params: {
   }))
 }
 
+export function findTiedVatPatternDecisionConflict(rows: VatTaxTreatmentPatternRow[]) {
+  const counts = new Map<VatTaxTreatmentFinalDecision, number>()
+  for (const row of rows) counts.set(row.finalDecision, (counts.get(row.finalDecision) ?? 0) + 1)
+  const ranked = [...counts.entries()].sort((left, right) => (
+    right[1] - left[1] || left[0].localeCompare(right[0])
+  ))
+  const topCount = ranked[0]?.[1]
+  if (!topCount) return null
+  const tiedDecisions = ranked
+    .filter(([, count]) => count === topCount)
+    .map(([decision]) => decision)
+  if (tiedDecisions.length < 2) return null
+  const tied = new Set(tiedDecisions)
+  return {
+    decisions: tiedDecisions,
+    references: rows
+      .filter((row) => tied.has(row.finalDecision))
+      .map((row) => `classification:${row.classificationRowId}`),
+  }
+}
+
 function dominantPurchaseDecision(rows: VatTaxTreatmentPatternRow[]) {
   const counts = new Map<'deductible' | 'non_deductible' | 'prorated', number>()
   for (const row of rows) {

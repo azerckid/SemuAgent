@@ -17,14 +17,20 @@ import {
   type VatTaxTreatmentFinalDecision,
 } from '@/lib/validations/vat-tax-treatment'
 import { parsedVatFactSchema } from './facts'
+import { vatTaxTreatmentDecisionLabel } from './tax-treatment-actions'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 import {
   applyPriorConfirmedVatPattern,
   findCompatibleVatPatternRows,
+  findTiedVatPatternDecisionConflict,
   type VatTaxTreatmentPatternRow,
 } from './tax-treatment-patterns'
 import { applyStoredVatTaxTreatmentAiResults } from './tax-treatment-ai-result'
 import { applyVatTaxTreatmentDecisiveDefaults } from './tax-treatment-decisive-default'
+import {
+  applyVatTaxTreatmentAutomaticHandoffs,
+  applyVatTaxTreatmentHumanHandoff,
+} from './tax-treatment-handoff'
 import {
   evaluateVatTaxTreatmentRule,
   type VatTaxTreatmentDeductionContext,
@@ -274,6 +280,9 @@ export function buildVatTaxTreatmentDisplayRows(params: {
         finalAccount: row.finalAccount,
       }
       const compatiblePriorRows = findCompatibleVatPatternRows({ target: patternTarget, priorRows })
+      const patternConflict = deterministic.recommendation === 'needs_review'
+        ? findTiedVatPatternDecisionConflict(compatiblePriorRows)
+        : null
       const decision = applyPriorConfirmedVatPattern({
         target: patternTarget,
         priorRows,
@@ -281,7 +290,7 @@ export function buildVatTaxTreatmentDisplayRows(params: {
       })
       const finalState = currentFinalDecision({ row, review })
 
-      return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
+      const displayRow = vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
         rowId: row.id,
         classificationRowId: row.id,
         tenantId: params.tenantId,
@@ -317,6 +326,24 @@ export function buildVatTaxTreatmentDisplayRows(params: {
         evidenceRuleReference: deterministic.ruleReference,
         accountLabel: row.finalAccount ? labelForBookkeepingAccountCategory(row.finalAccount) || row.finalAccount : null,
       }))
+      if (!patternConflict) return displayRow
+
+      const defaulted = applyVatTaxTreatmentDecisiveDefaults([displayRow])[0]!
+      const conflictLabels = patternConflict.decisions.map(vatTaxTreatmentDecisionLabel)
+      const conflictLabel = conflictLabels.join('·')
+      const sale = row.vatDirection === 'sale'
+      return applyVatTaxTreatmentHumanHandoff(defaulted, {
+        reason: 'evidence_conflict',
+        reviewedEvidenceReferences: patternConflict.references,
+        evidenceIssue: `같은 거래처·방향의 과거 확정이 ${conflictLabel}로 동률 충돌합니다.`,
+        missingEssentialFact: sale
+          ? '이번 거래에 적용할 과세유형을 가르는 법정 거래 사실'
+          : '이번 거래가 과거 상반된 처리 중 어느 업무 목적·실지귀속과 같은지',
+        question: sale
+          ? `이번 거래는 과거 ${conflictLabel} 처리 중 어느 과세유형의 법정 요건과 같습니까?`
+          : `이번 거래의 업무 목적과 실지귀속은 과거 ${conflictLabel} 처리 중 어느 경우와 같습니까?`,
+        decisionImpact: `확인된 사실에 따라 ${conflictLabel} 중 해당 방향으로 다시 판단합니다.`,
+      })
     })
     .sort((left, right) => (
       right.transactionDate.localeCompare(left.transactionDate)
@@ -530,16 +557,19 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
     attestations: evidenceAttestations,
   })
   const rowsWithDecisiveDefaults = applyVatTaxTreatmentDecisiveDefaults(rowsWithAttestations)
+  const rowsWithHandoffs = applyVatTaxTreatmentAutomaticHandoffs(rowsWithDecisiveDefaults)
   const recommendedRows = params.includeStoredAi === true
     ? await applyStoredVatTaxTreatmentAiResults({
       tenantId: params.tenantId,
       businessEntityId: params.businessEntityId,
       periodKey: params.period.key,
-      rows: rowsWithDecisiveDefaults,
+      rows: rowsWithHandoffs,
     })
-    : rowsWithDecisiveDefaults
+    : rowsWithHandoffs
   return applyVatTaxTreatmentAuditStates({
-    rows: applyVatTaxTreatmentDecisiveDefaults(recommendedRows),
+    rows: applyVatTaxTreatmentAutomaticHandoffs(
+      applyVatTaxTreatmentDecisiveDefaults(recommendedRows),
+    ),
     auditRows,
   })
 }

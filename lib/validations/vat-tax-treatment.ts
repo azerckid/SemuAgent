@@ -104,6 +104,7 @@ export const vatTaxTreatmentAiRuntimeStatusSchema = z.enum([
   'completed',
   'manual_fallback',
   'deferred',
+  'no_consensus',
 ])
 export const vatTaxTreatmentEvidenceStatusSchema = z.enum(['present', 'missing', 'needs_review'])
 export const vatTaxTreatmentAttestableEvidenceCodeSchema = z.enum([
@@ -148,6 +149,31 @@ export const vatTaxTreatmentAiTraceSchema = z.object({
   consensusProviders: z.array(z.enum(['gemini', 'openai', 'claude'])).max(3),
 })
 
+export const vatTaxTreatmentHandoffReasonSchema = z.enum([
+  'essential_fact_missing',
+  'evidence_conflict',
+  'rule_gap',
+  'no_consensus',
+])
+
+export const vatTaxTreatmentHumanHandoffSchema = z.object({
+  reason: vatTaxTreatmentHandoffReasonSchema,
+  provisionalJudgment: vatTaxTreatmentProvisionalJudgmentSchema,
+  reviewedEvidenceReferences: z.array(z.string().min(1).max(240)).min(1).max(12),
+  evidenceIssue: z.string().min(1).max(500),
+  missingEssentialFact: z.string().min(1).max(200),
+  question: z.string().min(1).max(300),
+  decisionImpact: z.string().min(1).max(500),
+}).superRefine((value, context) => {
+  if (new Set(value.reviewedEvidenceReferences).size !== value.reviewedEvidenceReferences.length) {
+    context.addIssue({
+      code: 'custom',
+      path: ['reviewedEvidenceReferences'],
+      message: '담당자 이관의 확인 자료 reference는 중복될 수 없습니다.',
+    })
+  }
+})
+
 export const vatTaxTreatmentRecommendationSchema = z.object({
   rowId: z.string().min(1),
   classificationRowId: z.string().min(1),
@@ -179,6 +205,7 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
   hometaxAction: vatTaxTreatmentHometaxActionSchema,
   aiTrace: vatTaxTreatmentAiTraceSchema.nullable(),
   aiRuntimeStatus: vatTaxTreatmentAiRuntimeStatusSchema,
+  humanHandoff: vatTaxTreatmentHumanHandoffSchema.nullable().default(null),
   finalDecision: vatTaxTreatmentFinalDecisionSchema.nullable(),
   confirmedByStaffId: z.string().min(1).nullable(),
   confirmedAt: z.string().min(1).nullable(),
@@ -232,6 +259,44 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
       code: 'custom',
       path: ['aiRuntimeStatus'],
       message: 'AI 완료 상태와 AI 판단 출처가 일치해야 합니다.',
+    })
+  }
+  const requiresHumanResolution = value.judgmentWorkflowStatus === 'human_resolution_required'
+  if (requiresHumanResolution !== Boolean(value.humanHandoff)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['humanHandoff'],
+      message: '담당자 해결 workflow와 구조화된 handoff payload는 함께 있어야 합니다.',
+    })
+  }
+  if (
+    value.humanHandoff
+    && value.humanHandoff.provisionalJudgment !== value.provisionalJudgment
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['humanHandoff', 'provisionalJudgment'],
+      message: '담당자 이관의 잠정 결론은 현재 행의 잠정 결론과 같아야 합니다.',
+    })
+  }
+  if (
+    value.aiRuntimeStatus === 'no_consensus'
+    && value.humanHandoff?.reason !== 'no_consensus'
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['aiRuntimeStatus'],
+      message: '다중 AI 불합의 상태에는 no_consensus handoff payload가 필요합니다.',
+    })
+  }
+  if (
+    value.humanHandoff?.reason === 'no_consensus'
+    && value.aiRuntimeStatus !== 'no_consensus'
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['humanHandoff', 'reason'],
+      message: 'no_consensus handoff는 실제 다중 AI 불합의 실행 상태에서만 허용합니다.',
     })
   }
   if (
@@ -442,6 +507,8 @@ export type VatTaxTreatmentRecommendation = z.infer<typeof vatTaxTreatmentRecomm
 export type VatTaxTreatmentDisplayRow = z.infer<typeof vatTaxTreatmentDisplayRowSchema>
 export type VatTaxTreatmentRecommendationValue = z.infer<typeof vatTaxTreatmentRecommendationValueSchema>
 export type VatTaxTreatmentAiRuntimeStatus = z.infer<typeof vatTaxTreatmentAiRuntimeStatusSchema>
+export type VatTaxTreatmentHandoffReason = z.infer<typeof vatTaxTreatmentHandoffReasonSchema>
+export type VatTaxTreatmentHumanHandoff = z.infer<typeof vatTaxTreatmentHumanHandoffSchema>
 export type VatTaxTreatmentProvisionalJudgment = z.infer<typeof vatTaxTreatmentProvisionalJudgmentSchema>
 export type VatTaxTreatmentJudgmentWorkflowStatus = z.infer<typeof vatTaxTreatmentJudgmentWorkflowStatusSchema>
 export type VatTaxTreatmentEvidenceSource = z.infer<typeof vatTaxTreatmentEvidenceSourceSchema>

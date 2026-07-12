@@ -112,6 +112,7 @@ export function resolveVatTaxTreatmentDecisiveDefault(
   row: VatTaxTreatmentDisplayRow,
 ): DecisiveDefault | null {
   if (row.finalDecision) return null
+  if (row.judgmentWorkflowStatus === 'human_resolution_required') return null
   if (row.aiRuntimeStatus === 'manual_fallback' || row.aiRuntimeStatus === 'deferred') return null
   if (row.judgmentWorkflowStatus === 'no_evidence_defaulted') return null
 

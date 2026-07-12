@@ -46,6 +46,22 @@ describe('VAT tax treatment action helpers', () => {
     expect(missingRequiredEvidenceForVatDecision(unresolved, 'taxable')).toBe(false)
   })
 
+  it('blocks direct recommendation application while a human handoff question is unresolved', () => {
+    expect(canApplyVatTaxTreatmentRecommendation({
+      recommendation: 'likely_non_deductible',
+      requiredEvidence: [],
+      humanHandoff: {
+        reason: 'evidence_conflict',
+        provisionalJudgment: 'non_deductible',
+        reviewedEvidenceReferences: ['classification:row-1'],
+        evidenceIssue: '과거 확정이 충돌합니다.',
+        missingEssentialFact: '이번 거래의 실제 업무 목적',
+        question: '이번 거래는 어떤 목적으로 사용했습니까?',
+        decisionImpact: '업무 목적이면 공제, 아니면 불공제입니다.',
+      },
+    })).toBe(false)
+  })
+
   it('starts the different-decision form away from the current recommendation', () => {
     expect(defaultDifferentVatDecision({
       direction: 'purchase',

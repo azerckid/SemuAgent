@@ -60,8 +60,10 @@ export function missingRequiredEvidenceForVatDecision(
 }
 
 export function canApplyVatTaxTreatmentRecommendation(
-  row: Pick<VatTaxTreatmentDisplayRow, 'recommendation' | 'requiredEvidence'>,
+  row: Pick<VatTaxTreatmentDisplayRow, 'recommendation' | 'requiredEvidence'>
+    & Partial<Pick<VatTaxTreatmentDisplayRow, 'humanHandoff'>>,
 ) {
+  if (row.humanHandoff) return false
   const decision = finalDecisionForVatRecommendation(row.recommendation)
   return decision !== null && !missingRequiredEvidenceForVatDecision(row, decision)
 }

@@ -25,6 +25,7 @@ import {
   type VatTaxTreatmentDisplayRow,
 } from '@/lib/validations/vat-tax-treatment'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
+import { applyVatTaxTreatmentHumanHandoff } from './tax-treatment-handoff'
 import { applyVatTaxTreatmentMutation } from './tax-treatment-mutations'
 
 let client: Client
@@ -281,6 +282,31 @@ describe('VAI-4a VAT tax treatment mutation transaction', () => {
       undoCanonicalStateJson: expect.any(String),
       undoActionStateJson: expect.any(String),
     })
+  })
+
+  it('rejects direct application while a structured handoff question is unresolved', async () => {
+    const recommendation = applyVatTaxTreatmentHumanHandoff(displayRow(), {
+      reason: 'evidence_conflict',
+      evidenceIssue: '과거 공제·불공제 확정이 충돌합니다.',
+      missingEssentialFact: '이번 거래의 실제 업무 목적',
+      question: '이번 거래는 어떤 업무 목적으로 사용했습니까?',
+      decisionImpact: '업무 관련성이 입증되면 공제, 아니면 불공제입니다.',
+    })
+    const result = await applyVatTaxTreatmentMutation({
+      tenantId: TENANT,
+      staffId: STAFF,
+      rowId: ROW,
+      input: {
+        action: 'apply_recommendation',
+        periodKey: '2026-H1',
+        recommendationFingerprint: recommendation.recommendationFingerprint,
+      },
+      loadRecommendation: loader(recommendation),
+    })
+
+    expect(result).toMatchObject({ ok: false, status: 409 })
+    expect(result.ok ? '' : result.error).toContain(recommendation.humanHandoff!.question)
+    expect(await testDb.select().from(vatDeductionReview)).toHaveLength(0)
   })
 
   it('undoes the latest purchase confirmation and clears its one-time token', async () => {

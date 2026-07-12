@@ -106,7 +106,7 @@ describe('VAT single-provider AI enhancement', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v4',
+        promptVersion: 'vat-tax-treatment-v5',
         consensusProviders: [],
       },
     })
@@ -466,7 +466,7 @@ describe('VAT high-risk multi-provider consensus', () => {
     })
   })
 
-  it('falls back to a nonblocking manual review when no two providers agree', async () => {
+  it('creates a structured handoff only when valid providers reach different conclusions', async () => {
     const runner = providerRunner({
       gemini: candidate({
         recommendation: 'likely_deductible',
@@ -488,12 +488,34 @@ describe('VAT high-risk multi-provider consensus', () => {
     })
 
     expect(result).toMatchObject({
-      recommendation: 'needs_review',
+      recommendation: 'likely_non_deductible',
       source: 'deterministic_rule',
       confidence: 'low',
       aiTrace: null,
-      aiRuntimeStatus: 'manual_fallback',
+      aiRuntimeStatus: 'no_consensus',
+      judgmentWorkflowStatus: 'human_resolution_required',
+      humanHandoff: {
+        reason: 'no_consensus',
+        provisionalJudgment: 'non_deductible',
+        question: expect.stringContaining('추가 거래 사실이나 증빙'),
+      },
       finalDecision: null,
+    })
+  })
+
+  it('keeps provider failures as a temporary AI error instead of a human handoff', async () => {
+    const runner = providerRunner({ gemini: 'fail', openai: 'fail', claude: 'fail' })
+    const [result] = await enhanceHighRiskVatTaxTreatmentRowsWithConsensus({
+      rows: [displayRow()],
+      providers: ['gemini', 'openai', 'claude'],
+      runner,
+    })
+
+    expect(result).toMatchObject({
+      recommendation: 'needs_review',
+      aiRuntimeStatus: 'manual_fallback',
+      judgmentWorkflowStatus: 'ai_temporary_error',
+      humanHandoff: null,
     })
   })
 

@@ -24,7 +24,7 @@ type VatTaxTreatmentFingerprintInput = VatTaxTreatmentFingerprintBaseInput & Pic
   VatTaxTreatmentRecommendation,
   | 'evidenceTrace'
   | 'searchedSources'
->
+> & Pick<VatTaxTreatmentRecommendation, 'humanHandoff'>
 
 export function buildVatTaxTreatmentRecommendationFingerprint(
   row: VatTaxTreatmentFingerprintInput,
@@ -54,6 +54,7 @@ export function buildVatTaxTreatmentRecommendationFingerprint(
       .map(({ source, status, reference }) => ({ source, status, reference }))
       .sort((left, right) => left.source.localeCompare(right.source)),
     searchedSources: [...row.searchedSources].sort(),
+    humanHandoff: row.humanHandoff,
   }
 
   return createHash('sha256').update(JSON.stringify(canonical)).digest('hex')
@@ -88,11 +89,16 @@ export function withVatTaxTreatmentRecommendationFingerprint<
     ...deriveVatTaxTreatmentJudgmentContract({
       ...row,
       noEvidenceDefaulted: candidate.judgmentWorkflowStatus === 'no_evidence_defaulted',
+      humanResolutionRequired: Boolean(candidate.humanHandoff),
     }),
     ...evidenceSearch,
   }
-  return {
+  const fingerprintInput = {
     ...enriched,
-    recommendationFingerprint: buildVatTaxTreatmentRecommendationFingerprint(enriched),
+    humanHandoff: candidate.humanHandoff ?? null,
+  }
+  return {
+    ...fingerprintInput,
+    recommendationFingerprint: buildVatTaxTreatmentRecommendationFingerprint(fingerprintInput),
   }
 }

@@ -43,6 +43,7 @@ function recommendation(
     hometaxAction: 'expected_no_change',
     aiTrace: null,
     aiRuntimeStatus: 'not_requested',
+    humanHandoff: null,
     finalDecision: null,
     confirmedByStaffId: null,
     confirmedAt: null,
@@ -95,5 +96,24 @@ describe('VAT tax treatment recommendation fingerprint', () => {
     expect(buildVatTaxTreatmentRecommendationFingerprint(displayCopyOnly)).toBe(baseline)
     expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation(changedEvidence)))
       .not.toBe(baseline)
+  })
+
+  it('changes when a human handoff question or reason changes', () => {
+    const baseline = buildVatTaxTreatmentRecommendationFingerprint(recommendation())
+    const handoff = {
+      reason: 'essential_fact_missing' as const,
+      provisionalJudgment: 'deductible' as const,
+      reviewedEvidenceReferences: ['classification:row-1'],
+      evidenceIssue: '필수 사실이 없습니다.',
+      missingEssentialFact: '업무 사용 목적',
+      question: '업무용으로 사용했습니까?',
+      decisionImpact: '예이면 공제, 아니면 불공제입니다.',
+    }
+
+    expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation({ humanHandoff: handoff })))
+      .not.toBe(baseline)
+    expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation({
+      humanHandoff: { ...handoff, question: '직원이 사용했습니까?' },
+    }))).not.toBe(buildVatTaxTreatmentRecommendationFingerprint(recommendation({ humanHandoff: handoff })))
   })
 })

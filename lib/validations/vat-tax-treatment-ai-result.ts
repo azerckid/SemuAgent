@@ -5,14 +5,15 @@ import {
   vatTaxTreatmentConfidenceSchema,
   vatTaxTreatmentEvidenceSearchSchema,
   vatTaxTreatmentHometaxActionSchema,
+  vatTaxTreatmentHumanHandoffSchema,
   vatTaxTreatmentJudgmentWorkflowStatusSchema,
   vatTaxTreatmentProvisionalJudgmentSchema,
   vatTaxTreatmentRecommendationValueSchema,
   vatTaxTreatmentSourceSchema,
 } from './vat-tax-treatment'
 
-export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v4' as const
-export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 4 as const
+export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v5' as const
+export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 5 as const
 
 export const vatTaxTreatmentAiResultStatusSchema = z.enum([
   'queued',
@@ -37,6 +38,7 @@ export const vatTaxTreatmentAiResultPayloadSchema = z.object({
   hometaxAction: vatTaxTreatmentHometaxActionSchema,
   aiTrace: vatTaxTreatmentAiTraceSchema.nullable(),
   aiRuntimeStatus: vatTaxTreatmentAiRuntimeStatusSchema,
+  humanHandoff: vatTaxTreatmentHumanHandoffSchema.nullable(),
 }).superRefine((value, context) => {
   const evidenceSearch = vatTaxTreatmentEvidenceSearchSchema.safeParse({
     evidenceTrace: value.evidenceTrace,
@@ -78,6 +80,44 @@ export const vatTaxTreatmentAiResultPayloadSchema = z.object({
       code: 'custom',
       path: ['provisionalJudgment'],
       message: '완료된 AI 결과는 잠정 세무 결론과 사용자 확인 대기 상태를 저장해야 합니다.',
+    })
+  }
+  const requiresHumanResolution = value.judgmentWorkflowStatus === 'human_resolution_required'
+  if (requiresHumanResolution !== Boolean(value.humanHandoff)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['humanHandoff'],
+      message: '저장 담당자 이관 결과에는 구조화된 handoff payload가 필요합니다.',
+    })
+  }
+  if (
+    value.humanHandoff
+    && value.humanHandoff.provisionalJudgment !== value.provisionalJudgment
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['humanHandoff', 'provisionalJudgment'],
+      message: '저장 handoff의 잠정 결론은 결과 잠정 결론과 같아야 합니다.',
+    })
+  }
+  if (
+    value.aiRuntimeStatus === 'no_consensus'
+    && value.humanHandoff?.reason !== 'no_consensus'
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['aiRuntimeStatus'],
+      message: '저장 no_consensus 결과에는 해당 handoff payload가 필요합니다.',
+    })
+  }
+  if (
+    value.humanHandoff?.reason === 'no_consensus'
+    && value.aiRuntimeStatus !== 'no_consensus'
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['humanHandoff', 'reason'],
+      message: '저장 no_consensus handoff는 실제 다중 AI 불합의 상태에서만 허용합니다.',
     })
   }
   if (

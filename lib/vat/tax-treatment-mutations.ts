@@ -86,6 +86,14 @@ function mutationDecision(params: {
     }
   }
 
+  if (params.input.action === 'apply_recommendation' && params.recommendation.humanHandoff) {
+    return {
+      ok: false,
+      status: 409,
+      error: `담당자 확인 질문에 답한 뒤 판단을 확정해 주세요: ${params.recommendation.humanHandoff.question}`,
+    }
+  }
+
   const finalDecision = params.input.action === 'apply_recommendation'
     ? finalDecisionForVatRecommendation(params.recommendation.recommendation)
     : params.input.finalDecision

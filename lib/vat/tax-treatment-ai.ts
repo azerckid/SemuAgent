@@ -16,6 +16,7 @@ import {
 import { isHighRiskVatTaxTreatmentRow } from './tax-treatment-ai-eligibility'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 import { applyVatTaxTreatmentDecisiveDefault } from './tax-treatment-decisive-default'
+import { applyVatTaxTreatmentHumanHandoff } from './tax-treatment-handoff'
 import { recommendationForProvisionalJudgment } from './tax-treatment-judgment'
 
 export { VAT_TAX_TREATMENT_AI_PROMPT_VERSION }
@@ -339,6 +340,27 @@ function agreeingCandidates(candidates: ProviderCandidate[]) {
   return [...groups.values()].find((group) => group.length >= 2) ?? null
 }
 
+function hasConflictingCandidateSignatures(candidates: ProviderCandidate[]) {
+  return new Set(candidates.map((candidate) => candidateSignature(candidate.candidate))).size >= 2
+}
+
+function withNoConsensusHandoff(
+  row: VatTaxTreatmentDisplayRow,
+  candidates: ProviderCandidate[],
+) {
+  const defaulted = applyVatTaxTreatmentDecisiveDefault(row)
+  const labels = Array.from(new Set(
+    candidates.map((candidate) => candidate.candidate.provisionalJudgment),
+  ))
+  return applyVatTaxTreatmentHumanHandoff(defaulted, {
+    reason: 'no_consensus',
+    evidenceIssue: `유효한 다중 AI 판단이 ${labels.join('·')}로 갈렸습니다.`,
+    missingEssentialFact: '서로 다른 AI 결론을 가르는 실제 거래 사실 또는 증빙',
+    question: '상반된 AI 결론 중 하나를 뒷받침하는 추가 거래 사실이나 증빙이 있습니까?',
+    decisionImpact: '추가 근거가 지지하는 방향으로 재판단하고, 근거가 없으면 현재 보수적 잠정 결론을 유지합니다.',
+  })
+}
+
 function providerLabel(provider: AiProvider) {
   if (provider === 'gemini') return 'Gemini'
   if (provider === 'openai') return 'OpenAI'
@@ -467,8 +489,13 @@ export async function enhanceHighRiskVatTaxTreatmentRowsWithConsensus(params: {
       ...primaryCandidates,
       ...(claudeCandidate ? [claudeCandidate] : []),
     ])
-    return finalAgreement
-      ? applyConsensus(row, finalAgreement)
+    if (finalAgreement) return applyConsensus(row, finalAgreement)
+    const allCandidates = [
+      ...primaryCandidates,
+      ...(claudeCandidate ? [claudeCandidate] : []),
+    ]
+    return hasConflictingCandidateSignatures(allCandidates)
+      ? withNoConsensusHandoff(row, allCandidates)
       : withManualConsensusFallback(row, 'manual_fallback')
   })
 }

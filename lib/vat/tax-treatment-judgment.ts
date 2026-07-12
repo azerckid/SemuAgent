@@ -54,6 +54,7 @@ export function deriveVatTaxTreatmentJudgmentContract(params: {
   aiRuntimeStatus: VatTaxTreatmentAiRuntimeStatus
   finalDecision: VatTaxTreatmentFinalDecision | null
   noEvidenceDefaulted?: boolean
+  humanResolutionRequired?: boolean
 }): {
   provisionalJudgment: VatTaxTreatmentProvisionalJudgment | null
   judgmentWorkflowStatus: VatTaxTreatmentJudgmentWorkflowStatus
@@ -68,6 +69,9 @@ export function deriveVatTaxTreatmentJudgmentContract(params: {
     return { provisionalJudgment: null, judgmentWorkflowStatus: 'ai_temporary_error' }
   }
   const provisionalJudgment = provisionalJudgmentForRecommendation(params.recommendation)
+  if (params.humanResolutionRequired && provisionalJudgment) {
+    return { provisionalJudgment, judgmentWorkflowStatus: 'human_resolution_required' }
+  }
   if (params.noEvidenceDefaulted && provisionalJudgment) {
     return { provisionalJudgment, judgmentWorkflowStatus: 'no_evidence_defaulted' }
   }

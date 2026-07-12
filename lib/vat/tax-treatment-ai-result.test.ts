@@ -26,6 +26,7 @@ import {
   type VatTaxTreatmentDisplayRow,
 } from '@/lib/validations/vat-tax-treatment'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
+import { applyVatTaxTreatmentHumanHandoff } from './tax-treatment-handoff'
 import { executeVatTaxTreatmentAiRows } from './tax-treatment-ai-execution'
 import {
   applyReusableVatTaxTreatmentAiResults,
@@ -173,6 +174,17 @@ function payload(row: VatTaxTreatmentDisplayRow) {
     hometaxAction: row.hometaxAction,
     aiTrace: row.aiTrace,
     aiRuntimeStatus: row.aiRuntimeStatus,
+    humanHandoff: row.humanHandoff,
+  })
+}
+
+function noConsensusRow(base: VatTaxTreatmentDisplayRow) {
+  return applyVatTaxTreatmentHumanHandoff(base, {
+    reason: 'no_consensus',
+    evidenceIssue: 'Gemini와 OpenAI의 판단이 갈렸습니다.',
+    missingEssentialFact: '상반된 결론을 가르는 거래 사실',
+    question: '한쪽 결론을 뒷받침하는 추가 증빙이 있습니까?',
+    decisionImpact: '추가 근거가 지지하는 방향으로 재판단합니다.',
   })
 }
 
@@ -261,6 +273,19 @@ describe('VAI-7b reusable VAT AI result', () => {
     }).success).toBe(true)
   })
 
+  it('accepts no-consensus only with its matching structured handoff state', () => {
+    const result = JSON.parse(payload(noConsensusRow(displayRow())))
+    expect(vatTaxTreatmentAiResultPayloadSchema.safeParse(result).success).toBe(true)
+    expect(vatTaxTreatmentAiResultPayloadSchema.safeParse({
+      ...result,
+      aiRuntimeStatus: 'not_requested',
+    }).success).toBe(false)
+    expect(vatTaxTreatmentAiResultPayloadSchema.safeParse({
+      ...result,
+      humanHandoff: null,
+    }).success).toBe(false)
+  })
+
   it('applies only a matching ready payload and verifies its output fingerprint', () => {
     const base = displayRow()
     const result = aiRow(base)
@@ -287,8 +312,10 @@ describe('VAI-7b reusable VAT AI result', () => {
     for (const oldVersion of [
       { payloadVersion: 2 },
       { payloadVersion: 3 },
+      { payloadVersion: 4 },
       { promptVersion: 'vat-tax-treatment-v2' },
       { promptVersion: 'vat-tax-treatment-v3' },
+      { promptVersion: 'vat-tax-treatment-v4' },
     ]) {
       expect(applyReusableVatTaxTreatmentAiResults({
         rows: [base],
@@ -327,6 +354,39 @@ describe('VAI-7b reusable VAT AI result', () => {
       rows: [confirmed],
       resultRows: [readResult({ base: confirmed, result: aiRow(confirmed) })],
     })[0]).toEqual(confirmed)
+  })
+
+  it('stores and reuses a no-consensus handoff as a stable ready result', async () => {
+    const base = displayRow()
+    const result = noConsensusRow(base)
+    const at = DateTime.fromISO('2026-07-12T10:00:00.000+09:00')
+    const reserved = await reserveVatTaxTreatmentAiResult({ row: base, nowAt: at })
+    await startVatTaxTreatmentAiResult({
+      resultId: reserved.resultId!,
+      executionToken: reserved.executionToken!,
+      nowAt: at,
+    })
+    expect(await completeVatTaxTreatmentAiResult({
+      resultId: reserved.resultId!,
+      executionToken: reserved.executionToken!,
+      inputFingerprint: base.recommendationFingerprint,
+      result,
+      nowAt: at.plus({ seconds: 10 }),
+    })).toBe(true)
+
+    const [stored] = await testDb.select().from(vatTaxTreatmentAiResult)
+    expect(stored).toMatchObject({ status: 'ready', nextRetryAt: null })
+    expect((await applyStoredVatTaxTreatmentAiResults({
+      tenantId: TENANT,
+      businessEntityId: CLIENT,
+      periodKey: '2026-H1',
+      rows: [base],
+      nowAt: at.plus({ minutes: 1 }),
+    }))[0]).toMatchObject({
+      aiRuntimeStatus: 'no_consensus',
+      judgmentWorkflowStatus: 'human_resolution_required',
+      humanHandoff: { reason: 'no_consensus' },
+    })
   })
 
   it('rejects a matching fingerprint from another tenant, business, or period', () => {

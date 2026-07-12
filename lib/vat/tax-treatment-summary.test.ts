@@ -9,6 +9,7 @@ import {
   type VatTaxTreatmentDeductionRow,
 } from './tax-treatment-summary'
 import { applyVatTaxTreatmentDecisiveDefaults } from './tax-treatment-decisive-default'
+import { applyVatTaxTreatmentAutomaticHandoffs } from './tax-treatment-handoff'
 
 const period = { key: '2026-H1', startMonth: '2026-01', endMonth: '2026-06' } as const
 
@@ -302,6 +303,73 @@ describe('VAT tax treatment read model', () => {
       judgmentWorkflowStatus: 'user_confirmation_pending',
     })
   })
+
+  it('hands off a tied prior-decision conflict with one exact question', () => {
+    const [row] = build({
+      classificationRows: [
+        classification({ finalAccount: null, staffMemo: null }),
+        classification({
+          id: 'prior-deductible',
+          transactionDate: '2025-12-10',
+          finalAccount: null,
+          staffMemo: null,
+        }),
+        classification({
+          id: 'prior-non-deductible',
+          transactionDate: '2025-11-10',
+          finalAccount: null,
+          staffMemo: null,
+        }),
+      ],
+      deductionReviews: [
+        review({
+          id: 'review-deductible',
+          periodKey: '2025-H2',
+          classificationRowId: 'prior-deductible',
+          decision: 'deductible',
+          confirmedByStaffId: 'staff-1',
+          confirmedAt: '2025-12-11T00:00:00.000Z',
+        }),
+        review({
+          id: 'review-non-deductible',
+          periodKey: '2025-H2',
+          classificationRowId: 'prior-non-deductible',
+          decision: 'non_deductible',
+          confirmedByStaffId: 'staff-1',
+          confirmedAt: '2025-11-11T00:00:00.000Z',
+        }),
+      ],
+    })
+
+    expect(row).toMatchObject({
+      recommendation: 'likely_non_deductible',
+      judgmentWorkflowStatus: 'human_resolution_required',
+      humanHandoff: {
+        reason: 'evidence_conflict',
+        reviewedEvidenceReferences: expect.arrayContaining([
+          'classification:prior-deductible',
+          'classification:prior-non-deductible',
+        ]),
+      },
+    })
+  })
+
+  it('hands off missing proration attribution without inventing a rate', () => {
+    const [row] = build({
+      deductionReviews: [review({ kind: 'proration_required' })],
+    })
+    const [result] = applyVatTaxTreatmentAutomaticHandoffs([row!])
+
+    expect(result).toMatchObject({
+      recommendation: 'proration_required',
+      provisionalJudgment: 'proration_required',
+      judgmentWorkflowStatus: 'human_resolution_required',
+      humanHandoff: {
+        reason: 'essential_fact_missing',
+        question: expect.stringContaining('어떤 비율과 기준'),
+      },
+    })
+  })
 })
 
 describe('VAT tax treatment loader boundaries', () => {
@@ -327,7 +395,8 @@ describe('VAT tax treatment loader boundaries', () => {
     expect(source).toContain('applyVatTaxTreatmentDecisiveDefaults')
     expect(source).toContain('applyStoredVatTaxTreatmentAiResults')
     expect(source).toContain('params.includeStoredAi === true')
-    expect(source).toContain('rows: applyVatTaxTreatmentDecisiveDefaults(recommendedRows)')
+    expect(source).toContain('applyVatTaxTreatmentAutomaticHandoffs(')
+    expect(source).toContain('applyVatTaxTreatmentDecisiveDefaults(recommendedRows)')
   })
 
   it('keeps stored AI opt-in and excludes package gates from recommendation cache', () => {

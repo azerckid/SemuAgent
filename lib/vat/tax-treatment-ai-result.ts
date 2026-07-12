@@ -79,6 +79,7 @@ function buildPayload(row: VatTaxTreatmentDisplayRow): VatTaxTreatmentAiResultPa
     hometaxAction: row.hometaxAction,
     aiTrace: row.aiTrace,
     aiRuntimeStatus: row.aiRuntimeStatus,
+    humanHandoff: row.humanHandoff,
   })
 }
 
@@ -119,13 +120,17 @@ function payloadMatchesStatus(
   payload: VatTaxTreatmentAiResultPayload,
 ) {
   if (status === 'ready') {
-    return payload.aiRuntimeStatus === 'completed'
+    const completedAi = payload.aiRuntimeStatus === 'completed'
       && (payload.source === 'ai_single' || payload.source === 'ai_consensus')
       && payload.provisionalJudgment !== null
       && (
         payload.judgmentWorkflowStatus === 'user_confirmation_pending'
         || payload.judgmentWorkflowStatus === 'no_evidence_defaulted'
       )
+    const noConsensusHandoff = payload.aiRuntimeStatus === 'no_consensus'
+      && payload.judgmentWorkflowStatus === 'human_resolution_required'
+      && payload.humanHandoff?.reason === 'no_consensus'
+    return completedAi || noConsensusHandoff
   }
   if (status === 'manual_fallback') {
     return payload.recommendation === 'needs_review'
@@ -503,6 +508,7 @@ export async function completeVatTaxTreatmentAiResult(params: {
   const db = await resolveDatabase(params.database)
   const payload = buildPayload(params.result)
   const isReady = payload.aiRuntimeStatus === 'completed'
+    || payload.aiRuntimeStatus === 'no_consensus'
   const status = isReady ? 'ready' : 'manual_fallback'
   const currentTime = params.nowAt ?? now()
   const timestamp = toDBString(currentTime)

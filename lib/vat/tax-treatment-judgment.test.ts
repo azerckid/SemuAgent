@@ -51,6 +51,18 @@ describe('VAT judgment and workflow contract', () => {
     expect(provisionalJudgmentForFinalDecision('prorated')).toBe('proration_required')
   })
 
+  it('keeps human resolution separate from confidence and AI temporary errors', () => {
+    expect(deriveVatTaxTreatmentJudgmentContract({
+      recommendation: 'proration_required',
+      aiRuntimeStatus: 'not_requested',
+      finalDecision: null,
+      humanResolutionRequired: true,
+    })).toEqual({
+      provisionalJudgment: 'proration_required',
+      judgmentWorkflowStatus: 'human_resolution_required',
+    })
+  })
+
   it('converts provider judgments to the legacy recommendation only at the compatibility boundary', () => {
     expect(recommendationForProvisionalJudgment('zero_rated')).toBe('likely_zero_rated')
     expect(recommendationForProvisionalJudgment('non_deductible')).toBe('likely_non_deductible')

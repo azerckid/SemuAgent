@@ -835,7 +835,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-039 · 부가세 AI 근거 탐색·명확 판단
 
-- Status: `doing` (VAI-8a~8c 완료, VAI-8d~8e 대기)
+- Status: `doing` (VAI-8a~8d 완료, VAI-8e 대기)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조, AI 추천과 사용자 최종 책임의 경계.
 - Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - 결론 우선 예외 작업대와 정보 밀도 계약.
 - Related HTML Preview: [VAT Preview](../02_UI_Screens/previews/03_vat.html) - VAI-8a 계약 승인 뒤 VAI-8e 목표 UI를 반영하며, 현재 Preview는 구현 완료 증거로 사용하지 않는다.
@@ -863,9 +863,9 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 지정된 소스를 모두 탐색하지 않은 결과는 완료 상태가 될 수 없다.
   - [x] 영세율·면세·공제 방향은 적극적인 근거가 있을 때만 유지하며, 안분은 근거 없이 비율을 만들지 않는다.
   - [x] 특례 근거가 없으면 해당 없음과 보수적 기본 방향을 제시한다.
-  - [ ] 낮은 confidence·단일 provider 실패·timeout만으로 담당자에게 넘기지 않는다.
-  - [ ] 담당자 이관은 허용 조건과 잠정 결론·탐색 자료·부족/충돌 근거·정확한 질문·결론 변경 조건을 모두 포함한다.
-  - [ ] provider 장애는 `AI 일시 오류` workflow로 표시하고 거짓 근거를 만들지 않는다.
+  - [x] 낮은 confidence·단일 provider 실패·timeout만으로 담당자에게 넘기지 않는다.
+  - [x] 담당자 이관은 허용 조건과 잠정 결론·탐색 자료·부족/충돌 근거·정확한 질문·결론 변경 조건을 모두 포함한다.
+  - [x] provider 장애는 `AI 일시 오류` workflow로 표시하고 거짓 근거를 만들지 않는다.
   - [x] 사용자 최종 확인 전 canonical VAT fact·deduction decision·gate를 변경하지 않는다.
   - [x] tenant·사업장·기간 격리와 PII 최소화를 유지한다.
   - [ ] 대표 fixture와 브라우저 E2E에서 결론·근거·홈택스 행동·이관 질문을 검증한다.
@@ -873,6 +873,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-13, VAI-8a): provider 응답 schema에서 `needs_review`를 제거하고 `provisionalJudgment`를 필수화했다. 모든 display row는 legacy recommendation에서 잠정 결론과 `judgmentWorkflowStatus`를 결정론적으로 파생하며, AI fallback은 결론 없이 `ai_temporary_error`로 분리한다. 저장 AI 결과는 payload v2/prompt v2로 올려 v1 캐시를 재사용하지 않는다. 신규 SQL migration·canonical VAT write는 없다. VAT 기본 셀은 실제 잠정 결론 한 칩을 사용하고 fallback은 `AI 일시 중단` workflow로 표시한다. evidence trace·근거 없음 기본처리·handoff gate·최종 UI는 VAI-8b~8e에 남긴다.
 - Document Sync Check (2026-07-13, VAI-8b): current transaction·linked evidence·exact VAT fact·reconciliation·prior confirmed decision·official rule 여섯 source를 각 display row에 `found/not_found/not_applicable`로 기록한다. found 근거는 실제 reference를 필수로 하며, linked row는 같은 tenant의 현재 classification 범위에 존재해야 한다. trace와 searched source를 fingerprint·stored payload v3·prompt v3에 연결해 근거 변경 시 v1/v2 캐시를 재사용하지 않는다. provider에는 내부 reference 없이 마스킹된 source 상태·요약만 전달한다. 신규 DB·migration·canonical write·기본 UI 변경은 없다.
 - Document Sync Check (2026-07-13, VAI-8c): 증빙 확인 상태를 먼저 합친 뒤 공제 근거가 부족한 매입은 불공제, 영세율·면세 적극 근거가 없는 매출은 과세 방향으로 기본처리한다. 안분율은 추정하지 않고 `proration_required`를 유지한다. 같은 resolver를 stored/single/consensus AI 결과 뒤에도 적용하며, 기본처리 행은 AI 재호출에서 제외한다. stored payload/prompt는 v4로 올려 v1~v3 캐시를 재사용하지 않는다. 신규 DB·migration·canonical write·기본 UI 변경은 없다.
+- Document Sync Check (2026-07-13, VAI-8d): `humanHandoff`에 허용 reason·잠정 결론·확인 reference·부족/충돌 근거·질문 한 개·결론 변경 조건을 구조화하고 `human_resolution_required`와 양방향 Zod 검증한다. 안분 실지귀속 부재, 과거 확정 최다 동률 충돌, 공식 규칙 공백, 유효한 다중 AI 결론 불합의만 이관한다. 낮은 confidence·단일 provider 실패·timeout은 기존 AI 일시 오류를 유지한다. no-consensus 결과는 stable ready로 저장하고, handoff 행의 추천 바로 적용은 UI helper·서버 mutation에서 차단한다. stored payload/prompt는 v5로 올려 v1~v4 캐시를 재사용하지 않는다. 신규 DB·migration·canonical write·기본 UI 변경은 없다.
 
 ### JC-041 · 절세 가능성 탐지·정리 (부가세 매입 재분류부터)
 
