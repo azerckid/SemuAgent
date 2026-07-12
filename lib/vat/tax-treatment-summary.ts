@@ -24,6 +24,7 @@ import {
   type VatTaxTreatmentPatternRow,
 } from './tax-treatment-patterns'
 import { applyStoredVatTaxTreatmentAiResults } from './tax-treatment-ai-result'
+import { applyVatTaxTreatmentDecisiveDefaults } from './tax-treatment-decisive-default'
 import {
   evaluateVatTaxTreatmentRule,
   type VatTaxTreatmentDeductionContext,
@@ -528,13 +529,17 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
     rows,
     attestations: evidenceAttestations,
   })
+  const rowsWithDecisiveDefaults = applyVatTaxTreatmentDecisiveDefaults(rowsWithAttestations)
   const recommendedRows = params.includeStoredAi === true
     ? await applyStoredVatTaxTreatmentAiResults({
       tenantId: params.tenantId,
       businessEntityId: params.businessEntityId,
       periodKey: params.period.key,
-      rows: rowsWithAttestations,
+      rows: rowsWithDecisiveDefaults,
     })
-    : rowsWithAttestations
-  return applyVatTaxTreatmentAuditStates({ rows: recommendedRows, auditRows })
+    : rowsWithDecisiveDefaults
+  return applyVatTaxTreatmentAuditStates({
+    rows: applyVatTaxTreatmentDecisiveDefaults(recommendedRows),
+    auditRows,
+  })
 }

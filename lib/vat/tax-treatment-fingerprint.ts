@@ -85,7 +85,10 @@ export function withVatTaxTreatmentRecommendationFingerprint<
     })
   const enriched = {
     ...row,
-    ...deriveVatTaxTreatmentJudgmentContract(row),
+    ...deriveVatTaxTreatmentJudgmentContract({
+      ...row,
+      noEvidenceDefaulted: candidate.judgmentWorkflowStatus === 'no_evidence_defaulted',
+    }),
     ...evidenceSearch,
   }
   return {

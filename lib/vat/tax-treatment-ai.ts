@@ -15,6 +15,7 @@ import {
 } from '@/lib/validations/vat-tax-treatment'
 import { isHighRiskVatTaxTreatmentRow } from './tax-treatment-ai-eligibility'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
+import { applyVatTaxTreatmentDecisiveDefault } from './tax-treatment-decisive-default'
 import { recommendationForProvisionalJudgment } from './tax-treatment-judgment'
 
 export { VAT_TAX_TREATMENT_AI_PROMPT_VERSION }
@@ -359,7 +360,7 @@ function applyConsensus(
     .join(' + ')
     .slice(0, 100)
 
-  return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
+  return applyVatTaxTreatmentDecisiveDefault(vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
     ...row,
     recommendation: recommendationForProvisionalJudgment(first.candidate.provisionalJudgment),
     source: 'ai_consensus',
@@ -377,7 +378,7 @@ function applyConsensus(
       consensusProviders: providers,
     },
     aiRuntimeStatus: 'completed',
-  }))
+  })))
 }
 
 async function runProviderBatch(params: {
@@ -532,7 +533,7 @@ export async function enhanceVatTaxTreatmentRowsWithSingleAi(params: {
       return withAiStatus(row, 'manual_fallback')
     }
 
-    return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
+    return applyVatTaxTreatmentDecisiveDefault(vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
       ...row,
       recommendation: recommendationForProvisionalJudgment(candidate.provisionalJudgment),
       source: 'ai_single',
@@ -548,7 +549,7 @@ export async function enhanceVatTaxTreatmentRowsWithSingleAi(params: {
         consensusProviders: [],
       },
       aiRuntimeStatus: 'completed',
-    }))
+    })))
   })
 }
 

@@ -250,7 +250,10 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
     && (
       value.recommendation === 'needs_review'
       || value.provisionalJudgment === null
-      || value.judgmentWorkflowStatus !== 'user_confirmation_pending'
+      || (
+        value.judgmentWorkflowStatus !== 'user_confirmation_pending'
+        && value.judgmentWorkflowStatus !== 'no_evidence_defaulted'
+      )
     )
   ) {
     context.addIssue({
@@ -272,6 +275,16 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
       code: 'custom',
       path: ['judgmentWorkflowStatus'],
       message: '최종 결정이 있는 행은 사용자 확정 workflow여야 합니다.',
+    })
+  }
+  if (
+    value.judgmentWorkflowStatus === 'no_evidence_defaulted'
+    && value.missingFacts.length === 0
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['missingFacts'],
+      message: '근거 없음 기본처리에는 찾지 못한 특례·공제 근거를 명시해야 합니다.',
     })
   }
   if (

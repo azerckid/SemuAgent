@@ -122,7 +122,10 @@ function payloadMatchesStatus(
     return payload.aiRuntimeStatus === 'completed'
       && (payload.source === 'ai_single' || payload.source === 'ai_consensus')
       && payload.provisionalJudgment !== null
-      && payload.judgmentWorkflowStatus === 'user_confirmation_pending'
+      && (
+        payload.judgmentWorkflowStatus === 'user_confirmation_pending'
+        || payload.judgmentWorkflowStatus === 'no_evidence_defaulted'
+      )
   }
   if (status === 'manual_fallback') {
     return payload.recommendation === 'needs_review'

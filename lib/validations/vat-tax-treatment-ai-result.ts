@@ -11,8 +11,8 @@ import {
   vatTaxTreatmentSourceSchema,
 } from './vat-tax-treatment'
 
-export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v3' as const
-export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 3 as const
+export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v4' as const
+export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 4 as const
 
 export const vatTaxTreatmentAiResultStatusSchema = z.enum([
   'queued',
@@ -68,7 +68,10 @@ export const vatTaxTreatmentAiResultPayloadSchema = z.object({
       value.recommendation === 'needs_review'
       ||
       value.provisionalJudgment === null
-      || value.judgmentWorkflowStatus !== 'user_confirmation_pending'
+      || (
+        value.judgmentWorkflowStatus !== 'user_confirmation_pending'
+        && value.judgmentWorkflowStatus !== 'no_evidence_defaulted'
+      )
     )
   ) {
     context.addIssue({
@@ -89,6 +92,16 @@ export const vatTaxTreatmentAiResultPayloadSchema = z.object({
       code: 'custom',
       path: ['judgmentWorkflowStatus'],
       message: 'AI fallback은 세무 결론이 아니라 일시 오류 workflow로 저장해야 합니다.',
+    })
+  }
+  if (
+    value.judgmentWorkflowStatus === 'no_evidence_defaulted'
+    && value.missingFacts.length === 0
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['missingFacts'],
+      message: '근거 없음 기본처리 결과에는 찾지 못한 특례·공제 근거가 필요합니다.',
     })
   }
 })

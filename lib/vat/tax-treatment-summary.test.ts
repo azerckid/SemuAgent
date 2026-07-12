@@ -8,6 +8,7 @@ import {
   type VatTaxTreatmentClassificationRow,
   type VatTaxTreatmentDeductionRow,
 } from './tax-treatment-summary'
+import { applyVatTaxTreatmentDecisiveDefaults } from './tax-treatment-decisive-default'
 
 const period = { key: '2026-H1', startMonth: '2026-01', endMonth: '2026-06' } as const
 
@@ -269,6 +270,38 @@ describe('VAT tax treatment read model', () => {
     expect(revoked!.requiredEvidence.find((item) => item.code === 'export_or_zero_rate_documents'))
       .not.toHaveProperty('attestedAt')
   })
+
+  it('defaults zero-rated sales to taxable until the required attestation is present', () => {
+    const [base] = build({
+      classificationRows: [classification({
+        vatDirection: 'sale',
+        vatTaxType: 'zero_rated',
+        vatSupplyAmountKrw: 110_000,
+        vatTaxAmountKrw: 0,
+        vatGrossAmountKrw: 110_000,
+        amountKrw: 110_000,
+      })],
+    })
+
+    expect(applyVatTaxTreatmentDecisiveDefaults([base!])[0]).toMatchObject({
+      recommendation: 'likely_taxable',
+      judgmentWorkflowStatus: 'no_evidence_defaulted',
+    })
+
+    const [attested] = applyVatTaxTreatmentEvidenceAttestations({
+      rows: [base!],
+      attestations: [{
+        classificationRowId: base!.classificationRowId,
+        evidenceCode: 'export_or_zero_rate_documents',
+        status: 'present',
+        confirmedAt: '2026-07-13 12:00:00',
+      }],
+    })
+    expect(applyVatTaxTreatmentDecisiveDefaults([attested!])[0]).toMatchObject({
+      recommendation: 'likely_zero_rated',
+      judgmentWorkflowStatus: 'user_confirmation_pending',
+    })
+  })
 })
 
 describe('VAT tax treatment loader boundaries', () => {
@@ -291,9 +324,10 @@ describe('VAT tax treatment loader boundaries', () => {
 
   it('reuses stored AI results after evidence state and before user audit state', () => {
     expect(source).toContain('applyVatTaxTreatmentEvidenceAttestations')
+    expect(source).toContain('applyVatTaxTreatmentDecisiveDefaults')
     expect(source).toContain('applyStoredVatTaxTreatmentAiResults')
     expect(source).toContain('params.includeStoredAi === true')
-    expect(source).toContain('applyVatTaxTreatmentAuditStates({ rows: recommendedRows, auditRows })')
+    expect(source).toContain('rows: applyVatTaxTreatmentDecisiveDefaults(recommendedRows)')
   })
 
   it('keeps stored AI opt-in and excludes package gates from recommendation cache', () => {

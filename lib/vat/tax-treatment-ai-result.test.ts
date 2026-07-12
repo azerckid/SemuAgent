@@ -244,6 +244,23 @@ describe('VAI-7b reusable VAT AI result', () => {
     }).success).toBe(false)
   })
 
+  it('requires the missing evidence reason in a decisive default payload', () => {
+    const result = JSON.parse(payload(aiRow(displayRow())))
+    const decisiveDefault = {
+      ...result,
+      judgmentWorkflowStatus: 'no_evidence_defaulted',
+    }
+
+    expect(vatTaxTreatmentAiResultPayloadSchema.safeParse({
+      ...decisiveDefault,
+      missingFacts: [],
+    }).success).toBe(false)
+    expect(vatTaxTreatmentAiResultPayloadSchema.safeParse({
+      ...decisiveDefault,
+      missingFacts: ['공제 근거 없음'],
+    }).success).toBe(true)
+  })
+
   it('applies only a matching ready payload and verifies its output fingerprint', () => {
     const base = displayRow()
     const result = aiRow(base)
@@ -269,7 +286,9 @@ describe('VAI-7b reusable VAT AI result', () => {
 
     for (const oldVersion of [
       { payloadVersion: 2 },
+      { payloadVersion: 3 },
       { promptVersion: 'vat-tax-treatment-v2' },
+      { promptVersion: 'vat-tax-treatment-v3' },
     ]) {
       expect(applyReusableVatTaxTreatmentAiResults({
         rows: [base],

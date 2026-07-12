@@ -39,8 +39,12 @@ function displayRow(overrides: Partial<VatTaxTreatmentDisplayRow> = {}): VatTaxT
     basisLabel: '업무 관련성을 확인해야 합니다.',
     ruleReference: 'P-07',
     ruleVersion: 'vat-kr-2026.07-v1',
-    requiredEvidence: [{ code: 'business_purpose', label: '업무 목적', status: 'needs_review' }],
-    missingFacts: ['업무 목적'],
+    requiredEvidence: [
+      { code: 'exact_vat_fact', label: '정확한 VAT fact', status: 'present' },
+      { code: 'qualified_purchase_evidence', label: '적격 증빙', status: 'present' },
+      { code: 'business_purpose', label: '업무 목적', status: 'present' },
+    ],
+    missingFacts: ['추가 세무 판단'],
     hometaxComparisonMode: 'expected_prefill',
     hometaxAction: 'review_deduction',
     aiTrace: null,
@@ -102,7 +106,7 @@ describe('VAT single-provider AI enhancement', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v3',
+        promptVersion: 'vat-tax-treatment-v4',
         consensusProviders: [],
       },
     })

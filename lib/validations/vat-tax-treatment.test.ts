@@ -87,7 +87,7 @@ describe('VAT tax treatment validation', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v3',
+        promptVersion: 'vat-tax-treatment-v4',
         consensusProviders: [],
       },
     })).success).toBe(true)
@@ -103,7 +103,7 @@ describe('VAT tax treatment validation', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v3',
+        promptVersion: 'vat-tax-treatment-v4',
         consensusProviders: [],
       },
     })).success).toBe(false)
