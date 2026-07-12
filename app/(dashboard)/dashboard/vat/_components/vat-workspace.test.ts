@@ -83,7 +83,7 @@ describe('VAT workspace static contract', () => {
     expect(vatPageSource).not.toContain('includeTaxTreatmentAi:')
     expect(vatPageSource).toContain('initialProviderCallCount={0}')
     expect(workspaceSource).toContain('data-vat-initial-provider-calls')
-    expect(vatSummarySource).toContain('includeTaxTreatmentAi = false')
+    expect(vatSummarySource).not.toContain('includeTaxTreatmentAi')
     expect(vatSummarySource).toContain('includeStoredTaxTreatmentAi = false')
     expect(vatPageSource).toContain('includeStoredTaxTreatmentAi: true')
     expect(internalReminderSummarySource).toContain('includeStoredTaxTreatmentAi: false')

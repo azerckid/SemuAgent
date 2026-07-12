@@ -581,11 +581,12 @@ describe('VAT high-risk multi-provider consensus', () => {
     expect(runner.mock.calls.map(([input]) => input.provider)).toEqual(['openai'])
   })
 
-  it('keeps the display loader and mutation fingerprint recheck on the same AI pipeline', () => {
+  it('removes the initial-render sync AI path and keeps only the mutation fingerprint recheck (VAI-7d)', () => {
     const summarySource = readFileSync(new URL('./tax-treatment-summary.ts', import.meta.url), 'utf8')
     const mutationSource = readFileSync(new URL('./tax-treatment-mutations.ts', import.meta.url), 'utf8')
 
-    expect(summarySource).toContain('enhanceVatTaxTreatmentRowsWithAi({ rows: rowsWithAttestations })')
+    expect(summarySource).not.toContain('enhanceVatTaxTreatmentRowsWithAi')
+    expect(summarySource).not.toContain('includeAi')
     expect(mutationSource).toContain('enhanceVatTaxTreatmentRowsWithAi({ rows: [base] })')
     expect(mutationSource).not.toContain('enhanceVatTaxTreatmentRowsWithSingleAi')
   })
