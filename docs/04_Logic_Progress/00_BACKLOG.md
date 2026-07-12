@@ -46,7 +46,7 @@
 | JC-030 | todo | 전자신고 검증 및 파일 생성 (Validation / Path 1a·1b) | `lib/efiling-*`, JC-024·013 | **최우선 — Path 1 세목 확대.** 자료대조 Phase 2와 간이지급 파일(1a) 후보 구현 완료. **원천세는 공식 양식 미확인 → Path 1b(직접입력 정리) 화면 구현 완료; 부가세도 Path 1b 대상이며(값 정리 화면 미구현) Stage A는 1a 승격용 외부 확인 대기.** 공식 비암호화 전체 신고 양식이 확인되면 해당 세목만 1a(파일)로 승격하고, 그전에는 `항목 = 값` 직접입력 정리 대상으로 둔다(값 정리 화면 구현은 후속, `blocked` 세목 없음). Stage A 통과 전 generator를 만들지 않는다. Path 3 암호화 파일은 범위 밖. [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [VAT Stage A Audit](../03_Technical_Specs/43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md) |
 | JC-035 | done | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **완료(done) · VAI-0~6b 구현·머지(PR #200)·dev/prod migration `0070`·브라우저 E2E 완료.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·단계별 직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
 | JC-036 | done | Cadence 기반 내비게이션 재구성 | `sidebar.tsx`, 회사 홈, 기존 filing routes | **runtime 구현 완료(2026-07-11).** 상위 메뉴를 급여·지급(월) / 부가세(분기·반기) / 연간신고(연)로 재구성하고 신고지원·신고 준비 상위 메뉴를 제거했다. 직원 명부·원천세·지급명세서·지방소득세는 급여·지급 하위, 법인세/종합소득세/사업장현황신고는 사업자 유형(`client.taxEntityType`)에 따라 연간신고 하위에 조건부 노출한다. 회사 홈에 다가오는 신고 스트립(세목별 CTA 포함)을 추가하고 기존 신고 준비 허브의 "다가오는 세무 일정" 섹션은 제거했다. 기존 URL은 하나도 바꾸지 않아 redirect/alias가 필요 없다. [Cadence Navigation Review](../02_UI_Screens/13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) |
-| JC-037 | todo | 부가세 AI 비차단 로딩·결과 재사용 | JC-035 fingerprint·provider orchestration·VAT read model | **긴급 성능/사용성 결함.** 새 데이터가 없어도 VAT page 진입마다 미확정 행의 AI를 동기 재호출하는 현재 경로를 제거한다. 화면을 먼저 렌더하고 저장 결과를 fingerprint/version 기준으로 재사용하며, 변경된 행과 사용자 명시 재확인만 비동기 실행한다. 동일 데이터 재방문 provider 호출 0회, timeout 중 화면 사용 가능, multi-tab 중복 방지, gate의 live-AI 비의존을 완료선으로 한다. [Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) |
+| JC-037 | done | 부가세 AI 비차단 로딩·결과 재사용 | JC-035 fingerprint·provider orchestration·VAT read model | **완료(VAI-7a~7d, 2026-07-13).** 최초 VAT read provider 0회, fingerprint/version 저장 결과 재사용, 변경 행·사용자 명시 재확인만 비동기 실행한다. 동일 화면 20회 reload AI 요청 0회, FCP P95 2.96초, stale·다중 탭 활성 lease 1개, timeout fallback 비차단을 브라우저·DB로 검증했다. [Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) |
 | JC-038 | done | 부가세 화면 단순화·신고 수정 중심 재구성 | 현재 VAT workspace·Preview·JC-035 기능 | **완료(2026-07-13).** `추가 공제 가능성`을 절세 핵심 영역으로 유지하고 일반 큐를 `신고 전 수정 필요`로 좁혔다. `expected_no_change`는 숨기고 홈택스 수정 행동·미해결 handoff·미완료 공제 검토만 표시하며, 0건이면 섹션을 렌더하지 않는다. 중복 설명을 제거하고 모바일 고정 Sidebar를 동일 메뉴 Sheet로 교체해 desktop/450px visual QA를 통과했다. [Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) |
 | JC-039 | done | 부가세 AI 근거 탐색·명확 판단 계약 | JC-035 Rule Matrix·exact VAT fact·연결 증빙·이전 확정·AI orchestration | **완료(VAI-8a~8e).** AI 판단과 workflow를 분리하고 실제 근거 reference·잠정 결론·홈택스 행동을 제공한다. 특례 근거가 없으면 보수적 기본 방향을 적용하며, 담당자 이관은 필수 사실 부재·근거 충돌·공식 규칙 공백/합의 실패에만 허용한다. [Pre-Code Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) |
 | JC-040 | todo | 간이세액표 소득세 실시간 재계산 연결 (엔진 → 급여 편집 경로) | `lib/payroll/simplified-tax-table.ts`, `lib/payroll-workspace/recalculate.ts`, `lib/payroll-workspace/summary.ts`, 급여 편집 API | **우선순위: 중 · 저위험. JC-012 후속.** 현재 `lookupSimplifiedIncomeTax`(별표2 조회)는 첫 가입 샘플 시드 생성 시점(`lib/first-run-sample/seed.ts`)에서만 정규직 소득세를 산출하고, 런타임 재계산(`recalculatePayrollPeriodSummary`)은 저장된 `incomeTaxKrw`를 합산만 한다. 사용자가 급여대장에서 기본급·수당·공제대상가족수(`dependent_count`)를 직접 입력·수정하면 정규직 소득세를 간이세액표로 자동 재조회해 반영하도록 연결한다. 프리랜서(3.3%)·일용직(일용 산식)은 각 산식 유지하고, 고용형태별 분기(guard)로 정규직 경로만 격리한다. 조회 범위 밖 급여 구간 처리(반올림·상·하한·보간 여부)와 수동 override 허용 정책을 착수 전 확정한다. 세무조정·연말정산 확정 계산은 범위 밖. 상세: [49_SIMPLIFIED_TAX_TABLE_LOOKUP](../03_Technical_Specs/49_SIMPLIFIED_TAX_TABLE_LOOKUP.md). |
@@ -762,6 +762,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-037 · 부가세 AI 비차단 로딩·결과 재사용 (긴급)
 
+- Status: `done` (VAI-7a~7d 완료)
 - Related Domain: JC-035 부가세 AI 세무판단 보조.
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) - VAI-7c 상태 UI 오너 승인 반영.
@@ -770,7 +771,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related QA Docs: [VAT Test Scenarios §2.11](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
 - Resolved Gap:
   - VAI-7a~7c로 최초 요청의 provider 대기, 동일 결과 재호출, 비동기 상태 경계를 구현했다.
-  - VAI-7d에서 실제 환경의 10회 재진입 provider 0회, stale 1회 실행, 초기 렌더 P95를 계측해야 한다.
+  - VAI-7d에서 실제 환경의 20회 재진입 provider 0회, stale·다중 탭 단일 실행, 초기 렌더 P95를 계측했다.
 - Fixed Order: VAI-7a read/AI 분리·계측 -> VAI-7b 결과 저장·fingerprint invalidation -> VAI-7c 비동기 상태 UI·명시 재확인 -> VAI-7d 동기 경로 제거·실환경 검증.
 - Implementation Preconditions:
   - [x] 현재 동기 provider 호출·결과 미재사용·초기 화면 차단 경로를 코드로 확인했다.
@@ -781,21 +782,22 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] additive migration `0073`을 dev/prod에 적용하고 기존 canonical VAT fact·사용자 확정 감사 row를 변경하지 않음을 확인했다.
 - Acceptance Criteria:
   - [x] VAT 최초 서버 렌더 경로에서 provider 호출이 0회다. (VAI-7a)
-  - [ ] 동일 fingerprint/version의 저장 결과가 있으면 페이지 10회 재진입에도 추가 provider 호출이 0회다.
-  - [ ] 원천 사실·규칙·prompt version 변경 시 해당 행만 stale 처리하고 신규 실행을 정확히 1회 만든다. (VAI-7b reservation DB 테스트 PASS, VAI-7c trigger 연결 Pending)
-  - [ ] 다중 탭·동시 요청에서도 동일 scope/fingerprint 실행은 하나다. (VAI-7b partial unique index + lease CAS PASS, VAI-7c API E2E Pending)
-  - [ ] provider timeout·quota·전체 실패 중에도 VAT 표·검색·사용자 mutation을 사용할 수 있다.
+  - [x] 동일 fingerprint/version의 저장 결과가 있으면 페이지 20회 재진입에도 추가 provider 호출이 0회다. (VAI-7d browser + DB 전후 비교)
+  - [x] 원천 사실·규칙·prompt version 변경 시 해당 행만 stale 처리하고 신규 실행을 정확히 1회 만든다. (VAI-7d stale browser/API/DB E2E)
+  - [x] 다중 탭·동시 요청에서도 동일 scope/fingerprint 실행은 하나다. (VAI-7d two-tab API E2E, active lease 1개)
+  - [x] provider timeout·quota·전체 실패 중에도 VAT 표·검색·사용자 mutation을 사용할 수 있다. (VAI-7c 단위 + VAI-7d manual fallback 브라우저)
   - [x] 사용자가 `AI 다시 확인`을 명시적으로 요청할 수 있고 기존 확정값은 바뀌지 않는다.
   - [x] 사용자 확정 행은 자동 AI 재판단 대상에서 제외된다. (VAI-7c workflow/실행 선택 회귀 PASS)
   - [x] tenant·사업장·기간·행 격리와 PII 최소화, 원문 prompt/응답 미저장을 지킨다. (VAI-7b scope/schema/payload guard)
   - [x] rebuild/package gate는 live AI 응답과 저장 AI 추천을 읽지 않고 canonical 사용자 확정값만 사용한다. (VAI-7b explicit opt-out 정적 회귀)
-  - [ ] 브라우저 E2E와 계측으로 초기 렌더 시간·provider 호출 수·stale 재실행을 증명한다.
+  - [x] 브라우저 E2E와 계측으로 초기 렌더 시간·provider 호출 수·stale 재실행을 증명한다.
 - Scope Boundary: VAT 화면의 시각적 정보구조 개편은 후속 논의로 분리하며 JC-037에 섞지 않는다.
 - Document Sync Check (2026-07-12, VAI-7a 기준): VAT 최초 read에서 `includeTaxTreatmentAi`를 제거해 provider 0회를 고정하고 호출 수를 비가시 DOM 속성으로 노출했다. 당시에는 결과 저장소가 없어 deterministic rule·이전 확정·사용자 결정만 표시했으며 DB·migration·Preview 변경은 없었다.
 - Document Sync Check (2026-07-12): VAI-7b는 additive `vat_tax_treatment_ai_result`와 migration `0073`, versioned payload, fingerprint/version stale 처리, 2분 실행 lease, 15분 fallback backoff, active-scope partial unique index를 구현했다. VAT read는 증빙 확인을 먼저 합성한 뒤 동일 scope/fingerprint 저장 결과를 재사용하고 사용자 확정 audit를 마지막에 적용한다. 다중 요청·변경 fingerprint·fallback retry·확정 행 제외·tenant/business/period 격리·민감 원문 미저장을 DB/단위 테스트로 검증했다. migration `0073`은 dev/prod 모두 21컬럼·명시 인덱스 4개·FK 3개·위반 0건·초기 행 0건으로 적용했다. VAI-7c 비동기 trigger/UI와 VAI-7d 브라우저 계측이 남아 JC-037은 `todo`를 유지한다.
 - Document Sync Check (2026-07-12): 저장 AI read를 기본 OFF로 고정했다. VAT 화면과 사용자 확정·증빙 mutation만 명시적으로 opt-in하고, filing-preparation·internal-reminders·package/rebuild gate는 명시적으로 opt-out해 불필요 SELECT와 추천 캐시의 gate 혼입을 차단한다.
 - Document Sync Check (2026-07-12): VAI-7c는 provider-free GET 상태 조회와 POST reserve→run→complete API를 추가했다. 최초 서버 렌더는 계속 provider 0회이며, 클라이언트가 렌더 후 `idle|stale` 대상만 최대 12건씩 실행한다. 행별 `확인 중`·조용한 `판단 완료`·`수동 확인`·`다시 확인 필요`와 명시적 `AI 다시 확인`을 표시한다. polling은 중복 GET을 막고 3초 간격·최대 20회로 제한하며 사용자 확정 행과 package/rebuild gate는 실행 대상에서 제외한다. VAI-7d 실환경 호출 수·브라우저 계측이 남아 JC-037은 `todo`를 유지한다.
 - Document Sync Check (2026-07-12, VAI-7d partial): dev 판단 행 6건에서 최초 렌더 provider 0회, 같은 행의 명시적 `AI 다시 확인` POST 2회(24.8초·17.8초), 최신 `manual_fallback` 저장, 표·처리 진입점 비차단을 브라우저와 dev DB 집계로 확인했다. production은 exact VAT fact·AI 결과가 0건이라 smoke 확인만 가능했다. 10회 재진입 호출 0회·stale 1회·multi-tab E2E가 남아 JC-037은 `todo`를 유지한다.
+- Document Sync Check (2026-07-13, VAI-7d complete): dev 판단 행 5건 화면을 20회 reload해 초기 provider 속성 0·AI API 요청 0·DB 캐시 행 무변경을 확인했다. responseStart P95 2.747초, FCP P95 2.96초, loadEventEnd P95 3.015초였다. 최신 캐시를 임시 stale로 만든 뒤 두 탭에서 동일 POST를 11ms 차이로 시작해 비소유 탭은 checking을 재사용하고 소유 탭 하나만 ready를 저장함을 확인했다. 활성 lease는 1개, attempt는 한 번만 증가했으며 검증 후 캐시 행 전체 컬럼을 원본으로 복원했다. live AI 호출은 비동기 execution과 사용자 mutation fingerprint 재검증에만 남고 page read·신고준비·리마인더·package/rebuild에는 없다.
 
 ### JC-038 · 부가세 화면 단순화·중복 정보 제거
 
