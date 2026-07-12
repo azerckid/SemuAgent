@@ -111,3 +111,11 @@ export function applyVatTaxTreatmentAutomaticHandoffs(
     return handoff ? applyVatTaxTreatmentHumanHandoff(row, handoff) : row
   })
 }
+
+export function findUnresolvedVatTaxTreatmentHandoff(
+  rows: readonly VatTaxTreatmentDisplayRow[],
+  classificationRowId: string | null,
+) {
+  if (!classificationRowId) return null
+  return rows.find((row) => row.classificationRowId === classificationRowId)?.humanHandoff ?? null
+}

@@ -3,10 +3,13 @@ import { NextResponse } from 'next/server'
 import { and, eq } from 'drizzle-orm'
 import { requireTenantSession } from '@/lib/auth-helpers'
 import { getActiveStaffForUser } from '@/lib/bookkeeping/classification-service'
+import { buildCompanyHomePeriod } from '@/lib/company-home/summary'
 import { db } from '@/lib/db'
 import { vatDeductionReview, vatPeriodSummary } from '@/lib/db/schema'
 import { now, toDBString } from '@/lib/time'
 import { buildVatPeriodRecalculation } from '@/lib/vat/summary'
+import { findUnresolvedVatTaxTreatmentHandoff } from '@/lib/vat/tax-treatment-handoff'
+import { loadVatTaxTreatmentDisplayRows } from '@/lib/vat/tax-treatment-summary'
 import { vatDeductionReviewPatchSchema } from '@/lib/validations/vat'
 
 export async function PATCH(
@@ -32,6 +35,7 @@ export async function PATCH(
         id: vatDeductionReview.id,
         clientId: vatDeductionReview.clientId,
         periodKey: vatDeductionReview.periodKey,
+        classificationRowId: vatDeductionReview.classificationRowId,
         reason: vatDeductionReview.reason,
       })
       .from(vatDeductionReview)
@@ -40,6 +44,24 @@ export async function PATCH(
 
     if (!review) {
       return NextResponse.json({ error: '공제 검토 항목을 찾을 수 없습니다.' }, { status: 404 })
+    }
+
+    const treatmentRows = review.classificationRowId
+      ? await loadVatTaxTreatmentDisplayRows({
+        tenantId,
+        businessEntityId: review.clientId,
+        period: buildCompanyHomePeriod({ periodKey: review.periodKey }),
+        includeStoredAi: true,
+      })
+      : []
+    const handoff = findUnresolvedVatTaxTreatmentHandoff(
+      treatmentRows,
+      review.classificationRowId,
+    )
+    if (handoff) {
+      return NextResponse.json({
+        error: `담당자 확인 질문에 답한 뒤 판단을 확정해 주세요: ${handoff.question}`,
+      }, { status: 409 })
     }
 
     const ts = toDBString(now())

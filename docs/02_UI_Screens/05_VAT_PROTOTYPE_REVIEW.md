@@ -81,6 +81,14 @@
 - Preview 단계에는 저장·확정 버튼이 없고 canonical 값도 바꾸지 않는다.
 - [VAT HTML Preview](./previews/03_vat.html)에 제안안을 반영했으며 프로젝트 오너의 실제 크기 화면 승인을 기다린다.
 
+### 6.4 JC-039 VAI-8e Evidence and Handoff Flow — Implemented
+
+- 기본 `공제 판단` 셀에는 결론 한 줄만 유지한다. 실제 evidence trace와 상태·행동은 펼친 상세 안에 둔다.
+- evidence trace는 여섯 source 중 실제로 찾은 항목만 사용자용 source label과 요약으로 표시한다. 내부 row reference를 그대로 노출하지 않는다.
+- 담당자 이관은 잠정 결론과 근거 뒤에 `담당자 확인 1가지`로 표시한다. 정확한 질문·부족/충돌 근거·답변에 따른 처리만 제공하고 generic `확인 필요` 문구를 추가하지 않는다.
+- handoff 행은 추천 바로 적용을 노출하지 않는다. `답변하고 확정` 모달에서 잠정 결론을 기본 선택하되 사용자가 바꿀 수 있고, 답변과 판단 근거를 필수로 저장한다.
+- 2026-07-13 로컬 샘플 DB의 `면세사업분 공통매입` 대표 행에서 `안분 필요 → 찾은 근거 → 질문 1개 → 답변하고 확정`과 모달 기본값 `안분`을 브라우저로 확인했다. canonical 저장 버튼은 검증 중 누르지 않았다.
+
 ## 7. Feedback & Improvements
 - (반영) 신고 패키지 생성 버튼을 승인 전 잠금 상태로 표현: `is-disabled` + `disabled` + `aria-disabled="true"`, muted 스타일, 잠김 라벨.
 - (구현 노트) disabled 버튼의 `title` 툴팁은 브라우저별로 표시가 일관되지 않는다. React 구현 시 비활성 버튼을 래퍼(예: span/tooltip 컴포넌트)로 감싸 잠금 사유를 접근성 있게 노출한다. → Component & Library Plan / JC-011 전제조건에 반영.

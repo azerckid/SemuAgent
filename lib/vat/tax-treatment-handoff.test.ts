@@ -7,6 +7,7 @@ import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fi
 import {
   applyVatTaxTreatmentAutomaticHandoffs,
   applyVatTaxTreatmentHumanHandoff,
+  findUnresolvedVatTaxTreatmentHandoff,
   resolveVatTaxTreatmentAutomaticHandoff,
 } from './tax-treatment-handoff'
 
@@ -140,5 +141,20 @@ describe('VAT human handoff gate', () => {
       question: '업무 목적입니까?',
       decisionImpact: '답변에 따라 재검토합니다.',
     })).toBe(row)
+  })
+
+  it('finds an unresolved handoff only for the linked classification row', () => {
+    const handoffRow = applyVatTaxTreatmentHumanHandoff(displayRow(), {
+      reason: 'evidence_conflict',
+      evidenceIssue: '과거 확정이 충돌합니다.',
+      missingEssentialFact: '이번 거래의 실제 업무 목적',
+      question: '이번 거래는 어떤 업무 목적으로 사용했습니까?',
+      decisionImpact: '업무 목적이 입증되면 공제, 아니면 불공제입니다.',
+    })
+
+    expect(findUnresolvedVatTaxTreatmentHandoff([handoffRow], 'row-1'))
+      .toEqual(handoffRow.humanHandoff)
+    expect(findUnresolvedVatTaxTreatmentHandoff([handoffRow], 'another-row')).toBeNull()
+    expect(findUnresolvedVatTaxTreatmentHandoff([handoffRow], null)).toBeNull()
   })
 })
