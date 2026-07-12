@@ -426,7 +426,7 @@
               <td class="amt">2,200,000</td>
               <td class="judgment">
                 <details class="row-detail">
-                  <summary><span class="chip ok">공제 가능</span></summary>
+                  <summary><span class="chip warn">안분 필요</span></summary>
                   <div class="b-body">
                     <div class="b-section">
                       <div class="b-label">무슨 뜻인가요</div>
@@ -445,12 +445,18 @@
                       </div>
                     </div>
                     <div class="b-section">
+                      <div class="b-label">담당자 확인 1가지</div>
+                      <div class="b-main">이 매입은 과세사업과 면세사업에 각각 어떤 비율과 기준으로 사용됐습니까?</div>
+                      <div class="b-sub">현재 자료에는 실제 사용 비율과 안분 기준이 없습니다.</div>
+                      <div class="b-text">답변에 따른 처리: 공통 사용이면 확인된 기준으로 안분하고, 한쪽 사업에만 귀속되면 해당 귀속 방향으로 다시 판단합니다.</div>
+                    </div>
+                    <div class="b-section">
                       <div class="b-label">홈택스에서 할 일</div>
                       <div class="b-text">공제받지못할매입세액명세서의 "공통매입세액 안분계산내역" 탭에 공급가액·세액을 입력하면 불공제매입세액 = 공통매입세액 × (면세공급가액÷총공급가액)으로 계산됩니다. 예정신고는 잠정 비율로 처리하고, 확정신고 때 "공통매입세액의 정산내역" 탭에서 실제 비율로 재정산합니다.</div>
                     </div>
                     <div class="b-section">
                       <div class="b-label">확정</div>
-                      <div class="row-actions"><span class="mini-btn">안분 검토</span></div>
+                      <div class="row-actions"><span class="mini-btn">답변하고 확정</span><span class="mini-btn">보류</span></div>
                     </div>
                   </div>
                 </details>
@@ -482,6 +488,7 @@
         변경: 화면 상태 예시 삭제, 매입세액 공제 검토 표를 확인 필요 거래로 통합, 별도 홈택스·사용자 확정 열과 하단 신고 준비·차단 이유·책임 문구를 삭제하고 관련 행동을 공제 판단 상세 안으로 이동, 동작 없는 상단 "확정 신고" 삭제.
         오너 리뷰 반영: 매출 구분은 항상 펼쳐진 3카드로 유지하고, 판단 표는 거래·금액·공제 판단 3열만 사용합니다. 매입 판단은 공제 가능·공제 불가·자료 부족으로 단순화하고, package/rebuild 안전 gate는 화면이 아니라 API에서 유지합니다.
         VAI-7c 제안: 정상 `판단 완료`는 작은 완료 시각으로만 표시하고, `확인 중`·`수동 확인`·`다시 확인 필요`만 상태 칩으로 강조합니다. `AI 다시 확인`은 재확인이 필요한 AI 판단 영역에서만 노출합니다.
+        VAI-8e: 기본 셀에는 결론 한 줄만 유지하고, 펼친 상세에서 실제로 찾은 근거와 홈택스 행동을 보여줍니다. 담당자 이관은 허용된 행에만 질문 한 개와 답변에 따른 결론 변화를 표시하며, 일반 적용 대신 답변하고 확정하도록 합니다.
         VAI-9d/9e: `추가 공제 가능성`은 기존 확인 필요 거래와 분리하고, 기본 행에는 재분류 방향과 최대 가능 금액만 표시합니다. 신뢰도·근거·부족 자료와 사용자 액션은 펼쳐보기 안에 두며 후보가 0건이면 섹션을 렌더하지 않습니다. 공제 재분류는 업무 목적/참석자·적격증빙·사용자 명시 확정을 모두 요구합니다.
       </div>
     </div>

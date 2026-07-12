@@ -46,6 +46,13 @@ export function finalDecisionForVatRecommendation(
   return null
 }
 
+export function finalDecisionForVatProvisionalJudgment(
+  judgment: VatTaxTreatmentDisplayRow['provisionalJudgment'],
+): VatTaxTreatmentFinalDecision | null {
+  if (judgment === 'proration_required') return 'prorated'
+  return judgment
+}
+
 export function missingRequiredEvidenceForVatDecision(
   row: Pick<VatTaxTreatmentDisplayRow, 'requiredEvidence'>,
   decision: VatTaxTreatmentFinalDecision,

@@ -114,6 +114,24 @@ describe('VAT workspace static contract', () => {
     expect(treatmentRouteSource).toContain('vatTaxTreatmentMutationSchema.safeParse(await req.json())')
   })
 
+  it('keeps VAI-8e evidence and the single handoff question inside expanded decision details (S-126, S-131~132, S-135)', () => {
+    expect(workspaceSource).toContain('VatTaxTreatmentEvidenceTrace')
+    expect(workspaceSource).toContain('확인한 근거')
+    expect(workspaceSource).toContain('row.evidenceTrace.filter((item) => item.status === \'found\')')
+    expect(workspaceSource).toContain('VatTaxTreatmentHandoff')
+    expect(workspaceSource).toContain('담당자 확인 1가지')
+    expect(workspaceSource).toContain('handoff.question')
+    expect(workspaceSource).toContain('답변에 따른 처리:')
+    expect(treatmentActionsSource).toContain('row.humanHandoff ?')
+    expect(treatmentActionsSource).toContain("openDialog('resolve_handoff')")
+    expect(treatmentActionsSource).toContain('답변하고 확정')
+    expect(workspaceSource).toContain('deductionReview && !row.humanHandoff')
+    expect(treatmentDialogSource).toContain('질문에 답하고 판단 확정')
+    expect(treatmentDialogSource).toContain('row.humanHandoff.question')
+    expect(treatmentDialogSource).toContain('row.humanHandoff.decisionImpact')
+    expect(treatmentDialogSource).toContain('답변과 판단 근거')
+  })
+
   it('keeps the initial VAT render provider-free and exposes VAI-7a read metrics (S-107)', () => {
     expect(vatPageSource).not.toContain('includeTaxTreatmentAi: true')
     expect(vatPageSource).not.toContain('includeTaxTreatmentAi:')

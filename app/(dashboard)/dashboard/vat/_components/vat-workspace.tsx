@@ -161,15 +161,16 @@ function VatTreatmentExceptionTableRow({ item }: { readonly item: VatTreatmentEx
             <VatTaxTreatmentAiWorkflowStatus rowId={row.rowId} recommendationFingerprint={row.recommendationFingerprint} />
             <p><b className="text-foreground">판단 근거:</b> {row.basisLabel}</p>
             {row.ruleReference ? <p><b className="text-foreground">규칙:</b> {row.ruleReference}</p> : null}
-            <p><b className="text-foreground">홈택스:</b> {taxTreatmentHometaxActionLabel(row.hometaxAction)}</p>
+            <VatTaxTreatmentEvidenceTrace row={row} />
             <div className="flex flex-wrap gap-1.5 pt-1">
               {row.requiredEvidence.map((evidence) => (
                 <VatTaxTreatmentEvidenceAction key={evidence.code} row={row} evidence={evidence} />
               ))}
             </div>
+            {row.humanHandoff ? <VatTaxTreatmentHandoff row={row} /> : null}
             <p className="pt-1"><b className="text-foreground">할 일:</b> {taxTreatmentHometaxActionLabel(row.hometaxAction)}</p>
             <VatTaxTreatmentActions row={row} />
-            {deductionReview ? (
+            {deductionReview && !row.humanHandoff ? (
               <div className="mt-2 border-t border-company-border pt-2">
                 <p className="mb-1 text-[11px] font-semibold text-company-fg-muted">매입세액 공제 처리</p>
                 <VatDeductionActionButtons review={deductionReview} />
@@ -179,6 +180,38 @@ function VatTreatmentExceptionTableRow({ item }: { readonly item: VatTreatmentEx
         </details>
       </TableCell>
     </tr>
+  )
+}
+
+function VatTaxTreatmentEvidenceTrace({ row }: { readonly row: VatTaxTreatmentDisplayRow }) {
+  const foundEvidence = row.evidenceTrace.filter((item) => item.status === 'found')
+  if (foundEvidence.length === 0) return null
+
+  return (
+    <div className="grid gap-1 pt-1">
+      <p className="font-semibold text-foreground">확인한 근거</p>
+      {foundEvidence.map((item) => (
+        <p key={item.source}>
+          <span className="font-medium text-foreground">{taxTreatmentEvidenceSourceLabel(item.source)}</span>
+          <span aria-hidden="true"> · </span>
+          {item.summary}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+function VatTaxTreatmentHandoff({ row }: { readonly row: VatTaxTreatmentDisplayRow }) {
+  const handoff = row.humanHandoff
+  if (!handoff) return null
+
+  return (
+    <div className="mt-1 grid gap-1.5 rounded-lg border border-[#fde68a] bg-[#fffbeb] px-3 py-2.5 text-[#92400e]">
+      <p className="font-semibold">담당자 확인 1가지</p>
+      <p className="text-[12.5px] font-semibold text-foreground">{handoff.question}</p>
+      <p className="text-[11.5px] text-[#a16207]">{handoff.evidenceIssue}</p>
+      <p className="text-[11.5px] text-[#a16207]">답변에 따른 처리: {handoff.decisionImpact}</p>
+    </div>
   )
 }
 
@@ -447,6 +480,15 @@ function taxTreatmentSourceLabel(value: VatTaxTreatmentDisplayRow['source']) {
   if (value === 'prior_confirmed_pattern') return '이전 확정 패턴'
   if (value === 'ai_consensus') return 'AI 합의'
   return 'AI 보강'
+}
+
+function taxTreatmentEvidenceSourceLabel(value: VatTaxTreatmentDisplayRow['evidenceTrace'][number]['source']) {
+  if (value === 'current_transaction') return '현재 거래'
+  if (value === 'linked_evidence') return '연결 증빙'
+  if (value === 'exact_vat_fact') return '확정 세액'
+  if (value === 'reconciliation_result') return '자료대조 결과'
+  if (value === 'prior_confirmed_decision') return '이전 확정'
+  return '공식 규칙'
 }
 
 function taxTreatmentHometaxActionLabel(value: VatTaxTreatmentDisplayRow['hometaxAction']) {

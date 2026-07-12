@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   canApplyVatTaxTreatmentRecommendation,
   defaultDifferentVatDecision,
+  finalDecisionForVatProvisionalJudgment,
   finalDecisionForVatRecommendation,
   missingRequiredEvidenceForVatDecision,
   vatTaxTreatmentDecisionOptions,
@@ -14,6 +15,13 @@ describe('VAT tax treatment action helpers', () => {
     expect(finalDecisionForVatRecommendation('likely_taxable')).toBe('taxable')
     expect(finalDecisionForVatRecommendation('proration_required')).toBeNull()
     expect(finalDecisionForVatRecommendation('needs_review')).toBeNull()
+  })
+
+  it('uses the provisional judgment as the initial handoff decision', () => {
+    expect(finalDecisionForVatProvisionalJudgment('deductible')).toBe('deductible')
+    expect(finalDecisionForVatProvisionalJudgment('non_deductible')).toBe('non_deductible')
+    expect(finalDecisionForVatProvisionalJudgment('proration_required')).toBe('prorated')
+    expect(finalDecisionForVatProvisionalJudgment(null)).toBeNull()
   })
 
   it('keeps purchase and sale final-decision choices separated', () => {

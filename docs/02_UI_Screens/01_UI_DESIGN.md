@@ -134,6 +134,7 @@
 | AI Failure Fallback | timeout·quota·provider 오류 시 비차단 수동 검토 | 표 유지 + 해당 행 `수동 확인 필요` + 제한된 다시 시도 |
 | Tax Treatment Actions | AI·규칙 판단에 대한 사용자 최종 처리 | 행 안의 적용/다르게/보류/전문가 확인; 저장 중 행 단위 spinner, 확정 행은 변경만 노출 |
 | Tax Treatment Decision Dialog | 추천과 다른 판단·보류·전문가 확인 근거 입력 | 방향별 결정 select + 근거 textarea + 안분율 input; 영세율·면세 증빙 누락 시 저장 차단 |
+| Human Handoff Question | 필수 사실 부재·근거 충돌·규칙 공백·다중 AI 불합의 해결 | 펼친 상세에서 질문 1개 + 답변에 따른 처리 + `답변하고 확정`; 잠정 결론을 기본 선택하고 답변을 감사 근거로 저장 |
 | Recent Tax Treatment Undo | 방금 저장한 판단을 원래 canonical·감사 상태로 복원 | sonner `되돌리기`; 최신 1건·일회용 토큰·서버 current-state 검증 |
 | Confirmed Ledger Rebuild | 현재 확정 VAT fact로 summary와 fingerprint를 재계산 | 다른 gate가 모두 ready이고 snapshot만 stale일 때 파란 outline `확정 원장 다시 계산`; 처리 중 spinner |
 | VAT Package API Gate | package/rebuild 요청 시 미완료 자료를 서버에서 차단 | 화면에 별도 준비 카드·차단 이유 목록을 반복하지 않고 API에서만 강제 |
@@ -143,6 +144,7 @@
 - **검토 자료 마감 잠금**: 자료수집·자료대조·사용자 세무판단·확정 원장 fingerprint 중 하나라도 미완이면 `is-disabled` + `disabled` + `aria-disabled="true"` muted 버튼으로 잠금을 명시하고, 위에 사유(locknote)를 함께 노출한다. exact 입력은 유효하지만 snapshot만 stale인 경우에만 별도 재계산 버튼을 제공한다.
   - 구현 노트: disabled 버튼의 `title` 툴팁은 브라우저별 표시가 일관되지 않으므로, React 구현 시 비활성 버튼을 래퍼(tooltip 컴포넌트)로 감싸 잠금 사유를 접근성 있게 노출한다.
 - **판단 정보 계층**: AI 열에는 클릭 가능한 한 줄 결론 외의 source mark·완료시각·재확인 버튼을 기본 노출하지 않는다. 홈택스 열도 권장 행동 한 줄과 `처리` 진입점 하나만 둔다. 근거·필요 증빙·상태·사용자 액션 묶음은 펼친 뒤 표시한다.
+- **담당자 이관 정보 계층**: 기본 셀에는 별도 이관 badge를 추가하지 않는다. 펼친 상세에서 실제로 찾은 근거를 먼저 보여준 뒤 허용된 handoff 행에만 질문 한 개·부족/충돌 근거·답변에 따른 처리·`답변하고 확정`을 표시한다. 이때 일반 `적용`·`전문가 확인` 버튼은 반복하지 않는다.
 - **예외 중심**: 사용자 확정 완료 행과 확정 VAT fact·공식 규칙·필수 증빙이 모두 일치하는 정상 행은 기본 작업대에 펼치지 않는다. AI 단독 판단 행과 미완료 공제 검토는 숨기지 않는다.
 - **중복 제거**: 같은 classification 행의 AI 판단과 공제 검토 mutation은 한 행에 합치며, 별도 부속명세·상태 예시·대형 패키지 미리보기·동작 없는 `확정 신고` control을 두지 않는다.
 - **증빙 확인 경계**: `확인 완료`는 증빙파일 생성·AI 자동확정이 아니라 사용자가 법정 증빙 준비를 직접 확인했다는 기록이다. 확인 취소 시 세무판단·package gate를 다시 잠근다.

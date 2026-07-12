@@ -90,6 +90,28 @@ export function VatTaxTreatmentActions({ row }: VatTaxTreatmentActionsProps) {
               <PencilLine aria-hidden="true" />
               변경
             </Button>
+          ) : row.humanHandoff ? (
+            <>
+              <Button
+                type="button"
+                size="xs"
+                disabled={isPending}
+                onClick={() => openDialog('resolve_handoff')}
+              >
+                {isPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <PencilLine aria-hidden="true" />}
+                답변하고 확정
+              </Button>
+              <Button
+                type="button"
+                size="xs"
+                variant="ghost"
+                disabled={isPending || row.userActionStatus === 'held'}
+                onClick={() => openDialog('hold')}
+              >
+                <Pause aria-hidden="true" />
+                보류
+              </Button>
+            </>
           ) : (
             <>
               <Button
