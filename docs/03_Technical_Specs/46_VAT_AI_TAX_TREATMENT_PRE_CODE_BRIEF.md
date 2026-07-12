@@ -1,14 +1,13 @@
 # VAT AI Tax Treatment Pre-Code Brief
 > Created: 2026-07-11
-> Last Updated: 2026-07-12
+> Last Updated: 2026-07-13
 > Backlog: JC-035 · VAI-2
 > Governing Rule: [VAT AI Tax Treatment Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md)
 
-> Target clarification (2026-07-12): 이 문서의 `recommendation: needs_review`,
-> `manual_fallback`, 전문가 확인 UI는 현재 JC-035 구현 계약을 설명한다. 프로젝트 오너의 후속
-> 결정에 따라 [JC-039 · VAI-8](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)에서
-> AI 잠정 결론과 workflow 상태를 분리하고, generic handoff를 실제 근거 탐색·명확 판단·엄격한
-> 담당자 이관 게이트로 교체한다. VAI-8 구현 전까지는 현재 runtime 사실을 지우거나 완료로 표시하지 않는다.
+> Target clarification (2026-07-13): 이 문서의 `recommendation: needs_review`와
+> `manual_fallback`은 JC-035 legacy 호환 계약이다. [JC-039 · VAI-8a](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)에서
+> provider 잠정 결론과 workflow 상태를 분리했으며, generic handoff를 실제 근거 탐색·명확 판단·엄격한
+> 담당자 이관 게이트로 교체하는 VAI-8b~8e는 후속이다.
 
 ## 0. Decision
 
@@ -134,7 +133,8 @@ type VatTaxTreatmentRecommendation = {
 Zod `superRefine`으로 purchase 행은 `deductible|non_deductible|prorated`, sale 행은
 `taxable|zero_rated|exempt|non_taxable`만 최종 결정으로 허용한다.
 `aiRuntimeStatus`는 VAI-3 read-only 요청의 일시 상태이며 DB에 저장하지 않는다.
-`manual_fallback`과 `deferred`는 recommendation을 `needs_review`로 유지해야 한다.
+`manual_fallback`과 `deferred`는 legacy recommendation을 `needs_review`로 유지하되,
+VAI-8a의 `provisionalJudgment: null`·`judgmentWorkflowStatus: ai_temporary_error`로 분리한다.
 
 구조화 문자열과 배열에는 다음 상한을 둔다.
 

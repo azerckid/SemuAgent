@@ -180,7 +180,7 @@ export function VatTaxTreatmentAiWorkflowStatus({
         ? 'rounded-md border border-[#fde68a] bg-[#fffbeb] px-2 py-0.5 text-[11px] font-bold text-[#b45309]'
         : 'rounded-md border border-company-border bg-company-nav-hover px-2 py-0.5 text-[11px] font-bold text-company-fg-muted'}
       >
-        {stale ? '다시 확인 필요' : '수동 확인'}
+        {stale ? '다시 확인 필요' : 'AI 일시 중단'}
       </span>
       <Button
         type="button"

@@ -1,16 +1,12 @@
 import { z } from 'zod'
+import { vatTaxTreatmentProvisionalJudgmentSchema } from './vat-tax-treatment'
+
+export const vatTaxTreatmentAiProvisionalJudgmentSchema =
+  vatTaxTreatmentProvisionalJudgmentSchema.exclude(['non_taxable'])
 
 export const vatTaxTreatmentAiCandidateSchema = z.object({
   index: z.number().int().nonnegative(),
-  recommendation: z.enum([
-    'likely_taxable',
-    'likely_zero_rated',
-    'likely_exempt',
-    'likely_deductible',
-    'likely_non_deductible',
-    'proration_required',
-    'needs_review',
-  ]),
+  provisionalJudgment: vatTaxTreatmentAiProvisionalJudgmentSchema,
   confidence: z.enum(['medium', 'low']),
   basisLabel: z.string().min(1).max(400),
   missingFacts: z.array(z.string().min(1).max(160)).max(8),

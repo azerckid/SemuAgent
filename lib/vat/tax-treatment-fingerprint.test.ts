@@ -21,6 +21,8 @@ function recommendation(
       status: 'derived',
     },
     recommendation: 'likely_deductible',
+    provisionalJudgment: 'deductible',
+    judgmentWorkflowStatus: 'user_confirmation_pending',
     source: 'deterministic_rule',
     confidence: 'medium',
     basisLabel: '업무용 매입',

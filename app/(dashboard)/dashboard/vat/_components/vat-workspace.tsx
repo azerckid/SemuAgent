@@ -427,14 +427,19 @@ function salesGroupShortLabel(id: VatSalesGroup['id']) {
 function vatWorkbenchDecisionLabel(value: VatWorkbenchDecision) {
   if (value === 'deductible') return '공제 가능'
   if (value === 'non_deductible') return '공제 불가'
-  if (value === 'sales_tax_type') return '과세유형 확인'
-  return '자료 부족'
+  if (value === 'proration_required') return '안분 필요'
+  if (value === 'taxable') return '과세'
+  if (value === 'zero_rated') return '영세율'
+  if (value === 'exempt') return '면세'
+  if (value === 'non_taxable') return '과세 대상 아님'
+  return '판단 준비 중'
 }
 
 function vatWorkbenchDecisionTone(value: VatWorkbenchDecision): VatTone {
   if (value === 'deductible') return 'ok'
   if (value === 'non_deductible') return 'danger'
-  return 'warn'
+  if (value === 'judgment_pending' || value === 'proration_required') return 'warn'
+  return 'muted'
 }
 
 function taxTreatmentSourceLabel(value: VatTaxTreatmentDisplayRow['source']) {

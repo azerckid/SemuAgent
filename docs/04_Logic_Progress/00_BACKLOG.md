@@ -835,14 +835,14 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-039 · 부가세 AI 근거 탐색·명확 판단
 
-- Status: `todo`
+- Status: `doing` (VAI-8a 완료, VAI-8b~8e 대기)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조, AI 추천과 사용자 최종 책임의 경계.
 - Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - 결론 우선 예외 작업대와 정보 밀도 계약.
 - Related HTML Preview: [VAT Preview](../02_UI_Screens/previews/03_vat.html) - VAI-8a 계약 승인 뒤 VAI-8e 목표 UI를 반영하며, 현재 Preview는 구현 완료 증거로 사용하지 않는다.
 - Related Technical Docs: [VAT AI Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) · [JC-035 Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [VAI-2 Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md)
 - Related QA Docs: [VAT QA S-126~S-135](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 근거 탐색·명확 판단·담당자 이관 게이트 검증.
 - Current Gap:
-  - 현재 `needs_review`가 AI 추천 결론과 사용자 workflow 상태를 함께 표현한다.
+  - VAI-8a 이전에는 `needs_review`가 AI 추천 결론과 사용자 workflow 상태를 함께 표현했다.
   - provider 실패·낮은 confidence·판단 난이도가 일반적인 `확인 필요` 또는 `전문가 확인`으로 끝날 수 있다.
   - 어떤 자료를 실제로 찾았고 무엇을 찾지 못했는지 완전한 evidence trace가 없다.
   - 담당자 이관 조건과 이관 시 반드시 제공할 잠정 결론·질문 계약이 충분히 좁지 않다.
@@ -855,7 +855,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Implementation Preconditions:
   - [x] 현재 Rule Matrix·Pre-Code Brief·runtime의 `needs_review/manual_fallback` 사용 위치를 확인했다.
   - [x] AI는 자료와 근거를 먼저 찾고, generic handoff로 결론을 회피하지 않는다는 프로젝트 오너 원칙을 승인했다.
-  - [ ] VAI-8a schema/migration 경계와 기존 감사 테이블 재사용 범위를 승인한다.
+  - [x] VAI-8a schema/migration 경계와 기존 감사 테이블 재사용 범위를 승인했다 — SQL migration 없이 stored payload/prompt v2로 전환한다.
   - [ ] VAI-8e 단순화 Preview에서 화면·사용자 동선·표시 데이터·로딩·빈 상태·오류 상태와 결론 우선 정보 계층을 프로젝트 오너가 확인한다.
 - Acceptance Criteria:
   - [ ] AI 판단이 `확인 필요`·`담당자 판단 필요`·`전문가 확인`만으로 끝나지 않는다.
@@ -870,10 +870,11 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] tenant·사업장·기간 격리와 PII 최소화를 유지한다.
   - [ ] 대표 fixture와 브라우저 E2E에서 결론·근거·홈택스 행동·이관 질문을 검증한다.
 - Document Sync Check (2026-07-12): 신규 Brief 50, Backlog JC-039, VAT QA S-126~S-135, JC-035/Rule Matrix/VAI-2/화면 단순화 문서의 current-vs-target 경계를 동기화했다. 코드·DB·Preview 변경은 없으며 구현 상태는 `todo`다.
+- Document Sync Check (2026-07-13, VAI-8a): provider 응답 schema에서 `needs_review`를 제거하고 `provisionalJudgment`를 필수화했다. 모든 display row는 legacy recommendation에서 잠정 결론과 `judgmentWorkflowStatus`를 결정론적으로 파생하며, AI fallback은 결론 없이 `ai_temporary_error`로 분리한다. 저장 AI 결과는 payload v2/prompt v2로 올려 v1 캐시를 재사용하지 않는다. 신규 SQL migration·canonical VAT write는 없다. VAT 기본 셀은 실제 잠정 결론 한 칩을 사용하고 fallback은 `AI 일시 중단` workflow로 표시한다. evidence trace·근거 없음 기본처리·handoff gate·최종 UI는 VAI-8b~8e에 남긴다.
 
 ### JC-041 · 절세 가능성 탐지·정리 (부가세 매입 재분류부터)
 
-- Status: `todo` (Pre-Code Brief 작성 완료 — UI-First Gate·오너 Preview 승인 착수 전 대기)
+- Status: `done` (VAI-9a~9e · PR #230 merge `5deeea1`)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조, AI 추천과 사용자 최종 책임의 경계.
 - Related UI Docs: [VAT UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md) · [VAT Prototype Review §6.3](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) - VAI-9d 승인 배치·정보 계층과 VAI-9e 확정 액션.
 - Related HTML Preview: [VAT Preview](../02_UI_Screens/previews/03_vat.html) - 세액 요약 아래 별도 절세 후보 섹션, 높은/중간/낮은 대표 행, 기본 접힘 제안.
@@ -895,7 +896,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - 부가세 외 다른 세목(소득세·법인세 등)의 절세 가능성 탐지는 후속 논의.
   - 재분류 자동 확정·기장 데이터 자동 수정은 하지 않는다(사용자 최종 확인 필수).
   - AI가 없는 근거를 만들어 확정을 유도하는 것은 금지(JC-039 §2 "No Evidence Means No Special Treatment" 원칙은 "확정"에 적용되며 "후보 노출"에는 적용되지 않는다 — Brief 51 §0.1).
-- Fixed Order (Brief 51 §9): **VAI-9a 완료(2026-07-12, v2 신뢰도 등급 모델로 재작성)** → **VAI-9b 완료(2026-07-12, v2 재작성)** → **VAI-9c 완료(정확한 매입세액 기반 절세 가능 금액·Zod read contract)** → **VAI-9d 완료(PR #229 Preview 승인·머지)** → **VAI-9e 구현·dev E2E 완료(PR 검토 대기)**.
+- Fixed Order (Brief 51 §9): **VAI-9a 완료(2026-07-12, v2 신뢰도 등급 모델로 재작성)** → **VAI-9b 완료(2026-07-12, v2 재작성)** → **VAI-9c 완료(정확한 매입세액 기반 절세 가능 금액·Zod read contract)** → **VAI-9d 완료(PR #229 Preview 승인·머지)** → **VAI-9e 완료(PR #230 merge `5deeea1`)**.
 - Implementation Preconditions:
   - [x] 프로젝트 오너가 방향("절세 가능성이 있는 것을 정리해서 보여주는 것이 좋겠다")을 확인했다.
   - [x] Pre-Code Brief 작성 완료(근거 요건, 재분류 후보 판정 기준, 데이터 계약 초안, UI 방향 — Brief 51).
@@ -909,6 +910,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - **VAI-9c 완료**: `lib/vat/reclassification-savings.ts`에 후보 Zod 계약과 결정론적 계산을 추가했다. `potentialSavingsKrw`는 원장에 저장된 `inputTaxKrw`와 반드시 같아야 하며 공급가액·합계액 역산을 금지한다. resolver는 모든 후보를 이 계약으로 검증해 반환한다. 신규 DB·migration·UI·mutation은 없고 사용자 결정 저장은 VAI-9e 범위다.
   - **VAI-9d 완료**: PR #229에서 `03_vat.html`의 세액 요약 아래 `추가 공제 가능성`을 기존 예외 작업대와 분리했다. 기본 행은 거래·재분류 방향·최대 가능 금액만 표시하고 신뢰도·근거·부족 자료는 펼쳐보기로 이동했다. 높은/중간/낮은 대표 후보 3건과 후보 0건 숨김 계약을 프로젝트 오너가 승인했다.
   - **VAI-9e 구현·dev E2E 완료**: runtime도 승인 Preview와 같은 위치·정보 계층을 사용한다. `공제로 재분류`는 업무 목적/참석자 입력·적격증빙·명시 확정을 서버에서 재검증하고, 기존 `vat_deduction_review`의 canonical decision·확정자·시각·사유와 기간 요약을 트랜잭션으로 갱신한다. 조건부 canonical UPDATE는 `returning()` 결과가 정확히 1건일 때만 성공하며 동시 제출의 0건 UPDATE는 409로 롤백한다. `접대비 유지`도 같은 정본에 기록해 재질문을 막는다. 후보 조회는 별도 Suspense 경계로 격리하고 과거 거래처 이력은 단일 쿼리로 묶어 VAT 첫 화면과 N+1 쿼리를 차단했다. 개발 샘플에서 양쪽 흐름을 브라우저/DB로 확인한 뒤 원상복구했다. 신규 테이블·migration 없음.
+  - **VAI-9e 머지 완료**: PR #230이 concurrency 보강(`UPDATE ... returning()` 1건 강제·충돌 409)까지 포함해 main `5deeea1`에 반영되었다. JC-041의 후보 노출·확정 게이트·재질문 방지·runtime UI 완료선을 충족한다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

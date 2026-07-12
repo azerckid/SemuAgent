@@ -216,13 +216,13 @@ describe('VAI-6b VAT statutory evidence attestation', () => {
       status: 'present',
       attestedAt: attestation.confirmedAt,
     }))
-    const confirmed = vatTaxTreatmentDisplayRowSchema.parse({
+    const confirmed = vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
       ...withEvidence,
       finalDecision: 'zero_rated',
       confirmedByStaffId: STAFF,
       confirmedAt: '2026-07-11 16:00:00',
       userActionStatus: 'confirmed',
-    })
+    }))
     expect(buildVatTaxTreatmentGate([confirmed])).toMatchObject({ isReady: true, blockerCount: 0 })
   })
 

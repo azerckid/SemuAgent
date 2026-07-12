@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { VatTaxTreatmentRecommendation } from '@/lib/validations/vat-tax-treatment'
+import { deriveVatTaxTreatmentJudgmentContract } from './tax-treatment-judgment'
 
 type VatTaxTreatmentFingerprintInput = Pick<
   VatTaxTreatmentRecommendation,
@@ -44,10 +45,14 @@ export function buildVatTaxTreatmentRecommendationFingerprint(
 }
 
 export function withVatTaxTreatmentRecommendationFingerprint<
-  T extends VatTaxTreatmentFingerprintInput,
+  T extends VatTaxTreatmentFingerprintInput & Pick<
+    VatTaxTreatmentRecommendation,
+    'aiRuntimeStatus' | 'finalDecision'
+  >,
 >(row: T) {
   return {
     ...row,
+    ...deriveVatTaxTreatmentJudgmentContract(row),
     recommendationFingerprint: buildVatTaxTreatmentRecommendationFingerprint(row),
   }
 }

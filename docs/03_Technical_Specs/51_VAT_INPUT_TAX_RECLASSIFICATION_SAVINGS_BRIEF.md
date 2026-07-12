@@ -1,8 +1,8 @@
 # VAT Input Tax Reclassification Savings Brief
 > Created: 2026-07-12
-> Last Updated: 2026-07-13 (v5 — VAI-9e 확정 게이트·runtime·dev E2E 반영)
+> Last Updated: 2026-07-13 (v6 — VAI-9e PR #230 머지 완료)
 > Backlog: JC-041
-> Status: VAI-9a~9e implemented; PR review pending
+> Status: complete · VAI-9a~9e merged (PR #230 · `5deeea1`)
 
 ## 0. Decision
 

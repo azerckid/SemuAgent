@@ -19,6 +19,7 @@ import { vatTaxTreatmentAiResult } from '@/lib/db/schema'
 import {
   VAT_TAX_TREATMENT_AI_PROMPT_VERSION,
   VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION,
+  vatTaxTreatmentAiResultPayloadSchema,
 } from '@/lib/validations/vat-tax-treatment-ai-result'
 import {
   vatTaxTreatmentDisplayRowSchema,
@@ -160,6 +161,8 @@ function payload(row: VatTaxTreatmentDisplayRow) {
   return JSON.stringify({
     version: VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION,
     recommendation: row.recommendation,
+    provisionalJudgment: row.provisionalJudgment,
+    judgmentWorkflowStatus: row.judgmentWorkflowStatus,
     source: row.source,
     confidence: row.confidence,
     basisLabel: row.basisLabel,
@@ -231,6 +234,14 @@ beforeEach(async () => {
 })
 
 describe('VAI-7b reusable VAT AI result', () => {
+  it('rejects a completed stored AI payload with a generic review conclusion', () => {
+    const result = aiRow(displayRow())
+    expect(vatTaxTreatmentAiResultPayloadSchema.safeParse({
+      ...JSON.parse(payload(result)),
+      recommendation: 'needs_review',
+    }).success).toBe(false)
+  })
+
   it('applies only a matching ready payload and verifies its output fingerprint', () => {
     const base = displayRow()
     const result = aiRow(base)
