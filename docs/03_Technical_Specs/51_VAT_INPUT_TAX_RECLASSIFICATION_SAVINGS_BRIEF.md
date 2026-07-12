@@ -221,7 +221,7 @@ VAI-9c 계산 규칙은 하나뿐이다.
 ## 8. UI Contract (VAI-9d Preview 승인·VAI-9e runtime 반영)
 
 - 재분류 제안은 세액 요약 바로 아래의 `추가 공제 가능성` 섹션에 두고,
-  기존 `확인 필요 거래` 표와 **분리**한다. 불공제 설명 팝오버에 절세 제안을
+  `신고 전 수정 필요` 작업대와 **분리**한다. 불공제 설명 팝오버에 절세 제안을
   섞지 않는다.
 - 기본 행에는 거래/상대처, `접대비 -> 제안 분류`, `최대 OOO원 추가 공제
   가능성`만 표시한다. 신뢰도는 작은 보조 텍스트로 두고 badge를 늘리지 않는다.
@@ -280,7 +280,7 @@ VAI-9c 계산 규칙은 하나뿐이다.
 ## 12. Related Documents
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조와 사용자 최종 책임 경계
-- **Technical_Specs**: [JC-039 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 탐색 순서 재사용(단 이진 게이트가 아니라 등급 모델로 응용) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유 · [VAT Screen Simplification Brief](./48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - 기존 확인 필요 거래 UI와의 분리 원칙
+- **Technical_Specs**: [JC-039 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 탐색 순서 재사용(단 이진 게이트가 아니라 등급 모델로 응용) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유 · [VAT Screen Simplification Brief](./48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - `신고 전 수정 필요` 작업대와의 분리 원칙
 - **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VAI-9d 승인 배치와 VAI-9e 펼쳐보기 액션 반영
 - **Logic_Progress**: [Backlog JC-041](../04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [VAT Test Scenarios §2.14](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 후보 등급·절세 가능 금액·추정 금지 계약

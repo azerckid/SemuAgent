@@ -34,7 +34,7 @@ export function buildVatExceptionWorkbenchModel(params: {
   )
   const treatmentRows = params.treatmentRows.flatMap((row) => {
     const deductionReview = pendingReviewByClassification.get(row.classificationRowId) ?? null
-    if (!deductionReview && !isVatTaxTreatmentException(row)) return []
+    if (!deductionReview && !isVatFilingModificationRequired(row)) return []
     return [{ row, deductionReview }]
   })
   const displayedClassifications = new Set(treatmentRows.map(({ row }) => row.classificationRowId))
@@ -49,24 +49,14 @@ export function buildVatExceptionWorkbenchModel(params: {
   }
 }
 
-export function isVatTaxTreatmentException(row: VatTaxTreatmentDisplayRow) {
+export function isVatFilingModificationRequired(row: VatTaxTreatmentDisplayRow) {
   const evidenceComplete = row.requiredEvidence.every((item) => item.status === 'present')
   const isUserResolved = row.userActionStatus === 'confirmed'
     && row.finalDecision !== null
     && evidenceComplete
   if (isUserResolved) return false
-
-  const isDeterministicNormal = row.finalDecision === null
-    && row.userActionStatus === 'pending'
-    && row.source === 'deterministic_rule'
-    && row.confidence === 'high'
-    && row.currentVatFact.status === 'confirmed'
-    && (row.provisionalJudgment === 'taxable' || row.provisionalJudgment === 'deductible')
-    && row.hometaxAction === 'expected_no_change'
-    && row.missingFacts.length === 0
-    && evidenceComplete
-
-  return !isDeterministicNormal
+  if (row.humanHandoff) return true
+  return row.hometaxAction !== 'expected_no_change'
 }
 
 export function resolveVatTreatmentWorkbenchDecision(

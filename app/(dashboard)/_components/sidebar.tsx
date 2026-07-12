@@ -1,3 +1,15 @@
+'use client'
+
+import { Menu } from 'lucide-react'
+import { useState } from 'react'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import type { FilingPrepBusinessType } from '@/lib/filing-preparation/summary'
 import { SidebarNavLink } from './sidebar-nav-link'
 import { SidebarSignOutButton } from './sidebar-sign-out-button'
@@ -75,7 +87,47 @@ function annualFilingChildNav(businessType: FilingPrepBusinessType) {
   return items
 }
 
-export function Sidebar({
+export function Sidebar(props: SidebarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  return (
+    <>
+      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-1 border-r border-company-border bg-company-surface px-3.5 py-5 text-foreground md:flex">
+        <SidebarContent {...props} />
+      </aside>
+
+      <div className="flex items-center justify-between border-b border-company-border bg-company-surface px-4 py-3 text-foreground md:hidden">
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-[#18181b] text-[15px] font-bold text-white">자</div>
+          <div>
+            <p className="text-sm font-semibold">SemuAgent</p>
+            <p className="text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
+          </div>
+        </div>
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger
+            aria-label="전체 메뉴 열기"
+            title="전체 메뉴"
+            className="inline-flex size-9 items-center justify-center rounded-lg border border-company-border bg-company-surface text-company-fg-muted hover:bg-company-nav-hover hover:text-foreground"
+          >
+            <Menu className="size-4.5" aria-hidden="true" />
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[min(88vw,20rem)] bg-company-surface text-foreground">
+            <SheetHeader className="sr-only">
+              <SheetTitle>전체 메뉴</SheetTitle>
+              <SheetDescription>회사 세무·회계 운영 화면으로 이동합니다.</SheetDescription>
+            </SheetHeader>
+            <div className="flex min-h-[calc(100dvh-2rem)] flex-col pt-2">
+              <SidebarContent {...props} onNavigate={() => setMobileOpen(false)} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </>
+  )
+}
+
+function SidebarContent({
   userName,
   tenantName,
   bookkeepingPendingCount = 0,
@@ -84,11 +136,17 @@ export function Sidebar({
   filingPrepAttentionCount = 0,
   reminderAttentionCount = 0,
   businessType = 'unknown',
-}: SidebarProps) {
+  onNavigate,
+}: SidebarProps & { onNavigate?: () => void }) {
   const annualFilingChildren = annualFilingChildNav(businessType)
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[248px] shrink-0 flex-col gap-1 border-r border-company-border bg-company-surface px-3.5 py-5 text-foreground">
+    <div
+      className="flex min-h-0 flex-1 flex-col gap-1"
+      onClickCapture={(event) => {
+        if (event.target instanceof Element && event.target.closest('a')) onNavigate?.()
+      }}
+    >
       <div className="flex items-center gap-2.5 px-2 pb-[18px]">
         <div className="flex size-[30px] items-center justify-center rounded-lg bg-[#18181b] text-[15px] font-bold text-white">
           자
@@ -198,7 +256,7 @@ export function Sidebar({
           <SidebarSignOutButton />
         </div>
       </div>
-    </aside>
+    </div>
   )
 }
 

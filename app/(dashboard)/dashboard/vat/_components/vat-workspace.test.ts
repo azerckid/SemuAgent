@@ -79,7 +79,7 @@ describe('VAT workspace static contract', () => {
   })
 
   it('uses one three-column exception workbench and keeps actions inside decision details (S-116, S-119)', () => {
-    expect(workspaceSource).toContain('확인 필요 거래')
+    expect(workspaceSource).toContain('신고 전 수정 필요')
     expect(workspaceSource).toContain('<summary className="w-fit cursor-pointer list-none">')
     expect(workspaceSource).toContain('<TableHead>공제 판단</TableHead>')
     expect(workspaceSource).not.toContain('홈택스 · 사용자 확정')
@@ -87,15 +87,17 @@ describe('VAT workspace static contract', () => {
     expect(workspaceSource).toContain('VatTaxTreatmentActions')
     expect(workspaceSource).toContain('VatDeductionActionButtons')
     expect(workspaceSource).toContain('VatTaxTreatmentEvidenceAction')
-    expect(workspaceSource).toContain('확인할 예외 거래가 없습니다')
+    expect(workspaceSource).toContain('if (workbench.exceptionCount === 0) return null')
+    expect(workspaceSource).not.toContain('확인할 예외 거래가 없습니다')
   })
 
   it('renders VAI recommendations as expected Hometax guidance with explicit VAI-4b user actions', () => {
     expect(workspaceSource).toContain('summary.taxTreatmentRows')
     expect(workspaceSource).toContain('자동채움 예상')
     expect(workspaceSource).toContain('공식 규칙')
-    expect(workspaceSource).toContain('이전 확정 패턴')
-    expect(workspaceSource).toContain("? '사용자 확정'")
+    expect(workspaceSource).toContain('이전 확정')
+    expect(workspaceSource).not.toContain('taxTreatmentSourceLabel')
+    expect(workspaceSource).not.toContain('판단 근거:</b>')
     expect(workspaceSource).toContain('VatTaxTreatmentActions')
     expect(workspaceSource).toContain('VatTaxTreatmentAiWorkflowStatus')
     expect(treatmentAiWorkflowSource).toContain('판단 완료')

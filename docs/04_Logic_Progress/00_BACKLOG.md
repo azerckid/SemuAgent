@@ -47,10 +47,10 @@
 | JC-035 | done | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **완료(done) · VAI-0~6b 구현·머지(PR #200)·dev/prod migration `0070`·브라우저 E2E 완료.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·단계별 직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
 | JC-036 | done | Cadence 기반 내비게이션 재구성 | `sidebar.tsx`, 회사 홈, 기존 filing routes | **runtime 구현 완료(2026-07-11).** 상위 메뉴를 급여·지급(월) / 부가세(분기·반기) / 연간신고(연)로 재구성하고 신고지원·신고 준비 상위 메뉴를 제거했다. 직원 명부·원천세·지급명세서·지방소득세는 급여·지급 하위, 법인세/종합소득세/사업장현황신고는 사업자 유형(`client.taxEntityType`)에 따라 연간신고 하위에 조건부 노출한다. 회사 홈에 다가오는 신고 스트립(세목별 CTA 포함)을 추가하고 기존 신고 준비 허브의 "다가오는 세무 일정" 섹션은 제거했다. 기존 URL은 하나도 바꾸지 않아 redirect/alias가 필요 없다. [Cadence Navigation Review](../02_UI_Screens/13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) |
 | JC-037 | todo | 부가세 AI 비차단 로딩·결과 재사용 | JC-035 fingerprint·provider orchestration·VAT read model | **긴급 성능/사용성 결함.** 새 데이터가 없어도 VAT page 진입마다 미확정 행의 AI를 동기 재호출하는 현재 경로를 제거한다. 화면을 먼저 렌더하고 저장 결과를 fingerprint/version 기준으로 재사용하며, 변경된 행과 사용자 명시 재확인만 비동기 실행한다. 동일 데이터 재방문 provider 호출 0회, timeout 중 화면 사용 가능, multi-tab 중복 방지, gate의 live-AI 비의존을 완료선으로 한다. [Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) |
-| JC-038 | todo | 부가세 화면 단순화·예외 중심 재구성 | 현재 VAT workspace·Preview·JC-035 기능 | **UI 정리 사전 계약.** 홈택스 미리채움과 deterministic rule로 명확한 정상 건은 건수·합계로 접고, 영세율·면세·불공제·안분·누락·취소·중복·불일치처럼 사용자가 처리할 예외만 기본 작업대에 노출한다. 같은 판단·상태·차단 이유와 Preview 전용 요소를 제거·통합하며, 실제 삭제 전 프로젝트 오너가 단순화 Preview를 승인한다. [Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) |
-| JC-039 | doing | 부가세 AI 근거 탐색·명확 판단 계약 | JC-035 Rule Matrix·exact VAT fact·연결 증빙·이전 확정·AI orchestration | AI가 `확인 필요`·`담당자 판단 필요`로 결론을 회피하지 않도록 판단과 workflow를 분리한다. 정해진 자료와 공식 규칙을 먼저 찾아 실제 근거 reference와 잠정 결론·홈택스 행동을 제시하고, 특례 근거가 없으면 해당 없음과 보수적 기본 방향을 적용한다. 담당자 이관은 필수 사실 부재·근거 충돌·공식 규칙 공백/합의 실패에만 허용한다. [Pre-Code Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) |
+| JC-038 | done | 부가세 화면 단순화·신고 수정 중심 재구성 | 현재 VAT workspace·Preview·JC-035 기능 | **완료(2026-07-13).** `추가 공제 가능성`을 절세 핵심 영역으로 유지하고 일반 큐를 `신고 전 수정 필요`로 좁혔다. `expected_no_change`는 숨기고 홈택스 수정 행동·미해결 handoff·미완료 공제 검토만 표시하며, 0건이면 섹션을 렌더하지 않는다. 중복 설명을 제거하고 모바일 고정 Sidebar를 동일 메뉴 Sheet로 교체해 desktop/450px visual QA를 통과했다. [Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) |
+| JC-039 | done | 부가세 AI 근거 탐색·명확 판단 계약 | JC-035 Rule Matrix·exact VAT fact·연결 증빙·이전 확정·AI orchestration | **완료(VAI-8a~8e).** AI 판단과 workflow를 분리하고 실제 근거 reference·잠정 결론·홈택스 행동을 제공한다. 특례 근거가 없으면 보수적 기본 방향을 적용하며, 담당자 이관은 필수 사실 부재·근거 충돌·공식 규칙 공백/합의 실패에만 허용한다. [Pre-Code Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) |
 | JC-040 | todo | 간이세액표 소득세 실시간 재계산 연결 (엔진 → 급여 편집 경로) | `lib/payroll/simplified-tax-table.ts`, `lib/payroll-workspace/recalculate.ts`, `lib/payroll-workspace/summary.ts`, 급여 편집 API | **우선순위: 중 · 저위험. JC-012 후속.** 현재 `lookupSimplifiedIncomeTax`(별표2 조회)는 첫 가입 샘플 시드 생성 시점(`lib/first-run-sample/seed.ts`)에서만 정규직 소득세를 산출하고, 런타임 재계산(`recalculatePayrollPeriodSummary`)은 저장된 `incomeTaxKrw`를 합산만 한다. 사용자가 급여대장에서 기본급·수당·공제대상가족수(`dependent_count`)를 직접 입력·수정하면 정규직 소득세를 간이세액표로 자동 재조회해 반영하도록 연결한다. 프리랜서(3.3%)·일용직(일용 산식)은 각 산식 유지하고, 고용형태별 분기(guard)로 정규직 경로만 격리한다. 조회 범위 밖 급여 구간 처리(반올림·상·하한·보간 여부)와 수동 override 허용 정책을 착수 전 확정한다. 세무조정·연말정산 확정 계산은 범위 밖. 상세: [49_SIMPLIFIED_TAX_TABLE_LOOKUP](../03_Technical_Specs/49_SIMPLIFIED_TAX_TABLE_LOOKUP.md). |
-| JC-041 | todo | 절세 가능성 탐지·정리 (부가세 매입 재분류부터) | JC-039 evidence resolver·Rule Matrix, `lib/vat/tax-treatment-ai.ts`, 기장 계정과목 분류 | **JC-039 확장.** 기장 단계에서 잘못 분류돼 불필요하게 세금을 더 내고 있는 거래를 찾아 정리해서 보여준다. 1차 대상: 접대비로 분류됐지만 실제로는 복리후생비·회의비(내부 직원 대상)라 매입세액 공제가 가능한 거래 — 같은 "식대" 지출도 참석자가 전부 내부 직원이면 공제 가능하지만 지금은 분류만으로 자동 불공제 처리된다. 핵심 원칙(Brief 51 §0.1, v2): "후보는 넓게, 최종 공제는 엄격하게" — 참석자 정보 없음·고액·법인 거래처명 같은 부정적 신호는 후보를 배제하는 조건이 아니라 신뢰도를 낮추는 감산 요인일 뿐이며, 범위 안의 접대비 불공제 후보는 신뢰도(높음/중간/낮음)와 무관하게 항상 목록에 표시한다. 실제 공제 전환은 별도의 엄격한 확정 게이트(업무 목적·적격증빙·사용자 명시 확인)를 통과해야만 일어난다 — AI가 자동으로 canonical 값을 바꾸지 않는다. 부가세 매입 재분류는 1차 범위이며, 다른 세목의 절세 가능성 탐지로 확장할지는 후속 논의. [Pre-Code Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md) |
+| JC-041 | done | 절세 가능성 탐지·정리 (부가세 매입 재분류부터) | JC-039 evidence resolver·Rule Matrix, `lib/vat/tax-treatment-ai.ts`, 기장 계정과목 분류 | **완료(VAI-9a~9e).** 접대비 불공제 후보를 신뢰도와 무관하게 넓게 보여주되 공제 전환은 업무 목적·참석자·적격증빙·사용자 명시 확인을 서버에서 재검증한다. 최대 추가 공제 가능성은 저장된 정확한 매입세액만 사용하며 canonical 값은 사용자의 확정 전 바꾸지 않는다. [Pre-Code Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
@@ -768,7 +768,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related HTML Preview: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - `판단 완료`·`확인 중`·`수동 확인`·`다시 확인 필요`·`AI 다시 확인` 배치 기준.
 - Related Technical Docs: [VAT AI Loading and Result Reuse Pre-Code Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md) · [JC-035 Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md)
 - Related QA Docs: [VAT Test Scenarios §2.11](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
-- Current Gap:
+- Resolved Gap:
   - VAI-7a~7c로 최초 요청의 provider 대기, 동일 결과 재호출, 비동기 상태 경계를 구현했다.
   - VAI-7d에서 실제 환경의 10회 재진입 provider 0회, stale 1회 실행, 초기 렌더 P95를 계측해야 한다.
 - Fixed Order: VAI-7a read/AI 분리·계측 -> VAI-7b 결과 저장·fingerprint invalidation -> VAI-7c 비동기 상태 UI·명시 재확인 -> VAI-7d 동기 경로 제거·실환경 검증.
@@ -799,6 +799,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-038 · 부가세 화면 단순화·중복 정보 제거
 
+- Status: `done` (VUI-1a~1d 완료)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
 - Related HTML Preview: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VUI-1b 단순화안 프로젝트 오너 승인 완료, VUI-1c runtime 반영 기준.
@@ -809,8 +810,10 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - AI 판단은 결론 한 줄, 홈택스는 할 일 한 줄과 `처리` 진입점 하나만 기본 표시한다.
   - 공제 mutation·세무판단·증빙·undo·package/rebuild gate는 상세 또는 compact 영역에 유지했다.
   - 정상 행은 보수적 deterministic 자격 조건을 통과할 때만 기본 작업대에서 제외한다.
-- Remaining Gap:
-  - desktop VUI-1d는 통과했으나 430px mobile에서 전역 고정 Sidebar와 샘플 데이터 배너가 만드는 공통 레이아웃 overflow가 남아 있다.
+- Resolved in VUI-1d:
+  - 일반 큐를 `신고 전 수정 필요`로 좁혀 `expected_no_change` 행과 중복 출처·판단 근거·규칙·미확정 문구를 제거했다.
+  - 수정 대상 0건이면 작업대 전체를 렌더하지 않고 Hero 한 줄만 유지한다.
+  - `md` 미만 고정 Sidebar를 동일 메뉴·배지·사업자 유형 분기를 재사용하는 Sheet로 교체하고 샘플 배너·VAT 본문 패딩을 반응형으로 조정했다.
 - Fixed Order: VUI-1a 영역별 결정 -> VUI-1b Preview 단순화·오너 승인 -> JC-037 로딩 개선 -> VUI-1c runtime 삭제·통합 -> VUI-1d visual/workflow QA.
 - Implementation Preconditions:
   - [x] 현재 runtime과 Preview의 화면 영역 inventory를 작성했다.
@@ -823,15 +826,16 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 같은 매입 거래의 공제 판단이 두 표에 중복되지 않는다.
   - [x] 동일 숫자·상태·차단 이유는 한 위치에서만 주로 표시한다.
   - [x] 예상 세액과 지금 처리할 거래가 첫 화면 우선순위다.
-  - [x] 전자증빙·정확한 금액·deterministic rule이 일치하는 정상 건은 예외 작업대에 펼치지 않는다.
+  - [x] `expected_no_change` 행은 AI 출처·미확정 여부만으로 작업대에 펼치지 않는다.
   - [x] 정상 건은 AI 단독 판단으로 자동 정리하지 않으며, 사용자 확정값을 바꾸지 않는다.
-  - [x] 영세율·면세·불공제·안분·누락·취소·중복·불일치 예외만 기본 작업대에 펼친다.
-  - [x] 예외 0건이면 긴 판단표를 숨기고 짧은 완료 배너만 보여준다.
+  - [x] 홈택스 수정 행동·미해결 handoff·미완료 공제 검토만 `신고 전 수정 필요`에 표시한다.
+  - [x] 수정 대상 0건이면 작업대 섹션을 렌더하지 않고 Hero 한 줄만 표시한다.
   - [x] 동작하지 않는 control·미래 기능 placeholder가 없다.
   - [x] 삭제 후 기존 사용자 mutation·gate·세액 계산이 유지된다.
-  - [ ] desktop/mobile visual QA와 문서 정합을 통과한다.
+  - [x] desktop/mobile visual QA와 문서 정합을 통과한다.
 - Document Sync Check (2026-07-12): 프로젝트 오너가 VUI-1a의 10개 유지·통합·축소·삭제 결정을 확정하고 VUI-1b Preview를 승인했다. 정상 건 요약 배너는 만들지 않고, 기존 공제 mutation·증빙 확인·undo·package/rebuild gate는 compact 영역에서 유지하는 VUI-1c 계약을 Brief 48·Prototype Review·QA S-115~S-125와 동기화했다.
 - Document Sync Check (2026-07-12, VUI-1c): runtime을 승인 Preview 기준으로 재구성했다. AI 판단과 pending 공제 검토를 classification 기준 한 행으로 합치고, 3열 예외 작업대(`거래/상대처`·`금액`·`공제 판단`)와 상세 펼치기를 적용했다. 별도 `홈택스·사용자 확정` 열과 하단 신고 준비·차단 이유·책임 문구를 제거하고, 홈택스 할 일과 확정 액션은 공제 판단 상세 안에 유지했다. package/rebuild gate는 화면에서 중복 표시하지 않고 API에서 계속 강제한다.
+- Document Sync Check (2026-07-13, VUI-1d): `추가 공제 가능성`은 유지하고 일반 큐를 실제 홈택스 수정 대상 중심의 `신고 전 수정 필요`로 축소했다. 데스크톱 1400px과 모바일 450px에서 document scrollWidth와 clientWidth 일치, 고정 Sidebar 미표시, 모바일 Sheet 열기·닫기, 공용 메뉴 재사용을 브라우저로 확인했다. 펼친 5개 대표 행에서 중복 `출처`·`판단 근거`·`규칙`·`미확정` 문구가 없는 것도 확인했다.
 
 ### JC-039 · 부가세 AI 근거 탐색·명확 판단
 
@@ -874,7 +878,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-13, VAI-8b): current transaction·linked evidence·exact VAT fact·reconciliation·prior confirmed decision·official rule 여섯 source를 각 display row에 `found/not_found/not_applicable`로 기록한다. found 근거는 실제 reference를 필수로 하며, linked row는 같은 tenant의 현재 classification 범위에 존재해야 한다. trace와 searched source를 fingerprint·stored payload v3·prompt v3에 연결해 근거 변경 시 v1/v2 캐시를 재사용하지 않는다. provider에는 내부 reference 없이 마스킹된 source 상태·요약만 전달한다. 신규 DB·migration·canonical write·기본 UI 변경은 없다.
 - Document Sync Check (2026-07-13, VAI-8c): 증빙 확인 상태를 먼저 합친 뒤 공제 근거가 부족한 매입은 불공제, 영세율·면세 적극 근거가 없는 매출은 과세 방향으로 기본처리한다. 안분율은 추정하지 않고 `proration_required`를 유지한다. 같은 resolver를 stored/single/consensus AI 결과 뒤에도 적용하며, 기본처리 행은 AI 재호출에서 제외한다. stored payload/prompt는 v4로 올려 v1~v3 캐시를 재사용하지 않는다. 신규 DB·migration·canonical write·기본 UI 변경은 없다.
 - Document Sync Check (2026-07-13, VAI-8d): `humanHandoff`에 허용 reason·잠정 결론·확인 reference·부족/충돌 근거·질문 한 개·결론 변경 조건을 구조화하고 `human_resolution_required`와 양방향 Zod 검증한다. 안분 실지귀속 부재, 과거 확정 최다 동률 충돌, 공식 규칙 공백, 유효한 다중 AI 결론 불합의만 이관한다. 낮은 confidence·단일 provider 실패·timeout은 기존 AI 일시 오류를 유지한다. no-consensus 결과는 stable ready로 저장하고, handoff 행의 추천 바로 적용은 UI helper·서버 mutation에서 차단한다. stored payload/prompt는 v5로 올려 v1~v4 캐시를 재사용하지 않는다. 신규 DB·migration·canonical write·기본 UI 변경은 없다.
-- Document Sync Check (2026-07-13, VAI-8e): 승인된 3열 예외 작업대와 기본 결론 한 줄을 유지하고, 펼친 상세에 실제 found evidence 요약과 허용된 handoff 질문 1개·답변에 따른 처리를 추가했다. handoff 행은 일반 적용/전문가 확인을 반복하지 않고 `답변하고 확정`·보류만 제공하며, 모달은 잠정 결론을 기본값으로 사용하고 답변 근거를 필수로 저장한다. 같은 classification의 legacy deduction PATCH도 live handoff를 서버에서 다시 확인해 질문 응답 전 409로 차단한다. 로컬 샘플 DB의 `면세사업분 공통매입`에서 안분 질문·근거·모달 기본값과 API 직접 호출 409·DB pending 유지를 브라우저/DB로 검증했다. 450px 전역 대시보드 사이드바 반응형은 JC-038 visual QA의 별도 미완료 항목으로 유지한다.
+- Document Sync Check (2026-07-13, VAI-8e): 승인된 3열 작업대와 기본 결론 한 줄을 유지하고, 펼친 상세에 실제 found evidence 요약과 허용된 handoff 질문 1개·답변에 따른 처리를 추가했다. handoff 행은 일반 적용/전문가 확인을 반복하지 않고 `답변하고 확정`·보류만 제공하며, 모달은 잠정 결론을 기본값으로 사용하고 답변 근거를 필수로 저장한다. 같은 classification의 legacy deduction PATCH도 live handoff를 서버에서 다시 확인해 질문 응답 전 409로 차단한다. 로컬 샘플 DB의 `면세사업분 공통매입`에서 안분 질문·근거·모달 기본값과 API 직접 호출 409·DB pending 유지를 브라우저/DB로 검증했다. 450px 대시보드 Sidebar 반응형은 JC-038 VUI-1d에서 완료했다.
 
 ### JC-041 · 절세 가능성 탐지·정리 (부가세 매입 재분류부터)
 
@@ -885,7 +889,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Technical Docs: [JC-041 Reclassification Savings Pre-Code Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md) · [JC-039 Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 우선 원칙을 그대로 재사용. [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유.
 - Related QA Docs: [VAT QA §2.14](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - VAI-9a~9c 후보 등급·절세 가능 금액 계약.
 - Origin: 2026-07-12 VUI-1b Preview 리뷰 세션 중 프로젝트 오너 제안. "확인 필요 거래"에 왜 이미 확정된 불공제 판단이 남아있는지 검토하다가, "재분류하면 공제받을 수 있는 거래를 찾아주는 게 오히려 더 가치 있다"는 방향으로 전환.
-- Current Gap:
+- Resolved Gap:
   - 지금 AI 판단(JC-035/039)은 "이 거래가 무슨 세목으로 분류되는가"만 다루고, "지금 분류가 실제 거래 성격과 맞는가"는 다루지 않는다.
   - 접대비로 분류된 거래는 그대로 불공제 처리될 뿐, 참석자가 전부 내부 직원이라 복리후생비·회의비(공제 가능)일 수 있다는 가능성은 검토되지 않는다.
   - 기장(계정과목 분류) 단계의 실수가 부가세 신고까지 그대로 이어져 사업자가 불필요하게 세금을 더 낼 수 있다.

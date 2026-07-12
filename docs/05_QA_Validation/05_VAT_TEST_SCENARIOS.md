@@ -170,12 +170,12 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-116 | 같은 매입 거래가 AI 판단과 공제 검토 대상 | 화면 렌더·사용자 확정 | 공제 판단을 단일 작업 위치에서 처리하고 같은 거래를 두 표에 반복하지 않음 | PASS·VUI-1c view-model 단위/브라우저 |
 | S-117 | 같은 처리 건수·차단 이유가 여러 summary에 존재 | 기본 화면 렌더 | 하나의 primary 위치만 강조하고 나머지는 제거·축약·상세로 이동 | PASS·VUI-1c 정적/브라우저 |
 | S-118 | 사용자가 VAT 화면을 처음 엶 | 첫 viewport 확인 | 예상 세액과 지금 처리할 거래가 보조 통계·부속명세·package 상세보다 우선 | PASS·VUI-1c desktop 브라우저 |
-| S-119 | 단순화 과정에서 표·카드 삭제·통합 | 기존 사용자 작업 수행 | 판단 확정·다르게·보류·증빙 확인·undo·gate·세액 계산이 회귀하지 않음 | PARTIAL·VUI-1c 정적/전체 회귀 PASS, mutation 브라우저 라운드트립은 VUI-1d Pending |
-| S-120 | desktop/mobile 대표 viewport | visual QA | 텍스트·표·버튼·팝오버 겹침, 페이지 수평 overflow, 빈 control 없음 | PARTIAL·desktop DOM PASS, 430px 전역 Sidebar/샘플 배너 overflow 후속 |
+| S-119 | 단순화 과정에서 표·카드 삭제·통합 | 기존 사용자 작업 수행 | 판단 확정·다르게·보류·증빙 확인·undo·gate·세액 계산이 회귀하지 않음 | PASS·VUI-1c/1d 전체 회귀 + 기존 mutation E2E |
+| S-120 | desktop/mobile 대표 viewport | visual QA | 텍스트·표·버튼·팝오버 겹침, 페이지 수평 overflow, 빈 control 없음 | PASS·VUI-1d 1400px/450px DOM·스크린샷, mobile Sheet 열기·닫기 |
 | S-121 | 전자증빙·정확한 금액·deterministic rule이 일치하고 위험 신호가 없는 정상 거래 다수 | VAT 기본 화면 렌더 | 거래별 행을 기본 펼침하지 않으며 별도 중복 요약 배너도 만들지 않음 | PASS·VUI-1c view-model 단위 |
-| S-122 | 영세율·면세·불공제·안분·누락·취소·중복·금액 불일치 거래가 존재 | VAT 기본 화면 렌더 | 해당 예외만 `확인 필요 거래` 작업대에 펼치고 정상 건과 섞지 않음 | PASS·VUI-1c view-model 단위/브라우저 |
-| S-123 | AI만 정상 가능성을 제안하고 전자증빙 또는 deterministic 근거가 부족 | 자동 정리 자격 판정 | 정상 건으로 숨기지 않고 예외 큐에 유지, 사용자 확정값 미변경 | PASS·VUI-1c view-model 단위 |
-| S-124 | 예외 거래 0건 | VAT 기본 화면 렌더 | 긴 판단표를 숨기고 짧은 완료 배너만 표시하며 별도 신고 준비·차단 이유 영역을 반복하지 않음 | PARTIAL·VUI-1c 단위/정적 PASS, 0건 브라우저 fixture Pending |
+| S-122 | 홈택스에서 공제·과세유형·금액·안분 수정 또는 담당자 답변이 필요한 거래가 존재 | VAT 기본 화면 렌더 | 해당 거래와 pending 공제 검토만 `신고 전 수정 필요`에 표시 | PASS·VUI-1d view-model 단위/브라우저 |
+| S-123 | AI 판단 행의 홈택스 행동이 `expected_no_change`이고 pending 공제 검토가 없음 | VAT 기본 화면 렌더 | AI 출처·미확정 여부만으로 수정 큐에 넣지 않으며 canonical 사용자 확정값을 바꾸지 않음 | PASS·VUI-1d view-model 단위 |
+| S-124 | 신고 전 수정 대상 0건 | VAT 기본 화면 렌더 | 작업대 섹션 전체를 렌더하지 않고 Hero에 `수정할 거래가 없습니다` 한 줄만 표시 | PASS·VUI-1d 단위/정적 |
 | S-125 | 정상 자동 정리 건이 존재 | 사용자가 신고 준비를 마감 | 거래별 반복 확정 없이 최종 신고 내용을 명시적으로 확인하며 AI 단독 판단으로 canonical 값을 바꾸지 않음 | Pending·VUI-1c/1d |
 
 ### 2.13 JC-039 VAT AI 근거 탐색·명확 판단
@@ -205,7 +205,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-137 | 공급가액·합계액과 매입세액의 비율이 일반적인 10%와 다름 | 절세 가능 금액 계산 | 공급가액/합계액 역산 없이 저장된 매입세액만 사용 | PASS·VAI-9c 단위 |
 | S-138 | 매입세액이 0원 | 절세 가능 금액 계산 | 가능 금액도 0원이며 존재하지 않는 이익을 만들지 않음 | PASS·VAI-9c 단위 |
 | S-139 | 가능 금액이 원장 매입세액과 다른 후보 payload | Zod 계약 검증 | 결과를 거부하고 잘못된 금액을 UI·후속 mutation에 전달하지 않음 | PASS·VAI-9c 단위 |
-| S-140 | 절세 후보와 기존 확인 필요 거래가 함께 존재 | VAT Preview 렌더 | 절세 후보를 세액 요약 아래 별도 섹션에 표시하고 기존 공제 판단 표와 섞지 않음 | PASS·VAI-9d Preview 정적/브라우저 |
+| S-140 | 절세 후보와 신고 전 수정 거래가 함께 존재 | VAT Preview 렌더 | 절세 후보를 세액 요약 아래 별도 섹션에 표시하고 `신고 전 수정 필요` 작업대와 섞지 않음 | PASS·VAI-9d Preview 정적/브라우저 |
 | S-141 | 높은/중간/낮은 재분류 후보가 존재 | 절세 후보 기본 상태 확인 | 신뢰도와 무관하게 모두 표시하되 기본 행은 거래·재분류 방향·최대 가능 금액만 노출 | PASS·VAI-9d Preview 정적/브라우저 |
 | S-142 | 사용자가 절세 후보 행을 펼침 | 상세 확인 | 발견 근거·확정 전 부족 자료·확정 절세액이 아니라는 주의 문구를 표시 | PASS·VAI-9d Preview 정적 |
 | S-143 | 현재 기간 접대비 불공제 후보 0건 또는 모두 결정 완료 | VAT runtime 렌더 | `추가 공제 가능성` 섹션 자체를 렌더하지 않음 | PASS·VAI-9e 정적/브라우저 |

@@ -70,7 +70,7 @@ export function VatWorkspace({
       data-vat-initial-provider-calls={initialProviderCallCount}
     >
       <VatTopbar summary={summary} />
-      <div className="flex w-full max-w-[1200px] flex-col gap-5 px-7 pt-6 pb-12">
+      <div className="flex w-full max-w-[1200px] flex-col gap-5 px-4 pt-5 pb-10 sm:px-7 sm:pt-6 sm:pb-12">
         <TaxSummaryHero summary={summary} exceptionCount={workbench.exceptionCount} />
         {reclassificationSavings}
         <SalesGroupsSection groups={summary.salesGroups} />
@@ -90,11 +90,13 @@ function VatExceptionWorkbench({
   const workflowStates = workbench.treatmentRows.flatMap(({ row }) => (
     row.aiWorkflow ? [row.aiWorkflow] : []
   ))
+  if (workbench.exceptionCount === 0) return null
+
   return (
     <section className="grid gap-3">
       <SectionHeader
-        title="확인 필요 거래"
-        description="영세율·면세·불공제·안분·누락·취소·중복·불일치만 표시합니다"
+        title="신고 전 수정 필요"
+        description="홈택스에서 공제·과세유형·금액·안분을 바꿔야 할 거래만 표시합니다"
         action={<Link href="/dashboard/bookkeeping" className="text-[12.5px] font-semibold text-[#2563eb]">전체 거래 보기 →</Link>}
       />
       <VatTaxTreatmentAiWorkflowProvider
@@ -102,37 +104,30 @@ function VatExceptionWorkbench({
         periodKey={periodKey}
         initialStates={workflowStates}
       >
-        {workbench.exceptionCount > 0 ? (
-          <div className={panelClass}>
-            <div className="border-b border-company-border bg-[#fafafa] px-4 py-2.5 text-xs text-company-fg-muted">
-              홈택스 <b className="text-foreground">자동채움 예상</b>과 확정 자료를 비교해 사용자가 처리할 예외만 모았습니다.
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] border-collapse">
-                <thead>
-                  <tr className="border-b border-company-border bg-[#fafafa]">
-                    <TableHead>거래 / 상대처</TableHead>
-                    <TableHead className="text-right">금액</TableHead>
-                    <TableHead>공제 판단</TableHead>
-                  </tr>
-                </thead>
-                <tbody>
-                  {workbench.treatmentRows.map((item) => (
-                    <VatTreatmentExceptionTableRow key={item.row.rowId} item={item} />
-                  ))}
-                  {workbench.standaloneDeductionReviews.map((review) => (
-                    <VatDeductionExceptionTableRow key={review.id} review={review} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        <div className={panelClass}>
+          <div className="border-b border-company-border bg-[#fafafa] px-4 py-2.5 text-xs text-company-fg-muted">
+            홈택스 <b className="text-foreground">자동채움 예상</b>과 확정 자료를 비교해 수정할 항목만 모았습니다.
           </div>
-        ) : (
-          <div className="rounded-lg border border-[#bbf7d0] bg-[#f0fdf4] px-5 py-5">
-            <p className="text-sm font-semibold text-[#166534]">확인할 예외 거래가 없습니다</p>
-            <p className="mt-1 text-xs text-[#15803d]">현재 확정 자료에서 추가로 확인할 거래가 없습니다.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse">
+              <thead>
+                <tr className="border-b border-company-border bg-[#fafafa]">
+                  <TableHead>거래 / 상대처</TableHead>
+                  <TableHead className="text-right">금액</TableHead>
+                  <TableHead>공제 판단</TableHead>
+                </tr>
+              </thead>
+              <tbody>
+                {workbench.treatmentRows.map((item) => (
+                  <VatTreatmentExceptionTableRow key={item.row.rowId} item={item} />
+                ))}
+                {workbench.standaloneDeductionReviews.map((review) => (
+                  <VatDeductionExceptionTableRow key={review.id} review={review} />
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
       </VatTaxTreatmentAiWorkflowProvider>
     </section>
   )
@@ -157,10 +152,7 @@ function VatTreatmentExceptionTableRow({ item }: { readonly item: VatTreatmentEx
             <ToneChip tone={vatWorkbenchDecisionTone(decision)}>{vatWorkbenchDecisionLabel(decision)}</ToneChip>
           </summary>
           <div className="mt-2 grid gap-1.5 border-l-2 border-company-border pl-3">
-            <p><b className="text-foreground">출처:</b> {row.finalDecision ? '사용자 확정' : taxTreatmentSourceLabel(row.source)}</p>
             <VatTaxTreatmentAiWorkflowStatus rowId={row.rowId} recommendationFingerprint={row.recommendationFingerprint} />
-            <p><b className="text-foreground">판단 근거:</b> {row.basisLabel}</p>
-            {row.ruleReference ? <p><b className="text-foreground">규칙:</b> {row.ruleReference}</p> : null}
             <VatTaxTreatmentEvidenceTrace row={row} />
             <div className="flex flex-wrap gap-1.5 pt-1">
               {row.requiredEvidence.map((evidence) => (
@@ -248,7 +240,7 @@ function VatTopbar({ summary }: { readonly summary: VatSummary }) {
   const companyName = summary.businessEntity?.name ?? summary.tenant.name
 
   return (
-    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
+    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-company-border bg-company-surface px-4 py-3 sm:gap-4 sm:px-7 sm:py-3.5">
       <div>
         <p className="text-[12.5px] font-medium text-company-fg-subtle">
           <Link href="/dashboard" className="hover:text-company-fg-muted hover:underline">회사 홈</Link>
@@ -280,11 +272,11 @@ function TaxSummaryHero({
 }) {
   const { taxSummary } = summary
   const pendingNote = exceptionCount > 0
-    ? `공제 판단이 필요한 거래 ${exceptionCount}건이 남았습니다.`
-    : '확인할 예외 거래가 없습니다.'
+    ? `홈택스에서 수정할 거래 ${exceptionCount}건이 남았습니다.`
+    : '홈택스에서 수정할 거래가 없습니다.'
 
   return (
-    <section className={cn(panelClass, 'px-6 py-[22px]')}>
+    <section className={cn(panelClass, 'px-4 py-[18px] sm:px-6 sm:py-[22px]')}>
       <div className="flex items-center gap-1.5">
         <p className="text-xs font-semibold text-company-fg-muted">
           {summary.period.label} · {taxSummary.isFinal ? '확정 세액' : '예정 세액'}
@@ -473,13 +465,6 @@ function vatWorkbenchDecisionTone(value: VatWorkbenchDecision): VatTone {
   if (value === 'non_deductible') return 'danger'
   if (value === 'judgment_pending' || value === 'proration_required') return 'warn'
   return 'muted'
-}
-
-function taxTreatmentSourceLabel(value: VatTaxTreatmentDisplayRow['source']) {
-  if (value === 'deterministic_rule') return '공식 규칙'
-  if (value === 'prior_confirmed_pattern') return '이전 확정 패턴'
-  if (value === 'ai_consensus') return 'AI 합의'
-  return 'AI 보강'
 }
 
 function taxTreatmentEvidenceSourceLabel(value: VatTaxTreatmentDisplayRow['evidenceTrace'][number]['source']) {

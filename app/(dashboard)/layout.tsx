@@ -52,7 +52,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ])
 
   return (
-    <div className="grid min-h-screen grid-cols-[248px_minmax(0,1fr)] bg-company-bg text-foreground">
+    <div className="grid min-h-screen grid-cols-1 bg-company-bg text-foreground md:grid-cols-[248px_minmax(0,1fr)]">
       <Sidebar
         userName={session.user.name}
         tenantName={tenantName}

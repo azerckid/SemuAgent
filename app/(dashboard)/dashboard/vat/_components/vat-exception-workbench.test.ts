@@ -7,7 +7,7 @@ import type { VatDeductionReviewRow } from '@/lib/vat/summary'
 import { withVatTaxTreatmentRecommendationFingerprint } from '@/lib/vat/tax-treatment-fingerprint'
 import {
   buildVatExceptionWorkbenchModel,
-  isVatTaxTreatmentException,
+  isVatFilingModificationRequired,
   resolveVatDeductionReviewWorkbenchDecision,
   resolveVatTreatmentWorkbenchDecision,
 } from './vat-exception-workbench'
@@ -74,12 +74,9 @@ function deductionReview(overrides: Partial<VatDeductionReviewRow> = {}): VatDed
 }
 
 describe('VAT exception workbench model', () => {
-  it('hides only high-confidence deterministic normal rows with confirmed facts and evidence', () => {
-    expect(isVatTaxTreatmentException(treatmentRow())).toBe(false)
-  })
-
-  it('keeps AI-only, incomplete evidence, and unresolved tax-treatment rows visible', () => {
-    expect(isVatTaxTreatmentException(treatmentRow({
+  it('hides rows that do not require a Hometax change', () => {
+    expect(isVatFilingModificationRequired(treatmentRow())).toBe(false)
+    expect(isVatFilingModificationRequired(treatmentRow({
       source: 'ai_single',
       confidence: 'high',
       aiRuntimeStatus: 'completed',
@@ -89,20 +86,44 @@ describe('VAT exception workbench model', () => {
         promptVersion: 'test-prompt-v1',
         consensusProviders: [],
       },
+    }))).toBe(false)
+  })
+
+  it('keeps actual Hometax changes and unresolved handoffs visible', () => {
+    expect(isVatFilingModificationRequired(treatmentRow({
+      hometaxAction: 'review_deduction',
     }))).toBe(true)
-    expect(isVatTaxTreatmentException(treatmentRow({
-      requiredEvidence: [{ code: 'exact_vat_fact', label: '정확한 VAT fact', status: 'needs_review' }],
+    expect(isVatFilingModificationRequired(treatmentRow({
+      hometaxAction: 'expected_no_change',
+      humanHandoff: {
+        reason: 'evidence_conflict',
+        provisionalJudgment: 'deductible',
+        reviewedEvidenceReferences: ['classification:classification-1'],
+        evidenceIssue: '과거 확정이 충돌합니다.',
+        missingEssentialFact: '이번 거래의 실제 업무 목적',
+        question: '이번 거래는 어떤 업무 목적으로 사용했습니까?',
+        decisionImpact: '업무 목적이면 공제, 아니면 불공제입니다.',
+      },
     }))).toBe(true)
-    expect(isVatTaxTreatmentException(treatmentRow({ currentVatFact: { taxType: 'taxable', supplyAmountKrw: 100_000, taxAmountKrw: 10_000, grossAmountKrw: 110_000, source: 'parser', status: 'derived' } }))).toBe(true)
   })
 
   it('removes a fully user-confirmed row from the exception queue', () => {
-    expect(isVatTaxTreatmentException(treatmentRow({
+    expect(isVatFilingModificationRequired(treatmentRow({
       finalDecision: 'deductible',
       confirmedByStaffId: 'staff-1',
       confirmedAt: '2026-07-12T00:00:00.000Z',
       userActionStatus: 'confirmed',
     }))).toBe(false)
+  })
+
+  it('keeps a pending deduction review even when the treatment row expects no Hometax change', () => {
+    const result = buildVatExceptionWorkbenchModel({
+      treatmentRows: [treatmentRow()],
+      deductionReviews: [deductionReview()],
+    })
+
+    expect(result.treatmentRows).toHaveLength(1)
+    expect(result.treatmentRows[0]?.deductionReview?.id).toBe('review-1')
   })
 
   it('merges a pending deduction review into the matching tax-treatment row', () => {

@@ -38,6 +38,7 @@ export function VatTaxTreatmentActions({ row }: VatTaxTreatmentActionsProps) {
   const [isPending, startTransition] = useTransition()
   const [dialogMode, setDialogMode] = useState<VatTaxTreatmentDialogMode | null>(null)
   const canApply = canApplyVatTaxTreatmentRecommendation(row)
+  const actionStatus = userActionStatusLabel(row)
 
   function openDialog(mode: VatTaxTreatmentDialogMode) {
     setDialogMode(mode)
@@ -78,9 +79,9 @@ export function VatTaxTreatmentActions({ row }: VatTaxTreatmentActionsProps) {
   return (
     <>
       <div>
-        <p className="text-[12.5px] font-semibold text-foreground">
-          {userActionStatusLabel(row)}
-        </p>
+        {actionStatus ? (
+          <p className="text-[12.5px] font-semibold text-foreground">{actionStatus}</p>
+        ) : null}
         {row.userActionReason ? (
           <p className="mt-0.5 line-clamp-2 text-[11px] text-company-fg-subtle">{row.userActionReason}</p>
         ) : null}
@@ -235,5 +236,5 @@ function userActionStatusLabel(row: VatTaxTreatmentDisplayRow) {
   }
   if (row.userActionStatus === 'held') return '보류'
   if (row.userActionStatus === 'expert_review') return '전문가 확인'
-  return '미확정'
+  return null
 }

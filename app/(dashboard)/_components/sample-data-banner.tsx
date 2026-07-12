@@ -62,7 +62,7 @@ export function SampleDataBanner({ state }: Readonly<SampleDataBannerProps>) {
   }
 
   return (
-    <div className="border-b border-company-border bg-[#fff7ed] px-7 py-3 text-[13px] text-[#7c2d12]">
+    <div className="border-b border-company-border bg-[#fff7ed] px-4 py-3 text-[13px] text-[#7c2d12] sm:px-7">
       <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-white text-[#ea580c] ring-1 ring-[#fed7aa]">

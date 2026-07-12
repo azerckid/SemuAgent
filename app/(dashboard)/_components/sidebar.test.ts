@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest'
 
 const workspaceRoot = process.cwd()
 const sidebarSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/_components/sidebar.tsx'), 'utf8')
+const layoutSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/layout.tsx'), 'utf8')
+const sampleBannerSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/_components/sample-data-banner.tsx'), 'utf8')
 const companyHomePreview = readFileSync(join(workspaceRoot, 'docs/02_UI_Screens/previews/00_company_home.html'), 'utf8')
 
 describe('dashboard sidebar cadence navigation (JC-036)', () => {
@@ -69,5 +71,18 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     expect(sidebarSource).toContain("businessType === 'tax_exempt'")
     expect(sidebarSource).toContain("label: '법인세'")
     expect(sidebarSource).toContain("label: '종합소득세'")
+  })
+
+  it('uses a mobile menu sheet instead of a fixed 248px sidebar below md', () => {
+    expect(sidebarSource).toContain('hidden h-screen w-[248px]')
+    expect(sidebarSource).toContain('md:flex')
+    expect(sidebarSource).toContain('md:hidden')
+    expect(sidebarSource).toContain('aria-label="전체 메뉴 열기"')
+    expect(sidebarSource).toContain('<SheetContent side="left"')
+    expect(sidebarSource).toContain('<SidebarContent {...props}')
+    expect(layoutSource).toContain('grid-cols-1')
+    expect(layoutSource).toContain('md:grid-cols-[248px_minmax(0,1fr)]')
+    expect(sampleBannerSource).toContain('px-4')
+    expect(sampleBannerSource).toContain('sm:px-7')
   })
 })

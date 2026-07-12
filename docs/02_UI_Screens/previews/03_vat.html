@@ -186,10 +186,37 @@
 
   .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
   .note b { color: var(--fg-muted); }
+  .mobile-bar { display: none; }
+
+  @media (max-width: 767px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { display: none; }
+    .mobile-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .mobile-bar .brand { padding: 0; }
+    .mobile-menu { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 18px; }
+    .topbar { padding: 12px 16px; gap: 10px; flex-wrap: wrap; }
+    .topbar .co { order: 3; width: 100%; }
+    .content { padding: 20px 16px 40px; }
+    .hero { padding: 18px 16px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 10px; }
+    .tax-cell, .tax-cell:first-child, .tax-cell.result { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; text-align: left; }
+    .op { display: none; }
+    .hero .foot { align-items: flex-start; flex-direction: column; }
+    .grid3 { grid-template-columns: 1fr; }
+    .savings-row > summary { grid-template-columns: 1fr; gap: 8px; }
+    .savings-amount { text-align: left; }
+    .savings-detail { grid-template-columns: 1fr; }
+    .panel { overflow-x: auto; }
+    .tax-treatment-table { min-width: 720px; }
+  }
 </style>
 </head>
 <body>
 <div class="app">
+  <div class="mobile-bar">
+    <div class="brand"><div class="logo">자</div><div><div class="name">SemuAgent</div><div class="sub">회사 세무·회계 운영</div></div></div>
+    <button class="mobile-menu" aria-label="전체 메뉴 열기">☰</button>
+  </div>
   <!-- Sidebar -->
   <aside class="sidebar">
     <a href="00_company_home.html" class="brand">
@@ -272,7 +299,7 @@
           </div>
         </div>
         <div class="foot">
-          <span class="note">확인 필요 거래 2건을 확정하면 매입세액과 납부세액이 달라질 수 있습니다. 사용자 확정 전까지 예정치입니다.</span>
+          <span class="note">홈택스에서 수정할 거래 2건이 남았습니다. 사용자 확정 전까지 예정치입니다.</span>
           <span class="d-left">신고 마감 2026-07-25 · D-24</span>
         </div>
       </div>
@@ -377,11 +404,11 @@
         </div>
       </div>
 
-      <!-- item 2 + 7 + 10: 매입세액 공제 검토 표를 통합한 예외 작업대. 결론은 근거가 있을 때만 단정적으로 표시.
-           근거 부족(가능성 수준) 건은 "해당사항없음"으로 보고 이 표에서 제외한다(오너 결정 A). -->
+      <!-- item 2 + 7 + 10: 매입세액 공제 검토를 통합한 홈택스 수정 작업대.
+           expected_no_change는 제외하고 공제·과세유형·금액·안분 수정과 pending 공제 검토만 표시한다. -->
       <div class="section-head">
-        <h2>확인 필요 거래</h2>
-        <span class="hint">영세율·면세·불공제·안분·누락·취소·중복·불일치만 표시합니다</span>
+        <h2>신고 전 수정 필요</h2>
+        <span class="hint">홈택스에서 공제·과세유형·금액·안분을 바꿔야 할 거래만 표시합니다</span>
       </div>
       <div class="panel">
         <table class="tax-treatment-table">
@@ -485,11 +512,12 @@
 
       <div class="note">
         <b>Preview 안내</b> — 이 화면은 <b>부가세</b> UI 확인용 정적 프리뷰(VUI-1b + VAI-7c + VAI-9e)입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
-        변경: 화면 상태 예시 삭제, 매입세액 공제 검토 표를 확인 필요 거래로 통합, 별도 홈택스·사용자 확정 열과 하단 신고 준비·차단 이유·책임 문구를 삭제하고 관련 행동을 공제 판단 상세 안으로 이동, 동작 없는 상단 "확정 신고" 삭제.
+        변경: 화면 상태 예시 삭제, 매입세액 공제 검토를 신고 전 수정 필요 작업대로 통합, 별도 홈택스·사용자 확정 열과 하단 신고 준비·차단 이유·책임 문구를 삭제하고 관련 행동을 공제 판단 상세 안으로 이동, 동작 없는 상단 "확정 신고" 삭제.
         오너 리뷰 반영: 매출 구분은 항상 펼쳐진 3카드로 유지하고, 판단 표는 거래·금액·공제 판단 3열만 사용합니다. 매입 판단은 공제 가능·공제 불가·자료 부족으로 단순화하고, package/rebuild 안전 gate는 화면이 아니라 API에서 유지합니다.
         VAI-7c 제안: 정상 `판단 완료`는 작은 완료 시각으로만 표시하고, `확인 중`·`수동 확인`·`다시 확인 필요`만 상태 칩으로 강조합니다. `AI 다시 확인`은 재확인이 필요한 AI 판단 영역에서만 노출합니다.
         VAI-8e: 기본 셀에는 결론 한 줄만 유지하고, 펼친 상세에서 실제로 찾은 근거와 홈택스 행동을 보여줍니다. 담당자 이관은 허용된 행에만 질문 한 개와 답변에 따른 결론 변화를 표시하며, 일반 적용 대신 답변하고 확정하도록 합니다.
-        VAI-9d/9e: `추가 공제 가능성`은 기존 확인 필요 거래와 분리하고, 기본 행에는 재분류 방향과 최대 가능 금액만 표시합니다. 신뢰도·근거·부족 자료와 사용자 액션은 펼쳐보기 안에 두며 후보가 0건이면 섹션을 렌더하지 않습니다. 공제 재분류는 업무 목적/참석자·적격증빙·사용자 명시 확정을 모두 요구합니다.
+        VAI-9d/9e: `추가 공제 가능성`은 신고 전 수정 필요와 분리하고, 기본 행에는 재분류 방향과 최대 가능 금액만 표시합니다. 신뢰도·근거·부족 자료와 사용자 액션은 펼쳐보기 안에 두며 후보가 0건이면 섹션을 렌더하지 않습니다. 공제 재분류는 업무 목적/참석자·적격증빙·사용자 명시 확정을 모두 요구합니다.
+        VUI-1d: 767px 이하에서는 고정 사이드바를 숨기고 전체 메뉴 버튼을 표시하며, expected_no_change 행과 빈 수정 섹션을 렌더하지 않습니다.
       </div>
     </div>
   </div>
