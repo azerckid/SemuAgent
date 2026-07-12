@@ -28,7 +28,6 @@ describe('VAT workspace static contract', () => {
   })
 
   it('keeps Hometax submission/payment outside the actionable UI (S-71~72)', () => {
-    expect(workspaceSource).toContain('신고 준비')
     expect(workspaceSource).toContain('홈택스 제출·납부는 사용자가 직접 진행')
     expect(workspaceSource).not.toContain('홈택스 제출</button>')
     expect(workspaceSource).not.toContain('자동 납부</button>')
@@ -45,8 +44,6 @@ describe('VAT workspace static contract', () => {
       'TaxSummaryHero',
       'SalesGroupsSection',
       'VatExceptionWorkbench',
-      'CompactFilingReadiness',
-      'ResponsibilityNote',
     ]
     const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
     expect(positions.every((position) => position >= 0)).toBe(true)
@@ -55,12 +52,17 @@ describe('VAT workspace static contract', () => {
     expect(workspaceSource).not.toContain('신고 패키지 미리보기')
     expect(workspaceSource).not.toContain('매입세액 공제 검토</')
     expect(workspaceSource).not.toContain('확정 신고')
+    expect(workspaceSource).not.toContain('CompactFilingReadiness')
+    expect(workspaceSource).not.toContain('ResponsibilityNote')
+    expect(workspaceSource).not.toContain('차단 이유 보기')
   })
 
-  it('uses one four-column exception workbench and preserves both mutation surfaces (S-116, S-119)', () => {
+  it('uses one three-column exception workbench and keeps actions inside decision details (S-116, S-119)', () => {
     expect(workspaceSource).toContain('확인 필요 거래')
     expect(workspaceSource).toContain('<summary className="w-fit cursor-pointer list-none">')
-    expect(workspaceSource).toContain('>처리</summary>')
+    expect(workspaceSource).toContain('<TableHead>공제 판단</TableHead>')
+    expect(workspaceSource).not.toContain('홈택스 · 사용자 확정')
+    expect(workspaceSource).not.toContain('>처리</summary>')
     expect(workspaceSource).toContain('VatTaxTreatmentActions')
     expect(workspaceSource).toContain('VatDeductionActionButtons')
     expect(workspaceSource).toContain('VatTaxTreatmentEvidenceAction')
@@ -121,11 +123,10 @@ describe('VAT workspace static contract', () => {
     expect(deductionRouteSource).toContain("revalidatePath('/dashboard/vat')")
   })
 
-  it('uses the shared composite gate in the VAT UI and package API (S-63~65)', () => {
-    expect(workspaceSource).toContain('VatPackageActionButton')
-    expect(workspaceSource).toContain('packageGate.reasons')
-    expect(workspaceSource).toContain('reason.targetRoute')
-    expect(actionsSource).toContain('/api/vat/periods/${periodKey}/package')
+  it('keeps the composite gate in package and rebuild APIs without rendering duplicate readiness UI (S-63~65)', () => {
+    expect(workspaceSource).not.toContain('VatPackageActionButton')
+    expect(workspaceSource).not.toContain('packageGate.reasons')
+    expect(actionsSource).not.toContain('/api/vat/periods/${periodKey}/package')
     expect(packageRouteSource).toContain('vatPeriodKeySchema.safeParse(rawPeriodKey)')
     expect(packageRouteSource).toContain('eq(vatPeriodSummary.tenantId, tenantId)')
     expect(packageRouteSource).toContain('loadVatPackageGate')
@@ -135,15 +136,16 @@ describe('VAT workspace static contract', () => {
     expect(packageRouteSource).toContain('reviewRows.length > 0')
     expect(packageRouteSource).toContain('inputTaxDeductibleKrw: periodSummary.inputTaxDeductibleKrw')
     expect(packageRouteSource).toContain("packageStatus: 'generated'")
-    expect(workspaceSource).toContain('VatProvenanceRebuildButton')
-    expect(actionsSource).toContain('/api/vat/periods/${periodKey}/rebuild')
+    expect(workspaceSource).not.toContain('VatProvenanceRebuildButton')
+    expect(actionsSource).not.toContain('/api/vat/periods/${periodKey}/rebuild')
     expect(rebuildRouteSource).toContain('rebuildVatPeriodSummaryFromConfirmedLedger')
     expect(rebuildRouteSource).toContain('packageGate.provenance.canRebuild')
     expect(rebuildRouteSource).toContain("code: 'vat_provenance_rebuild_blocked'")
   })
 
-  it('uses the same VAI-6 tax-treatment gate in the VAT page, rebuild API, and package API (S-99)', () => {
-    expect(vatPageSource).toContain('buildVatTaxTreatmentGate(summary.taxTreatmentRows)')
+  it('uses the same VAI-6 tax-treatment gate in rebuild and package APIs while the page avoids a duplicate gate read (S-99)', () => {
+    expect(vatPageSource).not.toContain('buildVatTaxTreatmentGate')
+    expect(vatPageSource).not.toContain('loadVatPackageGate')
     expect(packageGateSource).toContain('loadVatTaxTreatmentGate')
     expect(packageGateSource).toContain('params.taxTreatmentGate.isReady')
     expect(packageGateSource).toContain("code: 'vat_tax_treatment_incomplete'")

@@ -6,15 +6,10 @@ import {
 import type { ReactNode } from 'react'
 import { buttonVariants } from '@/components/ui/button'
 import {
-  applyVatPackageGateToPreview,
-  type VatPackageGate,
-} from '@/lib/vat/package-gate'
-import type { VatTaxTreatmentDisplayRow } from '@/lib/validations/vat-tax-treatment'
+  type VatTaxTreatmentDisplayRow,
+} from '@/lib/validations/vat-tax-treatment'
 import type {
-  VatDeductionDecision,
-  VatDeductionKind,
   VatDeductionReviewRow,
-  VatPackagePreview,
   VatSalesGroup,
   VatSummary,
   VatTone,
@@ -22,8 +17,6 @@ import type {
 import { cn } from '@/lib/utils'
 import {
   VatDeductionActionButtons,
-  VatPackageActionButton,
-  VatProvenanceRebuildButton,
 } from './vat-actions'
 import { VatTaxTreatmentActions } from './vat-tax-treatment-actions'
 import {
@@ -33,7 +26,10 @@ import {
 import { VatTaxTreatmentEvidenceAction } from './vat-tax-treatment-evidence-action'
 import {
   buildVatExceptionWorkbenchModel,
+  resolveVatDeductionReviewWorkbenchDecision,
+  resolveVatTreatmentWorkbenchDecision,
   type VatTreatmentExceptionRow,
+  type VatWorkbenchDecision,
 } from './vat-exception-workbench'
 
 const panelClass = 'overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card'
@@ -54,12 +50,10 @@ const salesGroupTagClass: Record<VatSalesGroup['id'], string> = {
 
 export interface VatWorkspaceProps {
   readonly summary: VatSummary
-  readonly packageGate: VatPackageGate
   readonly initialProviderCallCount?: number
 }
 
-export function VatWorkspace({ summary, packageGate, initialProviderCallCount }: VatWorkspaceProps) {
-  const packagePreview = applyVatPackageGateToPreview(summary.packagePreview, packageGate)
+export function VatWorkspace({ summary, initialProviderCallCount }: VatWorkspaceProps) {
   const workbench = buildVatExceptionWorkbenchModel({
     treatmentRows: summary.taxTreatmentRows,
     deductionReviews: summary.deductionReviews,
@@ -75,12 +69,6 @@ export function VatWorkspace({ summary, packageGate, initialProviderCallCount }:
         <TaxSummaryHero summary={summary} exceptionCount={workbench.exceptionCount} />
         <SalesGroupsSection groups={summary.salesGroups} />
         <VatExceptionWorkbench periodKey={summary.period.key} workbench={workbench} />
-        <CompactFilingReadiness
-          periodKey={summary.period.key}
-          packagePreview={packagePreview}
-          packageGate={packageGate}
-        />
-        <ResponsibilityNote />
       </div>
     </div>
   )
@@ -114,13 +102,12 @@ function VatExceptionWorkbench({
               홈택스 <b className="text-foreground">자동채움 예상</b>과 확정 자료를 비교해 사용자가 처리할 예외만 모았습니다.
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[920px] border-collapse">
+              <table className="w-full min-w-[720px] border-collapse">
                 <thead>
                   <tr className="border-b border-company-border bg-[#fafafa]">
                     <TableHead>거래 / 상대처</TableHead>
                     <TableHead className="text-right">금액</TableHead>
-                    <TableHead>AI 판단</TableHead>
-                    <TableHead>홈택스 · 사용자 확정</TableHead>
+                    <TableHead>공제 판단</TableHead>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,7 +124,7 @@ function VatExceptionWorkbench({
         ) : (
           <div className="rounded-lg border border-[#bbf7d0] bg-[#f0fdf4] px-5 py-5">
             <p className="text-sm font-semibold text-[#166534]">확인할 예외 거래가 없습니다</p>
-            <p className="mt-1 text-xs text-[#15803d]">현재 확정 자료 기준으로 부가세 신고 준비를 계속 진행할 수 있습니다.</p>
+            <p className="mt-1 text-xs text-[#15803d]">현재 확정 자료에서 추가로 확인할 거래가 없습니다.</p>
           </div>
         )}
       </VatTaxTreatmentAiWorkflowProvider>
@@ -147,6 +134,7 @@ function VatExceptionWorkbench({
 
 function VatTreatmentExceptionTableRow({ item }: { readonly item: VatTreatmentExceptionRow }) {
   const { row, deductionReview } = item
+  const decision = resolveVatTreatmentWorkbenchDecision(row)
   return (
     <tr className="border-b border-company-border last:border-b-0 hover:bg-[#fafafa]">
       <TableCell className="min-w-[220px]">
@@ -160,7 +148,7 @@ function VatTreatmentExceptionTableRow({ item }: { readonly item: VatTreatmentEx
       <TableCell className="min-w-[300px] max-w-[390px]">
         <details className="text-xs text-company-fg-muted">
           <summary className="w-fit cursor-pointer list-none">
-            <ToneChip tone={taxTreatmentRecommendationTone(row.recommendation)}>{taxTreatmentRecommendationLabel(row.recommendation)}</ToneChip>
+            <ToneChip tone={vatWorkbenchDecisionTone(decision)}>{vatWorkbenchDecisionLabel(decision)}</ToneChip>
           </summary>
           <div className="mt-2 grid gap-1.5 border-l-2 border-company-border pl-3">
             <p><b className="text-foreground">출처:</b> {row.finalDecision ? '사용자 확정' : taxTreatmentSourceLabel(row.source)}</p>
@@ -173,14 +161,7 @@ function VatTreatmentExceptionTableRow({ item }: { readonly item: VatTreatmentEx
                 <VatTaxTreatmentEvidenceAction key={evidence.code} row={row} evidence={evidence} />
               ))}
             </div>
-          </div>
-        </details>
-      </TableCell>
-      <TableCell className="min-w-[235px]">
-        <p className="text-[12.5px] font-semibold text-foreground">{taxTreatmentHometaxActionLabel(row.hometaxAction)}</p>
-        <details className="mt-1 text-xs text-company-fg-muted">
-          <summary className="w-fit cursor-pointer font-semibold text-[#2563eb]">처리</summary>
-          <div className="mt-2 border-l-2 border-company-border pl-3">
+            <p className="pt-1"><b className="text-foreground">할 일:</b> {taxTreatmentHometaxActionLabel(row.hometaxAction)}</p>
             <VatTaxTreatmentActions row={row} />
             {deductionReview ? (
               <div className="mt-2 border-t border-company-border pt-2">
@@ -196,6 +177,7 @@ function VatTreatmentExceptionTableRow({ item }: { readonly item: VatTreatmentEx
 }
 
 function VatDeductionExceptionTableRow({ review }: { readonly review: VatDeductionReviewRow }) {
+  const decision = resolveVatDeductionReviewWorkbenchDecision(review)
   return (
     <tr className="border-b border-company-border last:border-b-0 hover:bg-[#fafafa]">
       <TableCell className="min-w-[220px]">
@@ -209,19 +191,12 @@ function VatDeductionExceptionTableRow({ review }: { readonly review: VatDeducti
       <TableCell className="min-w-[300px] max-w-[390px]">
         <details className="text-xs text-company-fg-muted">
           <summary className="w-fit cursor-pointer list-none">
-            <ToneChip tone={deductionToneForDisplay(review.kind, review.decision)}>{deductionStatusLabel(review.kind, review.decision)}</ToneChip>
+            <ToneChip tone={vatWorkbenchDecisionTone(decision)}>{vatWorkbenchDecisionLabel(decision)}</ToneChip>
           </summary>
           <div className="mt-2 grid gap-1 border-l-2 border-company-border pl-3">
             <p>{review.reason || '공제 여부를 확인해야 하는 매입입니다.'}</p>
             <p>공급가액 {formatCurrency(review.supplyAmountKrw)}원 · 세액 {formatCurrency(review.inputTaxKrw)}원</p>
-          </div>
-        </details>
-      </TableCell>
-      <TableCell className="min-w-[235px]">
-        <p className="text-[12.5px] font-semibold text-foreground">공제·불공제 확인</p>
-        <details className="mt-1 text-xs text-company-fg-muted">
-          <summary className="w-fit cursor-pointer font-semibold text-[#2563eb]">처리</summary>
-          <div className="mt-2 border-l-2 border-company-border pl-3">
+            <p className="pt-1"><b className="text-foreground">할 일:</b> 공제 여부 확인</p>
             <VatDeductionActionButtons review={review} />
           </div>
         </details>
@@ -266,7 +241,7 @@ function TaxSummaryHero({
 }) {
   const { taxSummary } = summary
   const pendingNote = exceptionCount > 0
-    ? `확인 필요 거래 ${exceptionCount}건을 처리하면 신고 준비 상태가 갱신됩니다.`
+    ? `공제 판단이 필요한 거래 ${exceptionCount}건이 남았습니다.`
     : '확인할 예외 거래가 없습니다.'
 
   return (
@@ -384,58 +359,6 @@ function SalesAmountRow({ label, value, strong = false }: SalesAmountRowProps) {
   )
 }
 
-function CompactFilingReadiness({
-  periodKey,
-  packagePreview,
-  packageGate,
-}: {
-  readonly periodKey: string
-  readonly packagePreview: VatPackagePreview
-  readonly packageGate: VatPackageGate
-}) {
-  return (
-    <section className="grid gap-3 border-t border-company-border pt-5 md:grid-cols-[1fr_280px] md:items-start">
-      <div>
-        <h2 className="text-[13px] font-semibold text-foreground">신고 준비</h2>
-        <p className="mt-1 text-xs text-company-fg-subtle">
-          {packageGate.reasons.length > 0
-            ? `${packageGate.reasons.length}개 준비 항목을 확인해야 합니다.`
-            : '확정 자료 기준으로 신고 준비를 마칠 수 있습니다.'}
-        </p>
-        {packageGate.reasons.length > 0 ? (
-          <details id="vat-package-locknote" className="mt-2 text-xs text-company-fg-muted">
-            <summary className="cursor-pointer font-semibold text-[#b45309]">차단 이유 보기</summary>
-            <ul className="mt-2 grid max-w-2xl gap-1.5 border-l-2 border-[#fde68a] pl-3">
-              {packageGate.reasons.map((reason) => (
-                <li key={reason.code} className="flex items-start gap-2">
-                  <span className="flex-1">{reason.message}</span>
-                  <Link href={reason.targetRoute} className="font-semibold text-[#b45309] underline underline-offset-2">확인</Link>
-                </li>
-              ))}
-            </ul>
-          </details>
-        ) : packagePreview.lockReason ? (
-          <p id="vat-package-locknote" className="mt-2 text-xs text-[#d97706]">{packagePreview.lockReason}</p>
-        ) : null}
-      </div>
-      <div>
-        {packageGate.provenance.canRebuild ? (
-          <VatProvenanceRebuildButton periodKey={periodKey} />
-        ) : null}
-        <VatPackageActionButton periodKey={periodKey} packagePreview={packagePreview} />
-      </div>
-    </section>
-  )
-}
-
-function ResponsibilityNote() {
-  return (
-    <p className="text-xs text-company-fg-subtle">
-      세무 에이전트는 부가세 세액 집계와 확인 항목 정리를 지원합니다. 홈택스 제출·납부는 사용자가 직접 진행합니다.
-    </p>
-  )
-}
-
 interface SectionHeaderProps {
   readonly title: string
   readonly description: string
@@ -495,38 +418,16 @@ function salesGroupShortLabel(id: VatSalesGroup['id']) {
   return '면세'
 }
 
-function deductionStatusLabel(kind: VatDeductionKind, decision: VatDeductionDecision) {
-  if (decision === 'deductible') return '공제 확정'
-  if (decision === 'non_deductible') return '불공제 확정'
-  if (decision === 'prorated') return '안분 확정'
-  if (kind === 'non_deductible_candidate') return '불공제 후보'
-  if (kind === 'proration_required') return '안분 필요'
-  return '공제 검토'
+function vatWorkbenchDecisionLabel(value: VatWorkbenchDecision) {
+  if (value === 'deductible') return '공제 가능'
+  if (value === 'non_deductible') return '공제 불가'
+  if (value === 'sales_tax_type') return '과세유형 확인'
+  return '자료 부족'
 }
 
-function deductionToneForDisplay(kind: VatDeductionKind, decision: VatDeductionDecision): VatTone {
-  if (decision === 'deductible') return 'ok'
-  if (decision === 'non_deductible') return 'danger'
-  if (decision === 'prorated') return 'warn'
-  if (kind === 'non_deductible_candidate') return 'danger'
-  if (kind === 'proration_required') return 'warn'
-  return 'info'
-}
-
-function taxTreatmentRecommendationLabel(value: VatTaxTreatmentDisplayRow['recommendation']) {
-  if (value === 'likely_taxable') return '과세 가능성 높음'
-  if (value === 'likely_zero_rated') return '영세율 가능성'
-  if (value === 'likely_exempt') return '면세 가능성'
-  if (value === 'likely_deductible') return '공제 가능성 높음'
-  if (value === 'likely_non_deductible') return '불공제 가능성 높음'
-  if (value === 'proration_required') return '안분 필요'
-  return '확인 필요'
-}
-
-function taxTreatmentRecommendationTone(value: VatTaxTreatmentDisplayRow['recommendation']): VatTone {
-  if (value === 'likely_taxable' || value === 'likely_deductible') return 'ok'
-  if (value === 'likely_non_deductible') return 'danger'
-  if (value === 'needs_review') return 'danger'
+function vatWorkbenchDecisionTone(value: VatWorkbenchDecision): VatTone {
+  if (value === 'deductible') return 'ok'
+  if (value === 'non_deductible') return 'danger'
   return 'warn'
 }
 

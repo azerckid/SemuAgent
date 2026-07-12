@@ -125,7 +125,6 @@
   .mini-btn.danger { color: var(--danger); border-color: #fecaca; background: var(--danger-soft); }
   .mini-btn.ok { color: var(--ok); border-color: #bbf7d0; background: var(--ok-soft); }
   .judgment { min-width: 150px; }
-  .hometax-action { margin-top: 8px; color: var(--fg-muted); font-size: 11px; font-weight: 700; }
   .type-inline { margin-left: 6px; vertical-align: middle; }
   .row-detail summary { list-style: none; cursor: pointer; }
   .row-detail summary::-webkit-details-marker { display: none; }
@@ -138,8 +137,6 @@
   .row-detail .b-main { font-size: 12.5px; font-weight: 600; }
   .row-detail .b-sub { font-size: 11.5px; color: var(--fg-muted); margin-top: 3px; }
   .row-detail .b-meta { font-size: 11px; color: var(--fg-subtle); margin-top: 6px; }
-  .action-detail { margin-top: 6px; }
-  .action-detail[open] .row-actions { margin-top: 8px; }
   .evidence-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
   .evidence-tag { font-size: 10.5px; border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; color: var(--fg-muted); background: var(--surface); }
   .evidence-tag.missing { color: var(--danger); border-color: #fecaca; background: var(--danger-soft); }
@@ -157,18 +154,16 @@
   .tax-treatment-table { table-layout: fixed; }
   .tax-treatment-table td { overflow-wrap: anywhere; }
 
-  /* Alternate state toggle (확인 필요 거래 0건일 때 완료 배너) */
+  /* Alternate workflow state toggle */
   details.alt-state { font-size: 12.5px; }
   details.alt-state > summary { list-style: none; cursor: pointer; font-weight: 600; color: var(--accent); }
   details.alt-state > summary::-webkit-details-marker { display: none; }
-  .complete-banner { margin-top: 10px; display: flex; align-items: center; gap: 10px; padding: 13px 16px; background: var(--ok-soft); border: 1px solid #bbf7d0; border-radius: var(--radius); color: #14532d; flex-wrap: wrap; }
   .workflow-demo { margin-top: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   .workflow-demo-row { display: grid; grid-template-columns: 180px 1fr auto; align-items: center; gap: 12px; padding: 11px 14px; }
   .workflow-demo-row + .workflow-demo-row { border-top: 1px solid var(--border); }
   .workflow-demo-title { font-size: 12px; font-weight: 650; }
   .workflow-demo-desc { font-size: 11.5px; color: var(--fg-muted); }
 
-  .footnote { font-size: 11.5px; color: var(--fg-subtle); text-align: center; padding: 2px 4px; }
   .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
   .note b { color: var(--fg-muted); }
 </style>
@@ -293,9 +288,9 @@
       </div>
       <div class="panel">
         <table class="tax-treatment-table">
-          <colgroup><col style="width:26%"><col style="width:14%"><col style="width:34%"><col style="width:26%"></colgroup>
+          <colgroup><col style="width:38%"><col style="width:18%"><col style="width:44%"></colgroup>
           <thead>
-            <tr><th>거래 / 상대처</th><th style="text-align:right">금액</th><th>AI 판단</th><th>홈택스 · 사용자 확정</th></tr>
+            <tr><th>거래 / 상대처</th><th style="text-align:right">금액</th><th>공제 판단</th></tr>
           </thead>
           <tbody>
             <tr>
@@ -303,7 +298,7 @@
               <td class="amt">1,320,000</td>
               <td class="judgment">
                 <details class="row-detail">
-                  <summary><span class="chip danger">불공제</span></summary>
+                  <summary><span class="chip danger">공제 불가</span></summary>
                   <div class="b-body">
                     <div class="b-section">
                       <div class="b-label">무슨 뜻인가요</div>
@@ -321,12 +316,12 @@
                       <div class="b-label">홈택스에서 할 일</div>
                       <div class="b-text">세금계산서는 정상 수취·보관하고 매입처별세금계산서합계표에는 그대로 포함합니다. 공제받지못할매입세액명세서(별지 제22호서식)에 사유 ④ "기업업무추진비 및 이와 유사한 비용 관련"으로 등록하면 매입세액공제에서 자동 차감됩니다.</div>
                     </div>
+                    <div class="b-section">
+                      <div class="b-label">확정</div>
+                      <div class="row-actions"><span class="mini-btn danger">공제 불가로 확정</span><span class="mini-btn">다르게</span></div>
+                    </div>
                   </div>
                 </details>
-              </td>
-              <td>
-                <div class="hometax-action">공제·불공제 확인</div>
-                <details class="row-detail action-detail"><summary><span class="mini-btn">처리</span></summary><div class="row-actions"><span class="mini-btn danger">불공제로 확정</span><span class="mini-btn">다르게</span></div></details>
               </td>
             </tr>
             <tr>
@@ -334,7 +329,7 @@
               <td class="amt">2,200,000</td>
               <td class="judgment">
                 <details class="row-detail">
-                  <summary><span class="chip warn">안분 필요</span></summary>
+                  <summary><span class="chip ok">공제 가능</span></summary>
                   <div class="b-body">
                     <div class="b-section">
                       <div class="b-label">무슨 뜻인가요</div>
@@ -356,12 +351,12 @@
                       <div class="b-label">홈택스에서 할 일</div>
                       <div class="b-text">공제받지못할매입세액명세서의 "공통매입세액 안분계산내역" 탭에 공급가액·세액을 입력하면 불공제매입세액 = 공통매입세액 × (면세공급가액÷총공급가액)으로 계산됩니다. 예정신고는 잠정 비율로 처리하고, 확정신고 때 "공통매입세액의 정산내역" 탭에서 실제 비율로 재정산합니다.</div>
                     </div>
+                    <div class="b-section">
+                      <div class="b-label">확정</div>
+                      <div class="row-actions"><span class="mini-btn">안분 검토</span></div>
+                    </div>
                   </div>
                 </details>
-              </td>
-              <td>
-                <div class="hometax-action">안분 확인</div>
-                <details class="row-detail action-detail"><summary><span class="mini-btn">처리</span></summary><div class="row-actions"><span class="mini-btn">안분 검토</span></div></details>
               </td>
             </tr>
           </tbody>
@@ -385,22 +380,10 @@
         </div>
       </details>
 
-      <!-- 부속 명세·신고 준비 상태 카드 삭제(오너 결정) — 표와 중복. 대신 "확인 필요 거래" 표 자리가
-           0건일 때 이 표 대신 완료 배너로 바뀐다. 정적 프리뷰에서는 그 대체 상태를 토글로 보여준다. -->
-      <details class="alt-state">
-        <summary>다른 상태 보기 · 확인 필요 거래 0건일 때</summary>
-        <div class="complete-banner">
-          <span class="chip ok">확인 필요 거래 0건</span>
-          <span>매입세액 공제 판단이 모두 끝났습니다. 신고 준비가 완료됐습니다 — 정리된 항목=값을 홈택스 신고 화면에 직접 입력해 주세요.</span>
-        </div>
-      </details>
-
-      <div class="footnote">자동 홈택스 제출·자동 납부는 지원하지 않습니다. 최종 신고·제출은 사용자가 직접 진행합니다.</div>
-
       <div class="note">
         <b>Preview 안내</b> — 이 화면은 <b>부가세</b> UI 확인용 정적 프리뷰(VUI-1b + VAI-7c 상태 UI)입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
-        변경: 화면 상태 예시 삭제, 매입세액 공제 검토 표를 확인 필요 거래로 통합, 신고 패키지 미리보기를 Path 1b 개념으로 전환, 책임 경계를 상시 카드에서 짧은 툴팁·주석으로 축소, AI 판단은 결론 한 줄만, 홈택스는 할 일 한 줄과 처리 진입점 하나만 기본 표시하고 나머지는 펼쳐보기로 이동, 동작 없는 상단 "확정 신고" 삭제.
-        오너 리뷰 반영: 매출 구분은 항상 펼쳐진 3카드로 유지, "정상 자동 정리" 요약 배너 삭제, 판단 결론은 근거가 있을 때만 단정적으로 표시(불공제·안분 등)하고 근거가 부족한 건은 "해당사항없음"으로 보아 표에서 제외, 부속 명세·신고 준비 상태 카드를 표와 중복이라 삭제하고 "확인 필요 거래" 표 자체가 0건일 때 완료 배너로 전환되는 구조로 변경.
+        변경: 화면 상태 예시 삭제, 매입세액 공제 검토 표를 확인 필요 거래로 통합, 별도 홈택스·사용자 확정 열과 하단 신고 준비·차단 이유·책임 문구를 삭제하고 관련 행동을 공제 판단 상세 안으로 이동, 동작 없는 상단 "확정 신고" 삭제.
+        오너 리뷰 반영: 매출 구분은 항상 펼쳐진 3카드로 유지하고, 판단 표는 거래·금액·공제 판단 3열만 사용합니다. 매입 판단은 공제 가능·공제 불가·자료 부족으로 단순화하고, package/rebuild 안전 gate는 화면이 아니라 API에서 유지합니다.
         VAI-7c 제안: 정상 `판단 완료`는 작은 완료 시각으로만 표시하고, `확인 중`·`수동 확인`·`다시 확인 필요`만 상태 칩으로 강조합니다. `AI 다시 확인`은 재확인이 필요한 AI 판단 영역에서만 노출합니다.
       </div>
     </div>

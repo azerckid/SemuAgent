@@ -175,7 +175,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-121 | 전자증빙·정확한 금액·deterministic rule이 일치하고 위험 신호가 없는 정상 거래 다수 | VAT 기본 화면 렌더 | 거래별 행을 기본 펼침하지 않으며 별도 중복 요약 배너도 만들지 않음 | PASS·VUI-1c view-model 단위 |
 | S-122 | 영세율·면세·불공제·안분·누락·취소·중복·금액 불일치 거래가 존재 | VAT 기본 화면 렌더 | 해당 예외만 `확인 필요 거래` 작업대에 펼치고 정상 건과 섞지 않음 | PASS·VUI-1c view-model 단위/브라우저 |
 | S-123 | AI만 정상 가능성을 제안하고 전자증빙 또는 deterministic 근거가 부족 | 자동 정리 자격 판정 | 정상 건으로 숨기지 않고 예외 큐에 유지, 사용자 확정값 미변경 | PASS·VUI-1c view-model 단위 |
-| S-124 | 예외 거래 0건 | VAT 기본 화면 렌더 | 긴 판단표를 숨기고 완료 배너와 compact 신고 준비 상태만 표시 | PARTIAL·VUI-1c 단위/정적 PASS, 0건 브라우저 fixture Pending |
+| S-124 | 예외 거래 0건 | VAT 기본 화면 렌더 | 긴 판단표를 숨기고 짧은 완료 배너만 표시하며 별도 신고 준비·차단 이유 영역을 반복하지 않음 | PARTIAL·VUI-1c 단위/정적 PASS, 0건 브라우저 fixture Pending |
 | S-125 | 정상 자동 정리 건이 존재 | 사용자가 신고 준비를 마감 | 거래별 반복 확정 없이 최종 신고 내용을 명시적으로 확인하며 AI 단독 판단으로 canonical 값을 바꾸지 않음 | Pending·VUI-1c/1d |
 
 ### 2.13 JC-039 VAT AI 근거 탐색·명확 판단

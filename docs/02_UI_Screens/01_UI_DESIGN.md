@@ -125,7 +125,7 @@
 |:---|:---|:---|
 | Tax Summary Hero | 매출세액 − 매입세액 = 납부(예정)세액 강조, 마감 D-day | 3셀 계산 레이아웃 + 예정치 안내 + D-day 칩 |
 | Sales Grouping Cards | 과세 / 영세율 / 면세 그룹별 공급가액·매출세액 | 3카드, 그룹 태그(tax/zero/exempt) |
-| VAT Exception Workbench | 영세율·면세·불공제·안분·누락·취소·중복·불일치와 미완료 공제 검토를 한 곳에서 처리 | 4열; AI 판단은 결론 한 줄, 홈택스는 할 일 한 줄 + `처리` 하나만 기본 표시. 출처·상태·근거·증빙·재확인·사용자 액션은 펼친 뒤 표시 |
+| VAT Exception Workbench | 영세율·면세·불공제·안분·누락·취소·중복·불일치와 미완료 공제 검토를 한 곳에서 처리 | 3열(`거래/상대처`·`금액`·`공제 판단`). 공제 판단은 `공제 가능`·`공제 불가`·`자료 부족` 중심이며, 홈택스 할 일·출처·상태·근거·증빙·재확인·사용자 액션은 펼친 뒤 표시 |
 | Hometax Review Action | 홈택스 자동채움에서 확인·수정할 항목 | 그대로 확인 / 공제·불공제 확인 / 과세유형 확인 / 금액 추가·수정 / 안분 확인; 실제 자료 미연결 시 `자동채움 예상` 표시 |
 | Tax Treatment Source Mark | 판단 출처를 설명 | 공식 규칙 / 이전 패턴 / AI 보강 / AI 합의를 작은 source mark로 표시 |
 | Required Evidence Tags | 영세율·면세·공제 판단에 필요한 증빙 상태 | 있음(neutral) / 확인 필요(danger); 누락 시 확정·gate 해제 금지 |
@@ -135,7 +135,7 @@
 | Tax Treatment Decision Dialog | 추천과 다른 판단·보류·전문가 확인 근거 입력 | 방향별 결정 select + 근거 textarea + 안분율 input; 영세율·면세 증빙 누락 시 저장 차단 |
 | Recent Tax Treatment Undo | 방금 저장한 판단을 원래 canonical·감사 상태로 복원 | sonner `되돌리기`; 최신 1건·일회용 토큰·서버 current-state 검증 |
 | Confirmed Ledger Rebuild | 현재 확정 VAT fact로 summary와 fingerprint를 재계산 | 다른 gate가 모두 ready이고 snapshot만 stale일 때 파란 outline `확정 원장 다시 계산`; 처리 중 spinner |
-| Compact Filing Readiness | package/rebuild gate와 남은 차단 이유를 보존하되 대형 미리보기·부속명세 카드를 반복하지 않음 | `신고 준비` 한 줄 + 차단 이유 펼치기 + 준비 완료/재계산 액션 |
+| VAT Package API Gate | package/rebuild 요청 시 미완료 자료를 서버에서 차단 | 화면에 별도 준비 카드·차단 이유 목록을 반복하지 않고 API에서만 강제 |
 | Inline Empty State | 예외 거래가 0건일 때 긴 표 대신 완료 상태 표시 | `확인할 예외 거래가 없습니다` 배너 |
 
 - 사이드바 "부가세"에 공제 검토 대기 건수 카운트 배지(warn)를 노출한다.
