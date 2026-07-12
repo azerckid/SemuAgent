@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SemuAgent · 부가세 (UI Preview)</title>
+<title>SemuAgent · 부가세 (UI Preview · VUI-1b)</title>
 <style>
   :root {
     --bg: #f6f6f7;
@@ -69,8 +69,10 @@
 
   /* Tax summary hero */
   .hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; }
+  .hero-top { display: flex; align-items: center; gap: 8px; }
   .hero .eyebrow { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
-  .hero-grid { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 0; align-items: stretch; margin-top: 12px; }
+  .info-ico { margin-left: auto; width: 18px; height: 18px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--fg-subtle); font-size: 11px; font-weight: 700; display: grid; place-items: center; cursor: default; }
+  .hero-grid { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 0; align-items: stretch; margin-top: 12px; }
   .tax-cell { padding: 6px 24px; border-right: 1px solid var(--border); }
   .tax-cell:first-child { padding-left: 0; }
   .tax-cell .k { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
@@ -88,7 +90,8 @@
   .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
   .section-head .link { margin-left: auto; font-size: 12.5px; color: var(--accent); font-weight: 600; cursor: pointer; }
 
-  /* Sales grouping cards */
+
+  /* Sales grouping cards (inside collapsed detail) */
   .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
   .card .c-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
@@ -102,11 +105,11 @@
   .card .rowline .rv { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .card .rowline.big .rv { font-size: 18px; font-weight: 700; }
 
-  /* Deduction review table */
+  /* Exception queue table */
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
   table { width: 100%; border-collapse: collapse; }
   thead th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--fg-subtle); padding: 11px 16px; border-bottom: 1px solid var(--border); background: #fafafa; text-transform: uppercase; letter-spacing: .03em; }
-  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
   tbody tr:last-child td { border-bottom: 0; }
   tbody tr:hover { background: #fafafa; }
   td.amt { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
@@ -117,64 +120,39 @@
   .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
   .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
   .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
-  .row-actions { display: inline-flex; gap: 6px; }
+  .row-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; }
   .mini-btn { font-size: 11.5px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 7px; padding: 4px 9px; cursor: pointer; }
   .mini-btn.danger { color: var(--danger); border-color: #fecaca; background: var(--danger-soft); }
   .mini-btn.ok { color: var(--ok); border-color: #bbf7d0; background: var(--ok-soft); }
-  .judgment { min-width: 154px; }
-  .judgment .j-main { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .source-mark { font-size: 10.5px; color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; font-weight: 600; }
-  .basis { min-width: 250px; max-width: 330px; }
-  .basis .b-main { font-size: 12.5px; font-weight: 600; }
-  .basis .b-sub { font-size: 11.5px; color: var(--fg-muted); margin-top: 3px; }
+  .judgment { min-width: 150px; }
+  .hometax-action { margin-top: 8px; color: var(--fg-muted); font-size: 11px; font-weight: 700; }
+  .type-inline { margin-left: 6px; vertical-align: middle; }
+  .row-detail summary { list-style: none; cursor: pointer; }
+  .row-detail summary::-webkit-details-marker { display: none; }
+  .row-detail summary .chip { text-decoration: underline dotted; text-underline-offset: 3px; }
+  .row-detail summary .chip::after { content: " ▾"; text-decoration: none; opacity: .7; }
+  .row-detail .b-body { margin-top: 8px; padding: 10px 12px; background: #fafafa; border: 1px solid var(--border); border-radius: 8px; max-width: 340px; }
+  .row-detail .b-section + .b-section { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .row-detail .b-label { font-size: 10.5px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 3px; }
+  .row-detail .b-text { font-size: 12px; color: var(--fg-muted); line-height: 1.5; }
+  .row-detail .b-main { font-size: 12.5px; font-weight: 600; }
+  .row-detail .b-sub { font-size: 11.5px; color: var(--fg-muted); margin-top: 3px; }
+  .row-detail .b-meta { font-size: 11px; color: var(--fg-subtle); margin-top: 6px; }
   .evidence-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
-  .evidence-tag { font-size: 10.5px; border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; color: var(--fg-muted); background: #fafafa; }
+  .evidence-tag { font-size: 10.5px; border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; color: var(--fg-muted); background: var(--surface); }
   .evidence-tag.missing { color: var(--danger); border-color: #fecaca; background: var(--danger-soft); }
   .ai-safety { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: #fafafa; font-size: 11.5px; color: var(--fg-muted); }
   .ai-safety strong { color: var(--fg); }
   .tax-treatment-table { table-layout: fixed; }
   .tax-treatment-table td { overflow-wrap: anywhere; }
-  .tax-treatment-table .row-actions { flex-wrap: wrap; }
-  .hometax-action { margin-bottom: 6px; color: var(--fg-muted); font-size: 11px; font-weight: 700; }
-  .type-inline { margin-left: 6px; vertical-align: middle; }
 
-  /* Schedules + package */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .card h3 { font-size: 13px; font-weight: 650; margin-bottom: 4px; }
-  .card .sub { font-size: 12px; color: var(--fg-subtle); margin-bottom: 14px; }
-  .sched { display: flex; flex-direction: column; }
-  .sched .s-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .sched .s-row:last-child { border-bottom: 0; }
-  .sched .s-ico { width: 26px; height: 26px; border-radius: 7px; background: #f4f4f5; display: grid; place-items: center; font-size: 13px; }
-  .sched .s-main { flex: 1; }
-  .sched .s-t { font-size: 13px; font-weight: 600; }
-  .sched .s-d { font-size: 11.5px; color: var(--fg-subtle); }
-  .pkg .p-head { display: flex; align-items: center; gap: 8px; }
-  .pkg .p-file { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; margin-top: 10px; }
-  .pkg .p-file .pf-ico { width: 28px; height: 28px; border-radius: 7px; background: var(--danger-soft); color: var(--danger); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
-  .pkg .p-file .pf-name { font-size: 12.5px; font-weight: 600; flex: 1; }
-  .pkg .p-file .pf-meta { font-size: 11px; color: var(--fg-subtle); }
-  .btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 8px; padding: 9px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
-  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
-  .btn.block { width: 100%; margin-top: 14px; text-align: center; }
-  .btn.is-disabled { background: #f1f1f2; color: var(--fg-subtle); border-color: var(--border); cursor: not-allowed; }
-  .locknote { font-size: 12px; color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; border-radius: 8px; padding: 9px 12px; margin-top: 12px; }
+  /* Alternate state toggle (확인 필요 거래 0건일 때 완료 배너) */
+  details.alt-state { font-size: 12.5px; }
+  details.alt-state > summary { list-style: none; cursor: pointer; font-weight: 600; color: var(--accent); }
+  details.alt-state > summary::-webkit-details-marker { display: none; }
+  .complete-banner { margin-top: 10px; display: flex; align-items: center; gap: 10px; padding: 13px 16px; background: var(--ok-soft); border: 1px solid #bbf7d0; border-radius: var(--radius); color: #14532d; flex-wrap: wrap; }
 
-  /* States strip */
-  .states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .state-card { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 18px; min-height: 132px; display: flex; flex-direction: column; }
-  .state-card .s-label { font-size: 11px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
-  .skel { height: 12px; border-radius: 6px; background: linear-gradient(90deg,#eee, #f5f5f5, #eee); margin-bottom: 10px; }
-  .skel.w60 { width: 60%; } .skel.w40 { width: 40%; } .skel.w80 { width: 80%; }
-  .empty-mid { flex: 1; display: grid; place-items: center; text-align: center; color: var(--fg-subtle); }
-  .empty-mid .em-ico { font-size: 22px; opacity: .5; }
-  .empty-mid .em-t { font-size: 12.5px; margin-top: 6px; }
-  .empty-mid .em-cta { margin-top: 10px; font-size: 12px; color: var(--accent); font-weight: 600; }
-  .err-box { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-  .err-box .e-t { color: var(--danger); font-weight: 600; font-size: 13px; }
-  .err-box .e-d { color: var(--fg-muted); font-size: 12px; margin: 4px 0 10px; }
-  .err-box .e-cta { align-self: flex-start; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
-
+  .footnote { font-size: 11.5px; color: var(--fg-subtle); text-align: center; padding: 2px 4px; }
   .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
   .note b { color: var(--fg-muted); }
 </style>
@@ -201,7 +179,6 @@
     <div class="nav-group">
       <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여·지급</a>
       <a href="04_payroll.html" class="nav-item sub"><span class="ico">›</span> 급여</a>
-
       <a href="06_employee_directory.html" class="nav-item sub"><span class="ico">›</span> 직원 명부</a>
       <a href="05_filing_support.html" class="nav-item sub"><span class="ico">›</span> 원천세</a>
       <a href="09_payment_year_end.html" class="nav-item sub"><span class="ico">›</span> 지급명세서·연말정산</a>
@@ -234,15 +211,19 @@
       </div>
       <span class="co">샘플컴퍼니(주)</span>
       <div class="period-select">
+        <!-- item 8: 동작 없는 "확정 신고" pill 삭제. 예정/확정 상태는 아래 hero eyebrow에서 표시. -->
         <span class="pill">2026년 1기 (1~6월) <span class="caret">▾</span></span>
-        <span class="pill">확정 신고 <span class="caret">▾</span></span>
       </div>
     </div>
 
     <div class="content">
       <!-- Tax summary hero -->
       <div class="hero">
-        <div class="eyebrow">2026년 1기 확정 부가세 · 예정 세액</div>
+        <div class="hero-top">
+          <div class="eyebrow">2026년 1기 · 예정 세액</div>
+          <!-- item 6: 상시 "책임 경계" 카드를 짧은 아이콘 툴팁으로 축소 -->
+          <span class="info-ico" title="세무 에이전트는 세액 집계·판단 보조·신고 준비 상태 확인까지만 지원합니다. 자동 홈택스 제출, 자동 납부는 지원하지 않으며 최종 신고·제출은 사용자가 직접 진행합니다.">i</span>
+        </div>
         <div class="hero-grid">
           <div class="tax-cell">
             <div class="k">매출세액</div>
@@ -260,12 +241,12 @@
           </div>
         </div>
         <div class="foot">
-          <span class="note">부가세 판단 5건을 확정하면 매입세액과 납부세액이 달라질 수 있습니다. 사용자 확정 전까지 예정치입니다.</span>
+          <span class="note">확인 필요 거래 2건을 확정하면 매입세액과 납부세액이 달라질 수 있습니다. 사용자 확정 전까지 예정치입니다.</span>
           <span class="d-left">신고 마감 2026-07-25 · D-24</span>
         </div>
       </div>
 
-      <!-- Sales grouping: 과세 / 영세율 / 면세 -->
+      <!-- item 3: 오너 피드백으로 원래의 항상 펼쳐진 3카드 방식 유지(접기 방식 대신) -->
       <div class="section-head">
         <h2>매출 구분</h2>
         <span class="hint">과세 · 영세율 · 면세 그룹별 매출과 세액</span>
@@ -288,121 +269,94 @@
         </div>
       </div>
 
-      <!-- AI VAT tax-treatment review -->
+      <!-- item 2 + 7 + 10: 매입세액 공제 검토 표를 통합한 예외 작업대. 결론은 근거가 있을 때만 단정적으로 표시.
+           근거 부족(가능성 수준) 건은 "해당사항없음"으로 보고 이 표에서 제외한다(오너 결정 A). -->
       <div class="section-head">
-        <h2>AI 부가세 판단</h2>
-        <span class="hint">AI는 가능성과 근거를 제시하고, 최종 판단은 사용자가 확정합니다</span>
-        <span class="link">확인 필요만 보기 →</span>
+        <h2>확인 필요 거래</h2>
+        <span class="hint">영세율·면세·불공제·안분·누락·취소·중복·불일치만 표시합니다</span>
       </div>
       <div class="panel">
         <table class="tax-treatment-table">
-          <colgroup><col style="width:19%"><col style="width:12%"><col style="width:18%"><col style="width:31%"><col style="width:20%"></colgroup>
+          <colgroup><col style="width:26%"><col style="width:14%"><col style="width:34%"><col style="width:26%"></colgroup>
           <thead>
-            <tr><th>거래 / 상대처</th><th style="text-align:right">금액</th><th>AI 판단</th><th>판단 근거 · 필요 증빙</th><th>홈택스 확인 · 사용자 확정</th></tr>
+            <tr><th>거래 / 상대처</th><th style="text-align:right">금액</th><th>AI 판단</th><th>홈택스 · 사용자 확정</th></tr>
           </thead>
           <tbody>
             <tr>
-              <td><div class="desc">국외 SaaS 개발 용역 <span class="chip muted type-inline">매출</span></div><div class="vendor">GLOBAL TECH INC · 외화 매출</div></td>
-              <td class="amt">40,000,000</td>
-              <td class="judgment"><div class="j-main"><span class="chip warn">영세율 가능성</span><span class="source-mark">AI 합의</span></div></td>
-              <td class="basis"><div class="b-main">국외 사업자에게 제공한 용역으로 보입니다</div><div class="b-sub">거래처 소재지·용역 수행지·대금 수취 사실을 확인해야 합니다</div><div class="evidence-tags"><span class="evidence-tag">계약서 있음</span><span class="evidence-tag">외화 입금 있음</span><span class="evidence-tag missing">영세율 첨부서류 확인 필요</span></div></td>
-              <td><div class="hometax-action">홈택스: 과세유형 확인</div><span class="row-actions"><span class="mini-btn">증빙 확인</span><span class="mini-btn">다르게</span></span></td>
-            </tr>
-            <tr>
               <td><div class="desc">거래처 접대 식대 <span class="chip muted type-inline">매입</span></div><div class="vendor">○○한정식 · 법인카드</div></td>
               <td class="amt">1,320,000</td>
-              <td class="judgment"><div class="j-main"><span class="chip danger">불공제 가능성 높음</span><span class="source-mark">공식 규칙</span></div></td>
-              <td class="basis"><div class="b-main">기업업무추진비 관련 매입세액</div><div class="b-sub">부가가치세법 제39조 기준 · 법인카드와 계정항목 확인</div><div class="evidence-tags"><span class="evidence-tag">카드 내역 있음</span><span class="evidence-tag">사용 목적 있음</span></div></td>
+              <td class="judgment">
+                <details class="row-detail">
+                  <summary><span class="chip danger">불공제</span></summary>
+                  <div class="b-body">
+                    <div class="b-section">
+                      <div class="b-label">무슨 뜻인가요</div>
+                      <div class="b-text">매입세액을 공제받지 못한다는 뜻입니다. 접대비는 법인세·소득세 경비로는 인정되지만, 부가세법이 정책적으로 매입세액 공제만 별도로 막아둔 항목입니다 — "사업에 안 썼다"는 뜻이 아닙니다.</div>
+                    </div>
+                    <div class="b-section">
+                      <div class="b-label">AI 판단 근거</div>
+                      <div class="b-main">기업업무추진비 관련 매입세액</div>
+                      <div class="b-sub">부가가치세법 제39조 기준 · 법인카드와 계정항목 확인</div>
+                      <div class="evidence-tags"><span class="evidence-tag">카드 내역 있음</span><span class="evidence-tag">사용 목적 있음</span></div>
+                      <div class="b-meta">출처: 공식 규칙</div>
+                    </div>
+                    <div class="b-section">
+                      <div class="b-label">홈택스에서 할 일</div>
+                      <div class="b-text">세금계산서는 정상 수취·보관하고 매입처별세금계산서합계표에는 그대로 포함합니다. 공제받지못할매입세액명세서(별지 제22호서식)에 사유 ④ "기업업무추진비 및 이와 유사한 비용 관련"으로 등록하면 매입세액공제에서 자동 차감됩니다.</div>
+                    </div>
+                  </div>
+                </details>
+              </td>
               <td><div class="hometax-action">홈택스: 공제·불공제 확인</div><span class="row-actions"><span class="mini-btn danger">불공제로 확정</span><span class="mini-btn">다르게</span></span></td>
             </tr>
             <tr>
               <td><div class="desc">면세사업분 공통매입 <span class="chip muted type-inline">매입</span></div><div class="vendor">○○물산 · 세금계산서</div></td>
               <td class="amt">2,200,000</td>
-              <td class="judgment"><div class="j-main"><span class="chip warn">안분 필요</span><span class="source-mark">공식 규칙</span></div></td>
-              <td class="basis"><div class="b-main">과세·면세 사업에 함께 사용한 공통매입</div><div class="b-sub">실지귀속을 먼저 확인하고, 불명확할 때만 공급가액 비율로 안분합니다</div><div class="evidence-tags"><span class="evidence-tag missing">사용 부서·목적 확인 필요</span></div></td>
+              <td class="judgment">
+                <details class="row-detail">
+                  <summary><span class="chip warn">안분 필요</span></summary>
+                  <div class="b-body">
+                    <div class="b-section">
+                      <div class="b-label">무슨 뜻인가요</div>
+                      <div class="b-text">과세·면세 사업에 공통으로 쓰인 매입이라 매입세액 전부를 공제받을 수 없고, 면세 매출 비율만큼만 공제가 제한된다는 뜻입니다. 전액 불공제가 아닙니다.</div>
+                    </div>
+                    <div class="b-section">
+                      <div class="b-label">AI 판단 근거</div>
+                      <div class="b-main">과세·면세 사업에 함께 사용한 공통매입</div>
+                      <div class="b-sub">실지귀속을 먼저 확인하고, 불명확할 때만 공급가액 비율로 안분합니다</div>
+                      <div class="evidence-tags"><span class="evidence-tag missing">사용 부서·목적 확인 필요</span></div>
+                      <div class="b-meta">출처: 공식 규칙 (안분 비율은 별도 계산 과제)</div>
+                    </div>
+                    <div class="b-section">
+                      <div class="b-label">홈택스에서 할 일</div>
+                      <div class="b-text">공제받지못할매입세액명세서의 "공통매입세액 안분계산내역" 탭에 공급가액·세액을 입력하면 불공제매입세액 = 공통매입세액 × (면세공급가액÷총공급가액)으로 계산됩니다. 예정신고는 잠정 비율로 처리하고, 확정신고 때 "공통매입세액의 정산내역" 탭에서 실제 비율로 재정산합니다.</div>
+                    </div>
+                  </div>
+                </details>
+              </td>
               <td><div class="hometax-action">홈택스: 안분 확인</div><span class="row-actions"><span class="mini-btn">안분 검토</span></span></td>
-            </tr>
-            <tr>
-              <td><div class="desc">클라우드 서버 이용료 <span class="chip muted type-inline">매입</span></div><div class="vendor">AWS · 세금계산서</div></td>
-              <td class="amt">3,436,400</td>
-              <td class="judgment"><div class="j-main"><span class="chip ok">공제 가능성 높음</span><span class="source-mark">이전 패턴</span></div></td>
-              <td class="basis"><div class="b-main">최근 같은 거래처 5건을 지급수수료·공제로 확정</div><div class="b-sub">세금계산서 금액과 원장 금액이 일치합니다</div><div class="evidence-tags"><span class="evidence-tag">세금계산서 있음</span><span class="evidence-tag">업무용 확인</span></div></td>
-              <td><div class="hometax-action">홈택스: 그대로 확인</div><span class="row-actions"><span class="mini-btn ok">공제로 확정</span><span class="mini-btn">다르게</span></span></td>
-            </tr>
-            <tr>
-              <td><div class="desc">온라인 교육 콘텐츠 제공 <span class="chip muted type-inline">매출</span></div><div class="vendor">○○러닝 · 국내 매출</div></td>
-              <td class="amt">8,800,000</td>
-              <td class="judgment"><div class="j-main"><span class="chip danger">면세 여부 확인 필요</span><span class="source-mark">AI 보강</span></div></td>
-              <td class="basis"><div class="b-main">교육 용역이라는 명칭만으로 면세를 확정할 수 없습니다</div><div class="b-sub">교육기관 인허가·용역의 실제 성격·계약 내용을 확인해야 합니다</div><div class="evidence-tags"><span class="evidence-tag missing">인허가·등록 확인 필요</span><span class="evidence-tag missing">전문가 확인 권장</span></div></td>
-              <td><div class="hometax-action">홈택스: 과세유형 확인</div><span class="row-actions"><span class="mini-btn">내용 보완</span><span class="mini-btn">전문가 확인</span></span></td>
             </tr>
           </tbody>
         </table>
         <div class="ai-safety"><strong>AI가 늦거나 응답하지 않아도 이 화면은 멈추지 않습니다.</strong> 해당 거래만 "수동 확인 필요"로 전환하고 기존 검토·확정 기능은 계속 사용할 수 있습니다.</div>
       </div>
 
-      <!-- Schedules + filing package -->
-      <div class="two-col">
-        <div class="card sched">
-          <h3>부속 명세</h3>
-          <div class="sub">신고서에 첨부되는 명세 서식</div>
-          <div class="s-row"><div class="s-ico">▦</div><div class="s-main"><div class="s-t">매출처별 세금계산서 합계표</div><div class="s-d">매출 312건 집계 완료</div></div><span class="chip ok">준비됨</span></div>
-          <div class="s-row"><div class="s-ico">▧</div><div class="s-main"><div class="s-t">매입처별 세금계산서 합계표</div><div class="s-d">매입 214건 집계 완료</div></div><span class="chip ok">준비됨</span></div>
-          <div class="s-row"><div class="s-ico">▤</div><div class="s-main"><div class="s-t">신용카드 매출전표 등 수취명세서</div><div class="s-d">공제 매입 반영</div></div><span class="chip ok">준비됨</span></div>
-          <div class="s-row"><div class="s-ico">％</div><div class="s-main"><div class="s-t">공제받지 못할 매입세액 명세서</div><div class="s-d">불공제 판단 1건·안분 1건 검토 후 확정</div></div><span class="chip warn">2건 검토</span></div>
+      <!-- 부속 명세·신고 준비 상태 카드 삭제(오너 결정) — 표와 중복. 대신 "확인 필요 거래" 표 자리가
+           0건일 때 이 표 대신 완료 배너로 바뀐다. 정적 프리뷰에서는 그 대체 상태를 토글로 보여준다. -->
+      <details class="alt-state">
+        <summary>다른 상태 보기 · 확인 필요 거래 0건일 때</summary>
+        <div class="complete-banner">
+          <span class="chip ok">확인 필요 거래 0건</span>
+          <span>매입세액 공제 판단이 모두 끝났습니다. 신고 준비가 완료됐습니다 — 정리된 항목=값을 홈택스 신고 화면에 직접 입력해 주세요.</span>
         </div>
+      </details>
 
-        <div class="card pkg">
-          <h3>신고 준비 검토 자료</h3>
-          <div class="sub">확정 세액·판단 근거·부속 명세 확인용. 공식 홈택스 업로드 파일이 아닙니다.</div>
-          <div class="p-file">
-            <div class="pf-ico">PDF</div>
-            <div>
-              <div class="pf-name">2026년_1기_부가세_검토자료.pdf</div>
-              <div class="pf-meta">확정 세액 · 사용자 판단 · 부속명세 준비 상태</div>
-            </div>
-          </div>
-          <div class="locknote">영세율 판단 1건·매입 공제 판단 3건·면세 여부 1건, 총 5건을 사용자가 확정해야 검토 자료를 마감할 수 있습니다. 공식 업로드 파일은 Stage A 확인 전 제공하지 않습니다.</div>
-          <button class="btn block is-disabled" aria-disabled="true" disabled title="부가세 판단 5건을 먼저 완료하세요">검토 자료 생성 · 잠김 (판단 5건 완료 후 활성화)</button>
-        </div>
-      </div>
-
-      <!-- State coverage -->
-      <div class="section-head">
-        <h2>화면 상태 예시</h2>
-        <span class="hint">로딩 / 빈 상태 / 오류</span>
-      </div>
-      <div class="states">
-        <div class="state-card">
-          <div class="s-label">Loading</div>
-          <div class="skel w40"></div>
-          <div class="skel w80"></div>
-          <div class="skel w60"></div>
-        </div>
-        <div class="state-card">
-          <div class="s-label">Empty</div>
-          <div class="empty-mid">
-            <div>
-              <div class="em-ico">％</div>
-              <div class="em-t">집계할 매출·매입 자료가 없습니다</div>
-              <div class="em-cta">기장검토 먼저 확정하기</div>
-            </div>
-          </div>
-        </div>
-        <div class="state-card">
-          <div class="s-label">Error</div>
-          <div class="err-box">
-            <div class="e-t">세액 집계를 불러오지 못했습니다</div>
-            <div class="e-d">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</div>
-            <button class="e-cta">다시 시도</button>
-          </div>
-        </div>
-      </div>
+      <div class="footnote">자동 홈택스 제출·자동 납부는 지원하지 않습니다. 최종 신고·제출은 사용자가 직접 진행합니다.</div>
 
       <div class="note">
-        <b>Preview 안내</b> — 이 화면은 <b>부가세</b> UI 확인용 정적 프리뷰입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
-        구성: 납부(예정)세액 요약(매출세액 − 매입세액) · 매출 구분(과세/영세율/면세) · AI 부가세 판단(근거·필요 증빙·사용자 확정) · 부속 명세 · 신고 준비 검토 자료 · 상태(로딩/빈/오류) 예시.
-        <b>AI는 판단을 확정하지 않으며 자동 홈택스 제출도 하지 않습니다.</b> 공식 양식 업로드가 확인된 범위만 별도 지원하며, 최종 판단·신고·제출은 사용자가 수행합니다.
+        <b>Preview 안내</b> — 이 화면은 <b>부가세</b> UI 확인용 정적 프리뷰(VUI-1b, JC-038 단순화 결정 10건 + 오너 리뷰 피드백 반영)입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
+        변경: 화면 상태 예시 삭제, 매입세액 공제 검토 표를 확인 필요 거래로 통합, 신고 패키지 미리보기를 Path 1b 개념으로 전환, 책임 경계를 상시 카드에서 짧은 툴팁·주석으로 축소, 판단 표 근거를 펼쳐보기로 이동, 동작 없는 상단 "확정 신고" 삭제.
+        오너 리뷰 반영: 매출 구분은 항상 펼쳐진 3카드로 유지, "정상 자동 정리" 요약 배너 삭제, 판단 결론은 근거가 있을 때만 단정적으로 표시(불공제·안분 등)하고 근거가 부족한 건은 "해당사항없음"으로 보아 표에서 제외, 부속 명세·신고 준비 상태 카드를 표와 중복이라 삭제하고 "확인 필요 거래" 표 자체가 0건일 때 완료 배너로 전환되는 구조로 변경.
       </div>
     </div>
   </div>
