@@ -776,12 +776,12 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Implementation Preconditions:
   - [x] 현재 동기 provider 호출·결과 미재사용·초기 화면 차단 경로를 코드로 확인했다.
   - [x] 새 데이터와 version 변경이 없으면 provider를 재호출하지 않는 제품 원칙을 프로젝트 오너가 승인했다.
-  - [ ] VAI-7a에서 현재 VAT 초기 응답 시간과 provider 호출 수 baseline을 기록한다.
+  - [x] VAI-7a 구조 baseline(최대 7회 provider 호출·timeout 누적 약 40초), 결정적 호출 수 속성(`data-vat-initial-provider-calls`), localhost 3회 응답 측정을 기록했다. production P95는 VAI-7d 브라우저 검증에서 기록한다.
   - [ ] VAI-7b additive schema·fingerprint·backoff·idempotency 계약을 코드 착수 전에 재검토한다.
   - [ ] VAI-7c의 `확인 중`·`수동 확인`·`다시 확인 필요`·`AI 다시 확인` 상태를 다음 VAT UI 논의와 함께 프로젝트 오너가 확인한다.
   - [ ] migration이 필요하면 dev/prod 적용 순서와 rollback을 확정한다.
 - Acceptance Criteria:
-  - [ ] VAT 최초 서버 렌더 경로에서 provider 호출이 0회다.
+  - [x] VAT 최초 서버 렌더 경로에서 provider 호출이 0회다. (VAI-7a)
   - [ ] 동일 fingerprint/version의 저장 결과가 있으면 페이지 10회 재진입에도 추가 provider 호출이 0회다.
   - [ ] 원천 사실·규칙·prompt version 변경 시 해당 행만 stale 처리하고 신규 실행을 정확히 1회 만든다.
   - [ ] 다중 탭·동시 요청에서도 동일 scope/fingerprint 실행은 하나다.
@@ -792,7 +792,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] rebuild/package gate는 live AI 응답을 기다리지 않고 추천만으로 해제되지 않는다.
   - [ ] 브라우저 E2E와 계측으로 초기 렌더 시간·provider 호출 수·stale 재실행을 증명한다.
 - Scope Boundary: VAT 화면의 시각적 정보구조 개편은 후속 논의로 분리하며 JC-037에 섞지 않는다.
-- Document Sync Check (2026-07-12): 신규 Brief 47, Backlog JC-037, VAT QA S-106~S-114, JC-035 Completion Contract의 post-completion correction을 동기화했다. 코드·DB·Preview 변경은 없으며 구현 상태는 `todo`다.
+- Document Sync Check (2026-07-12): VAI-7a는 VAT 최초 read에서 `includeTaxTreatmentAi`를 제거해 provider 0회를 고정하고 호출 수를 비가시 DOM 속성으로 노출한다. VAI-7b/7c 전환 구간에는 deterministic rule·이전 확정·사용자 결정만 표시하고 새 AI 판단은 갱신하지 않는다. DB·migration·Preview 변경은 없으며 JC-037 전체 상태는 VAI-7b~7d가 남아 `todo`다.
 
 ### JC-038 · 부가세 화면 단순화·중복 정보 제거
 

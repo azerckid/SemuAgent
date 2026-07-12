@@ -76,8 +76,11 @@ describe('VAT workspace static contract', () => {
     expect(treatmentRouteSource).toContain('vatTaxTreatmentMutationSchema.safeParse(await req.json())')
   })
 
-  it('enables VAI-3b AI only on the VAT page, not shared summary consumers', () => {
-    expect(vatPageSource).toContain('includeTaxTreatmentAi: true')
+  it('keeps the initial VAT render provider-free and exposes VAI-7a read metrics (S-107)', () => {
+    expect(vatPageSource).not.toContain('includeTaxTreatmentAi: true')
+    expect(vatPageSource).not.toContain('includeTaxTreatmentAi:')
+    expect(vatPageSource).toContain('initialProviderCallCount={0}')
+    expect(workspaceSource).toContain('data-vat-initial-provider-calls')
     expect(vatSummarySource).toContain('includeTaxTreatmentAi = false')
     expect(internalReminderSummarySource).not.toContain('includeTaxTreatmentAi')
     expect(filingPreparationSummarySource).not.toContain('includeTaxTreatmentAi')

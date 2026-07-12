@@ -25,7 +25,6 @@ export default async function VatPage({ searchParams }: PageProps) {
   const summary = await loadVatSummary({
     tenantId,
     periodKey: period,
-    includeTaxTreatmentAi: true,
   })
 
   if (!summary.businessEntity) {
@@ -41,5 +40,11 @@ export default async function VatPage({ searchParams }: PageProps) {
     taxTreatmentGate: buildVatTaxTreatmentGate(summary.taxTreatmentRows),
   })
 
-  return <VatWorkspace summary={summary} packageGate={packageGate} />
+  return (
+    <VatWorkspace
+      summary={summary}
+      packageGate={packageGate}
+      initialProviderCallCount={0}
+    />
+  )
 }
