@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.hoisted(() => {
@@ -9,6 +10,8 @@ vi.hoisted(() => {
 import type { VatReclassificationMutationInput } from '@/lib/validations/vat-reclassification'
 import { buildReclassificationSavingsCandidate } from './reclassification-savings'
 import { validateReclassificationConfirmation } from './reclassification-mutations'
+
+const mutationSource = readFileSync(new URL('./reclassification-mutations.ts', import.meta.url), 'utf8')
 
 const evaluation = {
   confidence: 'low' as const,
@@ -100,5 +103,11 @@ describe('VAI-9e confirmation gate', () => {
         expectedFingerprint: row.candidateFingerprint,
       },
     })).toBeNull()
+  })
+
+  it('treats a zero-row conditional update as a concurrent mutation conflict', () => {
+    expect(mutationSource).toContain('.returning({ id: vatDeductionReview.id })')
+    expect(mutationSource).toContain('if (updatedRows.length !== 1)')
+    expect(mutationSource).toContain("throw new ReclassificationMutationConflict('다른 화면에서 먼저 처리했습니다. 새로고침해 주세요.')")
   })
 })

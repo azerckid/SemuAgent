@@ -214,7 +214,7 @@ export async function applyVatReclassificationMutation(params: {
         throw new ReclassificationMutationConflict('연결된 적격증빙이 없어 공제로 재분류할 수 없습니다.')
       }
 
-      await tx
+      const updatedRows = await tx
         .update(vatDeductionReview)
         .set({
           decision: params.input.action === 'reclassify' ? 'deductible' : 'non_deductible',
@@ -232,6 +232,11 @@ export async function applyVatReclassificationMutation(params: {
           eq(vatDeductionReview.tenantId, params.tenantId),
           eq(vatDeductionReview.decision, 'pending'),
         ))
+        .returning({ id: vatDeductionReview.id })
+
+      if (updatedRows.length !== 1) {
+        throw new ReclassificationMutationConflict('다른 화면에서 먼저 처리했습니다. 새로고침해 주세요.')
+      }
 
       return recalculatePeriodSummary({
         tx,
