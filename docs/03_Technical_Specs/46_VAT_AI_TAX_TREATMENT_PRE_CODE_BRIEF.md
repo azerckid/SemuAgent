@@ -6,8 +6,8 @@
 
 > Target clarification (2026-07-13): 이 문서의 `recommendation: needs_review`와
 > `manual_fallback`은 JC-035 legacy 호환 계약이다. [JC-039 · VAI-8a](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md)에서
-> provider 잠정 결론과 workflow 상태를 분리했으며, generic handoff를 실제 근거 탐색·명확 판단·엄격한
-> 담당자 이관 게이트로 교체하는 VAI-8b~8e는 후속이다.
+> provider 잠정 결론과 workflow 상태를 분리했고 VAI-8b에서 실제 근거 trace까지 연결했다. generic
+> handoff를 명확 판단·엄격한 담당자 이관 게이트로 교체하는 VAI-8c~8e는 후속이다.
 
 ## 0. Decision
 

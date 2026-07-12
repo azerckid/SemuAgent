@@ -163,6 +163,8 @@ function payload(row: VatTaxTreatmentDisplayRow) {
     recommendation: row.recommendation,
     provisionalJudgment: row.provisionalJudgment,
     judgmentWorkflowStatus: row.judgmentWorkflowStatus,
+    evidenceTrace: row.evidenceTrace,
+    searchedSources: row.searchedSources,
     source: row.source,
     confidence: row.confidence,
     basisLabel: row.basisLabel,
@@ -264,6 +266,16 @@ describe('VAI-7b reusable VAT AI result', () => {
       }],
     })
     expect(ignored).toEqual(base)
+
+    for (const oldVersion of [
+      { payloadVersion: 2 },
+      { promptVersion: 'vat-tax-treatment-v2' },
+    ]) {
+      expect(applyReusableVatTaxTreatmentAiResults({
+        rows: [base],
+        resultRows: [{ ...readResult({ base, result }), ...oldVersion }],
+      })[0]).toEqual(base)
+    }
   })
 
   it('reuses manual fallback only before nextRetryAt and never replaces a confirmed row', () => {

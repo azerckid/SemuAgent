@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { VatTaxTreatmentRecommendation } from '@/lib/validations/vat-tax-treatment'
+import { buildVatTaxTreatmentEvidenceSearch } from './tax-treatment-evidence-trace'
 import { buildVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 
 function recommendation(
@@ -23,6 +24,11 @@ function recommendation(
     recommendation: 'likely_deductible',
     provisionalJudgment: 'deductible',
     judgmentWorkflowStatus: 'user_confirmation_pending',
+    ...buildVatTaxTreatmentEvidenceSearch({
+      classificationRowId: 'row-1',
+      sourceType: 'tax_invoice',
+      ruleReference: 'P-01',
+    }),
     source: 'deterministic_rule',
     confidence: 'medium',
     basisLabel: '업무용 매입',
@@ -69,5 +75,25 @@ describe('VAT tax treatment recommendation fingerprint', () => {
     expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation({
       source: 'prior_confirmed_pattern',
     }))).not.toBe(baseline)
+  })
+
+  it('changes when linked evidence or searched-source facts change', () => {
+    const baseline = buildVatTaxTreatmentRecommendationFingerprint(recommendation())
+    const displayCopyOnly = recommendation({
+      evidenceTrace: recommendation().evidenceTrace.map((item) => ({
+        ...item,
+        summary: `${item.summary} 표시 문구 변경`,
+      })),
+    })
+    const changedEvidence = buildVatTaxTreatmentEvidenceSearch({
+      classificationRowId: 'row-1',
+      sourceType: 'tax_invoice',
+      linkedEvidenceRowId: 'linked-row-2',
+      ruleReference: 'P-01',
+    })
+
+    expect(buildVatTaxTreatmentRecommendationFingerprint(displayCopyOnly)).toBe(baseline)
+    expect(buildVatTaxTreatmentRecommendationFingerprint(recommendation(changedEvidence)))
+      .not.toBe(baseline)
   })
 })

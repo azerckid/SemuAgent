@@ -114,6 +114,11 @@ export function buildVatTaxTreatmentAiPrompt(rows: VatTaxTreatmentDisplayRow[]) 
       accountLabel: row.accountLabel ? redactPromptValue(row.accountLabel) : null,
       vatFact: row.currentVatFact,
       deterministicBasis: redactPromptValue(row.basisLabel),
+      evidenceSearch: row.evidenceTrace.map((item) => ({
+        source: item.source,
+        status: item.status,
+        summary: redactPromptValue(item.summary),
+      })),
       missingFacts: row.missingFacts.map(redactPromptValue),
     })), null, 2),
   ].join('\n')

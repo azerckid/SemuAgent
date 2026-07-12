@@ -69,6 +69,8 @@ function buildPayload(row: VatTaxTreatmentDisplayRow): VatTaxTreatmentAiResultPa
     recommendation: row.recommendation,
     provisionalJudgment: row.provisionalJudgment,
     judgmentWorkflowStatus: row.judgmentWorkflowStatus,
+    evidenceTrace: row.evidenceTrace,
+    searchedSources: row.searchedSources,
     source: row.source,
     confidence: row.confidence,
     basisLabel: row.basisLabel,

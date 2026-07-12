@@ -31,6 +31,67 @@ export const vatTaxTreatmentJudgmentWorkflowStatusSchema = z.enum([
   'human_resolution_required',
   'ai_temporary_error',
 ])
+export const VAT_TAX_TREATMENT_EVIDENCE_SOURCES = [
+  'current_transaction',
+  'linked_evidence',
+  'exact_vat_fact',
+  'reconciliation_result',
+  'prior_confirmed_decision',
+  'official_rule',
+] as const
+export const vatTaxTreatmentEvidenceSourceSchema = z.enum(VAT_TAX_TREATMENT_EVIDENCE_SOURCES)
+export const vatTaxTreatmentEvidenceTraceItemSchema = z.object({
+  source: vatTaxTreatmentEvidenceSourceSchema,
+  status: z.enum(['found', 'not_found', 'not_applicable']),
+  reference: z.string().min(1).max(240).nullable(),
+  summary: z.string().min(1).max(300),
+}).superRefine((value, context) => {
+  if (value.status === 'found' && !value.reference) {
+    context.addIssue({
+      code: 'custom',
+      path: ['reference'],
+      message: '찾은 근거에는 실제 source reference가 필요합니다.',
+    })
+  }
+  if (value.status !== 'found' && value.reference) {
+    context.addIssue({
+      code: 'custom',
+      path: ['reference'],
+      message: '찾지 못했거나 해당 없는 근거에는 reference를 둘 수 없습니다.',
+    })
+  }
+})
+export const vatTaxTreatmentEvidenceSearchSchema = z.object({
+  evidenceTrace: z.array(vatTaxTreatmentEvidenceTraceItemSchema)
+    .length(VAT_TAX_TREATMENT_EVIDENCE_SOURCES.length),
+  searchedSources: z.array(vatTaxTreatmentEvidenceSourceSchema)
+    .length(VAT_TAX_TREATMENT_EVIDENCE_SOURCES.length),
+}).superRefine((value, context) => {
+  const traceSources = new Set(value.evidenceTrace.map((item) => item.source))
+  const searchedSources = new Set(value.searchedSources)
+  for (const source of VAT_TAX_TREATMENT_EVIDENCE_SOURCES) {
+    if (!traceSources.has(source)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['evidenceTrace'],
+        message: `${source} 탐색 결과가 필요합니다.`,
+      })
+    }
+    if (!searchedSources.has(source)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['searchedSources'],
+        message: `${source} 탐색 완료 기록이 필요합니다.`,
+      })
+    }
+  }
+  if (traceSources.size !== value.evidenceTrace.length) {
+    context.addIssue({ code: 'custom', path: ['evidenceTrace'], message: '근거 source는 중복될 수 없습니다.' })
+  }
+  if (searchedSources.size !== value.searchedSources.length) {
+    context.addIssue({ code: 'custom', path: ['searchedSources'], message: '탐색 source는 중복될 수 없습니다.' })
+  }
+})
 export const vatTaxTreatmentSourceSchema = z.enum([
   'deterministic_rule',
   'prior_confirmed_pattern',
@@ -105,6 +166,8 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
   recommendation: vatTaxTreatmentRecommendationValueSchema,
   provisionalJudgment: vatTaxTreatmentProvisionalJudgmentSchema.nullable(),
   judgmentWorkflowStatus: vatTaxTreatmentJudgmentWorkflowStatusSchema,
+  evidenceTrace: vatTaxTreatmentEvidenceSearchSchema.shape.evidenceTrace,
+  searchedSources: vatTaxTreatmentEvidenceSearchSchema.shape.searchedSources,
   source: vatTaxTreatmentSourceSchema,
   confidence: vatTaxTreatmentConfidenceSchema,
   basisLabel: z.string().min(1).max(500),
@@ -122,6 +185,16 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
 }).superRefine((value, context) => {
   const purchaseDecisions = new Set(['deductible', 'non_deductible', 'prorated'])
   const saleDecisions = new Set(['taxable', 'zero_rated', 'exempt', 'non_taxable'])
+
+  const evidenceSearch = vatTaxTreatmentEvidenceSearchSchema.safeParse({
+    evidenceTrace: value.evidenceTrace,
+    searchedSources: value.searchedSources,
+  })
+  if (!evidenceSearch.success) {
+    for (const issue of evidenceSearch.error.issues) {
+      context.addIssue({ ...issue, path: ['evidenceSearch', ...issue.path] })
+    }
+  }
 
   if (
     value.finalDecision
@@ -358,6 +431,9 @@ export type VatTaxTreatmentRecommendationValue = z.infer<typeof vatTaxTreatmentR
 export type VatTaxTreatmentAiRuntimeStatus = z.infer<typeof vatTaxTreatmentAiRuntimeStatusSchema>
 export type VatTaxTreatmentProvisionalJudgment = z.infer<typeof vatTaxTreatmentProvisionalJudgmentSchema>
 export type VatTaxTreatmentJudgmentWorkflowStatus = z.infer<typeof vatTaxTreatmentJudgmentWorkflowStatusSchema>
+export type VatTaxTreatmentEvidenceSource = z.infer<typeof vatTaxTreatmentEvidenceSourceSchema>
+export type VatTaxTreatmentEvidenceTraceItem = z.infer<typeof vatTaxTreatmentEvidenceTraceItemSchema>
+export type VatTaxTreatmentEvidenceSearch = z.infer<typeof vatTaxTreatmentEvidenceSearchSchema>
 export type VatTaxTreatmentRequiredEvidence = z.infer<typeof vatTaxTreatmentRequiredEvidenceSchema>
 export type VatTaxTreatmentFinalDecision = z.infer<typeof vatTaxTreatmentFinalDecisionSchema>
 export type VatTaxTreatmentMutationInput = z.infer<typeof vatTaxTreatmentMutationSchema>

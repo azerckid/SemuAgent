@@ -102,7 +102,7 @@ describe('VAT single-provider AI enhancement', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v2',
+        promptVersion: 'vat-tax-treatment-v3',
         consensusProviders: [],
       },
     })
@@ -121,7 +121,9 @@ describe('VAT single-provider AI enhancement', () => {
     expect(prompt).not.toContain('901231-1234567')
     expect(prompt).not.toContain('1002345678901')
     expect(prompt).not.toContain('staff@example.com')
+    expect(prompt).not.toContain('classification:row-1')
     expect(prompt).toContain('[마스킹됨]')
+    expect(prompt).toContain('current_transaction')
   })
 
   it('redacts sensitive-looking text returned by the provider before display', async () => {

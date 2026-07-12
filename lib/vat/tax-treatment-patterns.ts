@@ -30,6 +30,16 @@ function isCompatiblePattern(params: {
   return true
 }
 
+export function findCompatibleVatPatternRows(params: {
+  target: Omit<VatTaxTreatmentPatternRow, 'finalDecision'>
+  priorRows: VatTaxTreatmentPatternRow[]
+}) {
+  return params.priorRows.filter((candidate) => isCompatiblePattern({
+    target: params.target,
+    candidate,
+  }))
+}
+
 function dominantPurchaseDecision(rows: VatTaxTreatmentPatternRow[]) {
   const counts = new Map<'deductible' | 'non_deductible' | 'prorated', number>()
   for (const row of rows) {
@@ -92,10 +102,10 @@ export function applyPriorConfirmedVatPattern(params: {
     return params.base
   }
 
-  const compatibleRows = params.priorRows.filter((candidate) => isCompatiblePattern({
+  const compatibleRows = findCompatibleVatPatternRows({
     target: params.target,
-    candidate,
-  }))
+    priorRows: params.priorRows,
+  })
   const pattern = dominantPurchaseDecision(compatibleRows)
   return pattern ? patternResult(params.base, pattern) : params.base
 }

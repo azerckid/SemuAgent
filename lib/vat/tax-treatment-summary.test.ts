@@ -34,6 +34,7 @@ function classification(
     vatFactSource: 'parser',
     vatFactSourceRef: 'source-1',
     vatFactStatus: 'derived',
+    linkedEvidenceRowId: null,
     confirmedByStaffId: 'staff-1',
     confirmedAt: '2026-06-16T00:00:00.000Z',
     ...overrides,
@@ -81,6 +82,13 @@ describe('VAT tax treatment read model', () => {
         hometaxComparisonMode: 'expected_prefill',
         finalDecision: null,
         userActionStatus: 'pending',
+        evidenceTrace: expect.arrayContaining([
+          expect.objectContaining({
+            source: 'exact_vat_fact',
+            reference: 'classification:row-current:vat-fact',
+          }),
+          expect.objectContaining({ source: 'official_rule', status: 'found' }),
+        ]),
       }),
     ])
   })
@@ -94,6 +102,18 @@ describe('VAT tax treatment read model', () => {
         classification({ id: 'bad-total', vatGrossAmountKrw: 120_000 }),
       ],
     })).toEqual([])
+  })
+
+  it('does not expose a stale linked-evidence id outside the scoped classification rows', () => {
+    const [row] = build({
+      classificationRows: [classification({ linkedEvidenceRowId: 'missing-linked-row' })],
+    })
+
+    expect(row?.evidenceTrace.some((item) => item.reference?.includes('missing-linked-row'))).toBe(false)
+    expect(row?.evidenceTrace).toContainEqual(expect.objectContaining({
+      source: 'reconciliation_result',
+      status: 'not_applicable',
+    }))
   })
 
   it('uses a same-business prior confirmed decision only when deterministic facts remain unresolved', () => {
@@ -122,6 +142,13 @@ describe('VAT tax treatment read model', () => {
       recommendation: 'likely_non_deductible',
       source: 'prior_confirmed_pattern',
       confidence: 'medium',
+      evidenceTrace: expect.arrayContaining([
+        expect.objectContaining({
+          source: 'prior_confirmed_decision',
+          reference: 'classification:row-prior',
+        }),
+        expect.objectContaining({ source: 'official_rule', status: 'found' }),
+      ]),
     })
   })
 

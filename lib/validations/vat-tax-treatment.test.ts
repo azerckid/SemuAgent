@@ -6,6 +6,7 @@ import {
   vatTaxTreatmentMutationSuccessSchema,
   vatTaxTreatmentRecommendationSchema,
 } from './vat-tax-treatment'
+import { buildVatTaxTreatmentEvidenceSearch } from '@/lib/vat/tax-treatment-evidence-trace'
 
 function recommendation(overrides: Record<string, unknown> = {}) {
   return {
@@ -26,6 +27,11 @@ function recommendation(overrides: Record<string, unknown> = {}) {
     recommendation: 'likely_deductible',
     provisionalJudgment: 'deductible',
     judgmentWorkflowStatus: 'user_confirmation_pending',
+    ...buildVatTaxTreatmentEvidenceSearch({
+      classificationRowId: 'row-1',
+      sourceType: 'tax_invoice',
+      ruleReference: 'P-01',
+    }),
     source: 'deterministic_rule',
     confidence: 'medium',
     basisLabel: '정확한 VAT fact와 적격 증빙이 있습니다.',
@@ -81,7 +87,7 @@ describe('VAT tax treatment validation', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v2',
+        promptVersion: 'vat-tax-treatment-v3',
         consensusProviders: [],
       },
     })).success).toBe(true)
@@ -97,7 +103,7 @@ describe('VAT tax treatment validation', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v2',
+        promptVersion: 'vat-tax-treatment-v3',
         consensusProviders: [],
       },
     })).success).toBe(false)

@@ -20,6 +20,7 @@ import { parsedVatFactSchema } from './facts'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 import {
   applyPriorConfirmedVatPattern,
+  findCompatibleVatPatternRows,
   type VatTaxTreatmentPatternRow,
 } from './tax-treatment-patterns'
 import { applyStoredVatTaxTreatmentAiResults } from './tax-treatment-ai-result'
@@ -50,6 +51,7 @@ export type VatTaxTreatmentClassificationRow = Pick<
   | 'vatFactSource'
   | 'vatFactSourceRef'
   | 'vatFactStatus'
+  | 'linkedEvidenceRowId'
   | 'confirmedByStaffId'
   | 'confirmedAt'
 >
@@ -252,6 +254,7 @@ export function buildVatTaxTreatmentDisplayRows(params: {
     reviews: params.deductionReviews,
     beforeMonth: params.period.startMonth,
   })
+  const scopedClassificationRowIds = new Set(params.classificationRows.map((row) => row.id))
   const currentReviewByRow = latestDeductionByClassificationRow(params.deductionReviews, params.period.key)
 
   return exactRows
@@ -262,14 +265,16 @@ export function buildVatTaxTreatmentDisplayRows(params: {
         row: ruleRow(row),
         deduction: deductionContext(review),
       })
+      const patternTarget = {
+        classificationRowId: row.id,
+        transactionDate: row.transactionDate,
+        counterparty: row.merchantName,
+        direction: row.vatDirection,
+        finalAccount: row.finalAccount,
+      }
+      const compatiblePriorRows = findCompatibleVatPatternRows({ target: patternTarget, priorRows })
       const decision = applyPriorConfirmedVatPattern({
-        target: {
-          classificationRowId: row.id,
-          transactionDate: row.transactionDate,
-          counterparty: row.merchantName,
-          direction: row.vatDirection,
-          finalAccount: row.finalAccount,
-        },
+        target: patternTarget,
         priorRows,
         base: deterministic,
       })
@@ -304,6 +309,11 @@ export function buildVatTaxTreatmentDisplayRows(params: {
         counterparty: row.merchantName?.trim() || '상대처 미확인',
         description: row.description?.trim() || row.merchantName?.trim() || '거래 내용 미확인',
         sourceType: row.sourceType,
+        linkedEvidenceRowId: row.linkedEvidenceRowId && scopedClassificationRowIds.has(row.linkedEvidenceRowId)
+          ? row.linkedEvidenceRowId
+          : null,
+        priorConfirmedReferences: compatiblePriorRows.map((priorRow) => priorRow.classificationRowId),
+        evidenceRuleReference: deterministic.ruleReference,
         accountLabel: row.finalAccount ? labelForBookkeepingAccountCategory(row.finalAccount) || row.finalAccount : null,
       }))
     })
@@ -435,6 +445,7 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
       vatFactSource: bookkeepingTransactionClassification.vatFactSource,
       vatFactSourceRef: bookkeepingTransactionClassification.vatFactSourceRef,
       vatFactStatus: bookkeepingTransactionClassification.vatFactStatus,
+      linkedEvidenceRowId: bookkeepingTransactionClassification.linkedEvidenceRowId,
       confirmedByStaffId: bookkeepingTransactionClassification.confirmedByStaffId,
       confirmedAt: bookkeepingTransactionClassification.confirmedAt,
     })

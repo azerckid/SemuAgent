@@ -3,6 +3,7 @@ import {
   vatTaxTreatmentAiRuntimeStatusSchema,
   vatTaxTreatmentAiTraceSchema,
   vatTaxTreatmentConfidenceSchema,
+  vatTaxTreatmentEvidenceSearchSchema,
   vatTaxTreatmentHometaxActionSchema,
   vatTaxTreatmentJudgmentWorkflowStatusSchema,
   vatTaxTreatmentProvisionalJudgmentSchema,
@@ -10,8 +11,8 @@ import {
   vatTaxTreatmentSourceSchema,
 } from './vat-tax-treatment'
 
-export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v2' as const
-export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 2 as const
+export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v3' as const
+export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 3 as const
 
 export const vatTaxTreatmentAiResultStatusSchema = z.enum([
   'queued',
@@ -26,6 +27,8 @@ export const vatTaxTreatmentAiResultPayloadSchema = z.object({
   recommendation: vatTaxTreatmentRecommendationValueSchema,
   provisionalJudgment: vatTaxTreatmentProvisionalJudgmentSchema.nullable(),
   judgmentWorkflowStatus: vatTaxTreatmentJudgmentWorkflowStatusSchema,
+  evidenceTrace: vatTaxTreatmentEvidenceSearchSchema.shape.evidenceTrace,
+  searchedSources: vatTaxTreatmentEvidenceSearchSchema.shape.searchedSources,
   source: vatTaxTreatmentSourceSchema,
   confidence: vatTaxTreatmentConfidenceSchema,
   basisLabel: z.string().min(1).max(500),
@@ -35,6 +38,15 @@ export const vatTaxTreatmentAiResultPayloadSchema = z.object({
   aiTrace: vatTaxTreatmentAiTraceSchema.nullable(),
   aiRuntimeStatus: vatTaxTreatmentAiRuntimeStatusSchema,
 }).superRefine((value, context) => {
+  const evidenceSearch = vatTaxTreatmentEvidenceSearchSchema.safeParse({
+    evidenceTrace: value.evidenceTrace,
+    searchedSources: value.searchedSources,
+  })
+  if (!evidenceSearch.success) {
+    for (const issue of evidenceSearch.error.issues) {
+      context.addIssue({ ...issue, path: ['evidenceSearch', ...issue.path] })
+    }
+  }
   const isAiResult = value.source === 'ai_single' || value.source === 'ai_consensus'
   if (isAiResult !== Boolean(value.aiTrace)) {
     context.addIssue({

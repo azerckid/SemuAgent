@@ -1,8 +1,12 @@
 import { createHash } from 'node:crypto'
-import type { VatTaxTreatmentRecommendation } from '@/lib/validations/vat-tax-treatment'
+import {
+  vatTaxTreatmentEvidenceSearchSchema,
+  type VatTaxTreatmentRecommendation,
+} from '@/lib/validations/vat-tax-treatment'
+import { buildVatTaxTreatmentEvidenceSearch } from './tax-treatment-evidence-trace'
 import { deriveVatTaxTreatmentJudgmentContract } from './tax-treatment-judgment'
 
-type VatTaxTreatmentFingerprintInput = Pick<
+type VatTaxTreatmentFingerprintBaseInput = Pick<
   VatTaxTreatmentRecommendation,
   | 'tenantId'
   | 'businessEntityId'
@@ -13,6 +17,13 @@ type VatTaxTreatmentFingerprintInput = Pick<
   | 'source'
   | 'requiredEvidence'
   | 'ruleVersion'
+  | 'ruleReference'
+>
+
+type VatTaxTreatmentFingerprintInput = VatTaxTreatmentFingerprintBaseInput & Pick<
+  VatTaxTreatmentRecommendation,
+  | 'evidenceTrace'
+  | 'searchedSources'
 >
 
 export function buildVatTaxTreatmentRecommendationFingerprint(
@@ -39,20 +50,46 @@ export function buildVatTaxTreatmentRecommendationFingerprint(
         left.code.localeCompare(right.code) || left.status.localeCompare(right.status)
       )),
     ruleVersion: row.ruleVersion,
+    evidenceTrace: row.evidenceTrace
+      .map(({ source, status, reference }) => ({ source, status, reference }))
+      .sort((left, right) => left.source.localeCompare(right.source)),
+    searchedSources: [...row.searchedSources].sort(),
   }
 
   return createHash('sha256').update(JSON.stringify(canonical)).digest('hex')
 }
 
 export function withVatTaxTreatmentRecommendationFingerprint<
-  T extends VatTaxTreatmentFingerprintInput & Pick<
+  T extends VatTaxTreatmentFingerprintBaseInput & Pick<
     VatTaxTreatmentRecommendation,
     'aiRuntimeStatus' | 'finalDecision'
   >,
 >(row: T) {
-  return {
+  const candidate = row as T & Partial<VatTaxTreatmentRecommendation> & {
+    sourceType?: 'bank' | 'card' | 'receipt' | 'tax_invoice' | 'other' | null
+    linkedEvidenceRowId?: string | null
+    priorConfirmedReferences?: string[]
+    evidenceRuleReference?: string | null
+  }
+  const evidenceSearch = candidate.evidenceTrace || candidate.searchedSources
+    ? vatTaxTreatmentEvidenceSearchSchema.parse({
+      evidenceTrace: candidate.evidenceTrace,
+      searchedSources: candidate.searchedSources,
+    })
+    : buildVatTaxTreatmentEvidenceSearch({
+      classificationRowId: row.classificationRowId,
+      sourceType: candidate.sourceType,
+      linkedEvidenceRowId: candidate.linkedEvidenceRowId,
+      priorConfirmedReferences: candidate.priorConfirmedReferences,
+      ruleReference: candidate.evidenceRuleReference ?? row.ruleReference,
+    })
+  const enriched = {
     ...row,
     ...deriveVatTaxTreatmentJudgmentContract(row),
-    recommendationFingerprint: buildVatTaxTreatmentRecommendationFingerprint(row),
+    ...evidenceSearch,
+  }
+  return {
+    ...enriched,
+    recommendationFingerprint: buildVatTaxTreatmentRecommendationFingerprint(enriched),
   }
 }
