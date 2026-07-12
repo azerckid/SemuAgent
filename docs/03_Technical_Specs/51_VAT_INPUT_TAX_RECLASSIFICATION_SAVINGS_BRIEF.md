@@ -1,8 +1,8 @@
 # VAT Input Tax Reclassification Savings Brief
 > Created: 2026-07-12
-> Last Updated: 2026-07-12 (v2 — 후보 탐색 모델을 이진 게이트에서 신뢰도 등급으로 재설계)
+> Last Updated: 2026-07-12 (v3 — VAI-9c 정확한 매입세액 기반 가능 금액·Zod read contract 반영)
 > Backlog: JC-041
-> Status: docs-only pre-code brief; UI-First Gate and owner Preview approval still pending before implementation
+> Status: VAI-9a~9c read model implemented; UI-First Gate and owner Preview approval pending
 
 ## 0. Decision
 
@@ -190,25 +190,33 @@ VAI-9d/9e에서 확정한다.
 신뢰도 "높음"이라도 §5의 확정 게이트를 통과하기 전까지는 "가능성" 표현을
 유지한다.
 
-## 7. Data Contract (draft)
+## 7. Data Contract
 
 기존 `vat_deduction_review`(사용자 확정 감사 테이블)는 최종 분류 결정을
-저장하는 곳이다. 재분류 제안은 그 결정에 도달하기 전 단계의 추천이므로,
-JC-039의 `evidenceTrace` 구조를 재사용하는 additive 필드로 설계한다
-(신규 테이블 여부는 VAI/JC-039 스키마 확정 이후 결정).
+저장하는 곳이다. VAI-9c의 재분류 제안은 원천 행에서 매번 결정론적으로 다시
+만드는 read model이므로 신규 DB에 중복 저장하지 않는다. 사용자 결정과 감사
+참조는 VAI-9e에서 기존 정본과 원자적으로 저장한다.
 
 | 필드 | 목적 |
 |:---|:---|
-| confidence | 신뢰도 등급(`high`/`medium`/`low`) |
-| currentCategory / suggestedCategory | 현재 분류(접대비) / 제안 분류(복리후생비·회의비, 신호가 전혀 없으면 null) |
-| factors | §4.1 가산/감산 요인 목록(각 요인의 방향과 요약) |
-| missingToConfirm | 확정하려면 필요한 자료 목록(§5) |
+| evaluation.confidence | 신뢰도 등급(`high`/`medium`/`low`) |
+| currentCategory / evaluation.suggestedCategory | 현재 분류(접대비) / 제안 분류(복리후생비·회의비, 신호가 전혀 없으면 null) |
+| evaluation.factors | §4.1 가산/감산 요인 목록(각 요인의 방향과 요약) |
+| evaluation.missingToConfirm | 확정하려면 필요한 자료 목록(§5) |
 | potentialSavingsKrw | 재분류 시 추가로 공제 **가능한**(확정 아님) 매입세액 |
+| savingsBasis | `maximum_additional_input_tax_if_fully_reclassified`; 총액 역산이 아니라 저장된 매입세액을 사용했다는 계산 근거 |
 | userDecision | `pending` / `reclassified` / `kept_as_is` |
 | decisionRowId | 사용자 결정을 저장하는 감사 row 참조(재질문 방지용) |
 
 정본은 여전히 `vat_deduction_review`의 사용자 확정값이며, 이 필드들은
 추천·이력 계층으로 canonical 값을 대체하지 않는다.
+
+VAI-9c 계산 규칙은 하나뿐이다.
+
+- `potentialSavingsKrw = inputTaxKrw`
+- 공급가액·합계액에서 세액을 역산하지 않는다.
+- `inputTaxKrw = 0`이면 가능 금액도 0원이며 이익을 만들어내지 않는다.
+- Zod 계약은 두 금액이 다르면 결과를 거부한다.
 
 ## 8. UI Contract (방향성, Preview 승인 전)
 
@@ -232,7 +240,7 @@ JC-039의 `evidenceTrace` 구조를 재사용하는 additive 필드로 설계한
 |:---|:---|:---|
 | **VAI-9a · Confidence Model 확정** | §4 요인·등급 산출을 코드 조건으로 명세화, 대표 fixture 작성(높음/중간/낮음 각각) | 모든 접대비 불공제 후보가 셋 중 하나의 등급과 factors·missingToConfirm을 갖고, 어떤 경우에도 후보에서 제외되지 않음 |
 | **VAI-9b · Evidence Resolver 확장** | `vat_deduction_review` + `bookkeeping_transaction_classification.staffMemo`에서 적요·참석자 대조·과거 이력 탐색 | 현재 기간의 접대비 불공제 후보가 전부(신뢰도 무관) 조회되고 evidence trace를 남김 |
-| **VAI-9c · Savings Calculation + Data Contract** | §7 스키마 구현, "최대 OOO원 가능성" 금액 계산 | 각 후보에 가능성 금액이 계산·저장됨(확정형 문구 아님) |
+| **VAI-9c · Savings Calculation + Data Contract** | §7 Zod 스키마 구현, "최대 OOO원 가능성" 금액 계산 | **완료** — 각 후보 read model에 정확한 매입세액 기반 가능 금액·계산 근거·pending 결정 상태 포함, DB/canonical 변경 없음 |
 | **VAI-9d · UI-First Gate + Preview** | §8 방향을 실제 HTML Preview로 제작, 신뢰도별 구분·부족한 자료 표시 확인, 프로젝트 오너 승인 | 화면 배치·문구 승인, 기존 확인 필요 거래 UI와 혼선 없음 |
 | **VAI-9e · Confirmation Gate + E2E** | §5 확정 게이트 구현(부족한 자료 보완 없이는 확정 불가), 반복 재질문 방지, 브라우저 E2E | 낮은 신뢰도 후보는 자료 보완 전까지 확정 불가함을 검증, 사용자 결정이 canonical 값에 정확히 반영 |
 
@@ -268,4 +276,4 @@ JC-039의 `evidenceTrace` 구조를 재사용하는 additive 필드로 설계한
 - **Technical_Specs**: [JC-039 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 탐색 순서 재사용(단 이진 게이트가 아니라 등급 모델로 응용) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유 · [VAT Screen Simplification Brief](./48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - 기존 확인 필요 거래 UI와의 분리 원칙
 - **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VAI-9d 이전까지는 참조용, 재분류 UI는 미반영
 - **Logic_Progress**: [Backlog JC-041](../04_Logic_Progress/00_BACKLOG.md)
-- **QA_Validation**: N/A - VAI-9a 착수 시 작성
+- **QA_Validation**: [VAT Test Scenarios §2.14](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 후보 등급·절세 가능 금액·추정 금지 계약

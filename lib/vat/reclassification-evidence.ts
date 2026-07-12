@@ -49,14 +49,17 @@ export const reclassificationEvidenceInputSchema = z.object({
 
 export type ReclassificationEvidenceInput = z.input<typeof reclassificationEvidenceInputSchema>
 
-type ReclassificationFactorType =
-  | 'attendees_all_internal'
-  | 'internal_event_keyword'
-  | 'historical_pattern_benefit'
-  | 'external_counterparty_named'
-  | 'attendees_unknown'
-  | 'large_amount'
-  | 'historical_pattern_entertainment'
+export const RECLASSIFICATION_FACTOR_TYPES = [
+  'attendees_all_internal',
+  'internal_event_keyword',
+  'historical_pattern_benefit',
+  'external_counterparty_named',
+  'attendees_unknown',
+  'large_amount',
+  'historical_pattern_entertainment',
+] as const
+
+export type ReclassificationFactorType = (typeof RECLASSIFICATION_FACTOR_TYPES)[number]
 
 export type ReclassificationFactor = {
   type: ReclassificationFactorType
