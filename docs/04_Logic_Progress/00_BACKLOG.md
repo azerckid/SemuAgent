@@ -875,7 +875,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Status: `todo` (Pre-Code Brief 작성 완료 — UI-First Gate·오너 Preview 승인 착수 전 대기)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조, AI 추천과 사용자 최종 책임의 경계.
-- Related UI Docs: [VAT UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md) · [VAT Prototype Review §6.3](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) - VAI-9d 제안 배치·정보 계층, 오너 승인 대기.
+- Related UI Docs: [VAT UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md) · [VAT Prototype Review §6.3](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) - VAI-9d 승인 배치·정보 계층과 VAI-9e 확정 액션.
 - Related HTML Preview: [VAT Preview](../02_UI_Screens/previews/03_vat.html) - 세액 요약 아래 별도 절세 후보 섹션, 높은/중간/낮은 대표 행, 기본 접힘 제안.
 - Related Technical Docs: [JC-041 Reclassification Savings Pre-Code Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md) · [JC-039 Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 우선 원칙을 그대로 재사용. [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유.
 - Related QA Docs: [VAT QA §2.14](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - VAI-9a~9c 후보 등급·절세 가능 금액 계약.
@@ -895,19 +895,20 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - 부가세 외 다른 세목(소득세·법인세 등)의 절세 가능성 탐지는 후속 논의.
   - 재분류 자동 확정·기장 데이터 자동 수정은 하지 않는다(사용자 최종 확인 필수).
   - AI가 없는 근거를 만들어 확정을 유도하는 것은 금지(JC-039 §2 "No Evidence Means No Special Treatment" 원칙은 "확정"에 적용되며 "후보 노출"에는 적용되지 않는다 — Brief 51 §0.1).
-- Fixed Order (Brief 51 §9): **VAI-9a 완료(2026-07-12, v2 신뢰도 등급 모델로 재작성)** → **VAI-9b 완료(2026-07-12, v2 재작성)** → **VAI-9c 완료(정확한 매입세액 기반 절세 가능 금액·Zod read contract)** → VAI-9d UI-First Gate·Preview 승인 → VAI-9e 확정 흐름·오탐 중심 E2E.
+- Fixed Order (Brief 51 §9): **VAI-9a 완료(2026-07-12, v2 신뢰도 등급 모델로 재작성)** → **VAI-9b 완료(2026-07-12, v2 재작성)** → **VAI-9c 완료(정확한 매입세액 기반 절세 가능 금액·Zod read contract)** → **VAI-9d 완료(PR #229 Preview 승인·머지)** → **VAI-9e 구현·dev E2E 완료(PR 검토 대기)**.
 - Implementation Preconditions:
   - [x] 프로젝트 오너가 방향("절세 가능성이 있는 것을 정리해서 보여주는 것이 좋겠다")을 확인했다.
   - [x] Pre-Code Brief 작성 완료(근거 요건, 재분류 후보 판정 기준, 데이터 계약 초안, UI 방향 — Brief 51).
-  - [ ] 재분류 오탐(false positive)의 세무 리스크를 프로젝트 오너와 재검토한다.
-  - [ ] UI-First Gate: 재분류 제안을 어느 화면에 어떻게 보여줄지 Preview로 먼저 확인한다(VAI-9d).
+  - [x] 재분류 오탐(false positive)의 세무 리스크를 프로젝트 오너와 재검토했다 — 후보는 넓게, 확정은 엄격하게 유지.
+  - [x] UI-First Gate: PR #229 Preview에서 세액 요약 아래 별도 목록·기본 정보 밀도·펼쳐보기 구조를 승인했다.
 - Acceptance Criteria: Brief 51 §10 참조(근거 없이 제안 금지, 절세 금액 필수 표시, 재질문 방지, canonical 값 사용자 확정 전 불변 등).
 - Document Sync Check (2026-07-12, v2): 프로젝트 오너가 PR #221의 v1 구현을 리뷰하며 "부가세 공제받을 가능성이 있는 목록을 최대한 보여준다"는 실제 목적과 v1의 이진 게이트("근거 부족하면 후보 자체를 숨김")가 어긋난다고 지적 — "후보는 넓게, 최종 공제는 엄격하게"로 판정 모델과 Brief 51을 전면 재작성했다(v1→v2, 머지 전 반영).
   - Brief 51: §0.1 핵심 원칙 신설, §4 "재분류 신뢰도 모델"로 재구성(이진 배제 조건 없음 — 모든 신호는 가산/감산 점수, 높음/중간/낮음 3단계), §5 확정 게이트(업무 목적·적격증빙·사용자 확인) 신설, §6 절세 금액을 확정 표현이 아닌 가능성 표현으로 재정의.
   - **VAI-9a 재작성 완료**: `lib/vat/reclassification-evidence.ts` — `evaluateReclassificationCandidate`는 이제 후보를 절대 배제하지 않고 항상 `{ confidence, suggestedCategory, factors, missingToConfirm }`을 반환한다. 참석자 정보 없음(`attendees_unknown`)은 감점 없이 정보성 요인으로만 기록. 고액·법인 거래처명·과거 접대비 유지 이력은 감산 요인(각 -1)이지만 후보를 제거하지 않는다. `EXTERNAL_COUNTERPARTY_KEYWORDS`에서 "대표·이사·팀장"은 내부 직함과 겹쳐 제외(리뷰 지적사항, §4.4). `lib/vat/reclassification-evidence.test.ts` 11건 전체 재작성 — 모든 감산 요인 케이스에서 "후보가 여전히 유지되는지"를 명시적으로 검증.
   - **VAI-9b 재작성 완료**: `lib/vat/reclassification-evidence-resolver.ts` — `resolveReclassificationCandidates`가 접대비 사유로 필터링된 행 전부를 신뢰도와 무관하게 항상 후보 배열에 추가한다(이전엔 낮은 신뢰도를 조기 제외했음). `bookkeepingTransactionClassification`을 `leftJoin`해 `staffMemo`를 근거 탐색에 포함(Brief 51 §4.5, 이전엔 읽지 않았음). 리뷰에서 지적된 두 버그도 함께 고정: `resolvePastDecisionSignal`을 순수 함수로 분리해 `non_deductible`을 `deductible`보다 항상 우선(순서 의존 버그 회귀), 과거 이력 조회에 `ENTERTAINMENT_REASON_KEYWORDS` reason 필터 추가(다른 불공제 사유 오독 방지). `reclassification-evidence-resolver.test.ts`에 `resolvePastDecisionSignal` 회귀 테스트 5건 추가(총 11건).
   - **VAI-9c 완료**: `lib/vat/reclassification-savings.ts`에 후보 Zod 계약과 결정론적 계산을 추가했다. `potentialSavingsKrw`는 원장에 저장된 `inputTaxKrw`와 반드시 같아야 하며 공급가액·합계액 역산을 금지한다. resolver는 모든 후보를 이 계약으로 검증해 반환한다. 신규 DB·migration·UI·mutation은 없고 사용자 결정 저장은 VAI-9e 범위다.
-  - **VAI-9d Preview 제작 완료·오너 승인 대기**: `03_vat.html`에서 세액 요약 아래 `추가 공제 가능성`을 기존 예외 작업대와 분리했다. 기본 행은 거래·재분류 방향·최대 가능 금액만 표시하고 신뢰도·근거·부족 자료는 펼쳐보기로 이동했다. 높은/중간/낮은 대표 후보 3건을 비교하며, 후보 0건이면 섹션을 숨기는 계약이다. runtime·DB·mutation 변경 없음.
+  - **VAI-9d 완료**: PR #229에서 `03_vat.html`의 세액 요약 아래 `추가 공제 가능성`을 기존 예외 작업대와 분리했다. 기본 행은 거래·재분류 방향·최대 가능 금액만 표시하고 신뢰도·근거·부족 자료는 펼쳐보기로 이동했다. 높은/중간/낮은 대표 후보 3건과 후보 0건 숨김 계약을 프로젝트 오너가 승인했다.
+  - **VAI-9e 구현·dev E2E 완료**: runtime도 승인 Preview와 같은 위치·정보 계층을 사용한다. `공제로 재분류`는 업무 목적/참석자 입력·적격증빙·명시 확정을 서버에서 재검증하고, 기존 `vat_deduction_review`의 canonical decision·확정자·시각·사유와 기간 요약을 트랜잭션으로 갱신한다. `접대비 유지`도 같은 정본에 기록해 재질문을 막는다. 후보 조회는 별도 Suspense 경계로 격리하고 과거 거래처 이력은 단일 쿼리로 묶어 VAT 첫 화면과 N+1 쿼리를 차단했다. 개발 샘플에서 양쪽 흐름을 브라우저/DB로 확인한 뒤 원상복구했다. 신규 테이블·migration 없음.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

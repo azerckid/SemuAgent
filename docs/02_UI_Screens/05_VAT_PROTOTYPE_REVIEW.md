@@ -70,10 +70,12 @@
 - 예외가 0건이면 긴 표 대신 완료 배너를 표시한다.
 - 계약: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md)
 
-### 6.3 JC-041 VAI-9d Savings Preview — Owner Review Pending
+### 6.3 JC-041 VAI-9d/9e Savings Flow — Owner Approved
 
 - 세액 요약 바로 아래에 `추가 공제 가능성`을 두고 기존 `확인 필요 거래`와 분리한다.
 - 기본 행에는 거래·재분류 방향·최대 가능 금액만 표시한다. 신뢰도·근거·부족 자료는 펼쳐보기로 이동한다.
+- 프로젝트 오너가 PR #229 Preview를 승인했다. runtime은 같은 배치·정보 계층을 유지하고, 펼쳐보기 안에서만 `공제로 재분류`·`접대비 유지` 액션을 제공한다.
+- `공제로 재분류`는 업무 목적 또는 참석자 입력과 적격증빙 존재를 요구하며, 서버가 현재 후보 fingerprint·증빙·미확정 상태를 다시 검증한다.
 - 높은/중간/낮은 후보를 모두 보여주되 badge를 늘리지 않는다.
 - 후보가 0건이면 섹션을 표시하지 않는다.
 - Preview 단계에는 저장·확정 버튼이 없고 canonical 값도 바꾸지 않는다.

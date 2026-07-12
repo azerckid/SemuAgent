@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import {
   RECLASSIFICATION_CONFIDENCE_TIERS,
@@ -11,6 +12,11 @@ export const reclassificationUserDecisionSchema = z.enum([
   'reclassified',
   'kept_as_is',
 ])
+
+export const reclassificationEligibleEvidenceSchema = z.object({
+  present: z.boolean(),
+  label: z.string().min(1),
+})
 
 const reclassificationEvaluationSchema = z.object({
   confidence: z.enum(RECLASSIFICATION_CONFIDENCE_TIERS),
@@ -33,8 +39,10 @@ export const reclassificationSavingsCandidateSchema = z.object({
   evaluation: reclassificationEvaluationSchema,
   potentialSavingsKrw: z.number().int().nonnegative(),
   savingsBasis: z.literal('maximum_additional_input_tax_if_fully_reclassified'),
+  eligibleEvidence: reclassificationEligibleEvidenceSchema,
   userDecision: reclassificationUserDecisionSchema,
   decisionRowId: z.string().min(1).nullable(),
+  candidateFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
 }).superRefine((value, ctx) => {
   if (value.potentialSavingsKrw !== value.inputTaxKrw) {
     ctx.addIssue({
@@ -54,13 +62,23 @@ export function buildReclassificationSavingsCandidate(params: {
   supplyAmountKrw: number
   inputTaxKrw: number
   evaluation: ReclassificationEvaluation
+  eligibleEvidence: z.infer<typeof reclassificationEligibleEvidenceSchema>
+  userDecision?: z.infer<typeof reclassificationUserDecisionSchema>
+  decisionRowId?: string | null
 }): ReclassificationSavingsCandidate {
-  return reclassificationSavingsCandidateSchema.parse({
+  const candidate = {
     ...params,
     currentCategory: 'entertainment_expense',
     potentialSavingsKrw: params.inputTaxKrw,
     savingsBasis: 'maximum_additional_input_tax_if_fully_reclassified',
-    userDecision: 'pending',
-    decisionRowId: null,
+    userDecision: params.userDecision ?? 'pending',
+    decisionRowId: params.decisionRowId ?? null,
+  } as const
+
+  return reclassificationSavingsCandidateSchema.parse({
+    ...candidate,
+    candidateFingerprint: createHash('sha256')
+      .update(JSON.stringify(candidate))
+      .digest('hex'),
   })
 }

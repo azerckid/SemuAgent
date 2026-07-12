@@ -1,8 +1,8 @@
 # VAT Input Tax Reclassification Savings Brief
 > Created: 2026-07-12
-> Last Updated: 2026-07-13 (v4 — VAI-9d 절세 후보 Preview 제안 반영)
+> Last Updated: 2026-07-13 (v5 — VAI-9e 확정 게이트·runtime·dev E2E 반영)
 > Backlog: JC-041
-> Status: VAI-9a~9c implemented; VAI-9d Preview ready and owner approval pending
+> Status: VAI-9a~9e implemented; PR review pending
 
 ## 0. Decision
 
@@ -218,7 +218,7 @@ VAI-9c 계산 규칙은 하나뿐이다.
 - `inputTaxKrw = 0`이면 가능 금액도 0원이며 이익을 만들어내지 않는다.
 - Zod 계약은 두 금액이 다르면 결과를 거부한다.
 
-## 8. UI Contract (VAI-9d Preview 제안, 오너 승인 전)
+## 8. UI Contract (VAI-9d Preview 승인·VAI-9e runtime 반영)
 
 - 재분류 제안은 세액 요약 바로 아래의 `추가 공제 가능성` 섹션에 두고,
   기존 `확인 필요 거래` 표와 **분리**한다. 불공제 설명 팝오버에 절세 제안을
@@ -229,8 +229,15 @@ VAI-9c 계산 규칙은 하나뿐이다.
   아니라는 주의 문구를 표시한다.
 - 높은/중간/낮은 신뢰도 후보를 모두 같은 목록에 표시한다. 후보가 0건이면
   섹션 자체를 렌더하지 않는다.
-- VAI-9d Preview에는 저장 버튼을 만들지 않는다. 재분류 확정과 자료 보완
-  입력은 오너 승인 뒤 VAI-9e에서 설계한다.
+- VAI-9d Preview 승인 후 VAI-9e runtime은 펼쳐보기 안에만 `공제로 재분류`와
+  `접대비 유지`를 둔다. 기본 행에는 저장 control을 추가하지 않는다.
+- `공제로 재분류` 모달은 복리후생비/회의비 선택, 업무 목적 또는 참석자 입력,
+  연결된 적격증빙 상태를 한 번에 확인한다. 적격증빙이 없으면 확정 버튼을
+  비활성화하며 서버도 같은 조건을 다시 검증한다.
+- `접대비 유지`는 선택적 사유와 함께 명시적으로 확정하며, 저장 후 해당 거래는
+  후보 목록에서 제외해 반복 질문하지 않는다.
+- 후보 조회는 세액 요약과 예외 작업대의 초기 렌더를 막지 않는 별도 Suspense
+  경계에서 실행하고, 과거 거래처 결정은 후보별 N+1이 아닌 단일 묶음 조회로 읽는다.
 - 제안 화면은 [03_vat.html](../02_UI_Screens/previews/03_vat.html)에 반영했으며
   실제 runtime 구현 전 프로젝트 오너의 화면 승인이 필요하다.
 
@@ -241,25 +248,25 @@ VAI-9c 계산 규칙은 하나뿐이다.
 | **VAI-9a · Confidence Model 확정** | §4 요인·등급 산출을 코드 조건으로 명세화, 대표 fixture 작성(높음/중간/낮음 각각) | 모든 접대비 불공제 후보가 셋 중 하나의 등급과 factors·missingToConfirm을 갖고, 어떤 경우에도 후보에서 제외되지 않음 |
 | **VAI-9b · Evidence Resolver 확장** | `vat_deduction_review` + `bookkeeping_transaction_classification.staffMemo`에서 적요·참석자 대조·과거 이력 탐색 | 현재 기간의 접대비 불공제 후보가 전부(신뢰도 무관) 조회되고 evidence trace를 남김 |
 | **VAI-9c · Savings Calculation + Data Contract** | §7 Zod 스키마 구현, "최대 OOO원 가능성" 금액 계산 | **완료** — 각 후보 read model에 정확한 매입세액 기반 가능 금액·계산 근거·pending 결정 상태 포함, DB/canonical 변경 없음 |
-| **VAI-9d · UI-First Gate + Preview** | §8 방향을 실제 HTML Preview로 제작, 신뢰도별 구분·부족한 자료 표시 확인, 프로젝트 오너 승인 | **Preview 제작 완료·승인 대기** — 화면 배치·문구 승인 전 runtime 미착수 |
-| **VAI-9e · Confirmation Gate + E2E** | §5 확정 게이트 구현(부족한 자료 보완 없이는 확정 불가), 반복 재질문 방지, 브라우저 E2E | 낮은 신뢰도 후보는 자료 보완 전까지 확정 불가함을 검증, 사용자 결정이 canonical 값에 정확히 반영 |
+| **VAI-9d · UI-First Gate + Preview** | §8 방향을 실제 HTML Preview로 제작, 신뢰도별 구분·부족 자료 표시 확인, 프로젝트 오너 승인 | **완료** — PR #229 Preview 승인·머지 |
+| **VAI-9e · Confirmation Gate + E2E** | §5 확정 게이트 구현(부족한 자료 보완 없이는 확정 불가), 반복 재질문 방지, 브라우저 E2E | **구현·dev E2E 완료, PR 검토 대기** — 낮은 신뢰도+카드 증빙 후보에서 공제 재분류/접대비 유지 양쪽 canonical 저장과 재질문 방지 확인, 샘플 원복 |
 
 ## 10. Acceptance Criteria
 
-- [ ] 접대비 불공제 후보는 신뢰도와 무관하게 전부 목록에 오른다(§0.1) — 근거
+- [x] 접대비 불공제 후보는 신뢰도와 무관하게 전부 목록에 오른다(§0.1) — 근거
       부족을 이유로 후보에서 제외하지 않는다.
-- [ ] 모든 후보에 신뢰도 등급, 발견된 요인, 부족한 자료 목록이 함께 표시된다.
-- [ ] 금액은 확정형이 아니라 "최대 OOO원 가능성" 형태로만 표시된다.
-- [ ] 실제 공제 전환(canonical 값 변경)은 §5의 확정 게이트를 통과해야만
+- [x] 모든 후보에 신뢰도 등급, 발견된 요인, 부족한 자료 목록이 함께 표시된다.
+- [x] 금액은 확정형이 아니라 "최대 OOO원 가능성" 형태로만 표시된다.
+- [x] 실제 공제 전환(canonical 값 변경)은 §5의 확정 게이트를 통과해야만
       가능하다 — 신뢰도가 낮은 후보는 자료 보완 없이 확정할 수 없다.
-- [ ] AI가 계정과목이나 공제 여부를 자동으로 확정하지 않는다.
-- [ ] 사용자가 "접대비 유지"를 선택하면 같은 거래·패턴에 재질문하지 않되,
+- [x] AI가 계정과목이나 공제 여부를 자동으로 확정하지 않는다.
+- [x] 사용자가 "접대비 유지"를 선택하면 같은 거래·패턴에 재질문하지 않되,
       이 결정을 강제 게이트가 아니라 참고 신호로만 재사용한다(§4.3).
-- [ ] UI에서 "이미 확정된 불공제 설명"과 "재분류 후보"가 서로 다른 자리에
+- [x] UI에서 "이미 확정된 불공제 설명"과 "재분류 후보"가 서로 다른 자리에
       노출된다.
-- [ ] 접대비 불공제 후보가 0건이면 관련 UI 요소가 아예 나타나지 않는다.
-- [ ] tenant·사업장·기간 격리와 PII 최소화를 유지한다.
-- [ ] 대표 fixture(높음/중간/낮음 각각, 그리고 상충하는 과거 이력 케이스)로
+- [x] 접대비 불공제 후보가 0건이면 관련 UI 요소가 아예 나타나지 않는다.
+- [x] tenant·사업장·기간 격리와 PII 최소화를 유지한다.
+- [x] 대표 fixture(높음/중간/낮음 각각, 그리고 상충하는 과거 이력 케이스)로
       등급 산출과 확정 게이트 분리를 검증한다.
 
 ## 11. Out of Scope
@@ -274,6 +281,6 @@ VAI-9c 계산 규칙은 하나뿐이다.
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조와 사용자 최종 책임 경계
 - **Technical_Specs**: [JC-039 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 탐색 순서 재사용(단 이진 게이트가 아니라 등급 모델로 응용) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유 · [VAT Screen Simplification Brief](./48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - 기존 확인 필요 거래 UI와의 분리 원칙
-- **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VAI-9d 절세 후보 제안 반영, 프로젝트 오너 승인 대기
+- **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VAI-9d 승인 배치와 VAI-9e 펼쳐보기 액션 반영
 - **Logic_Progress**: [Backlog JC-041](../04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [VAT Test Scenarios §2.14](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 후보 등급·절세 가능 금액·추정 금지 계약

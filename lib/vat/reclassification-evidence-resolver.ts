@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm'
+import { and, eq, inArray, ne } from 'drizzle-orm'
 import { bookkeepingTransactionClassification, employeeProfile, vatDeductionReview } from '@/lib/db/schema'
 import {
   evaluateReclassificationCandidate,
@@ -23,6 +23,33 @@ import {
 const ENTERTAINMENT_REASON_KEYWORDS = ['접대비', '기업업무추진비']
 
 export type ReclassificationCandidate = ReclassificationSavingsCandidate
+
+type ReclassificationSourceType = 'bank' | 'card' | 'receipt' | 'tax_invoice' | 'other' | null
+
+export function resolveEligibleReclassificationEvidence(params: {
+  sourceVoucherId: string | null
+  sourceVoucherLineId: string | null
+  sourceType: ReclassificationSourceType
+  linkedEvidenceRowId: string | null
+}): { present: boolean; label: string } {
+  if (params.sourceType === 'tax_invoice') return { present: true, label: '세금계산서' }
+  if (params.sourceType === 'receipt') return { present: true, label: '현금영수증' }
+  if (params.sourceType === 'card') return { present: true, label: '카드 내역' }
+  if (params.linkedEvidenceRowId) return { present: true, label: '연결된 증빙' }
+  if (params.sourceVoucherLineId || params.sourceVoucherId) {
+    return { present: true, label: '연결된 전표 증빙' }
+  }
+  return { present: false, label: '적격증빙 확인 필요' }
+}
+
+export function reclassificationUserDecisionFromCanonical(
+  decision: string,
+): 'pending' | 'reclassified' | 'kept_as_is' | null {
+  if (decision === 'pending') return 'pending'
+  if (decision === 'deductible') return 'reclassified'
+  if (decision === 'non_deductible') return 'kept_as_is'
+  return null
+}
 
 // 적요 텍스트에서 참석자로 보이는 이름 후보를 뽑는다. "참석자: 홍길동, 김철수"처럼
 // 명시적인 패턴만 인정한다. 그 외에는 null(정보 없음)을 반환한다 — 어설픈 추출로
@@ -72,28 +99,45 @@ export function resolvePastDecisionSignal(
   return null
 }
 
-// 같은 tenant·사업장에서 같은 거래처의 과거(현재 기간 제외) 결정 이력을 찾는다.
-// vat_deduction_review에 재분류 전용 스키마를 새로 만들지 않고 기존 감사 이력을
-// 재사용한다.
-async function loadPastDecisionForCounterparty(params: {
+// 현재 후보들의 거래처 과거 결정을 한 번에 읽는다. runtime 페이지에 연결된 뒤
+// 후보마다 별도 쿼리를 보내면 N+1이 되므로 거래처 목록을 단일 조회로 묶는다.
+async function loadPastDecisionsByCounterparty(params: {
   tenantId: string
   clientId: string
   periodKey: string
-  counterparty: string
-}): Promise<'reclassified_as_benefit' | 'kept_as_entertainment' | null> {
+  counterparties: string[]
+}): Promise<Map<string, 'reclassified_as_benefit' | 'kept_as_entertainment'>> {
+  if (params.counterparties.length === 0) return new Map()
   const { db } = await import('@/lib/db')
   const rows = await db
-    .select({ decision: vatDeductionReview.decision, reason: vatDeductionReview.reason })
+    .select({
+      counterparty: vatDeductionReview.counterparty,
+      decision: vatDeductionReview.decision,
+      reason: vatDeductionReview.reason,
+    })
     .from(vatDeductionReview)
     .where(and(
       eq(vatDeductionReview.tenantId, params.tenantId),
       eq(vatDeductionReview.clientId, params.clientId),
-      eq(vatDeductionReview.counterparty, params.counterparty),
+      inArray(vatDeductionReview.counterparty, params.counterparties),
       eq(vatDeductionReview.kind, 'non_deductible_candidate'),
       ne(vatDeductionReview.periodKey, params.periodKey),
     ))
 
-  return resolvePastDecisionSignal(rows)
+  const grouped = new Map<string, PastDecisionRow[]>()
+  for (const row of rows) {
+    if (!row.counterparty) continue
+    const group = grouped.get(row.counterparty) ?? []
+    group.push({ decision: row.decision, reason: row.reason })
+    grouped.set(row.counterparty, group)
+  }
+
+  const result = new Map<string, 'reclassified_as_benefit' | 'kept_as_entertainment'>()
+  for (const [counterparty, decisions] of grouped) {
+    const signal = resolvePastDecisionSignal(decisions)
+    if (signal) result.set(counterparty, signal)
+  }
+  return result
 }
 
 // 현재 기간에 접대비로 분류된 불공제 후보 매입 거래를 전부 찾아 재분류 신뢰도를
@@ -113,8 +157,13 @@ export async function resolveReclassificationCandidates(params: {
       supplyAmountKrw: vatDeductionReview.supplyAmountKrw,
       inputTaxKrw: vatDeductionReview.inputTaxKrw,
       reason: vatDeductionReview.reason,
+      decision: vatDeductionReview.decision,
+      sourceVoucherId: vatDeductionReview.sourceVoucherId,
+      sourceVoucherLineId: vatDeductionReview.sourceVoucherLineId,
       // Brief 51 §4.5: 담당자가 기장 시 직접 남긴 메모도 근거 탐색 대상에 포함한다.
       staffMemo: bookkeepingTransactionClassification.staffMemo,
+      sourceType: bookkeepingTransactionClassification.sourceType,
+      linkedEvidenceRowId: bookkeepingTransactionClassification.linkedEvidenceRowId,
     })
     .from(vatDeductionReview)
     .leftJoin(
@@ -126,6 +175,7 @@ export async function resolveReclassificationCandidates(params: {
       eq(vatDeductionReview.clientId, params.clientId),
       eq(vatDeductionReview.periodKey, params.periodKey),
       eq(vatDeductionReview.kind, 'non_deductible_candidate'),
+      eq(vatDeductionReview.decision, 'pending'),
     ))
 
   // 1차 범위 경계: 접대비(기업업무추진비) 사유만 다룬다(Brief 51 §2.1). 이 필터는
@@ -136,18 +186,24 @@ export async function resolveReclassificationCandidates(params: {
 
   if (entertainmentRows.length === 0) return []
 
-  const employeeNames = await loadActiveEmployeeNames(params.tenantId, params.clientId)
+  const counterparties = [...new Set(entertainmentRows.flatMap((row) => (
+    row.counterparty ? [row.counterparty] : []
+  )))]
+  const [employeeNames, pastDecisions] = await Promise.all([
+    loadActiveEmployeeNames(params.tenantId, params.clientId),
+    loadPastDecisionsByCounterparty({
+      tenantId: params.tenantId,
+      clientId: params.clientId,
+      periodKey: params.periodKey,
+      counterparties,
+    }),
+  ])
 
   const candidates: ReclassificationCandidate[] = []
   for (const row of entertainmentRows) {
-    const pastDecision = row.counterparty
-      ? await loadPastDecisionForCounterparty({
-        tenantId: params.tenantId,
-        clientId: params.clientId,
-        periodKey: params.periodKey,
-        counterparty: row.counterparty,
-      })
-      : null
+    const userDecision = reclassificationUserDecisionFromCanonical(row.decision)
+    if (!userDecision) continue
+    const pastDecision = row.counterparty ? pastDecisions.get(row.counterparty) ?? null : null
 
     const memoText = [row.description, row.staffMemo].filter(Boolean).join(' / ')
 
@@ -168,6 +224,14 @@ export async function resolveReclassificationCandidates(params: {
       supplyAmountKrw: row.supplyAmountKrw,
       inputTaxKrw: row.inputTaxKrw,
       evaluation,
+      eligibleEvidence: resolveEligibleReclassificationEvidence({
+        sourceVoucherId: row.sourceVoucherId,
+        sourceVoucherLineId: row.sourceVoucherLineId,
+        sourceType: row.sourceType,
+        linkedEvidenceRowId: row.linkedEvidenceRowId,
+      }),
+      userDecision,
+      decisionRowId: userDecision === 'pending' ? null : row.id,
     }))
   }
 

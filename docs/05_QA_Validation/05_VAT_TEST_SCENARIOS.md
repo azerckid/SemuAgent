@@ -208,8 +208,13 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-140 | 절세 후보와 기존 확인 필요 거래가 함께 존재 | VAT Preview 렌더 | 절세 후보를 세액 요약 아래 별도 섹션에 표시하고 기존 공제 판단 표와 섞지 않음 | PASS·VAI-9d Preview 정적/브라우저 |
 | S-141 | 높은/중간/낮은 재분류 후보가 존재 | 절세 후보 기본 상태 확인 | 신뢰도와 무관하게 모두 표시하되 기본 행은 거래·재분류 방향·최대 가능 금액만 노출 | PASS·VAI-9d Preview 정적/브라우저 |
 | S-142 | 사용자가 절세 후보 행을 펼침 | 상세 확인 | 발견 근거·확정 전 부족 자료·확정 절세액이 아니라는 주의 문구를 표시 | PASS·VAI-9d Preview 정적 |
-| S-143 | 현재 기간 접대비 불공제 후보 0건 | VAT runtime 렌더 | `추가 공제 가능성` 섹션 자체를 렌더하지 않음 | Pending·VAI-9e runtime |
+| S-143 | 현재 기간 접대비 불공제 후보 0건 또는 모두 결정 완료 | VAT runtime 렌더 | `추가 공제 가능성` 섹션 자체를 렌더하지 않음 | PASS·VAI-9e 정적/브라우저 |
 | S-144 | VAI-9d Preview 단계 | 화면 확인 | 저장·자동 재분류 control이 없고 canonical 값이 변경되지 않음 | PASS·VAI-9d Preview 정적 |
+| S-145 | 신뢰도 낮음 후보에 업무 목적/참석자와 적격증빙이 있음 | 사용자가 `공제로 재분류` 명시 확정 | 신뢰도만으로 차단하지 않고 canonical decision을 `deductible`로 저장 | PASS·VAI-9e 단위/브라우저/DB |
+| S-146 | 적격증빙이 없는 후보 | 공제 재분류 시도 | UI 확정 버튼과 서버 mutation이 모두 차단 | PASS·VAI-9e 단위/정적 |
+| S-147 | 업무 목적/참석자 입력이 비어 있음 | 공제 재분류 시도 | 저장하지 않고 구체 입력을 요구 | PASS·VAI-9e Zod/UI/서버 |
+| S-148 | 후보 정보가 화면 표시 후 변경됨 | 과거 fingerprint로 확정 시도 | 409로 거부하고 새로고침을 요구 | PASS·VAI-9e 단위/서버 |
+| S-149 | 사용자가 `접대비 유지`를 명시 확정 | 화면 재진입 | canonical decision을 `non_deductible`로 저장하고 해당 거래를 후보 목록에서 제외 | PASS·VAI-9e 브라우저/DB |
 
 ## 3. 자동화 계획
 

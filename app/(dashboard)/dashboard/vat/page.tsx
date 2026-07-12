@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { requireTenantSession } from '@/lib/auth-helpers'
 import { loadVatSummary } from '@/lib/vat/summary'
+import { resolveReclassificationCandidates } from '@/lib/vat/reclassification-evidence-resolver'
+import { VatReclassificationSavingsSection } from './_components/vat-reclassification-savings'
 import { VatBusinessEntityEmptyState, VatWorkspace } from './_components/vat-workspace'
 
 type PageProps = {
@@ -33,7 +36,29 @@ export default async function VatPage({ searchParams }: PageProps) {
   return (
     <VatWorkspace
       summary={summary}
+      reclassificationSavings={(
+        <Suspense fallback={null}>
+          <VatReclassificationSavingsLoader
+            tenantId={tenantId}
+            clientId={summary.businessEntity.id}
+            periodKey={summary.period.key}
+          />
+        </Suspense>
+      )}
       initialProviderCallCount={0}
     />
   )
+}
+
+async function VatReclassificationSavingsLoader({
+  tenantId,
+  clientId,
+  periodKey,
+}: {
+  readonly tenantId: string
+  readonly clientId: string
+  readonly periodKey: string
+}) {
+  const candidates = await resolveReclassificationCandidates({ tenantId, clientId, periodKey })
+  return <VatReclassificationSavingsSection periodKey={periodKey} candidates={candidates} />
 }

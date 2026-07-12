@@ -50,10 +50,15 @@ const salesGroupTagClass: Record<VatSalesGroup['id'], string> = {
 
 export interface VatWorkspaceProps {
   readonly summary: VatSummary
+  readonly reclassificationSavings?: ReactNode
   readonly initialProviderCallCount?: number
 }
 
-export function VatWorkspace({ summary, initialProviderCallCount }: VatWorkspaceProps) {
+export function VatWorkspace({
+  summary,
+  reclassificationSavings,
+  initialProviderCallCount,
+}: VatWorkspaceProps) {
   const workbench = buildVatExceptionWorkbenchModel({
     treatmentRows: summary.taxTreatmentRows,
     deductionReviews: summary.deductionReviews,
@@ -67,6 +72,7 @@ export function VatWorkspace({ summary, initialProviderCallCount }: VatWorkspace
       <VatTopbar summary={summary} />
       <div className="flex w-full max-w-[1200px] flex-col gap-5 px-7 pt-6 pb-12">
         <TaxSummaryHero summary={summary} exceptionCount={workbench.exceptionCount} />
+        {reclassificationSavings}
         <SalesGroupsSection groups={summary.salesGroups} />
         <VatExceptionWorkbench periodKey={summary.period.key} workbench={workbench} />
       </div>

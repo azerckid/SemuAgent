@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { extractAttendeeNames, resolvePastDecisionSignal } from './reclassification-evidence-resolver'
+import {
+  extractAttendeeNames,
+  reclassificationUserDecisionFromCanonical,
+  resolveEligibleReclassificationEvidence,
+  resolvePastDecisionSignal,
+} from './reclassification-evidence-resolver'
 
 // resolveReclassificationCandidates 등 DB 조회 래퍼 자체는 이 저장소 관례상(다른
 // lib/vat/*.ts와 동일) 단위 테스트 대상이 아니다 — DB 연결부는 dev 서비스
@@ -69,5 +74,40 @@ describe('resolvePastDecisionSignal (JC-041 VAI-9b, 리뷰 지적 사항 회귀 
 
   it('이력이 없으면 null을 반환한다', () => {
     expect(resolvePastDecisionSignal([])).toBeNull()
+  })
+})
+
+describe('VAI-9e evidence and decision mapping', () => {
+  it('accepts the three qualified evidence source types and a confirmed evidence link', () => {
+    const base = {
+      sourceVoucherId: null,
+      sourceVoucherLineId: null,
+      linkedEvidenceRowId: null,
+    }
+    expect(resolveEligibleReclassificationEvidence({ ...base, sourceType: 'tax_invoice' }))
+      .toEqual({ present: true, label: '세금계산서' })
+    expect(resolveEligibleReclassificationEvidence({ ...base, sourceType: 'receipt' }).present).toBe(true)
+    expect(resolveEligibleReclassificationEvidence({ ...base, sourceType: 'card' }).present).toBe(true)
+    expect(resolveEligibleReclassificationEvidence({
+      ...base,
+      sourceType: 'bank',
+      linkedEvidenceRowId: 'evidence-row',
+    }).present).toBe(true)
+  })
+
+  it('does not treat an unlinked bank row as qualified evidence', () => {
+    expect(resolveEligibleReclassificationEvidence({
+      sourceVoucherId: null,
+      sourceVoucherLineId: null,
+      sourceType: 'bank',
+      linkedEvidenceRowId: null,
+    })).toEqual({ present: false, label: '적격증빙 확인 필요' })
+  })
+
+  it('maps canonical decisions to repeat-question prevention states', () => {
+    expect(reclassificationUserDecisionFromCanonical('pending')).toBe('pending')
+    expect(reclassificationUserDecisionFromCanonical('deductible')).toBe('reclassified')
+    expect(reclassificationUserDecisionFromCanonical('non_deductible')).toBe('kept_as_is')
+    expect(reclassificationUserDecisionFromCanonical('prorated')).toBeNull()
   })
 })

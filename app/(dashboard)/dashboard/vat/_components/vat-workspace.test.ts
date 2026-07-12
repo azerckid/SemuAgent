@@ -7,9 +7,11 @@ const treatmentActionsSource = readFileSync(new URL('./vat-tax-treatment-actions
 const treatmentAiWorkflowSource = readFileSync(new URL('./vat-tax-treatment-ai-workflow.tsx', import.meta.url), 'utf8')
 const treatmentDialogSource = readFileSync(new URL('./vat-tax-treatment-decision-dialog.tsx', import.meta.url), 'utf8')
 const treatmentEvidenceActionSource = readFileSync(new URL('./vat-tax-treatment-evidence-action.tsx', import.meta.url), 'utf8')
+const reclassificationSavingsSource = readFileSync(new URL('./vat-reclassification-savings.tsx', import.meta.url), 'utf8')
 const deductionRouteSource = readFileSync(new URL('../../../../api/vat/deduction-reviews/[reviewId]/route.ts', import.meta.url), 'utf8')
 const treatmentRouteSource = readFileSync(new URL('../../../../api/vat/tax-treatments/[rowId]/route.ts', import.meta.url), 'utf8')
 const treatmentEvidenceRouteSource = readFileSync(new URL('../../../../api/vat/tax-treatments/[rowId]/evidence/route.ts', import.meta.url), 'utf8')
+const reclassificationRouteSource = readFileSync(new URL('../../../../api/vat/reclassification-reviews/[reviewId]/route.ts', import.meta.url), 'utf8')
 const packageRouteSource = readFileSync(new URL('../../../../api/vat/periods/[periodKey]/package/route.ts', import.meta.url), 'utf8')
 const rebuildRouteSource = readFileSync(new URL('../../../../api/vat/periods/[periodKey]/rebuild/route.ts', import.meta.url), 'utf8')
 const sidebarSource = readFileSync(new URL('../../../_components/sidebar.tsx', import.meta.url), 'utf8')
@@ -40,12 +42,12 @@ describe('VAT workspace static contract', () => {
   })
 
   it('keeps the approved simplified Preview section order in the workspace (S-01, S-115~118)', () => {
-    const sectionOrder = [
-      'TaxSummaryHero',
-      'SalesGroupsSection',
-      'VatExceptionWorkbench',
+    const positions = [
+      workspaceSource.indexOf('<TaxSummaryHero'),
+      workspaceSource.indexOf('{reclassificationSavings}'),
+      workspaceSource.indexOf('<SalesGroupsSection'),
+      workspaceSource.indexOf('<VatExceptionWorkbench'),
     ]
-    const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
     expect(positions.every((position) => position >= 0)).toBe(true)
     expect([...positions].sort((a, b) => a - b)).toEqual(positions)
     expect(workspaceSource).not.toContain('화면 상태 예시')
@@ -55,6 +57,25 @@ describe('VAT workspace static contract', () => {
     expect(workspaceSource).not.toContain('CompactFilingReadiness')
     expect(workspaceSource).not.toContain('ResponsibilityNote')
     expect(workspaceSource).not.toContain('차단 이유 보기')
+  })
+
+  it('renders VAI-9 savings candidates separately and keeps confirmation behind a strict dialog (S-140~149)', () => {
+    expect(vatPageSource).toContain('resolveReclassificationCandidates')
+    expect(vatPageSource).toContain('VatReclassificationSavingsSection')
+    expect(vatPageSource).toContain('<Suspense fallback={null}>')
+    expect(workspaceSource).toContain('{reclassificationSavings}')
+    expect(reclassificationSavingsSource).toContain('추가 공제 가능성')
+    expect(reclassificationSavingsSource).toContain("candidate.userDecision === 'pending'")
+    expect(reclassificationSavingsSource).toContain('if (pendingCandidates.length === 0) return null')
+    expect(reclassificationSavingsSource).toContain('공제로 재분류')
+    expect(reclassificationSavingsSource).toContain('접대비 유지')
+    expect(reclassificationSavingsSource).toContain('업무 목적 또는 참석자')
+    expect(reclassificationSavingsSource).toContain('candidate.eligibleEvidence.present')
+    expect(reclassificationSavingsSource).toContain('/api/vat/reclassification-reviews/')
+    expect(reclassificationRouteSource).toContain('requireTenantSession')
+    expect(reclassificationRouteSource).toContain('getActiveStaffForUser')
+    expect(reclassificationRouteSource).toContain('vatReclassificationMutationSchema.safeParse(await req.json())')
+    expect(reclassificationRouteSource).toContain('applyVatReclassificationMutation')
   })
 
   it('uses one three-column exception workbench and keeps actions inside decision details (S-116, S-119)', () => {
