@@ -14,6 +14,23 @@ export const vatTaxTreatmentRecommendationValueSchema = z.enum([
   'proration_required',
   'needs_review',
 ])
+export const vatTaxTreatmentProvisionalJudgmentSchema = z.enum([
+  'taxable',
+  'zero_rated',
+  'exempt',
+  'deductible',
+  'non_deductible',
+  'proration_required',
+  'non_taxable',
+])
+export const vatTaxTreatmentJudgmentWorkflowStatusSchema = z.enum([
+  'judgment_pending',
+  'user_confirmation_pending',
+  'user_confirmed',
+  'no_evidence_defaulted',
+  'human_resolution_required',
+  'ai_temporary_error',
+])
 export const vatTaxTreatmentSourceSchema = z.enum([
   'deterministic_rule',
   'prior_confirmed_pattern',
@@ -86,6 +103,8 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
     status: z.enum(['derived', 'confirmed']),
   }),
   recommendation: vatTaxTreatmentRecommendationValueSchema,
+  provisionalJudgment: vatTaxTreatmentProvisionalJudgmentSchema.nullable(),
+  judgmentWorkflowStatus: vatTaxTreatmentJudgmentWorkflowStatusSchema,
   source: vatTaxTreatmentSourceSchema,
   confidence: vatTaxTreatmentConfidenceSchema,
   basisLabel: z.string().min(1).max(500),
@@ -149,7 +168,76 @@ export const vatTaxTreatmentRecommendationSchema = z.object({
     context.addIssue({
       code: 'custom',
       path: ['aiRuntimeStatus'],
-      message: 'AI fallback·deferred 행은 수동 확인 상태여야 합니다.',
+      message: 'AI fallback·deferred 행은 legacy 미결정값을 유지해야 합니다.',
+    })
+  }
+  if (
+    isAiSource
+    && !value.finalDecision
+    && (
+      value.recommendation === 'needs_review'
+      || value.provisionalJudgment === null
+      || value.judgmentWorkflowStatus !== 'user_confirmation_pending'
+    )
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['provisionalJudgment'],
+      message: '완료된 AI 판단은 generic 확인 필요가 아닌 명확한 잠정 결론이어야 합니다.',
+    })
+  }
+
+  if (value.judgmentWorkflowStatus === 'user_confirmed' && !value.finalDecision) {
+    context.addIssue({
+      code: 'custom',
+      path: ['judgmentWorkflowStatus'],
+      message: '사용자 확정 workflow에는 최종 결정이 필요합니다.',
+    })
+  }
+  if (value.finalDecision && value.judgmentWorkflowStatus !== 'user_confirmed') {
+    context.addIssue({
+      code: 'custom',
+      path: ['judgmentWorkflowStatus'],
+      message: '최종 결정이 있는 행은 사용자 확정 workflow여야 합니다.',
+    })
+  }
+  if (
+    value.judgmentWorkflowStatus === 'ai_temporary_error'
+    && value.aiRuntimeStatus !== 'manual_fallback'
+    && value.aiRuntimeStatus !== 'deferred'
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['judgmentWorkflowStatus'],
+      message: 'AI 일시 오류 workflow는 실제 fallback·deferred 실행 상태가 필요합니다.',
+    })
+  }
+  if (
+    (value.aiRuntimeStatus === 'manual_fallback' || value.aiRuntimeStatus === 'deferred')
+    && value.judgmentWorkflowStatus !== 'ai_temporary_error'
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['judgmentWorkflowStatus'],
+      message: 'AI fallback·deferred는 세무 결론이 아니라 AI 일시 오류 workflow로 분리해야 합니다.',
+    })
+  }
+  if (
+    value.judgmentWorkflowStatus === 'judgment_pending'
+    || value.judgmentWorkflowStatus === 'ai_temporary_error'
+  ) {
+    if (value.provisionalJudgment !== null) {
+      context.addIssue({
+        code: 'custom',
+        path: ['provisionalJudgment'],
+        message: '판단 대기·AI 일시 오류 상태는 완료된 잠정 결론을 가질 수 없습니다.',
+      })
+    }
+  } else if (value.provisionalJudgment === null) {
+    context.addIssue({
+      code: 'custom',
+      path: ['provisionalJudgment'],
+      message: '완료된 judgment workflow에는 명확한 잠정 결론이 필요합니다.',
     })
   }
 
@@ -266,6 +354,10 @@ export const vatTaxTreatmentEvidenceMutationSuccessSchema = z.object({
 
 export type VatTaxTreatmentRecommendation = z.infer<typeof vatTaxTreatmentRecommendationSchema>
 export type VatTaxTreatmentDisplayRow = z.infer<typeof vatTaxTreatmentDisplayRowSchema>
+export type VatTaxTreatmentRecommendationValue = z.infer<typeof vatTaxTreatmentRecommendationValueSchema>
+export type VatTaxTreatmentAiRuntimeStatus = z.infer<typeof vatTaxTreatmentAiRuntimeStatusSchema>
+export type VatTaxTreatmentProvisionalJudgment = z.infer<typeof vatTaxTreatmentProvisionalJudgmentSchema>
+export type VatTaxTreatmentJudgmentWorkflowStatus = z.infer<typeof vatTaxTreatmentJudgmentWorkflowStatusSchema>
 export type VatTaxTreatmentRequiredEvidence = z.infer<typeof vatTaxTreatmentRequiredEvidenceSchema>
 export type VatTaxTreatmentFinalDecision = z.infer<typeof vatTaxTreatmentFinalDecisionSchema>
 export type VatTaxTreatmentMutationInput = z.infer<typeof vatTaxTreatmentMutationSchema>

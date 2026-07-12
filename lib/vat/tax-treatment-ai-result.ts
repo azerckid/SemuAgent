@@ -67,6 +67,8 @@ function buildPayload(row: VatTaxTreatmentDisplayRow): VatTaxTreatmentAiResultPa
   return vatTaxTreatmentAiResultPayloadSchema.parse({
     version: VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION,
     recommendation: row.recommendation,
+    provisionalJudgment: row.provisionalJudgment,
+    judgmentWorkflowStatus: row.judgmentWorkflowStatus,
     source: row.source,
     confidence: row.confidence,
     basisLabel: row.basisLabel,
@@ -117,9 +119,13 @@ function payloadMatchesStatus(
   if (status === 'ready') {
     return payload.aiRuntimeStatus === 'completed'
       && (payload.source === 'ai_single' || payload.source === 'ai_consensus')
+      && payload.provisionalJudgment !== null
+      && payload.judgmentWorkflowStatus === 'user_confirmation_pending'
   }
   if (status === 'manual_fallback') {
     return payload.recommendation === 'needs_review'
+      && payload.provisionalJudgment === null
+      && payload.judgmentWorkflowStatus === 'ai_temporary_error'
       && (payload.aiRuntimeStatus === 'manual_fallback' || payload.aiRuntimeStatus === 'deferred')
   }
   return false

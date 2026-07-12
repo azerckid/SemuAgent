@@ -129,18 +129,18 @@ describe('VAT exception workbench model', () => {
     expect(result.standaloneDeductionReviews.map((review) => review.id)).toEqual(['pending'])
   })
 
-  it('reduces purchase decisions to deductible, non-deductible, or insufficient evidence', () => {
+  it('uses the explicit provisional judgment instead of a generic review label', () => {
     expect(resolveVatTreatmentWorkbenchDecision(treatmentRow())).toBe('deductible')
-    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'proration_required' }))).toBe('deductible')
+    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'proration_required' }))).toBe('proration_required')
     expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'likely_non_deductible' }))).toBe('non_deductible')
-    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'needs_review' }))).toBe('insufficient_evidence')
+    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'needs_review' }))).toBe('judgment_pending')
   })
 
-  it('keeps sales tax-type review separate from purchase deduction decisions', () => {
+  it('shows the actual sales tax judgment rather than a generic tax-type review label', () => {
     expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({
       direction: 'sale',
       recommendation: 'likely_zero_rated',
-    }))).toBe('sales_tax_type')
+    }))).toBe('zero_rated')
   })
 
   it('maps legacy deduction reviews onto the same compact decision vocabulary', () => {

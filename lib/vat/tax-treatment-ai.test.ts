@@ -66,7 +66,7 @@ function successRunner(overrides: Partial<Parameters<VatTaxTreatmentAiRunner>[0]
       data: {
         candidates: [{
           index: 0,
-          recommendation: 'likely_deductible',
+          provisionalJudgment: 'deductible',
           confidence: 'medium',
           basisLabel: '업무용 거래로 보입니다.',
           missingFacts: [],
@@ -102,7 +102,7 @@ describe('VAT single-provider AI enhancement', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v1',
+        promptVersion: 'vat-tax-treatment-v2',
         consensusProviders: [],
       },
     })
@@ -131,7 +131,7 @@ describe('VAT single-provider AI enhancement', () => {
       data: {
         candidates: [{
           index: 0,
-          recommendation: 'needs_review',
+          provisionalJudgment: 'deductible',
           confidence: 'low',
           basisLabel: '담당자 010-1234-5678에게 확인하세요.',
           missingFacts: ['staff@example.com 확인'],
@@ -189,7 +189,7 @@ describe('VAT single-provider AI enhancement', () => {
     expect(vatTaxTreatmentAiBatchOutputSchema.safeParse({
       candidates: [{
         index: 0,
-        recommendation: 'likely_deductible',
+        provisionalJudgment: 'deductible',
         confidence: 'high',
         basisLabel: '과도한 확신',
         missingFacts: [],
@@ -199,7 +199,7 @@ describe('VAT single-provider AI enhancement', () => {
 
     const candidate = {
       index: 0,
-      recommendation: 'needs_review',
+      provisionalJudgment: 'deductible',
       confidence: 'low',
       basisLabel: '추가 확인 필요',
       missingFacts: [],
@@ -207,6 +207,9 @@ describe('VAT single-provider AI enhancement', () => {
     }
     expect(vatTaxTreatmentAiBatchOutputSchema.safeParse({
       candidates: [candidate, candidate],
+    }).success).toBe(false)
+    expect(vatTaxTreatmentAiBatchOutputSchema.safeParse({
+      candidates: [{ ...candidate, provisionalJudgment: 'needs_review' }],
     }).success).toBe(false)
   })
 
@@ -221,7 +224,7 @@ describe('VAT single-provider AI enhancement', () => {
       data: {
         candidates: [{
           index: 0,
-          recommendation: 'likely_taxable',
+          provisionalJudgment: 'taxable',
           confidence: 'medium',
           basisLabel: '매출 판단',
           missingFacts: [],
@@ -250,7 +253,7 @@ describe('VAT single-provider AI enhancement', () => {
       data: {
         candidates: rows.slice(0, 12).map((_, index) => ({
           index,
-          recommendation: 'needs_review' as const,
+          provisionalJudgment: 'deductible' as const,
           confidence: 'low' as const,
           basisLabel: '추가 확인 필요',
           missingFacts: ['업무 목적'],
@@ -288,13 +291,17 @@ describe('VAT single-provider AI enhancement', () => {
 
 describe('VAT high-risk multi-provider consensus', () => {
   function candidate(params: {
-    recommendation: 'likely_deductible' | 'likely_non_deductible' | 'proration_required' | 'needs_review'
+    recommendation: 'likely_deductible' | 'likely_non_deductible' | 'proration_required'
     hometaxAction: 'expected_no_change' | 'review_deduction' | 'review_proration'
     confidence?: 'medium' | 'low'
   }): VatTaxTreatmentAiCandidate {
     return {
       index: 0,
-      recommendation: params.recommendation,
+      provisionalJudgment: params.recommendation === 'likely_deductible'
+        ? 'deductible'
+        : params.recommendation === 'likely_non_deductible'
+          ? 'non_deductible'
+          : 'proration_required',
       confidence: params.confidence ?? 'medium',
       basisLabel: `${params.recommendation} 판단 근거`,
       missingFacts: [],

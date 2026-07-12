@@ -24,6 +24,8 @@ function recommendation(overrides: Record<string, unknown> = {}) {
       status: 'derived',
     },
     recommendation: 'likely_deductible',
+    provisionalJudgment: 'deductible',
+    judgmentWorkflowStatus: 'user_confirmation_pending',
     source: 'deterministic_rule',
     confidence: 'medium',
     basisLabel: '정확한 VAT fact와 적격 증빙이 있습니다.',
@@ -79,10 +81,26 @@ describe('VAT tax treatment validation', () => {
       aiTrace: {
         provider: 'openai',
         modelName: 'test-model',
-        promptVersion: 'vat-tax-treatment-v1',
+        promptVersion: 'vat-tax-treatment-v2',
         consensusProviders: [],
       },
     })).success).toBe(true)
+  })
+
+  it('rejects a completed AI source that ends with a generic review result', () => {
+    expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
+      recommendation: 'needs_review',
+      provisionalJudgment: null,
+      judgmentWorkflowStatus: 'judgment_pending',
+      source: 'ai_single',
+      aiRuntimeStatus: 'completed',
+      aiTrace: {
+        provider: 'openai',
+        modelName: 'test-model',
+        promptVersion: 'vat-tax-treatment-v2',
+        consensusProviders: [],
+      },
+    })).success).toBe(false)
   })
 
   it('keeps AI runtime status consistent with the recommendation source', () => {
@@ -92,11 +110,15 @@ describe('VAT tax treatment validation', () => {
 
     expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
       recommendation: 'needs_review',
+      provisionalJudgment: null,
+      judgmentWorkflowStatus: 'ai_temporary_error',
       aiRuntimeStatus: 'manual_fallback',
     })).success).toBe(true)
 
     expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
       recommendation: 'likely_deductible',
+      provisionalJudgment: null,
+      judgmentWorkflowStatus: 'ai_temporary_error',
       aiRuntimeStatus: 'manual_fallback',
     })).success).toBe(false)
   })
@@ -108,6 +130,7 @@ describe('VAT tax treatment validation', () => {
 
     expect(vatTaxTreatmentRecommendationSchema.safeParse(recommendation({
       finalDecision: 'deductible',
+      judgmentWorkflowStatus: 'user_confirmed',
       confirmedByStaffId: 'staff-1',
       confirmedAt: '2026-07-11T00:00:00.000Z',
     })).success).toBe(true)

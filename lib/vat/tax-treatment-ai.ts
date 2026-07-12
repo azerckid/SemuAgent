@@ -15,6 +15,7 @@ import {
 } from '@/lib/validations/vat-tax-treatment'
 import { isHighRiskVatTaxTreatmentRow } from './tax-treatment-ai-eligibility'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
+import { recommendationForProvisionalJudgment } from './tax-treatment-judgment'
 
 export { VAT_TAX_TREATMENT_AI_PROMPT_VERSION }
 export {
@@ -84,7 +85,8 @@ export function buildVatTaxTreatmentAiPrompt(rows: VatTaxTreatmentDisplayRow[]) 
     '중요 규칙:',
     '- 최종 확정이나 세무대리를 하지 말고 사용자가 확인할 가능성과 근거만 반환하세요.',
     '- 제공되지 않은 사실이나 증빙을 있다고 가정하지 마세요.',
-    '- 영세율·면세는 법정 요건과 증빙이 부족하면 needs_review로 두세요.',
+    '- needs_review, 확인 필요, 담당자 판단 필요를 세무 결론으로 반환하지 마세요.',
+    '- 영세율·면세·공제 같은 특례 근거가 부족하면 일반 처리 방향(과세 또는 불공제)을 잠정 결론으로 반환하세요.',
     '- confidence는 medium 또는 low만 사용하세요.',
     '- 각 index를 누락하거나 중복하지 말고 정확히 1개씩 반환하세요.',
     '- 출력은 JSON 하나만 반환하세요.',
@@ -93,7 +95,7 @@ export function buildVatTaxTreatmentAiPrompt(rows: VatTaxTreatmentDisplayRow[]) 
     JSON.stringify({
       candidates: [{
         index: 0,
-        recommendation: 'likely_deductible | likely_non_deductible | proration_required | likely_taxable | likely_zero_rated | likely_exempt | needs_review',
+        provisionalJudgment: 'deductible | non_deductible | proration_required | taxable | zero_rated | exempt',
         confidence: 'medium | low',
         basisLabel: '판단 근거 한두 문장',
         missingFacts: ['부족한 사실'],
@@ -213,17 +215,15 @@ function runWithTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 }
 
 function isCompatibleCandidate(row: VatTaxTreatmentDisplayRow, candidate: VatTaxTreatmentAiCandidate) {
-  const purchaseRecommendations = new Set([
-    'likely_deductible',
-    'likely_non_deductible',
+  const purchaseJudgments = new Set([
+    'deductible',
+    'non_deductible',
     'proration_required',
-    'needs_review',
   ])
-  const saleRecommendations = new Set([
-    'likely_taxable',
-    'likely_zero_rated',
-    'likely_exempt',
-    'needs_review',
+  const saleJudgments = new Set([
+    'taxable',
+    'zero_rated',
+    'exempt',
   ])
   const purchaseActions = new Set([
     'expected_no_change',
@@ -239,8 +239,8 @@ function isCompatibleCandidate(row: VatTaxTreatmentDisplayRow, candidate: VatTax
   ])
 
   return row.direction === 'purchase'
-    ? purchaseRecommendations.has(candidate.recommendation) && purchaseActions.has(candidate.hometaxAction)
-    : saleRecommendations.has(candidate.recommendation) && saleActions.has(candidate.hometaxAction)
+    ? purchaseJudgments.has(candidate.provisionalJudgment) && purchaseActions.has(candidate.hometaxAction)
+    : saleJudgments.has(candidate.provisionalJudgment) && saleActions.has(candidate.hometaxAction)
 }
 
 function withAiStatus(
@@ -298,7 +298,7 @@ type ProviderCandidate = {
 }
 
 function candidateSignature(candidate: VatTaxTreatmentAiCandidate) {
-  return `${candidate.recommendation}|${candidate.hometaxAction}`
+  return `${candidate.provisionalJudgment}|${candidate.hometaxAction}`
 }
 
 function providerCandidateAt(params: {
@@ -312,8 +312,8 @@ function providerCandidateAt(params: {
   if (
     params.row.source === 'deterministic_rule'
     && params.row.confidence === 'high'
-    && params.row.recommendation !== 'needs_review'
-    && candidate.recommendation !== params.row.recommendation
+    && params.row.provisionalJudgment !== null
+    && candidate.provisionalJudgment !== params.row.provisionalJudgment
   ) {
     return null
   }
@@ -356,7 +356,7 @@ function applyConsensus(
 
   return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
     ...row,
-    recommendation: first.candidate.recommendation,
+    recommendation: recommendationForProvisionalJudgment(first.candidate.provisionalJudgment),
     source: 'ai_consensus',
     confidence: candidates.every((candidate) => candidate.candidate.confidence === 'medium')
       ? 'medium'
@@ -529,7 +529,7 @@ export async function enhanceVatTaxTreatmentRowsWithSingleAi(params: {
 
     return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
       ...row,
-      recommendation: candidate.recommendation,
+      recommendation: recommendationForProvisionalJudgment(candidate.provisionalJudgment),
       source: 'ai_single',
       confidence: candidate.confidence,
       basisLabel: redactPromptValue(candidate.basisLabel),

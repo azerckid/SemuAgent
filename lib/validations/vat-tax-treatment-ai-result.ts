@@ -4,12 +4,14 @@ import {
   vatTaxTreatmentAiTraceSchema,
   vatTaxTreatmentConfidenceSchema,
   vatTaxTreatmentHometaxActionSchema,
+  vatTaxTreatmentJudgmentWorkflowStatusSchema,
+  vatTaxTreatmentProvisionalJudgmentSchema,
   vatTaxTreatmentRecommendationValueSchema,
   vatTaxTreatmentSourceSchema,
 } from './vat-tax-treatment'
 
-export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v1' as const
-export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 1 as const
+export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v2' as const
+export const VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION = 2 as const
 
 export const vatTaxTreatmentAiResultStatusSchema = z.enum([
   'queued',
@@ -22,6 +24,8 @@ export const vatTaxTreatmentAiResultStatusSchema = z.enum([
 export const vatTaxTreatmentAiResultPayloadSchema = z.object({
   version: z.literal(VAT_TAX_TREATMENT_AI_RESULT_PAYLOAD_VERSION),
   recommendation: vatTaxTreatmentRecommendationValueSchema,
+  provisionalJudgment: vatTaxTreatmentProvisionalJudgmentSchema.nullable(),
+  judgmentWorkflowStatus: vatTaxTreatmentJudgmentWorkflowStatusSchema,
   source: vatTaxTreatmentSourceSchema,
   confidence: vatTaxTreatmentConfidenceSchema,
   basisLabel: z.string().min(1).max(500),
@@ -47,13 +51,32 @@ export const vatTaxTreatmentAiResultPayloadSchema = z.object({
     })
   }
   if (
-    (value.aiRuntimeStatus === 'manual_fallback' || value.aiRuntimeStatus === 'deferred')
-    && value.recommendation !== 'needs_review'
+    isAiResult
+    && (
+      value.recommendation === 'needs_review'
+      ||
+      value.provisionalJudgment === null
+      || value.judgmentWorkflowStatus !== 'user_confirmation_pending'
+    )
   ) {
     context.addIssue({
       code: 'custom',
-      path: ['recommendation'],
-      message: 'AI fallback payload는 수동 확인 추천만 저장할 수 있습니다.',
+      path: ['provisionalJudgment'],
+      message: '완료된 AI 결과는 잠정 세무 결론과 사용자 확인 대기 상태를 저장해야 합니다.',
+    })
+  }
+  if (
+    (value.aiRuntimeStatus === 'manual_fallback' || value.aiRuntimeStatus === 'deferred')
+    && (
+      value.recommendation !== 'needs_review'
+      || value.provisionalJudgment !== null
+      || value.judgmentWorkflowStatus !== 'ai_temporary_error'
+    )
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['judgmentWorkflowStatus'],
+      message: 'AI fallback은 세무 결론이 아니라 일시 오류 workflow로 저장해야 합니다.',
     })
   }
 })
