@@ -86,7 +86,6 @@ export async function loadVatTaxTreatmentGate(params: {
     tenantId: params.tenantId,
     businessEntityId: params.businessEntityId,
     period,
-    includeAi: false,
     includeStoredAi: false,
   })
   return buildVatTaxTreatmentGate(rows)
