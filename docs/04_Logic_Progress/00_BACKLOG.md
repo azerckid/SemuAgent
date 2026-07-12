@@ -877,7 +877,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조, AI 추천과 사용자 최종 책임의 경계.
 - Related UI Docs: N/A - 아직 화면 설계 전. VUI-1 계열 Preview([VAT Preview](../02_UI_Screens/previews/03_vat.html)) 논의 중 파생된 아이디어.
 - Related Technical Docs: [JC-041 Reclassification Savings Pre-Code Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md) · [JC-039 Evidence-Backed Decisive Judgment Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 우선 원칙을 그대로 재사용. [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유.
-- Related QA Docs: N/A - VAI-9a 착수 시 작성.
+- Related QA Docs: [VAT QA §2.14](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - VAI-9a~9c 후보 등급·절세 가능 금액 계약.
 - Origin: 2026-07-12 VUI-1b Preview 리뷰 세션 중 프로젝트 오너 제안. "확인 필요 거래"에 왜 이미 확정된 불공제 판단이 남아있는지 검토하다가, "재분류하면 공제받을 수 있는 거래를 찾아주는 게 오히려 더 가치 있다"는 방향으로 전환.
 - Current Gap:
   - 지금 AI 판단(JC-035/039)은 "이 거래가 무슨 세목으로 분류되는가"만 다루고, "지금 분류가 실제 거래 성격과 맞는가"는 다루지 않는다.
@@ -894,7 +894,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - 부가세 외 다른 세목(소득세·법인세 등)의 절세 가능성 탐지는 후속 논의.
   - 재분류 자동 확정·기장 데이터 자동 수정은 하지 않는다(사용자 최종 확인 필수).
   - AI가 없는 근거를 만들어 확정을 유도하는 것은 금지(JC-039 §2 "No Evidence Means No Special Treatment" 원칙은 "확정"에 적용되며 "후보 노출"에는 적용되지 않는다 — Brief 51 §0.1).
-- Fixed Order (Brief 51 §9): **VAI-9a 완료(2026-07-12, v2 신뢰도 등급 모델로 재작성)** → **VAI-9b 완료(2026-07-12, v2 재작성)** → VAI-9c 절세 금액 계산·데이터 계약 → VAI-9d UI-First Gate·Preview 승인 → VAI-9e 확정 흐름·오탐 중심 E2E.
+- Fixed Order (Brief 51 §9): **VAI-9a 완료(2026-07-12, v2 신뢰도 등급 모델로 재작성)** → **VAI-9b 완료(2026-07-12, v2 재작성)** → **VAI-9c 완료(정확한 매입세액 기반 절세 가능 금액·Zod read contract)** → VAI-9d UI-First Gate·Preview 승인 → VAI-9e 확정 흐름·오탐 중심 E2E.
 - Implementation Preconditions:
   - [x] 프로젝트 오너가 방향("절세 가능성이 있는 것을 정리해서 보여주는 것이 좋겠다")을 확인했다.
   - [x] Pre-Code Brief 작성 완료(근거 요건, 재분류 후보 판정 기준, 데이터 계약 초안, UI 방향 — Brief 51).
@@ -905,7 +905,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - Brief 51: §0.1 핵심 원칙 신설, §4 "재분류 신뢰도 모델"로 재구성(이진 배제 조건 없음 — 모든 신호는 가산/감산 점수, 높음/중간/낮음 3단계), §5 확정 게이트(업무 목적·적격증빙·사용자 확인) 신설, §6 절세 금액을 확정 표현이 아닌 가능성 표현으로 재정의.
   - **VAI-9a 재작성 완료**: `lib/vat/reclassification-evidence.ts` — `evaluateReclassificationCandidate`는 이제 후보를 절대 배제하지 않고 항상 `{ confidence, suggestedCategory, factors, missingToConfirm }`을 반환한다. 참석자 정보 없음(`attendees_unknown`)은 감점 없이 정보성 요인으로만 기록. 고액·법인 거래처명·과거 접대비 유지 이력은 감산 요인(각 -1)이지만 후보를 제거하지 않는다. `EXTERNAL_COUNTERPARTY_KEYWORDS`에서 "대표·이사·팀장"은 내부 직함과 겹쳐 제외(리뷰 지적사항, §4.4). `lib/vat/reclassification-evidence.test.ts` 11건 전체 재작성 — 모든 감산 요인 케이스에서 "후보가 여전히 유지되는지"를 명시적으로 검증.
   - **VAI-9b 재작성 완료**: `lib/vat/reclassification-evidence-resolver.ts` — `resolveReclassificationCandidates`가 접대비 사유로 필터링된 행 전부를 신뢰도와 무관하게 항상 후보 배열에 추가한다(이전엔 낮은 신뢰도를 조기 제외했음). `bookkeepingTransactionClassification`을 `leftJoin`해 `staffMemo`를 근거 탐색에 포함(Brief 51 §4.5, 이전엔 읽지 않았음). 리뷰에서 지적된 두 버그도 함께 고정: `resolvePastDecisionSignal`을 순수 함수로 분리해 `non_deductible`을 `deductible`보다 항상 우선(순서 의존 버그 회귀), 과거 이력 조회에 `ENTERTAINMENT_REASON_KEYWORDS` reason 필터 추가(다른 불공제 사유 오독 방지). `reclassification-evidence-resolver.test.ts`에 `resolvePastDecisionSignal` 회귀 테스트 5건 추가(총 11건).
-  - tsc/lint 0 errors(경고만 기존 무관 항목), vitest 전체 245 files/1707 tests 통과, `git diff --check` 공백 이슈 없음. 아직 UI·데이터 계약 스키마·사용자 확정 흐름에는 연결하지 않았다(VAI-9c/9d/9e 범위) — DB·runtime 화면에는 영향 없음(read-only, decision을 바꾸지 않음).
+  - **VAI-9c 완료**: `lib/vat/reclassification-savings.ts`에 후보 Zod 계약과 결정론적 계산을 추가했다. `potentialSavingsKrw`는 원장에 저장된 `inputTaxKrw`와 반드시 같아야 하며 공급가액·합계액 역산을 금지한다. resolver는 모든 후보를 이 계약으로 검증해 반환한다. 신규 DB·migration·UI·mutation은 없고 사용자 결정 저장은 VAI-9e 범위다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

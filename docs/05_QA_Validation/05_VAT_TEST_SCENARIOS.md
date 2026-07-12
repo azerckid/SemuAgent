@@ -195,6 +195,17 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-134 | 다른 tenant·사업장·기간의 유사 거래와 민감 원문이 존재 | evidence 탐색·결과 저장 | scope 밖 자료를 사용하지 않고 원문 prompt/provider 응답·민감 식별정보를 저장하지 않음 | Pending·VAI-8b/8e |
 | S-135 | 예외 행이 화면에 표시 | 사용자가 판단 내용을 읽음 | 단독 `확인 필요`·`전문가 확인`보다 잠정 결론 -> 근거 -> 홈택스 행동 -> 적용/변경 순서가 먼저 보임 | Pending·VAI-8e |
 
+### 2.14 JC-041 부가세 매입 재분류 절세 가능성
+
+아래 시나리오는 [VAT Input Tax Reclassification Savings Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md)를 기준으로 한다.
+
+| # | Given | When | Then | Result |
+|:---|:---|:---|:---|:---:|
+| S-136 | 접대비 불공제 후보에 정확한 매입세액이 저장됨 | 절세 가능 금액 계산 | `potentialSavingsKrw`는 저장된 `inputTaxKrw`와 같고 "최대 추가 공제 가능성"으로만 사용 | PASS·VAI-9c 단위 |
+| S-137 | 공급가액·합계액과 매입세액의 비율이 일반적인 10%와 다름 | 절세 가능 금액 계산 | 공급가액/합계액 역산 없이 저장된 매입세액만 사용 | PASS·VAI-9c 단위 |
+| S-138 | 매입세액이 0원 | 절세 가능 금액 계산 | 가능 금액도 0원이며 존재하지 않는 이익을 만들지 않음 | PASS·VAI-9c 단위 |
+| S-139 | 가능 금액이 원장 매입세액과 다른 후보 payload | Zod 계약 검증 | 결과를 거부하고 잘못된 금액을 UI·후속 mutation에 전달하지 않음 | PASS·VAI-9c 단위 |
+
 ## 3. 자동화 계획
 
 - **단위 테스트 완료** (`lib/vat/summary.test.ts`, `lib/vat/package-gate.test.ts`, `lib/vat/provenance.test.ts`, `lib/validations/vat.test.ts`): S-03, S-12~13, S-20~21, S-30~32, S-40~42, S-50~52, S-60~67, S-74~78.
@@ -205,6 +216,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 - **JC-037 자동화 계획**: VAI-7a에서 최초 렌더 provider 0회와 호출 계측을, VAI-7b에서 fingerprint/version 재사용·stale invalidation·동시 실행 idempotency를, VAI-7c에서 비동기 상태·명시 재확인·timeout fallback을, VAI-7d에서 브라우저 성능·10회 재진입 호출 0회·package/rebuild live-AI 비의존을 검증한다.
 - **JC-038 자동화 계획**: VUI-1b에서 승인 Preview의 섹션·정보 중복을 정적 검증하고, VUI-1c에서 삭제 컴포넌트 부재와 기존 mutation/gate 회귀를, VUI-1d에서 desktop/mobile screenshot·overflow·핵심 작업 동선을 검증한다.
 - **JC-039 자동화 계획**: VAI-8a에서 judgment/workflow enum 분리와 generic 최종 답변 schema 거부를, VAI-8b에서 source 탐색 완료·reference·tenant/PII를, VAI-8c에서 특례 근거 있음/없음의 명확 결론을, VAI-8d에서 handoff 허용 조건·required payload를, VAI-8e에서 결론 우선 UI와 브라우저 E2E를 검증한다.
+- **JC-041 자동화 계획**: VAI-9a에서 후보 신뢰도와 가산·감산 요인을, VAI-9b에서 참석자 파싱·과거 결정 우선순위를, VAI-9c에서 정확한 매입세액 기반 가능 금액·총액 역산 금지·Zod 계약을 검증한다. VAI-9d/9e에서 Preview 승인과 사용자 확정 gate·재질문 방지 E2E를 추가한다.
 
 ## 4. Related Documents
 - **UI_Screens**: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/03_vat.html)

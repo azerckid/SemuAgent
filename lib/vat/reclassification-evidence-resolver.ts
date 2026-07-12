@@ -2,8 +2,11 @@ import { and, eq, ne } from 'drizzle-orm'
 import { bookkeepingTransactionClassification, employeeProfile, vatDeductionReview } from '@/lib/db/schema'
 import {
   evaluateReclassificationCandidate,
-  type ReclassificationEvaluation,
 } from './reclassification-evidence'
+import {
+  buildReclassificationSavingsCandidate,
+  type ReclassificationSavingsCandidate,
+} from './reclassification-savings'
 
 // JC-041 VAI-9b (v2): 실제 데이터에서 재분류 신뢰도 평가 신호를 뽑아 VAI-9a
 // 판정 함수(evaluateReclassificationCandidate)에 넘긴다. 1차 범위(Brief 51 §2.1)는
@@ -13,19 +16,13 @@ import {
 // 접대비 불공제 후보를 절대 배제하지 않는다 — 참석자 정보가 없거나 감산 요인이
 // 있어도 신뢰도만 낮아질 뿐, 목록에서 빠지지 않는다.
 //
-// 이 모듈은 read-only다. vat_deduction_review의 결정(decision)을 바꾸지 않으며,
+// 이 모듈은 read-only다. VAI-9c Zod 계약과 정확한 매입세액 기반 가능 금액을
+// 함께 반환하지만 vat_deduction_review의 결정(decision)은 바꾸지 않는다.
 // 재분류 확정은 사용자 액션(VAI-9e)에서만 일어난다.
 
 const ENTERTAINMENT_REASON_KEYWORDS = ['접대비', '기업업무추진비']
 
-export type ReclassificationCandidate = {
-  reviewRowId: string
-  description: string
-  counterparty: string | null
-  supplyAmountKrw: number
-  inputTaxKrw: number
-  evaluation: ReclassificationEvaluation
-}
+export type ReclassificationCandidate = ReclassificationSavingsCandidate
 
 // 적요 텍스트에서 참석자로 보이는 이름 후보를 뽑는다. "참석자: 홍길동, 김철수"처럼
 // 명시적인 패턴만 인정한다. 그 외에는 null(정보 없음)을 반환한다 — 어설픈 추출로
@@ -164,14 +161,14 @@ export async function resolveReclassificationCandidates(params: {
     })
 
     // 신뢰도와 무관하게 항상 추가한다 — 근거가 약해도 후보를 숨기지 않는다.
-    candidates.push({
+    candidates.push(buildReclassificationSavingsCandidate({
       reviewRowId: row.id,
       description: row.description,
       counterparty: row.counterparty,
       supplyAmountKrw: row.supplyAmountKrw,
       inputTaxKrw: row.inputTaxKrw,
       evaluation,
-    })
+    }))
   }
 
   return candidates
