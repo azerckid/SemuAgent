@@ -134,7 +134,7 @@ export function VatPackageActionButton({ periodKey, packagePreview }: VatPackage
         toast.error(result.message)
         return
       }
-      toast.success('부가세 신고 패키지 상태를 생성 완료로 변경했습니다.')
+      toast.success('부가세 신고 준비 상태를 완료로 변경했습니다.')
       router.refresh()
     })
   }
@@ -155,12 +155,12 @@ export function VatPackageActionButton({ periodKey, packagePreview }: VatPackage
         onClick={generatePackage}
       >
         {isPending
-          ? '패키지 생성 중'
+          ? '신고 준비 확인 중'
           : packagePreview.canGenerate
-            ? '패키지 생성'
+            ? '신고 준비 완료'
             : packagePreview.locked
-              ? `패키지 생성 · 잠김${packagePreview.lockReason ? ' (검토 완료 후 활성화)' : ''}`
-              : '패키지 생성 완료'}
+              ? `신고 준비 · 잠김${packagePreview.lockReason ? ' (검토 완료 후 활성화)' : ''}`
+              : '신고 준비 완료'}
       </button>
     </span>
   )

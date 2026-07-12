@@ -185,6 +185,12 @@ VAI-7d는 비동기 경로가 준비된 뒤 남은 legacy 동기 fallback을 정
 - 2026-07-12 localhost Webpack dev 브라우저 3회 새로고침 측정은 `responseStart`
   2,118/1,664/1,996ms, `DOMContentLoaded` 2,620/2,051/2,500ms,
   `loadEventEnd` 3,029/2,481/2,917ms였고 세 요청 모두 provider 호출 0회였다.
+- 2026-07-12 VUI-1c dev 브라우저에서 판단 행 6건이 실제로 표시된 상태에서도 최초
+  `data-vat-initial-provider-calls=0`을 재확인했다. 같은 행의 `AI 다시 확인`을 명시적으로 두 번
+  실행한 POST는 각각 24.8초·17.8초에 끝났고 최신 결과는 `manual_fallback`으로 감사 테이블에
+  저장됐다. 처리 중·완료 후에도 예외 표와 사용자 mutation
+  진입점은 계속 사용할 수 있었다. production은 exact VAT fact/AI 결과 행이 0건이라 이 검증의
+  의미 있는 대체물이 아니며, 10회 재진입·stale·multi-tab은 VAI-7d 후속으로 유지한다.
 - 서버 컴포넌트의 비결정적 렌더값이나 요청별 로그는 만들지 않는다. production P95는
   VAI-7d 배포 환경 검증에서 기록한다.
 - 별도 `console` 로그나 요청별 DB write는 추가하지 않아 Vercel observability event와 저장 비용을

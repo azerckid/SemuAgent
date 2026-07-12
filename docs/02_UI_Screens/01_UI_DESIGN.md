@@ -125,7 +125,7 @@
 |:---|:---|:---|
 | Tax Summary Hero | 매출세액 − 매입세액 = 납부(예정)세액 강조, 마감 D-day | 3셀 계산 레이아웃 + 예정치 안내 + D-day 칩 |
 | Sales Grouping Cards | 과세 / 영세율 / 면세 그룹별 공급가액·매출세액 | 3카드, 그룹 태그(tax/zero/exempt) |
-| VAT AI Tax Treatment Table | 매입 공제·불공제·안분과 매출 과세·영세율·면세 가능성 검토 | 거래·구분·금액·AI 판단·근거/필요 증빙·사용자 확정의 단일 표 |
+| VAT Exception Workbench | 영세율·면세·불공제·안분·누락·취소·중복·불일치와 미완료 공제 검토를 한 곳에서 처리 | 4열; AI 판단은 결론 한 줄, 홈택스는 할 일 한 줄 + `처리` 하나만 기본 표시. 출처·상태·근거·증빙·재확인·사용자 액션은 펼친 뒤 표시 |
 | Hometax Review Action | 홈택스 자동채움에서 확인·수정할 항목 | 그대로 확인 / 공제·불공제 확인 / 과세유형 확인 / 금액 추가·수정 / 안분 확인; 실제 자료 미연결 시 `자동채움 예상` 표시 |
 | Tax Treatment Source Mark | 판단 출처를 설명 | 공식 규칙 / 이전 패턴 / AI 보강 / AI 합의를 작은 source mark로 표시 |
 | Required Evidence Tags | 영세율·면세·공제 판단에 필요한 증빙 상태 | 있음(neutral) / 확인 필요(danger); 누락 시 확정·gate 해제 금지 |
@@ -134,18 +134,19 @@
 | Tax Treatment Actions | AI·규칙 판단에 대한 사용자 최종 처리 | 행 안의 적용/다르게/보류/전문가 확인; 저장 중 행 단위 spinner, 확정 행은 변경만 노출 |
 | Tax Treatment Decision Dialog | 추천과 다른 판단·보류·전문가 확인 근거 입력 | 방향별 결정 select + 근거 textarea + 안분율 input; 영세율·면세 증빙 누락 시 저장 차단 |
 | Recent Tax Treatment Undo | 방금 저장한 판단을 원래 canonical·감사 상태로 복원 | sonner `되돌리기`; 최신 1건·일회용 토큰·서버 current-state 검증 |
-| Schedules List | 부속 명세(합계표·수취명세서·불공제명세서) 준비 상태 | 서식별 준비됨/검토 대기 상태칩 |
 | Confirmed Ledger Rebuild | 현재 확정 VAT fact로 summary와 fingerprint를 재계산 | 다른 gate가 모두 ready이고 snapshot만 stale일 때 파란 outline `확정 원장 다시 계산`; 처리 중 spinner |
-| Filing Review Material | 확정 세액·사용자 판단·부속명세 검토 자료 | 공식 업로드 파일이 아님을 표시 + **생성 버튼 잠금**(판단 완료 전) |
-| State Card | 로딩/빈/오류 표준 (공용) | 스켈레톤·빈안내(기장검토 먼저 확정)·오류+재시도 |
+| Compact Filing Readiness | package/rebuild gate와 남은 차단 이유를 보존하되 대형 미리보기·부속명세 카드를 반복하지 않음 | `신고 준비` 한 줄 + 차단 이유 펼치기 + 준비 완료/재계산 액션 |
+| Inline Empty State | 예외 거래가 0건일 때 긴 표 대신 완료 상태 표시 | `확인할 예외 거래가 없습니다` 배너 |
 
 - 사이드바 "부가세"에 공제 검토 대기 건수 카운트 배지(warn)를 노출한다.
 - **검토 자료 마감 잠금**: 자료수집·자료대조·사용자 세무판단·확정 원장 fingerprint 중 하나라도 미완이면 `is-disabled` + `disabled` + `aria-disabled="true"` muted 버튼으로 잠금을 명시하고, 위에 사유(locknote)를 함께 노출한다. exact 입력은 유효하지만 snapshot만 stale인 경우에만 별도 재계산 버튼을 제공한다.
   - 구현 노트: disabled 버튼의 `title` 툴팁은 브라우저별 표시가 일관되지 않으므로, React 구현 시 비활성 버튼을 래퍼(tooltip 컴포넌트)로 감싸 잠금 사유를 접근성 있게 노출한다.
-- **판단 정보 계층**: 한 줄 결론을 먼저 보여주고, 바로 아래에 근거와 필요한 증빙을 둔다. AI 신뢰도 숫자만 단독으로 보여주지 않는다. `AI 판단`과 `사용자 확정` 라벨을 구분한다.
+- **판단 정보 계층**: AI 열에는 클릭 가능한 한 줄 결론 외의 source mark·완료시각·재확인 버튼을 기본 노출하지 않는다. 홈택스 열도 권장 행동 한 줄과 `처리` 진입점 하나만 둔다. 근거·필요 증빙·상태·사용자 액션 묶음은 펼친 뒤 표시한다.
+- **예외 중심**: 사용자 확정 완료 행과 확정 VAT fact·공식 규칙·필수 증빙이 모두 일치하는 정상 행은 기본 작업대에 펼치지 않는다. AI 단독 판단 행과 미완료 공제 검토는 숨기지 않는다.
+- **중복 제거**: 같은 classification 행의 AI 판단과 공제 검토 mutation은 한 행에 합치며, 별도 부속명세·상태 예시·대형 패키지 미리보기·동작 없는 `확정 신고` control을 두지 않는다.
 - **증빙 확인 경계**: `확인 완료`는 증빙파일 생성·AI 자동확정이 아니라 사용자가 법정 증빙 준비를 직접 확인했다는 기록이다. 확인 취소 시 세무판단·package gate를 다시 잠근다.
 - **자동 홈택스 제출은 범위 밖**이다. 부가세 공식 비암호화 업로드 파일은 Stage A 외부 확인 전 미제공이며, 세액은 사용자 판단 완료 전 "예정"으로 표기한다.
-- 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
+- 상태칩·Table 골격은 앞 화면들과 공통(DRY). Loading·Error는 실제 상태에서 처리하고 live 화면에 데모 카드를 상시 표시하지 않는다.
 
 ### 4.5 급여·지급 (04_payroll.html)
 

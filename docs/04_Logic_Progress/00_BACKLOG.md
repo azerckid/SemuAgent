@@ -795,41 +795,43 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-12): VAI-7b는 additive `vat_tax_treatment_ai_result`와 migration `0073`, versioned payload, fingerprint/version stale 처리, 2분 실행 lease, 15분 fallback backoff, active-scope partial unique index를 구현했다. VAT read는 증빙 확인을 먼저 합성한 뒤 동일 scope/fingerprint 저장 결과를 재사용하고 사용자 확정 audit를 마지막에 적용한다. 다중 요청·변경 fingerprint·fallback retry·확정 행 제외·tenant/business/period 격리·민감 원문 미저장을 DB/단위 테스트로 검증했다. migration `0073`은 dev/prod 모두 21컬럼·명시 인덱스 4개·FK 3개·위반 0건·초기 행 0건으로 적용했다. VAI-7c 비동기 trigger/UI와 VAI-7d 브라우저 계측이 남아 JC-037은 `todo`를 유지한다.
 - Document Sync Check (2026-07-12): 저장 AI read를 기본 OFF로 고정했다. VAT 화면과 사용자 확정·증빙 mutation만 명시적으로 opt-in하고, filing-preparation·internal-reminders·package/rebuild gate는 명시적으로 opt-out해 불필요 SELECT와 추천 캐시의 gate 혼입을 차단한다.
 - Document Sync Check (2026-07-12): VAI-7c는 provider-free GET 상태 조회와 POST reserve→run→complete API를 추가했다. 최초 서버 렌더는 계속 provider 0회이며, 클라이언트가 렌더 후 `idle|stale` 대상만 최대 12건씩 실행한다. 행별 `확인 중`·조용한 `판단 완료`·`수동 확인`·`다시 확인 필요`와 명시적 `AI 다시 확인`을 표시한다. polling은 중복 GET을 막고 3초 간격·최대 20회로 제한하며 사용자 확정 행과 package/rebuild gate는 실행 대상에서 제외한다. VAI-7d 실환경 호출 수·브라우저 계측이 남아 JC-037은 `todo`를 유지한다.
+- Document Sync Check (2026-07-12, VAI-7d partial): dev 판단 행 6건에서 최초 렌더 provider 0회, 같은 행의 명시적 `AI 다시 확인` POST 2회(24.8초·17.8초), 최신 `manual_fallback` 저장, 표·처리 진입점 비차단을 브라우저와 dev DB 집계로 확인했다. production은 exact VAT fact·AI 결과가 0건이라 smoke 확인만 가능했다. 10회 재진입 호출 0회·stale 1회·multi-tab E2E가 남아 JC-037은 `todo`를 유지한다.
 
 ### JC-038 · 부가세 화면 단순화·중복 정보 제거
 
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - Related UI Docs: [VAT Prototype Review](../02_UI_Screens/05_VAT_PROTOTYPE_REVIEW.md) · [UI Design §4.4](../02_UI_Screens/01_UI_DESIGN.md)
-- Related HTML Preview: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - 현재 상태 기준, VUI-1b에서 단순화안으로 갱신 후 프로젝트 오너 승인 필요.
+- Related HTML Preview: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VUI-1b 단순화안 프로젝트 오너 승인 완료, VUI-1c runtime 반영 기준.
 - Related Technical Docs: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) · [JC-037 Loading Brief](../03_Technical_Specs/47_VAT_AI_LOADING_AND_RESULT_REUSE_PRE_CODE_BRIEF.md)
 - Related QA Docs: [VAT Test Scenarios §2.12](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md)
-- Current Gap:
-  - live 화면에 Preview/QA용 `화면 상태 예시`가 상시 노출된다.
-  - 같은 매입 공제 판단이 AI 부가세 판단 표와 매입세액 공제 검토 표에 반복된다.
-  - 예정치·차단 이유·책임 경계·package 안내가 여러 영역에서 중복된다.
-  - 동작하지 않는 control과 넓은 보조 카드가 핵심 처리 거래보다 먼저 시선을 차지한다.
-  - 홈택스 미리채움에 정상 반영될 가능성이 높은 거래도 예외 거래와 같은 무게로 펼쳐 보여준다.
-  - 사용자가 모든 거래를 개별 확정해야 하는 것처럼 보여 실제 신고 흐름보다 작업량이 커 보인다.
+- Resolved in VUI-1c:
+  - 화면 상태 예시·별도 공제 검토 표·부속명세·대형 package 미리보기·동작 없는 control을 제거 또는 통합했다.
+  - AI 판단은 결론 한 줄, 홈택스는 할 일 한 줄과 `처리` 진입점 하나만 기본 표시한다.
+  - 공제 mutation·세무판단·증빙·undo·package/rebuild gate는 상세 또는 compact 영역에 유지했다.
+  - 정상 행은 보수적 deterministic 자격 조건을 통과할 때만 기본 작업대에서 제외한다.
+- Remaining Gap:
+  - desktop VUI-1d는 통과했으나 430px mobile에서 전역 고정 Sidebar와 샘플 데이터 배너가 만드는 공통 레이아웃 overflow가 남아 있다.
 - Fixed Order: VUI-1a 영역별 결정 -> VUI-1b Preview 단순화·오너 승인 -> JC-037 로딩 개선 -> VUI-1c runtime 삭제·통합 -> VUI-1d visual/workflow QA.
 - Implementation Preconditions:
   - [x] 현재 runtime과 Preview의 화면 영역 inventory를 작성했다.
   - [x] 중복 제거·정보량 축소 필요성을 프로젝트 오너가 제기했다.
-  - [ ] 각 영역을 유지/통합/접기/삭제 중 하나로 프로젝트 오너가 확정한다.
-  - [ ] 단순화된 HTML Preview를 실제 크기 브라우저에서 확인한다.
-  - [ ] AI 판단·공제 mutation·증빙 확인·undo·gate 회귀 범위를 고정한다.
+  - [x] 각 영역을 유지/통합/접기/삭제 중 하나로 프로젝트 오너가 확정했다.
+  - [x] 단순화된 HTML Preview를 실제 크기 브라우저에서 확인했다.
+  - [x] AI 판단·공제 mutation·증빙 확인·undo·gate 회귀 범위를 고정했다.
 - Acceptance Criteria:
-  - [ ] live 화면에서 Preview 전용 상태 예시가 제거된다.
-  - [ ] 같은 매입 거래의 공제 판단이 두 표에 중복되지 않는다.
-  - [ ] 동일 숫자·상태·차단 이유는 한 위치에서만 주로 표시한다.
-  - [ ] 예상 세액과 지금 처리할 거래가 첫 화면 우선순위다.
-  - [ ] 전자증빙·정확한 금액·deterministic rule이 일치하는 정상 건은 건수·합계로 접는다.
-  - [ ] 정상 건은 AI 단독 판단으로 자동 정리하지 않으며, 사용자는 기간 단위 요약을 최종 확인한다.
-  - [ ] 영세율·면세·불공제·안분·누락·취소·중복·불일치 예외만 기본 작업대에 펼친다.
-  - [ ] 예외 0건이면 긴 판단표를 숨기고 정상 반영 요약과 신고 준비 상태를 보여준다.
-  - [ ] 동작하지 않는 control·미래 기능 placeholder가 없다.
-  - [ ] 삭제 후 기존 사용자 mutation·gate·세액 계산이 유지된다.
+  - [x] live 화면에서 Preview 전용 상태 예시가 제거된다.
+  - [x] 같은 매입 거래의 공제 판단이 두 표에 중복되지 않는다.
+  - [x] 동일 숫자·상태·차단 이유는 한 위치에서만 주로 표시한다.
+  - [x] 예상 세액과 지금 처리할 거래가 첫 화면 우선순위다.
+  - [x] 전자증빙·정확한 금액·deterministic rule이 일치하는 정상 건은 예외 작업대에 펼치지 않는다.
+  - [x] 정상 건은 AI 단독 판단으로 자동 정리하지 않으며, 사용자 확정값을 바꾸지 않는다.
+  - [x] 영세율·면세·불공제·안분·누락·취소·중복·불일치 예외만 기본 작업대에 펼친다.
+  - [x] 예외 0건이면 긴 판단표를 숨기고 완료 배너와 신고 준비 상태를 보여준다.
+  - [x] 동작하지 않는 control·미래 기능 placeholder가 없다.
+  - [x] 삭제 후 기존 사용자 mutation·gate·세액 계산이 유지된다.
   - [ ] desktop/mobile visual QA와 문서 정합을 통과한다.
-- Document Sync Check (2026-07-12): Brief 48, Backlog JC-038, Prototype Review의 재검토 상태, VAT QA S-115~S-125를 추가했다. 정확한 삭제 목록과 Preview 변경은 다음 프로젝트 오너 논의 전까지 Pending이며 코드 변경 없음.
+- Document Sync Check (2026-07-12): 프로젝트 오너가 VUI-1a의 10개 유지·통합·축소·삭제 결정을 확정하고 VUI-1b Preview를 승인했다. 정상 건 요약 배너는 만들지 않고, 기존 공제 mutation·증빙 확인·undo·package/rebuild gate는 compact 영역에서 유지하는 VUI-1c 계약을 Brief 48·Prototype Review·QA S-115~S-125와 동기화했다.
+- Document Sync Check (2026-07-12, VUI-1c): runtime을 승인 Preview 기준으로 재구성했다. AI 판단과 pending 공제 검토를 classification 기준 한 행으로 합치고, 4열 예외 작업대·상세 펼치기·예외 0건 완료 배너를 적용했다. 화면 상태 예시·부속명세·대형 패키지 미리보기·동작 없는 `확정 신고`를 제거하고 package/rebuild gate는 compact 신고 준비 영역에 유지했다. tsc·248파일 1732테스트·lint 0 error·desktop DOM overflow 검증은 통과했다. 430px mobile은 전역 고정 Sidebar/샘플 배너 overflow 때문에 VUI-1d 후속으로 남긴다.
 
 ### JC-039 · 부가세 AI 근거 탐색·명확 판단
 

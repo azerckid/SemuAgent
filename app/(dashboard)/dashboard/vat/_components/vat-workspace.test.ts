@@ -28,8 +28,8 @@ describe('VAT workspace static contract', () => {
   })
 
   it('keeps Hometax submission/payment outside the actionable UI (S-71~72)', () => {
-    expect(workspaceSource).toContain('패키지 생성')
-    expect(workspaceSource).toContain('자동 홈택스 제출')
+    expect(workspaceSource).toContain('신고 준비')
+    expect(workspaceSource).toContain('홈택스 제출·납부는 사용자가 직접 진행')
     expect(workspaceSource).not.toContain('홈택스 제출</button>')
     expect(workspaceSource).not.toContain('자동 납부</button>')
   })
@@ -40,19 +40,31 @@ describe('VAT workspace static contract', () => {
     expect(companyHomeSummarySource).not.toContain("vat: '/dashboard#vat-status'")
   })
 
-  it('keeps the approved Preview section order in the workspace (S-01)', () => {
+  it('keeps the approved simplified Preview section order in the workspace (S-01, S-115~118)', () => {
     const sectionOrder = [
       'TaxSummaryHero',
       'SalesGroupsSection',
-      'TaxTreatmentSection',
-      'DeductionReviewSection',
-      'SchedulesSection',
-      'PackagePreviewCard',
-      'StateCoverageSection',
+      'VatExceptionWorkbench',
+      'CompactFilingReadiness',
+      'ResponsibilityNote',
     ]
     const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
     expect(positions.every((position) => position >= 0)).toBe(true)
     expect([...positions].sort((a, b) => a - b)).toEqual(positions)
+    expect(workspaceSource).not.toContain('화면 상태 예시')
+    expect(workspaceSource).not.toContain('신고 패키지 미리보기')
+    expect(workspaceSource).not.toContain('매입세액 공제 검토</')
+    expect(workspaceSource).not.toContain('확정 신고')
+  })
+
+  it('uses one four-column exception workbench and preserves both mutation surfaces (S-116, S-119)', () => {
+    expect(workspaceSource).toContain('확인 필요 거래')
+    expect(workspaceSource).toContain('<summary className="w-fit cursor-pointer list-none">')
+    expect(workspaceSource).toContain('>처리</summary>')
+    expect(workspaceSource).toContain('VatTaxTreatmentActions')
+    expect(workspaceSource).toContain('VatDeductionActionButtons')
+    expect(workspaceSource).toContain('VatTaxTreatmentEvidenceAction')
+    expect(workspaceSource).toContain('확인할 예외 거래가 없습니다')
   })
 
   it('renders VAI recommendations as expected Hometax guidance with explicit VAI-4b user actions', () => {

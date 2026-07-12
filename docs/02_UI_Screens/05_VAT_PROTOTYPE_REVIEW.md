@@ -53,7 +53,7 @@
 - 확인 경로: `/dashboard/vat?period=2026-H1`의 영세율·불공제·안분·공제·면세 대표 행에서 액션 버튼, 판단 근거 대화상자, 최근 작업 되돌리기를 확인한다.
 - 검증 완료: 실제 브라우저에서 영세율 대표 행의 확인 완료→확인 취소→재확인 라운드트립과 `부가세 사용자 판단` 게이트 사유 노출을 확인했다(샘플데이터 원상복구). migration `0070` dev/prod 적용·PR #200 머지 완료 → **JC-035 `done`**.
 
-### 6.2 JC-038 Simplification Review Pending
+### 6.2 JC-038 Simplification Review Approved
 
 - 기존 승인은 JC-035의 판단 기능·사용자 확정·gate 흐름에 대한 승인이다.
 - 현재 runtime의 전체 정보량과 영역 배치가 최종 승인됐다는 뜻은 아니다.
@@ -62,7 +62,12 @@
   명확한 정상 건은 건수·합계로 접고, 영세율·면세·불공제·안분·누락·취소·중복·불일치만 펼친다.
 - 정상 자동 정리는 세무 자동확정이 아니며 사용자가 기간 단위 요약과 신고 내용을 최종 확인한다.
 - `화면 상태 예시`, 중복 매입 공제 표, 반복 차단 안내, 동작하지 않는 control을 우선 감사한다.
-- 정확한 유지/통합/접기/삭제 결정과 단순화 Preview 승인은 VUI-1a/1b에서 Pending이다.
+- 프로젝트 오너가 VUI-1a의 10개 결정을 확정하고 VUI-1b 단순화 Preview를 승인했다.
+- 매출 구분 3카드는 항상 표시한다. AI 판단과 매입세액 공제 검토는 `확인 필요 거래` 한 작업대로 통합한다.
+- 판단 표는 4열만 사용한다. AI 열은 판단 한 줄, 홈택스 열은 할 일 한 줄과 `처리` 하나만 기본 노출하고 source·상태·근거·필요 증빙·재확인·사용자 액션은 펼친 뒤 표시한다.
+- 화면 상태 예시·부속 명세·동작 없는 `확정 신고`·별도 정상 건 요약 배너는 삭제한다.
+- 대형 package/책임 경계 카드는 축소하되 package/rebuild gate·mutation·undo는 제거하지 않는다.
+- 예외가 0건이면 긴 표 대신 완료 배너를 표시한다.
 - 계약: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md)
 
 ## 7. Feedback & Improvements

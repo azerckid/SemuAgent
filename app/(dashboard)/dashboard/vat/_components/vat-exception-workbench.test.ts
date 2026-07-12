@@ -1,0 +1,129 @@
+import { describe, expect, it } from 'vitest'
+import {
+  vatTaxTreatmentDisplayRowSchema,
+  type VatTaxTreatmentDisplayRow,
+} from '@/lib/validations/vat-tax-treatment'
+import type { VatDeductionReviewRow } from '@/lib/vat/summary'
+import { withVatTaxTreatmentRecommendationFingerprint } from '@/lib/vat/tax-treatment-fingerprint'
+import {
+  buildVatExceptionWorkbenchModel,
+  isVatTaxTreatmentException,
+} from './vat-exception-workbench'
+
+function treatmentRow(overrides: Partial<VatTaxTreatmentDisplayRow> = {}): VatTaxTreatmentDisplayRow {
+  return vatTaxTreatmentDisplayRowSchema.parse(withVatTaxTreatmentRecommendationFingerprint({
+    rowId: 'row-1',
+    classificationRowId: 'classification-1',
+    tenantId: 'tenant-1',
+    businessEntityId: 'client-1',
+    periodKey: '2026-H1',
+    direction: 'purchase',
+    currentVatFact: {
+      taxType: 'taxable',
+      supplyAmountKrw: 100_000,
+      taxAmountKrw: 10_000,
+      grossAmountKrw: 110_000,
+      source: 'parser',
+      status: 'confirmed',
+    },
+    recommendation: 'likely_deductible',
+    source: 'deterministic_rule',
+    confidence: 'high',
+    basisLabel: '전자증빙과 확정 금액이 일치합니다.',
+    ruleReference: 'P-01',
+    ruleVersion: 'vat-kr-2026.07-v1',
+    requiredEvidence: [{ code: 'exact_vat_fact', label: '정확한 VAT fact', status: 'present' }],
+    missingFacts: [],
+    hometaxComparisonMode: 'expected_prefill',
+    hometaxAction: 'expected_no_change',
+    aiTrace: null,
+    aiRuntimeStatus: 'not_requested',
+    finalDecision: null,
+    confirmedByStaffId: null,
+    confirmedAt: null,
+    transactionDate: '2026-06-15',
+    counterparty: '테스트 거래처',
+    description: '업무용 결제',
+    sourceType: 'tax_invoice',
+    accountLabel: '지급수수료',
+    userActionStatus: 'pending',
+    userActionReason: null,
+    ...overrides,
+  }))
+}
+
+function deductionReview(overrides: Partial<VatDeductionReviewRow> = {}): VatDeductionReviewRow {
+  return {
+    id: 'review-1',
+    sourceVoucherId: null,
+    sourceVoucherLineId: null,
+    classificationRowId: 'classification-1',
+    description: '업무용 결제',
+    counterparty: '테스트 거래처',
+    supplyAmountKrw: 100_000,
+    inputTaxKrw: 10_000,
+    kind: 'non_deductible_candidate',
+    decision: 'pending',
+    reason: '공제 여부 확인 필요',
+    prorationRateBps: null,
+    actionLabels: ['불공제 확정', '공제'],
+    ...overrides,
+  }
+}
+
+describe('VAT exception workbench model', () => {
+  it('hides only high-confidence deterministic normal rows with confirmed facts and evidence', () => {
+    expect(isVatTaxTreatmentException(treatmentRow())).toBe(false)
+  })
+
+  it('keeps AI-only, incomplete evidence, and unresolved tax-treatment rows visible', () => {
+    expect(isVatTaxTreatmentException(treatmentRow({
+      source: 'ai_single',
+      confidence: 'high',
+      aiRuntimeStatus: 'completed',
+      aiTrace: {
+        provider: 'openai',
+        modelName: 'test-model',
+        promptVersion: 'test-prompt-v1',
+        consensusProviders: [],
+      },
+    }))).toBe(true)
+    expect(isVatTaxTreatmentException(treatmentRow({
+      requiredEvidence: [{ code: 'exact_vat_fact', label: '정확한 VAT fact', status: 'needs_review' }],
+    }))).toBe(true)
+    expect(isVatTaxTreatmentException(treatmentRow({ currentVatFact: { taxType: 'taxable', supplyAmountKrw: 100_000, taxAmountKrw: 10_000, grossAmountKrw: 110_000, source: 'parser', status: 'derived' } }))).toBe(true)
+  })
+
+  it('removes a fully user-confirmed row from the exception queue', () => {
+    expect(isVatTaxTreatmentException(treatmentRow({
+      finalDecision: 'deductible',
+      confirmedByStaffId: 'staff-1',
+      confirmedAt: '2026-07-12T00:00:00.000Z',
+      userActionStatus: 'confirmed',
+    }))).toBe(false)
+  })
+
+  it('merges a pending deduction review into the matching tax-treatment row', () => {
+    const result = buildVatExceptionWorkbenchModel({
+      treatmentRows: [treatmentRow()],
+      deductionReviews: [deductionReview()],
+    })
+
+    expect(result.exceptionCount).toBe(1)
+    expect(result.treatmentRows[0]?.deductionReview?.id).toBe('review-1')
+    expect(result.standaloneDeductionReviews).toEqual([])
+  })
+
+  it('keeps unmatched pending deduction reviews and excludes completed reviews', () => {
+    const result = buildVatExceptionWorkbenchModel({
+      treatmentRows: [],
+      deductionReviews: [
+        deductionReview({ id: 'pending', classificationRowId: null }),
+        deductionReview({ id: 'done', classificationRowId: null, decision: 'deductible', actionLabels: ['확정됨'] }),
+      ],
+    })
+
+    expect(result.exceptionCount).toBe(1)
+    expect(result.standaloneDeductionReviews.map((review) => review.id)).toEqual(['pending'])
+  })
+})
