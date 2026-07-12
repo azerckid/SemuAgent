@@ -8,6 +8,8 @@ import { withVatTaxTreatmentRecommendationFingerprint } from '@/lib/vat/tax-trea
 import {
   buildVatExceptionWorkbenchModel,
   isVatTaxTreatmentException,
+  resolveVatDeductionReviewWorkbenchDecision,
+  resolveVatTreatmentWorkbenchDecision,
 } from './vat-exception-workbench'
 
 function treatmentRow(overrides: Partial<VatTaxTreatmentDisplayRow> = {}): VatTaxTreatmentDisplayRow {
@@ -125,5 +127,29 @@ describe('VAT exception workbench model', () => {
 
     expect(result.exceptionCount).toBe(1)
     expect(result.standaloneDeductionReviews.map((review) => review.id)).toEqual(['pending'])
+  })
+
+  it('reduces purchase decisions to deductible, non-deductible, or insufficient evidence', () => {
+    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow())).toBe('deductible')
+    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'proration_required' }))).toBe('deductible')
+    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'likely_non_deductible' }))).toBe('non_deductible')
+    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({ recommendation: 'needs_review' }))).toBe('insufficient_evidence')
+  })
+
+  it('keeps sales tax-type review separate from purchase deduction decisions', () => {
+    expect(resolveVatTreatmentWorkbenchDecision(treatmentRow({
+      direction: 'sale',
+      recommendation: 'likely_zero_rated',
+    }))).toBe('sales_tax_type')
+  })
+
+  it('maps legacy deduction reviews onto the same compact decision vocabulary', () => {
+    expect(resolveVatDeductionReviewWorkbenchDecision(deductionReview())).toBe('non_deductible')
+    expect(resolveVatDeductionReviewWorkbenchDecision(deductionReview({ kind: 'proration_required' }))).toBe('deductible')
+    expect(resolveVatDeductionReviewWorkbenchDecision(deductionReview({ decision: 'deductible' }))).toBe('deductible')
+    expect(resolveVatDeductionReviewWorkbenchDecision(deductionReview({
+      kind: 'deductible',
+      decision: 'non_deductible',
+    }))).toBe('non_deductible')
   })
 })

@@ -826,12 +826,12 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 전자증빙·정확한 금액·deterministic rule이 일치하는 정상 건은 예외 작업대에 펼치지 않는다.
   - [x] 정상 건은 AI 단독 판단으로 자동 정리하지 않으며, 사용자 확정값을 바꾸지 않는다.
   - [x] 영세율·면세·불공제·안분·누락·취소·중복·불일치 예외만 기본 작업대에 펼친다.
-  - [x] 예외 0건이면 긴 판단표를 숨기고 완료 배너와 신고 준비 상태를 보여준다.
+  - [x] 예외 0건이면 긴 판단표를 숨기고 짧은 완료 배너만 보여준다.
   - [x] 동작하지 않는 control·미래 기능 placeholder가 없다.
   - [x] 삭제 후 기존 사용자 mutation·gate·세액 계산이 유지된다.
   - [ ] desktop/mobile visual QA와 문서 정합을 통과한다.
 - Document Sync Check (2026-07-12): 프로젝트 오너가 VUI-1a의 10개 유지·통합·축소·삭제 결정을 확정하고 VUI-1b Preview를 승인했다. 정상 건 요약 배너는 만들지 않고, 기존 공제 mutation·증빙 확인·undo·package/rebuild gate는 compact 영역에서 유지하는 VUI-1c 계약을 Brief 48·Prototype Review·QA S-115~S-125와 동기화했다.
-- Document Sync Check (2026-07-12, VUI-1c): runtime을 승인 Preview 기준으로 재구성했다. AI 판단과 pending 공제 검토를 classification 기준 한 행으로 합치고, 4열 예외 작업대·상세 펼치기·예외 0건 완료 배너를 적용했다. 화면 상태 예시·부속명세·대형 패키지 미리보기·동작 없는 `확정 신고`를 제거하고 package/rebuild gate는 compact 신고 준비 영역에 유지했다. tsc·248파일 1732테스트·lint 0 error·desktop DOM overflow 검증은 통과했다. 430px mobile은 전역 고정 Sidebar/샘플 배너 overflow 때문에 VUI-1d 후속으로 남긴다.
+- Document Sync Check (2026-07-12, VUI-1c): runtime을 승인 Preview 기준으로 재구성했다. AI 판단과 pending 공제 검토를 classification 기준 한 행으로 합치고, 3열 예외 작업대(`거래/상대처`·`금액`·`공제 판단`)와 상세 펼치기를 적용했다. 별도 `홈택스·사용자 확정` 열과 하단 신고 준비·차단 이유·책임 문구를 제거하고, 홈택스 할 일과 확정 액션은 공제 판단 상세 안에 유지했다. package/rebuild gate는 화면에서 중복 표시하지 않고 API에서 계속 강제한다.
 
 ### JC-039 · 부가세 AI 근거 탐색·명확 판단
 

@@ -2,9 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type FormEvent } from 'react'
-import { RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
-import type { VatDeductionReviewRow, VatPackagePreview } from '@/lib/vat/summary'
+import type { VatDeductionReviewRow } from '@/lib/vat/summary'
 import { cn } from '@/lib/utils'
 
 interface VatDeductionActionButtonsProps {
@@ -115,91 +114,6 @@ export function VatDeductionActionButtons({ review }: VatDeductionActionButtonsP
   )
 }
 
-interface VatPackageActionButtonProps {
-  readonly periodKey: string
-  readonly packagePreview: VatPackagePreview
-}
-
-export function VatPackageActionButton({ periodKey, packagePreview }: VatPackageActionButtonProps) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const disabled = !packagePreview.canGenerate || isPending
-
-  function generatePackage() {
-    if (!packagePreview.canGenerate) return
-
-    startTransition(async () => {
-      const result = await postVatPackage(periodKey)
-      if (!result.ok) {
-        toast.error(result.message)
-        return
-      }
-      toast.success('부가세 신고 준비 상태를 완료로 변경했습니다.')
-      router.refresh()
-    })
-  }
-
-  return (
-    <span className="mt-3 block" title={packagePreview.lockReason ?? undefined}>
-      <button
-        type="button"
-        disabled={disabled}
-        aria-disabled={disabled}
-        aria-describedby={packagePreview.lockReason ? 'vat-package-locknote' : undefined}
-        className={cn(
-          'w-full rounded-lg border px-3.5 py-2.5 text-center text-[12.5px] font-semibold',
-          packagePreview.canGenerate
-            ? 'border-[#18181b] bg-[#18181b] text-white disabled:cursor-wait disabled:opacity-70'
-            : 'cursor-not-allowed border-company-border bg-[#f1f1f2] text-company-fg-subtle',
-        )}
-        onClick={generatePackage}
-      >
-        {isPending
-          ? '신고 준비 확인 중'
-          : packagePreview.canGenerate
-            ? '신고 준비 완료'
-            : packagePreview.locked
-              ? `신고 준비 · 잠김${packagePreview.lockReason ? ' (검토 완료 후 활성화)' : ''}`
-              : '신고 준비 완료'}
-      </button>
-    </span>
-  )
-}
-
-interface VatProvenanceRebuildButtonProps {
-  readonly periodKey: string
-}
-
-export function VatProvenanceRebuildButton({ periodKey }: VatProvenanceRebuildButtonProps) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-
-  function rebuild() {
-    startTransition(async () => {
-      const result = await postVatProvenanceRebuild(periodKey)
-      if (!result.ok) {
-        toast.error(result.message)
-        return
-      }
-      toast.success('확정 원장 기준으로 부가세 요약을 다시 계산했습니다.')
-      router.refresh()
-    })
-  }
-
-  return (
-    <button
-      type="button"
-      disabled={isPending}
-      aria-disabled={isPending}
-      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#bfdbfe] bg-[#eff6ff] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#1d4ed8] disabled:cursor-wait disabled:opacity-70"
-      onClick={rebuild}
-    >
-      <RefreshCw className={isPending ? 'size-3.5 animate-spin' : 'size-3.5'} aria-hidden="true" />
-      {isPending ? '확정 원장 계산 중' : '확정 원장 다시 계산'}
-    </button>
-  )
-}
-
 type DeductionPatchPayload =
   | { decision: 'deductible'; reason?: string }
   | { decision: 'non_deductible'; reason: string }
@@ -229,16 +143,6 @@ async function patchDeductionReview(reviewId: string, payload: DeductionPatchPay
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(payload),
   })
-  return parseMutationResponse(response)
-}
-
-async function postVatPackage(periodKey: string) {
-  const response = await fetch(`/api/vat/periods/${periodKey}/package`, { method: 'POST' })
-  return parseMutationResponse(response)
-}
-
-async function postVatProvenanceRebuild(periodKey: string) {
-  const response = await fetch(`/api/vat/periods/${periodKey}/rebuild`, { method: 'POST' })
   return parseMutationResponse(response)
 }
 

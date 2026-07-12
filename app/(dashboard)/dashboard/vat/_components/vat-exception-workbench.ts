@@ -12,6 +12,12 @@ export type VatExceptionWorkbenchModel = {
   exceptionCount: number
 }
 
+export type VatWorkbenchDecision =
+  | 'deductible'
+  | 'non_deductible'
+  | 'insufficient_evidence'
+  | 'sales_tax_type'
+
 export function buildVatExceptionWorkbenchModel(params: {
   treatmentRows: VatTaxTreatmentDisplayRow[]
   deductionReviews: VatDeductionReviewRow[]
@@ -57,4 +63,26 @@ export function isVatTaxTreatmentException(row: VatTaxTreatmentDisplayRow) {
     && evidenceComplete
 
   return !isDeterministicNormal
+}
+
+export function resolveVatTreatmentWorkbenchDecision(
+  row: VatTaxTreatmentDisplayRow,
+): VatWorkbenchDecision {
+  if (row.direction === 'sale') return 'sales_tax_type'
+  if (row.finalDecision === 'deductible' || row.finalDecision === 'prorated') return 'deductible'
+  if (row.finalDecision === 'non_deductible') return 'non_deductible'
+  if (row.recommendation === 'likely_deductible' || row.recommendation === 'proration_required') {
+    return 'deductible'
+  }
+  if (row.recommendation === 'likely_non_deductible') return 'non_deductible'
+  return 'insufficient_evidence'
+}
+
+export function resolveVatDeductionReviewWorkbenchDecision(
+  review: VatDeductionReviewRow,
+): VatWorkbenchDecision {
+  if (review.decision === 'deductible' || review.decision === 'prorated') return 'deductible'
+  if (review.decision === 'non_deductible') return 'non_deductible'
+  if (review.kind === 'non_deductible_candidate') return 'non_deductible'
+  return 'deductible'
 }
