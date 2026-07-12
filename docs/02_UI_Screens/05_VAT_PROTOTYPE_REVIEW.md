@@ -70,6 +70,15 @@
 - 예외가 0건이면 긴 표 대신 완료 배너를 표시한다.
 - 계약: [VAT Screen Simplification Brief](../03_Technical_Specs/48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md)
 
+### 6.3 JC-041 VAI-9d Savings Preview — Owner Review Pending
+
+- 세액 요약 바로 아래에 `추가 공제 가능성`을 두고 기존 `확인 필요 거래`와 분리한다.
+- 기본 행에는 거래·재분류 방향·최대 가능 금액만 표시한다. 신뢰도·근거·부족 자료는 펼쳐보기로 이동한다.
+- 높은/중간/낮은 후보를 모두 보여주되 badge를 늘리지 않는다.
+- 후보가 0건이면 섹션을 표시하지 않는다.
+- Preview 단계에는 저장·확정 버튼이 없고 canonical 값도 바꾸지 않는다.
+- [VAT HTML Preview](./previews/03_vat.html)에 제안안을 반영했으며 프로젝트 오너의 실제 크기 화면 승인을 기다린다.
+
 ## 7. Feedback & Improvements
 - (반영) 신고 패키지 생성 버튼을 승인 전 잠금 상태로 표현: `is-disabled` + `disabled` + `aria-disabled="true"`, muted 스타일, 잠김 라벨.
 - (구현 노트) disabled 버튼의 `title` 툴팁은 브라우저별로 표시가 일관되지 않는다. React 구현 시 비활성 버튼을 래퍼(예: span/tooltip 컴포넌트)로 감싸 잠금 사유를 접근성 있게 노출한다. → Component & Library Plan / JC-011 전제조건에 반영.

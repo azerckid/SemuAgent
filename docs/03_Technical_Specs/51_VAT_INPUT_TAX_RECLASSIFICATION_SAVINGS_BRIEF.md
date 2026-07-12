@@ -1,8 +1,8 @@
 # VAT Input Tax Reclassification Savings Brief
 > Created: 2026-07-12
-> Last Updated: 2026-07-12 (v3 — VAI-9c 정확한 매입세액 기반 가능 금액·Zod read contract 반영)
+> Last Updated: 2026-07-13 (v4 — VAI-9d 절세 후보 Preview 제안 반영)
 > Backlog: JC-041
-> Status: VAI-9a~9c read model implemented; UI-First Gate and owner Preview approval pending
+> Status: VAI-9a~9c implemented; VAI-9d Preview ready and owner approval pending
 
 ## 0. Decision
 
@@ -182,7 +182,7 @@ VAI-9d/9e에서 확정한다.
 - 현재 분류와 제안 분류(예: "접대비 → 복리후생비 후보")
 - 신뢰도 등급(높음/중간/낮음)과 그 근거(어떤 요인이 발견됐는지)
 - **금액은 확정형이 아니라 가능성형으로 표시**: "132,000원 절세 확정"이
-  아니라 "**최대 132,000원 추가 공제 가능성**" — §5의 확정 조건을 満たす지
+  아니라 "**최대 132,000원 추가 공제 가능성**" — §5의 확정 조건을 충족하는지
   않은 상태에서 금액을 기정사실처럼 보여주면 안 된다.
 - 확정에 필요한 조건과, 지금 부족한 자료가 무엇인지(§4의 "부족한 자료")
 - 재분류가 최종이 아니며 사용자 확인이 필요하다는 명시
@@ -218,21 +218,21 @@ VAI-9c 계산 규칙은 하나뿐이다.
 - `inputTaxKrw = 0`이면 가능 금액도 0원이며 이익을 만들어내지 않는다.
 - Zod 계약은 두 금액이 다르면 결과를 거부한다.
 
-## 8. UI Contract (방향성, Preview 승인 전)
+## 8. UI Contract (VAI-9d Preview 제안, 오너 승인 전)
 
-- 재분류 제안은 "확인 필요 거래" 표(JC-039/VUI-1 목표 UI)와 **다른 자리**에
-  둔다. 불공제 chip을 클릭했을 때 나오는 "무슨 뜻인가요 / 홈택스에서 할 일"
-  팝오버에 재분류 제안을 섞지 않는다 — 이미 확정된 사실 설명과 "다시
-  생각해볼 여지"가 같은 화면 요소에 있으면 혼란스럽다.
-- 후보안: 절세 후보 섹션에 신뢰도별로(높음/중간/낮음) 구분해 전부 노출.
-  후보가 0건이면(현재 기간에 접대비 불공제 후보 자체가 없으면) 섹션을
-  표시하지 않는다 — 이건 여전히 "예외 0건이면 숨긴다"는 기존 원칙과 같다.
-  다만 후보가 있으면 신뢰도와 무관하게 전부 보여준다(§0.1).
-- 각 후보에는 "왜 후보인지"(발견된 요인)와 "확정하려면 무엇이 필요한지"가
-  항상 함께 보인다.
-- 정확한 배치·문구·상태는 실제 화면 논의와 HTML Preview 확인 후 확정한다
-  (docs-plan UI-First Gate 준수 — 이 브리프는 코드 작성 전 계약 문서이며
-  화면 자체를 확정하지 않는다).
+- 재분류 제안은 세액 요약 바로 아래의 `추가 공제 가능성` 섹션에 두고,
+  기존 `확인 필요 거래` 표와 **분리**한다. 불공제 설명 팝오버에 절세 제안을
+  섞지 않는다.
+- 기본 행에는 거래/상대처, `접대비 -> 제안 분류`, `최대 OOO원 추가 공제
+  가능성`만 표시한다. 신뢰도는 작은 보조 텍스트로 두고 badge를 늘리지 않는다.
+- 행을 펼치면 `왜 후보인가`, `확정 전 필요`, 가능 금액이 확정 절세액이
+  아니라는 주의 문구를 표시한다.
+- 높은/중간/낮은 신뢰도 후보를 모두 같은 목록에 표시한다. 후보가 0건이면
+  섹션 자체를 렌더하지 않는다.
+- VAI-9d Preview에는 저장 버튼을 만들지 않는다. 재분류 확정과 자료 보완
+  입력은 오너 승인 뒤 VAI-9e에서 설계한다.
+- 제안 화면은 [03_vat.html](../02_UI_Screens/previews/03_vat.html)에 반영했으며
+  실제 runtime 구현 전 프로젝트 오너의 화면 승인이 필요하다.
 
 ## 9. Fixed Implementation Order
 
@@ -241,7 +241,7 @@ VAI-9c 계산 규칙은 하나뿐이다.
 | **VAI-9a · Confidence Model 확정** | §4 요인·등급 산출을 코드 조건으로 명세화, 대표 fixture 작성(높음/중간/낮음 각각) | 모든 접대비 불공제 후보가 셋 중 하나의 등급과 factors·missingToConfirm을 갖고, 어떤 경우에도 후보에서 제외되지 않음 |
 | **VAI-9b · Evidence Resolver 확장** | `vat_deduction_review` + `bookkeeping_transaction_classification.staffMemo`에서 적요·참석자 대조·과거 이력 탐색 | 현재 기간의 접대비 불공제 후보가 전부(신뢰도 무관) 조회되고 evidence trace를 남김 |
 | **VAI-9c · Savings Calculation + Data Contract** | §7 Zod 스키마 구현, "최대 OOO원 가능성" 금액 계산 | **완료** — 각 후보 read model에 정확한 매입세액 기반 가능 금액·계산 근거·pending 결정 상태 포함, DB/canonical 변경 없음 |
-| **VAI-9d · UI-First Gate + Preview** | §8 방향을 실제 HTML Preview로 제작, 신뢰도별 구분·부족한 자료 표시 확인, 프로젝트 오너 승인 | 화면 배치·문구 승인, 기존 확인 필요 거래 UI와 혼선 없음 |
+| **VAI-9d · UI-First Gate + Preview** | §8 방향을 실제 HTML Preview로 제작, 신뢰도별 구분·부족한 자료 표시 확인, 프로젝트 오너 승인 | **Preview 제작 완료·승인 대기** — 화면 배치·문구 승인 전 runtime 미착수 |
 | **VAI-9e · Confirmation Gate + E2E** | §5 확정 게이트 구현(부족한 자료 보완 없이는 확정 불가), 반복 재질문 방지, 브라우저 E2E | 낮은 신뢰도 후보는 자료 보완 전까지 확정 불가함을 검증, 사용자 결정이 canonical 값에 정확히 반영 |
 
 ## 10. Acceptance Criteria
@@ -274,6 +274,6 @@ VAI-9c 계산 규칙은 하나뿐이다.
 
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접 신고 보조와 사용자 최종 책임 경계
 - **Technical_Specs**: [JC-039 Evidence-Backed Decisive Judgment Brief](./50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) - 근거 탐색 순서 재사용(단 이진 게이트가 아니라 등급 모델로 응용) · [Rule Matrix](./45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) - 공제/불공제 8개 법정 사유 · [VAT Screen Simplification Brief](./48_VAT_SCREEN_SIMPLIFICATION_AND_DEDUPLICATION_BRIEF.md) - 기존 확인 필요 거래 UI와의 분리 원칙
-- **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VAI-9d 이전까지는 참조용, 재분류 UI는 미반영
+- **UI_Screens**: [VAT HTML Preview](../02_UI_Screens/previews/03_vat.html) - VAI-9d 절세 후보 제안 반영, 프로젝트 오너 승인 대기
 - **Logic_Progress**: [Backlog JC-041](../04_Logic_Progress/00_BACKLOG.md)
 - **QA_Validation**: [VAT Test Scenarios §2.14](../05_QA_Validation/05_VAT_TEST_SCENARIOS.md) - 후보 등급·절세 가능 금액·추정 금지 계약
