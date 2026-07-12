@@ -25,6 +25,7 @@ export default async function VatPage({ searchParams }: PageProps) {
   const summary = await loadVatSummary({
     tenantId,
     periodKey: period,
+    includeStoredTaxTreatmentAi: true,
   })
 
   if (!summary.businessEntity) {

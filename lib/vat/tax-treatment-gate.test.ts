@@ -164,6 +164,7 @@ describe('VAT tax-treatment downstream gate', () => {
     const source = readFileSync(new URL('./tax-treatment-gate.ts', import.meta.url), 'utf8')
 
     expect(source).toContain('includeAi: false')
+    expect(source).toContain('includeStoredAi: false')
     expect(source).not.toContain('enhanceVatTaxTreatmentRowsWithAi')
   })
 })

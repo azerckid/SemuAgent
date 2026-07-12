@@ -261,4 +261,21 @@ describe('VAT tax treatment loader boundaries', () => {
     expect(source).not.toContain('.update(')
     expect(source).not.toContain('.delete(')
   })
+
+  it('reuses stored AI results after evidence state and before user audit state', () => {
+    expect(source).toContain('applyVatTaxTreatmentEvidenceAttestations')
+    expect(source).toContain('applyStoredVatTaxTreatmentAiResults')
+    expect(source).toContain('params.includeStoredAi === true')
+    expect(source).toContain('applyVatTaxTreatmentAuditStates({ rows: recommendedRows, auditRows })')
+  })
+
+  it('keeps stored AI opt-in and excludes package gates from recommendation cache', () => {
+    const gateSource = readFileSync(new URL('./tax-treatment-gate.ts', import.meta.url), 'utf8')
+    const mutationSource = readFileSync(new URL('./tax-treatment-mutations.ts', import.meta.url), 'utf8')
+    const evidenceSource = readFileSync(new URL('./tax-treatment-evidence.ts', import.meta.url), 'utf8')
+
+    expect(gateSource).toContain('includeStoredAi: false')
+    expect(mutationSource).toContain('includeStoredAi: true')
+    expect(evidenceSource).toContain('includeStoredAi: true')
+  })
 })

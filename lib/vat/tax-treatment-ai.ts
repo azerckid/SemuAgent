@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import OpenAI from 'openai'
 import { OPENAI_ANALYSIS_MODEL } from '@/lib/ai/models'
+import { VAT_TAX_TREATMENT_AI_PROMPT_VERSION } from '@/lib/validations/vat-tax-treatment-ai-result'
 import { getActiveAiProviderOrder, type AiProvider } from '@/lib/ai/provider-order'
 import {
   vatTaxTreatmentAiBatchOutputSchema,
@@ -14,7 +15,7 @@ import {
 } from '@/lib/validations/vat-tax-treatment'
 import { withVatTaxTreatmentRecommendationFingerprint } from './tax-treatment-fingerprint'
 
-export const VAT_TAX_TREATMENT_AI_PROMPT_VERSION = 'vat-tax-treatment-v1'
+export { VAT_TAX_TREATMENT_AI_PROMPT_VERSION }
 export const VAT_TAX_TREATMENT_AI_BATCH_SIZE = 12
 export const VAT_TAX_TREATMENT_AI_TIMEOUT_MS = 8_000
 export const VAT_TAX_TREATMENT_CLAUDE_MODEL = 'claude-sonnet-4-6'

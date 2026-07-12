@@ -599,7 +599,7 @@ export async function loadInternalReminderAttentionItems({
   const [source, resolvedBookkeepingAttention, vat, payroll, filing] = await Promise.all([
     loadSourceCollectionSummary({ tenantId, periodKey, today }),
     bookkeepingAttention,
-    loadVatSummary({ tenantId, periodKey, today }),
+    loadVatSummary({ tenantId, periodKey, today, includeStoredTaxTreatmentAi: false }),
     loadPayrollWorkspaceSummary({ tenantId, periodKey: null, today }),
     loadFilingSupportSummary({ tenantId, periodKey, today }),
   ])

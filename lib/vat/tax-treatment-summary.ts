@@ -23,6 +23,7 @@ import {
   applyPriorConfirmedVatPattern,
   type VatTaxTreatmentPatternRow,
 } from './tax-treatment-patterns'
+import { applyStoredVatTaxTreatmentAiResults } from './tax-treatment-ai-result'
 import {
   evaluateVatTaxTreatmentRule,
   type VatTaxTreatmentDeductionContext,
@@ -388,6 +389,7 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
   businessEntityId: string
   period: Pick<CompanyHomePeriod, 'key' | 'startMonth' | 'endMonth'>
   includeAi?: boolean
+  includeStoredAi?: boolean
 }): Promise<VatTaxTreatmentDisplayRow[]> {
   const { db } = await import('@/lib/db')
   const sessions = await listActiveSourceBatchSessions({
@@ -513,12 +515,19 @@ export async function loadVatTaxTreatmentDisplayRows(params: {
     classificationRows,
     deductionReviews,
   })
-  const recommendedRows = params.includeAi
-    ? await enhanceVatTaxTreatmentRowsWithAi({ rows })
-    : rows
   const rowsWithAttestations = applyVatTaxTreatmentEvidenceAttestations({
-    rows: recommendedRows,
+    rows,
     attestations: evidenceAttestations,
   })
-  return applyVatTaxTreatmentAuditStates({ rows: rowsWithAttestations, auditRows })
+  const recommendedRows = params.includeAi
+    ? await enhanceVatTaxTreatmentRowsWithAi({ rows: rowsWithAttestations })
+    : params.includeStoredAi === true
+      ? await applyStoredVatTaxTreatmentAiResults({
+        tenantId: params.tenantId,
+        businessEntityId: params.businessEntityId,
+        periodKey: params.period.key,
+        rows: rowsWithAttestations,
+      })
+      : rowsWithAttestations
+  return applyVatTaxTreatmentAuditStates({ rows: recommendedRows, auditRows })
 }

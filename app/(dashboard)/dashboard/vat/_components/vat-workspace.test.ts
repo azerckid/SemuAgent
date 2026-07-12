@@ -82,8 +82,10 @@ describe('VAT workspace static contract', () => {
     expect(vatPageSource).toContain('initialProviderCallCount={0}')
     expect(workspaceSource).toContain('data-vat-initial-provider-calls')
     expect(vatSummarySource).toContain('includeTaxTreatmentAi = false')
-    expect(internalReminderSummarySource).not.toContain('includeTaxTreatmentAi')
-    expect(filingPreparationSummarySource).not.toContain('includeTaxTreatmentAi')
+    expect(vatSummarySource).toContain('includeStoredTaxTreatmentAi = false')
+    expect(vatPageSource).toContain('includeStoredTaxTreatmentAi: true')
+    expect(internalReminderSummarySource).toContain('includeStoredTaxTreatmentAi: false')
+    expect(filingPreparationSummarySource).toContain('includeStoredTaxTreatmentAi: false')
   })
 
   it('wires deduction review actions to the VAT mutation endpoint (S-50~52)', () => {

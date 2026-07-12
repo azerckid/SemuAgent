@@ -42,6 +42,7 @@ async function defaultRecommendationLoader(params: Parameters<RecommendationLoad
     tenantId: params.tenantId,
     businessEntityId: params.businessEntityId,
     period,
+    includeStoredAi: true,
   })
   const base = rows.find((row) => row.rowId === params.rowId) ?? null
   if (!base || base.recommendationFingerprint === params.expectedFingerprint) return base

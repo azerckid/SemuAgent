@@ -585,7 +585,7 @@ describe('VAT high-risk multi-provider consensus', () => {
     const summarySource = readFileSync(new URL('./tax-treatment-summary.ts', import.meta.url), 'utf8')
     const mutationSource = readFileSync(new URL('./tax-treatment-mutations.ts', import.meta.url), 'utf8')
 
-    expect(summarySource).toContain('enhanceVatTaxTreatmentRowsWithAi({ rows })')
+    expect(summarySource).toContain('enhanceVatTaxTreatmentRowsWithAi({ rows: rowsWithAttestations })')
     expect(mutationSource).toContain('enhanceVatTaxTreatmentRowsWithAi({ rows: [base] })')
     expect(mutationSource).not.toContain('enhanceVatTaxTreatmentRowsWithSingleAi')
   })

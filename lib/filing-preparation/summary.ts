@@ -233,7 +233,7 @@ export async function loadFilingPreparationSummary({
       bookkeepingAttentionOverride: reconciliationGatePromise.then(buildReconciliationGateAttention),
     }),
     reconciliationGatePromise,
-    loadVatSummary({ tenantId, periodKey, today }),
+    loadVatSummary({ tenantId, periodKey, today, includeStoredTaxTreatmentAi: false }),
     loadPaymentStatementAttentionCount(tenantId),
     loadLocalIncomeTaxAttentionCount(tenantId),
     loadBusinessStatusReportAttentionCount(tenantId),

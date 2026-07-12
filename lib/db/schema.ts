@@ -1324,6 +1324,57 @@ export const vatTaxTreatmentEvidenceAttestation = sqliteTable('vat_tax_treatment
 }))
 
 // ---------------------------------------------------------------------------
+// vat_tax_treatment_ai_result
+// JC-037 VAI-7: 미확정 AI 판단의 실행 상태와 재사용 payload를 사용자 확정
+// 감사 snapshot과 분리해 보존한다. 원문 prompt/provider 응답은 저장하지 않는다.
+// ---------------------------------------------------------------------------
+export const vatTaxTreatmentAiResult = sqliteTable('vat_tax_treatment_ai_result', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenant.id),
+  clientId: text('client_id').notNull().references(() => client.id),
+  periodKey: text('period_key').notNull(),
+  classificationRowId: text('classification_row_id')
+    .notNull()
+    .references(() => bookkeepingTransactionClassification.id, { onDelete: 'cascade' }),
+  inputFingerprint: text('input_fingerprint').notNull(),
+  ruleVersion: text('rule_version').notNull(),
+  promptVersion: text('prompt_version').notNull(),
+  status: text('status', {
+    enum: ['queued', 'running', 'ready', 'manual_fallback', 'stale'],
+  }).notNull().default('queued'),
+  payloadVersion: integer('payload_version').notNull().default(1),
+  resultPayloadJson: text('result_payload_json'),
+  resultFingerprint: text('result_fingerprint'),
+  providerTraceJson: text('provider_trace_json').notNull().default('[]'),
+  attemptCount: integer('attempt_count').notNull().default(0),
+  executionToken: text('execution_token'),
+  startedAt: text('started_at'),
+  completedAt: text('completed_at'),
+  nextRetryAt: text('next_retry_at'),
+  leaseExpiresAt: text('lease_expires_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (t) => ({
+  scopeFingerprintUidx: uniqueIndex('vat_tax_treatment_ai_result_scope_fingerprint_uidx')
+    .on(
+      t.tenantId,
+      t.clientId,
+      t.periodKey,
+      t.classificationRowId,
+      t.inputFingerprint,
+      t.ruleVersion,
+      t.promptVersion,
+    ),
+  activeScopeUidx: uniqueIndex('vat_tax_treatment_ai_result_active_scope_uidx')
+    .on(t.tenantId, t.clientId, t.periodKey, t.classificationRowId)
+    .where(sql`status IN ('queued', 'running')`),
+  statusIdx: index('vat_tax_treatment_ai_result_status_idx')
+    .on(t.tenantId, t.clientId, t.periodKey, t.status),
+  classificationIdx: index('vat_tax_treatment_ai_result_classification_idx')
+    .on(t.tenantId, t.classificationRowId),
+}))
+
+// ---------------------------------------------------------------------------
 // client_request_event  (캘린더 요청 인스턴스)
 // upload_session_id: event → session 단방향 FK. 역방향은 upload_session.request_event_id (text only).
 // ---------------------------------------------------------------------------
