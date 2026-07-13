@@ -121,7 +121,7 @@ export function PaymentStatementReview({ summary, efiling }: PaymentStatementRev
 
         {efiling ? (
           <>
-            <ReviewSectionHead title="홈택스 직접작성 값 (JC-030)" hint="근로소득 간이지급명세서 · Path 1b" />
+            <ReviewSectionHead title="홈택스 직접작성 값" hint="근로소득 간이지급명세서" />
             <SimplifiedWageEfilingPanel efiling={efiling} />
           </>
         ) : null}

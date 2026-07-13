@@ -338,7 +338,7 @@ export function buildTracks(
       inapplicableReason: inapplicableReasonFor('withholding', type),
       input: '급여대장 · 지급내역 · 4대보험 고지액',
       output: '간이세액표 집계 · 원천세 신고서 초안 수치',
-      handoffLabel: 'handoff: 신고지원 원천세 항목',
+      handoffLabel: '홈택스 원천세 입력값 확인',
       href: withholdingApplicable ? '/dashboard/filing-support' : null,
     },
     {
@@ -358,7 +358,7 @@ export function buildTracks(
       output: vatApplicable
         ? `매출세액 ${formatKrw(vatTax.outputTaxKrw)} · 매입세액 ${formatKrw(vatTax.inputTaxKrw)}`
         : '면세 사업자는 부가세 신고 대상이 아닙니다.',
-      handoffLabel: 'handoff: 부가세 초안값 + 공제 검토 결과',
+      handoffLabel: '홈택스 부가세 수정·확인값 확인',
       href: vatApplicable ? '/dashboard/vat' : null,
     },
     {
@@ -366,7 +366,7 @@ export function buildTracks(
       title: '지급명세서 · 연말정산',
       cycle: '월/반기/연 · 급여/직원 명부 기반',
       chipLabel: !paymentStatement
-        ? 'JC-024'
+        ? '준비 예정'
         : paymentStatement.attention > 0
           ? `확인 ${paymentStatement.attention}명`
           : paymentStatement.total > 0 ? '데이터 준비' : '대상 없음',
@@ -376,7 +376,7 @@ export function buildTracks(
       inapplicableReason: inapplicableReasonFor('payment_statement', type),
       input: '연간 급여·지급내역 · 직원 명부',
       output: '간이지급명세서 반기 집계 · 연말정산 준비 데이터 · 누락/검토 상태',
-      handoffLabel: 'handoff: 신고 준비 데이터 확인 후 JC-030 파일 생성으로 연결',
+      handoffLabel: '홈택스 지급명세서 직접작성 값 확인',
       href: paymentStatement && isTrackApplicable('payment_statement', type)
         ? '/dashboard/filing-preparation/payment-statements'
         : null,
@@ -386,7 +386,7 @@ export function buildTracks(
       title: '지방소득세',
       cycle: '원천세 신고 주기 · 급여 지방소득세 기반',
       chipLabel: !localIncomeTax
-        ? 'JC-027'
+        ? '준비 예정'
         : localIncomeTax.attention > 0
           ? `확인 ${localIncomeTax.attention}명`
           : localIncomeTax.total > 0 ? '수치 준비' : '대상 없음',
@@ -398,7 +398,7 @@ export function buildTracks(
       output: localIncomeTax
         ? `지방소득세 ${formatKrw(localIncomeTax.localIncomeTaxKrw)}`
         : '원천세 특별징수분 지방소득세 준비 데이터',
-      handoffLabel: 'handoff: 위택스/지방세 직접 신고 수치',
+      handoffLabel: '위택스 지방소득세 신고값 확인',
       href: localIncomeTax && isTrackApplicable('local_income', type)
         ? '/dashboard/filing-preparation/local-income-tax'
         : null,
@@ -426,7 +426,7 @@ export function buildTracks(
       output: businessStatus && type === 'tax_exempt'
         ? `수입금액 ${formatKrw(businessStatus.revenueTotalKrw)} · 누락/미확정 ${businessStatus.attention}건`
         : '면세 개인사업자 사업장현황신고 준비 데이터',
-      handoffLabel: 'handoff: 사업장현황신고 준비값 확인',
+      handoffLabel: '홈택스 사업장현황신고 준비값 확인',
       href: isTrackApplicable('business_status', type)
         ? '/dashboard/filing-preparation/business-status-report'
         : null,

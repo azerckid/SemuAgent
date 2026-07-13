@@ -142,8 +142,6 @@ export function SourceCollectionView({
         <SourceTypeTilesSection tiles={summary.sourceTypeTiles} />
         <ImportStatusTableSection rows={summary.importRows} focusFileId={focusFileId} />
         <MissingChecklistSection items={summary.missingItems} />
-        <StateCoverageSection />
-        <PreviewNote />
       </div>
     </div>
   )
@@ -403,59 +401,6 @@ export function MissingChecklistSection({ items }: { readonly items: SourceColle
         ))}
       </div>
     </section>
-  )
-}
-
-export function StateCoverageSection() {
-  return (
-    <section className="grid gap-3" aria-labelledby="source-collection-states">
-      <SectionHeader
-        id="source-collection-states"
-        title="화면 상태 예시"
-        description="로딩 / 빈 상태 / 오류"
-      />
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-wide text-company-fg-subtle uppercase">Loading</p>
-          <div className="h-3 w-[40%] rounded-md bg-gradient-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-          <div className="mt-2.5 h-3 w-[80%] rounded-md bg-gradient-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-          <div className="mt-2.5 h-3 w-[60%] rounded-md bg-gradient-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-        </div>
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-wide text-company-fg-subtle uppercase">Empty</p>
-          <div className="grid flex-1 place-items-center text-center text-company-fg-subtle">
-            <div>
-              <p className="text-[22px] opacity-50">＋</p>
-              <p className="mt-1.5 text-[12.5px]">아직 업로드된 자료가 없습니다</p>
-              <Link href="#upload-dropzone" className="mt-2.5 inline-block text-xs font-semibold text-[#2563eb]">
-                첫 자료 업로드하기
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-wide text-company-fg-subtle uppercase">Error</p>
-          <div className="flex flex-1 flex-col justify-center">
-            <p className="text-[13px] font-semibold text-[#dc2626]">파일을 처리하지 못했습니다</p>
-            <p className="mt-1 text-xs text-company-fg-muted">지원 형식/용량을 확인한 뒤 다시 업로드해 주세요.</p>
-            <Link href="#upload-dropzone" className="mt-2.5 w-fit rounded-lg border border-company-border-strong px-2.5 py-1 text-xs font-semibold">
-              다시 시도
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function PreviewNote() {
-  return (
-    <p className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
-      <span className="font-semibold text-company-fg-muted">안내</span>
-      {' — '}
-      자료수집 화면은 회사 내부에서 직접 파일을 올리는 흐름입니다.
-      외부 고객 업로드 포털은 v1 범위에서 제외되어 있습니다.
-    </p>
   )
 }
 

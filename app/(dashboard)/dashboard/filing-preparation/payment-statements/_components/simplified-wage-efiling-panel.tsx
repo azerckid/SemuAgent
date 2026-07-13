@@ -25,9 +25,6 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-[15px] font-semibold text-foreground">홈택스 직접작성 값 정리</h3>
-            <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2 py-0.5 text-[10.5px] font-semibold text-[#1d4ed8]">
-              Path 1b
-            </span>
           </div>
           <p className="mt-1 max-w-[760px] text-[12.5px] leading-relaxed text-company-fg-muted">
             현재 확인된 제출 경로는 홈택스 직접작성입니다. 아래 값은 확정 급여에서 집계했으며,

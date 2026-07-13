@@ -23,7 +23,6 @@ describe('payroll workspace static contract (JC-012)', () => {
       'PayrollRegisterSection',
       'DeductionBreakdownCard',
       'PayrollDocumentsCard',
-      'StateCoverageSection',
     ]
     const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
     expect(positions.every((position) => position >= 0)).toBe(true)
@@ -46,11 +45,11 @@ describe('payroll workspace static contract (JC-012)', () => {
   })
 
   it('keeps EDI automation and credential storage outside the actionable UI (S-36, S-91)', () => {
-    expect(workspaceSource).toContain('건강보험 EDI/사회보험 고지액')
-    expect(workspaceSource).toContain('자동 로그인')
-    expect(workspaceSource).toContain('공동인증서 저장')
-    expect(workspaceSource).not.toContain('EDI 자동 로그인</button>')
-    expect(workspaceSource).not.toContain('공동인증서 저장</button>')
+    expect(actionsSource).toContain('4대보험 고지액 수동 입력')
+    expect(workspaceSource).not.toContain('자동 로그인')
+    expect(workspaceSource).not.toContain('공동인증서 저장')
+    expect(actionsSource).not.toContain('자동 로그인')
+    expect(actionsSource).not.toContain('공동인증서 저장')
   })
 
   it('keeps the payroll close button visibly locked when closeAction is locked (S-50)', () => {
@@ -105,11 +104,12 @@ describe('payroll workspace static contract (JC-012)', () => {
       '엑셀 내보내기 →',
       '공제 상세 (원천세·4대보험)',
       '명세서 · 마감',
-      '화면 상태 예시',
-      '이 달 급여 입력이 없습니다',
-      'Preview 안내',
     ]) {
       expect(renderSource).toContain(token)
+    }
+
+    for (const removed of ['StateCoverageSection', '화면 상태 예시', 'Preview 안내']) {
+      expect(workspaceSource).not.toContain(removed)
     }
   })
 })

@@ -943,6 +943,31 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - **VAI-9e 구현·dev E2E 완료**: runtime도 승인 Preview와 같은 위치·정보 계층을 사용한다. `공제로 재분류`는 업무 목적/참석자 입력·적격증빙·명시 확정을 서버에서 재검증하고, 기존 `vat_deduction_review`의 canonical decision·확정자·시각·사유와 기간 요약을 트랜잭션으로 갱신한다. 조건부 canonical UPDATE는 `returning()` 결과가 정확히 1건일 때만 성공하며 동시 제출의 0건 UPDATE는 409로 롤백한다. `접대비 유지`도 같은 정본에 기록해 재질문을 막는다. 후보 조회는 별도 Suspense 경계로 격리하고 과거 거래처 이력은 단일 쿼리로 묶어 VAT 첫 화면과 N+1 쿼리를 차단했다. 개발 샘플에서 양쪽 흐름을 브라우저/DB로 확인한 뒤 원상복구했다. 신규 테이블·migration 없음.
   - **VAI-9e 머지 완료**: PR #230이 concurrency 보강(`UPDATE ... returning()` 1건 강제·충돌 409)까지 포함해 main `5deeea1`에 반영되었다. JC-041의 후보 노출·확정 게이트·재질문 방지·runtime UI 완료선을 충족한다.
 
+### JC-042 · 제품 목적 기준 UI 정합화
+
+- Status: `doing` (Slice A 구현·검증 중)
+- Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접사용·자가신고 보조 목적.
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 실제 업무 화면과 Preview 검토 자료의 경계.
+- Related Technical Docs: [Product Purpose UI Alignment Brief](../03_Technical_Specs/58_PRODUCT_PURPOSE_UI_ALIGNMENT_BRIEF.md).
+- Related QA Docs: [Runtime UI Trust Test Scenarios](../05_QA_Validation/11_RUNTIME_UI_TRUST_TEST_SCENARIOS.md).
+- Origin: 2026-07-14 전체 UI 목적 정합성 감사. 회사 직접사용 제품의 핵심 흐름과 무관한 데모 블록·내부 개발 용어·회계사무소 잔재가 실제 화면에 남아 있고, 자료대조원장의 일부 핵심 조작과 중복 탐지가 주 사용자 동선에서 약하다는 점을 확인했다.
+- Fixed Order:
+  1. **Slice A · UI 신뢰 정리**: 실서비스 화면의 상태 데모·Preview 안내 제거, 데이터와 연결되지 않은 상태 선택기 제거, 내부 코드명·영문 운영 용어를 사용자 언어로 교체.
+  2. **Slice B · 자료대조원장 핵심 흐름 강화**: 기간·검색·표시·안전한 일괄 처리와 중복 의심 거래의 실제 사용자 동선 연결.
+  3. **Slice C · 회사 직접사용 셸 정리**: 온보딩·사업장 관리·설정에서 회계사무소 중심 용어와 불필요 관리 기능을 분리.
+  4. **Slice D · 공통 패턴 정리**: blocker·신고값 안내·기간 선택 UI를 공통화하고 홈택스·위택스 안내 수준을 일치.
+- Slice A Acceptance Criteria:
+  - [x] 회사 홈·자료수집·기장검토·급여·리마인드에서 `화면 상태 예시`와 Preview 설명을 제거한다. Loading/Empty/Error 실제 상태 라우트와 인라인 상태는 유지한다.
+  - [x] 회사 홈의 데이터와 연결되지 않은 `확정 신고` 선택기를 제거한다.
+  - [x] 연간신고·지급명세서·리마인드·설정·요금제 화면에서 `handoff`·`트랙`·`JC-*`·`Path 1b`·`Billing` 같은 내부 표현을 사용자 업무 표현으로 바꾼다.
+  - [x] HTML Preview의 상태 예시는 설계 검토 자료로 보존하되 런타임에 상시 렌더하지 않는 계약을 테스트한다.
+  - [x] 브라우저에서 데스크톱·모바일 핵심 화면의 중복 블록 제거와 레이아웃 비겹침을 확인한다.
+- Later Slices:
+  - [ ] Slice B 자료대조원장 조작·중복 탐지.
+  - [ ] Slice C 온보딩·설정·레거시 라우트 정리.
+  - [ ] Slice D 공통 컴포넌트·위택스 동등 안내.
+- Document Sync Check (2026-07-14): 전체 UI 감사 결과를 한 번에 섞지 않고 사용자 영향과 위험 순서대로 4개 Slice로 고정했다. 첫 PR은 표시 계층 정리만 수행하며 DB·API·세무 계산·자료대조 mutation을 변경하지 않는다.
+
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 
 - Related Concept: [Product Baseline §Filing Path Priority](../01_Concept_Design/01_PRODUCT_BASELINE.md) — Path 2는 전체 Path 1 베타(1a+1b) 이후 자료기와 연결 후보.

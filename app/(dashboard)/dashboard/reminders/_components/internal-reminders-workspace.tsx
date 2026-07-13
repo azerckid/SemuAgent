@@ -40,13 +40,8 @@ export function InternalRemindersWorkspace({ summary }: InternalRemindersWorkspa
           <RecipientPreview recipients={summary.recipients} />
         </div>
 
-        <SectionHeader title="최근 발송 로그" description="성공 / 실패 / 스킵 · 중복 방지(idempotency)" />
+        <SectionHeader title="최근 발송 로그" description="성공 / 실패 / 스킵 · 중복 발송 방지" />
         <SendLogTable summary={summary} />
-
-        <SectionHeader title="화면 상태 예시" description="로딩 / 빈 / 오류 / 발송 설정 없음" />
-        <StateCoverageSection />
-
-        <PreviewNote />
       </div>
     </div>
   )
@@ -93,7 +88,7 @@ function InternalOnlyBanner() {
       <div>
         <h2 className="text-[12.5px] font-bold text-[#1e40af]">회사 내부 업무 알림입니다</h2>
         <p className="mt-0.5 text-[12px] leading-5 text-[#1d4ed8]">
-          담당자 본인·내부 담당자에게 마감·확인 필요 상태를 리마인드합니다. 고객사 요청 메일·자동 홈택스 제출/납부는 제공하지 않습니다.
+          회사 담당자에게 마감·확인 필요 상태를 알려줍니다. 외부 요청 메일·자동 홈택스 제출·납부 기능은 제공하지 않습니다.
         </p>
       </div>
     </section>
@@ -219,7 +214,7 @@ function RecipientPreview({ recipients }: { readonly recipients: InternalReminde
   return (
     <section className={cn(panelClass, 'p-[18px]')}>
       <h2 className="text-[13px] font-semibold text-foreground">수신자 미리보기</h2>
-      <p className="mt-1 mb-3.5 text-xs text-company-fg-subtle">기본 수신자는 담당자 본인·내부 staff에서 파생</p>
+      <p className="mt-1 mb-3.5 text-xs text-company-fg-subtle">기본 수신자는 등록된 회사 담당자입니다</p>
       {recipients.length > 0 ? recipients.map((recipient) => (
         <RecipientRow key={recipient.id} recipient={recipient} />
       )) : (
@@ -228,7 +223,7 @@ function RecipientPreview({ recipients }: { readonly recipients: InternalReminde
         </div>
       )}
       <div className="mt-3.5 rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs leading-5 text-company-fg-subtle">
-        직원 명부(<b className="text-company-fg-muted">JC-015</b>) 기반 직원 수신은 후속 단계에서 추가됩니다. v1은 담당자 본인·내부 staff 발송입니다.
+        현재 리마인드는 회사 담당자에게 발송됩니다. 직원별 알림은 직원 명부 연동이 준비된 뒤 제공됩니다.
       </div>
     </section>
   )
@@ -301,71 +296,6 @@ function SendLogTable({ summary }: InternalRemindersWorkspaceProps) {
         </table>
       </div>
     </section>
-  )
-}
-
-function StateCoverageSection() {
-  return (
-    <div className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-4">
-      <StateCard label="Loading">
-        <div className="space-y-2">
-          <div className="h-2.5 w-2/5 rounded-full bg-[#eeeeef]" />
-          <div className="h-2.5 w-4/5 rounded-full bg-[#f4f4f5]" />
-          <div className="h-2.5 w-3/5 rounded-full bg-[#eeeeef]" />
-        </div>
-      </StateCard>
-      <StateCard label="Empty">
-        <StateMessage icon="✉" title="리마인드 규칙이 없습니다" action="첫 리마인드 규칙 만들기" />
-      </StateCard>
-      <StateCard label="Error">
-        <StateMessage title="리마인드 설정을 불러오지 못했습니다" action="다시 시도" danger />
-      </StateCard>
-      <StateCard label="Provider missing">
-        <StateMessage
-          icon="⚙"
-          title="메일 발송이 설정되지 않았습니다"
-          action="발송 설정 안내"
-        />
-      </StateCard>
-    </div>
-  )
-}
-
-function StateCard({ label, children }: { readonly label: string; readonly children: ReactNode }) {
-  return (
-    <div className="flex min-h-[130px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-4">
-      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.04em] text-company-fg-subtle">{label}</p>
-      <div className="grid flex-1 place-items-center text-center">{children}</div>
-    </div>
-  )
-}
-
-function StateMessage({
-  icon,
-  title,
-  action,
-  danger = false,
-}: {
-  readonly icon?: string
-  readonly title: string
-  readonly action: string
-  readonly danger?: boolean
-}) {
-  return (
-    <div>
-      {icon ? <p className="text-xl text-company-fg-subtle opacity-60">{icon}</p> : null}
-      <p className={cn('mt-1.5 text-xs text-company-fg-subtle', danger && 'font-semibold text-[#dc2626]')}>{title}</p>
-      <p className="mt-2 text-[11.5px] font-semibold text-[#2563eb]">{action}</p>
-    </div>
-  )
-}
-
-function PreviewNote() {
-  return (
-    <div className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs leading-5 text-company-fg-subtle">
-      <b className="text-company-fg-muted">Preview 계약 반영</b> — 내부 알림 안내 배너 · 통계(활성 규칙·리마인드 대상·발송 실패) · 규칙 목록(마감 D-offset/일일 요약/수동, 활성 토글, 테스트 발송) · 수신자 미리보기(담당자 본인·내부 staff) · 최근 발송 로그(성공/실패/스킵) · 상태(로딩/빈/오류/발송 설정 없음)를 실제 화면으로 구현했습니다.
-      고객사 요청 메일·자동 홈택스 제출/납부는 제공하지 않습니다. 직원 명부 기반 수신은 후속입니다.
-    </div>
   )
 }
 

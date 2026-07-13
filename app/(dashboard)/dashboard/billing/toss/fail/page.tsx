@@ -23,7 +23,7 @@ export default async function TossBillingFailPage({ searchParams }: PageProps) {
             <CardTitle>Toss 정기결제 등록 실패</CardTitle>
           </div>
           <CardDescription>
-            카드 등록이 완료되지 않았습니다. 필요하면 Billing 화면에서 다시 시도할 수 있습니다.
+            카드 등록이 완료되지 않았습니다. 필요하면 요금제 화면에서 다시 시도할 수 있습니다.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -35,7 +35,7 @@ export default async function TossBillingFailPage({ searchParams }: PageProps) {
             href="/dashboard/billing"
             className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
           >
-            Billing으로 돌아가기
+            요금제로 돌아가기
           </Link>
         </CardContent>
       </Card>

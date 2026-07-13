@@ -24,8 +24,6 @@ describe('internal reminders workspace static contract (JC-016)', () => {
       'ReminderRuleList',
       'RecipientPreview',
       'SendLogTable',
-      'StateCoverageSection',
-      'PreviewNote',
     ]
     const positions = sectionOrder.map((token) => workspaceSource.indexOf(`<${token}`))
 
@@ -44,10 +42,12 @@ describe('internal reminders workspace static contract (JC-016)', () => {
     const renderSource = `${workspaceSource}\n${sendSource}`
 
     expect(renderSource).toContain('회사 내부 업무 알림입니다')
-    expect(renderSource).toContain('고객사 요청 메일·자동 홈택스 제출/납부는 제공하지 않습니다')
-    expect(renderSource).toContain('고객사 요청 메일, 자동 홈택스 제출, 자동 납부 기능이 아닙니다')
+    expect(renderSource).toContain('외부 요청 메일·자동 홈택스 제출·납부 기능은 제공하지 않습니다')
+    expect(renderSource).toContain('외부 요청 메일, 자동 홈택스 제출, 자동 납부 기능이 아닙니다')
     expect(renderSource).not.toContain('자동 신고 완료')
     expect(renderSource).not.toContain('홈택스 제출 완료')
+    expect(workspaceSource).not.toContain('StateCoverageSection')
+    expect(workspaceSource).not.toContain('PreviewNote')
   })
 
   it('does not import GIWA customer request mail domain tables (S-63, S-91)', () => {
@@ -89,10 +89,10 @@ describe('internal reminders workspace static contract (JC-016)', () => {
     }
   })
 
-  it('locks send actions when the provider is missing and exposes provider-missing state (S-50~52)', () => {
+  it('locks send actions when the provider is missing (S-50~52)', () => {
     expect(summarySource).toContain('RESEND_API_KEY 또는 EMAIL_FROM')
     expect(workspaceSource).toContain('providerConfigured')
-    expect(workspaceSource).toContain('메일 발송이 설정되지 않았습니다')
+    expect(actionsSource).toContain('메일 발송 설정 후 사용할 수 있습니다.')
     expect(testSendRouteSource).toContain('summary.provider.configured')
     expect(sendNowRouteSource).toContain('summary.provider.configured')
     expect(testSendRouteSource).toContain('status: 409')

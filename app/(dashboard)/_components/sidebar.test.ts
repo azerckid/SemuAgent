@@ -58,7 +58,8 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
   })
 
   it('keeps the 지급명세서 and 연말정산 screen responsibilities separate', () => {
-    expect(paymentStatementSource).toContain('홈택스 직접작성 값 (JC-030)')
+    expect(paymentStatementSource).toContain('홈택스 직접작성 값')
+    expect(paymentStatementSource).not.toContain('홈택스 직접작성 값 (JC-030)')
     expect(paymentStatementSource).not.toContain('홈택스 편리한 연말정산에서 지급명세서를 생성합니다')
     expect(yearEndSettlementSource).toContain('홈택스 편리한 연말정산에서 지급명세서를 생성합니다')
     expect(yearEndSettlementSource).not.toContain('홈택스 직접작성 값 (JC-030)')

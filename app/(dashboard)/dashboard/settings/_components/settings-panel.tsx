@@ -332,7 +332,7 @@ export function SettingsPanel({
                       <option key={type} value={type}>{TAX_ENTITY_TYPE_LABEL[type]}</option>
                     ))}
                   </Select>
-                  <p className="text-xs text-muted-foreground">신고 준비 화면에서 해당 없는 세목 트랙(예: 면세 개인의 부가세)을 흐림 처리하는 데 사용합니다.</p>
+                  <p className="text-xs text-muted-foreground">사업자 유형에 따라 해당하지 않는 신고 항목(예: 면세 개인의 부가세)을 구분하는 데 사용합니다.</p>
                 </div>
 
                 <div className="grid gap-1.5">
@@ -343,7 +343,7 @@ export function SettingsPanel({
                       <Badge variant="info" className="h-5 px-2 text-[11px]">
                         {PLAN_LABEL[initialTenant.plan] ?? initialTenant.plan}
                       </Badge>
-                      <span className="text-muted-foreground">변경은 Billing 화면에서</span>
+                      <span className="text-muted-foreground">변경은 요금제 화면에서</span>
                     </span>
                     <Link href="/dashboard/billing" className="text-sm font-medium text-primary hover:underline">요금제 변경 →</Link>
                   </div>

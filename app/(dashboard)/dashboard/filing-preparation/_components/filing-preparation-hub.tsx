@@ -66,10 +66,10 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
         {/* Hero */}
         <section className="grid gap-6 rounded-xl border border-company-border bg-company-surface p-6 shadow-company-card lg:grid-cols-[1fr_300px]">
           <div>
-            <p className="text-xs font-semibold text-company-fg-muted">신고 데이터 준비 파이프라인</p>
+            <p className="text-xs font-semibold text-company-fg-muted">신고 준비 현황</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">홈택스·위택스에 넣을 확정 데이터가 준비되고 있는지 봅니다</h2>
             <p className="mt-2 max-w-[650px] text-[13px] text-company-fg-muted">
-              자료수집과 자료대조원장을 공통 기반으로 두고, 원천세·부가세·지급명세서/연말정산·지방소득세 트랙의 입력, 산출, handoff 상태를 한 화면에서 확인합니다.
+              자료수집과 자료대조원장을 기준으로 원천세·부가세·지급명세서·연말정산·지방소득세의 준비 상태를 한 화면에서 확인합니다.
             </p>
             <div className="mt-4 h-2 max-w-[520px] overflow-hidden rounded-full bg-company-border">
               <span className="block h-full bg-[#2563eb]" style={{ width: `${hero.readinessPercent}%` }} />
@@ -78,7 +78,7 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
           <div className="grid gap-2">
             <HeroMetric label="전체 준비율" value={`${hero.readinessPercent}%`} />
             <HeroMetric label="확인 필요" value={`${hero.attentionCount}건`} />
-            <HeroMetric label="신고 handoff" value={`${hero.handoffReadyCount}개 준비`} />
+            <HeroMetric label="신고값 준비" value={`${hero.handoffReadyCount}개 준비`} />
           </div>
         </section>
 
@@ -104,15 +104,15 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
         )}
 
         {/* 공통 기반 */}
-        <SectionHead title="공통 기반" hint="모든 신고 트랙의 소스가 되는 준비 단계" />
+        <SectionHead title="공통 기반" hint="모든 신고에 함께 쓰는 자료 준비 단계" />
         <section className="grid gap-4 lg:grid-cols-2">
           {foundation.map((card) => (
             <FoundationCard key={card.id} card={card} />
           ))}
         </section>
 
-        {/* 병렬 신고 트랙 */}
-        <SectionHead title="병렬 신고 트랙" hint="각 트랙은 입력 → 산출 → 신고 handoff로 읽습니다" />
+        {/* 신고 항목별 준비 */}
+        <SectionHead title="신고 항목별 준비" hint="각 신고에 필요한 자료와 준비된 값을 확인합니다" />
         <section className="grid gap-4 lg:grid-cols-2">
           {tracks.map((track) => (
             <TrackCard key={track.id} track={track} />
@@ -121,7 +121,7 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
 
         {/* 책임 경계 */}
         <section className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-4 text-[12.5px] text-[#1e3a8a]">
-          <b className="text-[#172554]">책임 경계</b> — SemuAgent는 신고서에 넣을 확정 데이터와 제출 보조 자료를 준비합니다. 최종 제출·납부는 사용자가 홈택스·위택스에서 직접 수행합니다. 자동 제출은 JC-023의 별도 법무·보안·사용자 승인 게이트 없이는 도입하지 않습니다.
+          <b className="text-[#172554]">책임 경계</b> — SemuAgent는 신고서에 넣을 확정 데이터와 제출 보조 자료를 준비합니다. 최종 제출·납부는 사용자가 홈택스·위택스에서 직접 진행하며, SemuAgent는 자동 제출하거나 자격증명을 저장하지 않습니다.
         </section>
       </div>
     </div>

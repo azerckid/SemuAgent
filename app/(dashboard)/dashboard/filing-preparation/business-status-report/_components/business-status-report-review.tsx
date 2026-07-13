@@ -121,7 +121,7 @@ function EligibilityState({ summary }: { summary: BusinessStatusReportSummary })
   const title = summary.eligibility.state === 'needs_business_type' ? '사업자 유형을 먼저 설정해 주세요' : '현재 사업자 유형은 사업장현황신고 대상이 아닙니다'
   const body = summary.eligibility.state === 'needs_business_type'
     ? '면세 개인사업자인지 확인해야 사업장현황신고 준비 화면을 사용할 수 있습니다.'
-    : '과세 개인사업자와 법인은 부가세·법인세 등 다른 신고 트랙을 사용합니다.'
+    : '과세 개인사업자와 법인은 부가세·법인세 등 해당하는 신고 항목을 사용합니다.'
   return (
     <section className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-[18px] py-4 text-[12.5px] text-[#92400e]">
       <div className="flex items-center justify-between gap-4">

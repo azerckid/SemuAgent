@@ -60,8 +60,6 @@ export function CompanyHomeView({ summary }: CompanyHomeViewProps) {
         <UpcomingScheduleSection items={summary.schedule} />
         <WorkspaceCardsSection cards={summary.workspaceCards} />
         <RecentRowsSection rows={summary.recentRows} />
-        <StateCoverageSection />
-        <PreviewNote />
       </div>
     </div>
   )
@@ -136,10 +134,6 @@ function CompanyHomeTopbar({ summary }: CompanyHomeViewProps) {
       <div className="ml-auto flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-2 rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium text-foreground">
           {periodLabel}
-          <span className="text-[11px] text-company-fg-subtle">▾</span>
-        </span>
-        <span className="inline-flex items-center gap-2 rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium text-foreground">
-          확정 신고
           <span className="text-[11px] text-company-fg-subtle">▾</span>
         </span>
       </div>
@@ -372,56 +366,6 @@ function RecentRowsSection({ rows }: RecentRowsSectionProps) {
         )}
       </div>
     </section>
-  )
-}
-
-function StateCoverageSection() {
-  return (
-    <section className="grid gap-3" aria-labelledby="company-home-states">
-      <SectionHeader
-        id="company-home-states"
-        title="화면 상태 예시"
-        hint="로딩 / 빈 상태 / 오류 — 카드 컴포넌트 상태 커버리지"
-      />
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-[0.04em] text-company-fg-subtle uppercase">Loading</p>
-          <div className="h-3 w-[40%] rounded-md bg-linear-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-          <div className="mt-2.5 h-3 w-[80%] rounded-md bg-linear-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-          <div className="mt-2.5 h-3 w-[60%] rounded-md bg-linear-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-        </div>
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-[0.04em] text-company-fg-subtle uppercase">Empty</p>
-          <div className="flex flex-1 items-center justify-center text-center text-company-fg-subtle">
-            <div>
-              <p className="text-[22px] opacity-50">＋</p>
-              <p className="mt-1.5 text-[12.5px]">아직 수집된 자료가 없습니다</p>
-              <p className="mt-2.5 text-xs font-semibold text-[#2563eb]">첫 자료 업로드하기</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-[0.04em] text-company-fg-subtle uppercase">Error</p>
-          <div className="flex flex-1 flex-col justify-center">
-            <p className="text-[13px] font-semibold text-[#dc2626]">현황을 불러오지 못했습니다</p>
-            <p className="mt-1 text-xs text-company-fg-muted">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</p>
-            <button type="button" className="mt-2.5 w-fit rounded-lg border border-company-border-strong px-2.5 py-1 text-xs font-semibold">
-              다시 시도
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function PreviewNote() {
-  return (
-    <div className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
-      <span className="font-semibold text-company-fg-muted">Preview 안내</span>
-      {' '}
-      — 이 화면은 회사 홈(대시보드) UI입니다. 표시 데이터는 선택한 회계기간과 실제 업로드·검토 결과를 반영합니다.
-    </div>
   )
 }
 

@@ -46,9 +46,6 @@ export function PayrollWorkspace({ summary }: PayrollWorkspaceProps) {
           <DeductionBreakdownCard items={summary.deductionBreakdown} />
           <PayrollDocumentsCard summary={summary} />
         </div>
-        <SectionHeader title="화면 상태 예시" description="로딩 / 빈 상태 / 오류" />
-        <StateCoverageSection />
-        <PreviewNote />
       </div>
     </div>
   )
@@ -361,57 +358,6 @@ function PayrollDocumentsCard({ summary }: PayrollWorkspaceProps) {
         <PayrollCloseButton periodKey={summary.period.key} closeAction={summary.closeAction} />
       </div>
     </section>
-  )
-}
-
-function StateCoverageSection() {
-  return (
-    <section className="grid gap-4 md:grid-cols-3">
-      <StateCard label="Loading">
-        <div className="h-3 w-2/5 rounded-full bg-muted" />
-        <div className="mt-2 h-3 w-4/5 rounded-full bg-muted" />
-        <div className="mt-2 h-3 w-3/5 rounded-full bg-muted" />
-      </StateCard>
-      <StateCard label="Empty">
-        <div className="flex flex-1 flex-col items-center justify-center text-center text-company-fg-subtle">
-          <span className="text-[22px] opacity-50">₩</span>
-          <p className="mt-1.5 text-[12.5px]">이 달 급여 입력이 없습니다</p>
-          <Link href="/dashboard/direct-upload?kind=payroll" className="mt-2 text-xs font-semibold text-[#2563eb]">
-            급여 자료 불러오기
-          </Link>
-        </div>
-      </StateCard>
-      <StateCard label="Error">
-        <div className="flex flex-1 flex-col justify-center">
-          <p className="text-[13px] font-semibold text-[#dc2626]">급여 계산을 불러오지 못했습니다</p>
-          <p className="mt-1 text-xs text-company-fg-muted">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</p>
-          <Link href="/dashboard/payroll" className="mt-2 w-fit rounded-lg border border-company-border-strong px-2.5 py-1 text-xs font-semibold">
-            다시 시도
-          </Link>
-        </div>
-      </StateCard>
-    </section>
-  )
-}
-
-function StateCard({ label, children }: { readonly label: string; readonly children: ReactNode }) {
-  return (
-    <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-      <p className="mb-3 text-[11px] font-bold tracking-[0.04em] text-company-fg-subtle uppercase">{label}</p>
-      {children}
-    </div>
-  )
-}
-
-function PreviewNote() {
-  return (
-    <p className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
-      {/* 건강보험 EDI/사회보험 고지액은 업로드/수동 입력만 허용한다. 자동 로그인/공동인증서 저장 UI는 렌더하지 않는다. */}
-      <b className="text-company-fg-muted">Preview 안내</b> — 이 화면은 <b className="text-company-fg-muted">급여</b> UI 확인용 정적 프리뷰입니다.
-      데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 급여·개인정보가 아닙니다. 구성: 급여 요약(지급·공제·실지급·마감상태) ·
-      확인 필요 직원 알림 · 급여대장(직원별 지급/공제/실지급) · 공제 상세(원천세·4대보험) · 급여명세서/지급명세서 ·
-      마감·확정 · 상태(로딩/빈/오류) 예시. 원천징수 지급명세서는 <b className="text-company-fg-muted">원천세</b> 화면으로 전달됩니다.
-    </p>
   )
 }
 

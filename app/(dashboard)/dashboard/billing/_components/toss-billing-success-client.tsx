@@ -106,7 +106,7 @@ export function TossBillingSuccessClient({
             href="/dashboard/billing"
             className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
           >
-            Billing으로 돌아가기
+            요금제로 돌아가기
           </Link>
         </CardContent>
       </Card>

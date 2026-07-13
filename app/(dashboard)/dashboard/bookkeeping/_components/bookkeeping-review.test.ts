@@ -25,7 +25,8 @@ describe('bookkeeping review UI boundaries (JC-010)', () => {
     expect(source).toContain('선택 거래 상세')
     expect(source).toContain('분개 미리보기')
     expect(source).toContain('기간 귀속 · 승인')
-    expect(source).toContain('화면 상태 예시')
+    expect(source).not.toContain('화면 상태 예시')
+    expect(source).not.toContain('Preview 안내')
   })
 
   it('does not import or render the GIWA reviews workspace components (S-60)', () => {

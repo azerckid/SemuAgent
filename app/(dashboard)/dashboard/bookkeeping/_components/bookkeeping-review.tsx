@@ -158,8 +158,6 @@ export function BookkeepingReviewView({ summary }: BookkeepingReviewViewProps) {
           onApproveOne={approveOne}
           onApproveWithAccount={approveWithAccount}
         />
-        <StateCoverageSection />
-        <PreviewNote />
       </div>
     </div>
   )
@@ -718,53 +716,6 @@ function SectionHeader({ title, description }: SectionHeaderProps) {
       <h2 className="text-[15px] font-semibold tracking-tight text-foreground">{title}</h2>
       <p className="text-xs text-company-fg-subtle">{description}</p>
     </div>
-  )
-}
-
-function StateCoverageSection() {
-  return (
-    <section className="grid gap-3" aria-labelledby="bookkeeping-review-states">
-      <SectionHeader title="화면 상태 예시" description="로딩 / 빈 상태 / 오류" />
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-[0.04em] text-company-fg-subtle uppercase">Loading</p>
-          <div className="h-3 w-[40%] rounded-md bg-linear-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-          <div className="mt-2.5 h-3 w-[80%] rounded-md bg-linear-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-          <div className="mt-2.5 h-3 w-[60%] rounded-md bg-linear-to-r from-[#eee] via-[#f5f5f5] to-[#eee]" />
-        </div>
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-[0.04em] text-company-fg-subtle uppercase">Empty</p>
-          <div className="grid flex-1 place-items-center text-center text-company-fg-subtle">
-            <div>
-              <p className="text-[22px] opacity-50">✓</p>
-              <p className="mt-1.5 text-[12.5px]">검토 대기 거래가 없습니다</p>
-              <p className="mt-2.5 text-xs font-semibold text-[#2563eb]">분류 확정 완료</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex min-h-[132px] flex-col rounded-xl border border-dashed border-company-border-strong bg-company-surface p-[18px]">
-          <p className="mb-3 text-[11px] font-bold tracking-[0.04em] text-company-fg-subtle uppercase">Error</p>
-          <div className="flex flex-1 flex-col justify-center">
-            <p className="text-[13px] font-semibold text-[#dc2626]">분류 큐를 불러오지 못했습니다</p>
-            <p className="mt-1 text-xs text-company-fg-muted">일시적 오류입니다. 잠시 후 다시 시도해 주세요.</p>
-            <Link href="/dashboard/bookkeeping" className="mt-2.5 w-fit rounded-lg border border-company-border-strong px-2.5 py-1 text-xs font-semibold">
-              다시 시도
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function PreviewNote() {
-  return (
-    <p className="rounded-[10px] border border-company-border bg-[#fafafa] px-3.5 py-3 text-xs text-company-fg-subtle">
-      <span className="font-semibold text-company-fg-muted">Preview 안내</span>
-      {' — '}
-      이 화면은 기장검토 분류 큐입니다. AI 추천 계정과목, 신뢰도, 선택 거래 상세, 로딩·빈·오류 상태를 승인된 Preview 구조에 맞춰 제공합니다.
-      AI 추천은 초안이며 최종 확정 책임은 사용자에게 있습니다.
-    </p>
   )
 }
 
