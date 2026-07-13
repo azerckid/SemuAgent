@@ -109,6 +109,8 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-83 | 미인증 | 접근 | `/sign-in` redirect | PASS·구현 |
 | S-84 | tenant 없음 | 진입 | tenant-scoped 접근 차단 | PASS·구현 |
 | S-85 | 급여·지급 사이드바 | 지급명세서와 연말정산을 각각 선택 | 서로 다른 route·breadcrumb·전용 표를 표시하고 각 화면 준비율에 다른 화면 상태를 섞지 않음 | PASS·단위/정적/브라우저 |
+| S-86 | 2026년 7월, 연말정산 `period` 미지정 | 연말정산 진입 | 최근 완료 연도 2025년을 기본 선택하고 2026년 1~7월 부분합을 연간 검토 준비로 표시하지 않음 | PASS·단위/브라우저 |
+| S-87 | 2026년 7월, 연말정산 `?period=2026-H1` | 진행 중 연도 열기 | 완료 월 누락만 검사하고 정상 행은 `연도 진행 중`, 금액 헤더는 `현재까지 지급합계`, 확인 필요·검토 준비에는 포함하지 않음 | PASS·단위/브라우저 |
 
 ### 2.10 Path 1a Tax-Type File Completion (Pending)
 

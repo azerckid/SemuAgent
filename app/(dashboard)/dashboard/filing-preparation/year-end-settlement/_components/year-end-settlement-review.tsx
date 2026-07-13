@@ -49,6 +49,7 @@ export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProp
   const { context, yearEnd } = summary
   const hero = buildYearEndSettlementHero(yearEnd)
   const blockers = buildYearEndSettlementBlockers(yearEnd)
+  const isYearOpen = context.yearPeriodStatus === 'open'
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
@@ -80,6 +81,7 @@ export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProp
           <div className="grid gap-2">
             <ReviewHeroMetric label="대상 인원" value={`${hero.totalEmployees}명`} />
             <ReviewHeroMetric label="확인 필요" value={`${hero.attentionCount}명`} />
+            {hero.periodOpenCount > 0 ? <ReviewHeroMetric label="연도 진행 중" value={`${hero.periodOpenCount}명`} /> : null}
             <ReviewHeroMetric label="검토 준비" value={`${hero.readyCount}명`} />
           </div>
         </section>
@@ -89,7 +91,7 @@ export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProp
         <ReviewSectionHead title="연말정산 준비·검토" hint="직원별 연간 지급·기납부 원천세 집계" />
         <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
           <p className="border-b border-company-border bg-[#fafafa] px-[18px] py-2.5 text-xs text-company-fg-muted">
-            귀속연도 <b>{context.year}</b> · 연간 집계와 누락 검토를 제공하며 결정세액·환급·추징 계산은 범위 밖입니다.
+            귀속연도 <b>{context.year}</b> · {isYearOpen ? '진행 중 연도는 현재까지 집계하며 검토 준비로 확정하지 않습니다.' : '완료 연도의 연간 집계와 누락을 검토합니다.'} 결정세액·환급·추징 계산은 범위 밖입니다.
           </p>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[12.5px]">
@@ -97,7 +99,7 @@ export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProp
                 <tr className="bg-[#fcfcfd] text-[11px] uppercase tracking-[0.03em] text-company-fg-subtle">
                   <ReviewTableHeadCell>직원</ReviewTableHeadCell>
                   <ReviewTableHeadCell>재직</ReviewTableHeadCell>
-                  <ReviewTableHeadCell right>연간 지급합계</ReviewTableHeadCell>
+                  <ReviewTableHeadCell right>{isYearOpen ? '현재까지 지급합계' : '연간 지급합계'}</ReviewTableHeadCell>
                   <ReviewTableHeadCell right>기납부 원천세</ReviewTableHeadCell>
                   <ReviewTableHeadCell>누락</ReviewTableHeadCell>
                   <ReviewTableHeadCell>검토 상태</ReviewTableHeadCell>

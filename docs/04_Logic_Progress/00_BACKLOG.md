@@ -573,6 +573,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 급여·원천세·직원명부 기존 데이터와 정합 (신규 테이블·마이그레이션 없음)
   - [x] 기간 미지정 진입은 최근 완료 반기를 기본 선택하고, 진행 중 반기의 현재·미래 월을 `월 급여 누락`으로 세지 않는다. 정상 행은 `기간 진행 중`으로 분리해 준비 완료·확인 필요 어느 쪽에도 과대 집계하지 않는다. (2026-07-13 정합화)
   - [x] `지급명세서`와 `연말정산`을 사이드바·breadcrumb·라우트·화면에서 분리하고, 각 화면 준비율이 다른 화면 상태를 섞지 않는다. 공용 read model과 허브 집계는 유지한다. (2026-07-13)
+  - [x] 연말정산 기간 미지정 진입은 최근 완료 연도를 기본 선택한다. 진행 중 연도를 명시해 열면 현재까지 합계와 `연도 진행 중`으로 표시하고 검토 준비로 승격하지 않는다. (2026-07-13)
 - Document Sync Check: 구현 완료(2026-07-05), 기간 정합화·메뉴/화면 분리(2026-07-13). 구현 파일: `lib/payment-statements/summary.ts`(공용 read model + 화면별 hero), `lib/efiling-simplified-wage/`, `/dashboard/filing-preparation/payment-statements`, `/dashboard/filing-preparation/year-end-settlement`, `lib/filing-preparation/summary.ts`(공용 허브 트랙). 브라우저에서 두 메뉴·route·전용 heading/table·수평 넘침 없음 확인. 기존 컬럼만 조회 — 신규 마이그레이션 없음.
 
 ### JC-025 · 종합소득세 신고 지원 (개인사업자) — self-filing 보조 (우선순위 중 · 법적 경계 주의)

@@ -15,7 +15,7 @@ const DEFAULT_TZ = 'Asia/Seoul'
 
 export type PaymentStatementTone = 'ok' | 'warn' | 'danger' | 'muted'
 export type SimplifiedStatus = 'ready' | 'period_open' | 'needs_review' | 'missing_months' | 'profile_incomplete'
-export type YearEndStatus = 'ready' | 'needs_payroll' | 'mid_year_settlement' | 'profile_incomplete'
+export type YearEndStatus = 'ready' | 'period_open' | 'needs_payroll' | 'mid_year_settlement' | 'profile_incomplete'
 export type EmployeeStatus = 'active' | 'leave' | 'terminated'
 export type ReportingPeriodStatus = 'completed' | 'open'
 
@@ -25,9 +25,11 @@ export type ReportingContext = {
   halfMonths: string[]
   requiredMonths: string[]
   yearMonths: string[]
+  yearRequiredMonths: string[]
   halfLabel: string
   halfRangeLabel: string
   periodStatus: ReportingPeriodStatus
+  yearPeriodStatus: ReportingPeriodStatus
 }
 
 // 순수 함수 입력(테스트용 평면 행)
@@ -132,16 +134,30 @@ export function resolveReportingContext(today: DateTime, periodKey?: string | nu
   const requiredMonths = periodStatus === 'completed'
     ? halfMonths
     : halfMonths.filter((month) => month < currentMonth)
+  const yearPeriodStatus: ReportingPeriodStatus = year < today.year ? 'completed' : 'open'
+  const yearRequiredMonths = yearPeriodStatus === 'completed'
+    ? yearMonths
+    : yearMonths.filter((month) => month < currentMonth)
   return {
     year,
     half,
     halfMonths,
     requiredMonths,
     yearMonths,
+    yearRequiredMonths,
     halfLabel: `${year}년 ${half === 1 ? '상반기' : '하반기'}`,
     halfRangeLabel: `${halfMonths[0]} ~ ${halfMonths[halfMonths.length - 1]}`,
     periodStatus,
+    yearPeriodStatus,
   }
+}
+
+// 연말정산은 반기가 아니라 완료된 연도 단위다. 기간을 명시하지 않으면 현재
+// 진행 중인 연도를 준비 완료로 오인하지 않도록 직전 완료 연도를 선택한다.
+export function resolveYearEndPeriodKey(today: DateTime, periodKey?: string | null): string {
+  const explicitYear = periodKey?.match(/^(\d{4})/)?.[1]
+  const year = explicitYear ? Number(explicitYear) : today.year - 1
+  return `${year}-H2`
 }
 
 // 직원 식별 키: employeeCode 우선, 없으면 이름.
@@ -226,6 +242,7 @@ const EMPLOYEE_STATUS_LABEL: Record<EmployeeStatus, string> = {
 
 const YEAR_END_LABEL: Record<YearEndStatus, { label: string; tone: PaymentStatementTone }> = {
   ready: { label: '검토 준비', tone: 'ok' },
+  period_open: { label: '연도 진행 중', tone: 'muted' },
   needs_payroll: { label: '월 급여 확정 필요', tone: 'warn' },
   mid_year_settlement: { label: '중도정산 검토', tone: 'warn' },
   profile_incomplete: { label: '인적사항 확인', tone: 'danger' },
@@ -236,6 +253,9 @@ export function buildYearEndRow(params: {
   employeeName: string
   employeeCode: string | null
   lines: PayrollLineInput[] // 연간 해당 직원 line
+  yearMonths?: string[]
+  requiredMonths?: string[]
+  periodStatus?: ReportingPeriodStatus
   profile?: EmployeeProfileInput
 }): YearEndRow {
   const { lines, profile } = params
@@ -243,6 +263,9 @@ export function buildYearEndRow(params: {
   const hasNeedsReview = lines.some((l) => l.status === 'needs_review')
   const hasPayroll = lines.length > 0
   const profileIncomplete = !profile || !profile.hireDate
+  const monthsPresent = new Set(lines.map((line) => line.period))
+  const expected = expectedMonths(params.requiredMonths ?? params.yearMonths ?? [...monthsPresent], profile)
+  const hasMissingMonths = expected.some((month) => !monthsPresent.has(month))
 
   const annualGrossPayKrw = hasPayroll ? lines.reduce((sum, l) => sum + l.grossPayKrw, 0) : null
   const annualWithholdingTaxKrw = hasPayroll ? lines.reduce((sum, l) => sum + l.incomeTaxKrw, 0) : null
@@ -250,11 +273,13 @@ export function buildYearEndRow(params: {
   let status: YearEndStatus
   const missingParts: string[] = []
   if (hasNeedsReview || !hasPayroll) missingParts.push('월 급여 미확정')
+  else if (hasMissingMonths) missingParts.push('월 급여 누락')
   if (profileIncomplete) missingParts.push('인적사항')
 
   if (employeeStatus === 'terminated') status = 'mid_year_settlement'
-  else if (hasNeedsReview || !hasPayroll) status = 'needs_payroll'
+  else if (hasNeedsReview || !hasPayroll || hasMissingMonths) status = 'needs_payroll'
   else if (profileIncomplete) status = 'profile_incomplete'
+  else if (params.periodStatus === 'open') status = 'period_open'
   else status = 'ready'
 
   if (employeeStatus === 'terminated' && missingParts.length === 0) missingParts.push('퇴사 정산 확인')
@@ -368,6 +393,7 @@ export function buildYearEndSettlementHero(rows: YearEndRow[]): PaymentStatement
   return buildSectionHero({
     totalEmployees: rows.length,
     readyCount: rows.filter((row) => row.status === 'ready').length,
+    periodOpenCount: rows.filter((row) => row.status === 'period_open').length,
   })
 }
 
@@ -380,11 +406,11 @@ export function buildPaymentStatementHero(simplified: SimplifiedRow[], yearEnd: 
   const yearEndByKey = new Map(yearEnd.map((r) => [r.employeeKey, r]))
   const readyCount = simplified.filter((r) => {
     const ye = yearEndByKey.get(r.employeeKey)
-    return r.status === 'ready' && (!ye || ye.status === 'ready')
+    return r.status === 'ready' && (!ye || ye.status === 'ready' || ye.status === 'period_open')
   }).length
   const periodOpenCount = simplified.filter((r) => {
     const ye = yearEndByKey.get(r.employeeKey)
-    return r.status === 'period_open' && (!ye || ye.status === 'ready')
+    return r.status === 'period_open' && (!ye || ye.status === 'ready' || ye.status === 'period_open')
   }).length
   return buildSectionHero({ totalEmployees, readyCount, periodOpenCount })
 }
@@ -556,6 +582,9 @@ function assemble(lines: PayrollLineInput[], profiles: EmployeeProfileInput[], c
       employeeName: group.employeeName,
       employeeCode: group.employeeCode,
       lines: group.lines,
+      yearMonths: context.yearMonths,
+      requiredMonths: context.yearRequiredMonths,
+      periodStatus: context.yearPeriodStatus,
       profile: group.profile,
     }))
   }
@@ -593,6 +622,15 @@ export async function loadPaymentStatementSummary({ tenantId, periodKey, today }
     simplified,
     yearEnd,
   }
+}
+
+export async function loadYearEndSettlementSummary(params: LoadParams): Promise<PaymentStatementSummary> {
+  const current = params.today ?? now(DEFAULT_TZ)
+  return loadPaymentStatementSummary({
+    ...params,
+    today: current,
+    periodKey: resolveYearEndPeriodKey(current, params.periodKey),
+  })
 }
 
 // 신고 준비 허브 트랙 live용 경량 카운트.

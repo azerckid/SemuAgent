@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { requireTenantSession } from '@/lib/auth-helpers'
-import { loadPaymentStatementSummary } from '@/lib/payment-statements/summary'
+import { loadYearEndSettlementSummary } from '@/lib/payment-statements/summary'
 import {
   YearEndSettlementEmptyState,
   YearEndSettlementReview,
@@ -23,7 +23,7 @@ export default async function YearEndSettlementPage({ searchParams }: PageProps)
     redirect('/sign-in')
   }
 
-  const summary = await loadPaymentStatementSummary({ tenantId, periodKey: period })
+  const summary = await loadYearEndSettlementSummary({ tenantId, periodKey: period })
 
   if (!summary.businessEntity) {
     return <YearEndSettlementEmptyState tenantName={summary.tenant.name} />
