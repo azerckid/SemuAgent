@@ -1,6 +1,6 @@
 # Test Scenarios: Filing Support
 > Created: 2026-07-02 20:23
-> Last Updated: 2026-07-13 KST
+> Last Updated: 2026-07-14 KST
 
 신고지원(JC-013) Layer 5 QA 시나리오. [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다.
@@ -130,7 +130,8 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 근로소득 지급명세서는 국세청 공식 안내에서 직접작성 또는 자체 프로그램 변환제출만
 확인되어 Path 1b 대상으로 판정됐다. Stage B는 전체 법정 필드를 ownership별로
 매핑했고, Stage C는 급여 기초자료를 SemuAgent 정본, 공제신고서와 최종 지급명세서를
-홈택스 정본으로 확정했다. Stage D HTML Preview는 오너 승인을 완료했으며, Stage E Pre-Code 전 runtime을 만들지 않는다.
+홈택스 정본으로 확정했다. Stage D HTML Preview 오너 승인과 Stage E Pre-Code를 완료했으며,
+다음은 기존 급여·직원 DB만 확장하는 Stage F runtime·브라우저 QA다.
 사업장현황신고는 면세 개인사업자 조건부 시나리오로 후순위에 둔다.
 
 | # | Given | When | Then | Result |
@@ -181,6 +182,16 @@ Path 1b는 파일 generator·자동입력·자동제출을 만들지 않는다.
 | S-1B-AW3 | 승인된 Stage D 근로소득 지급명세서 준비 모델 | runtime 렌더 | 동일 tenant·사업장·연도의 확정 급여 기초자료와 홈택스 생성 경로를 표시하고 주민등록번호·변환파일·자동제출을 저장/생성하지 않음 | Pending |
 | S-1B-AW4 | 확정 연말정산 결과·신고 사업자 profile·민감정보 정본이 현재 모델에 없음 | Stage C canonical source 계약 | 홈택스 생성 결과를 최종 정본으로 두고 SemuAgent 급여 기초자료·사업자 profile ownership·PII 비저장 경계를 승인하며 세액 계산·역산·결과 import를 제외 | PASS·문서 |
 | S-1B-AW5 | Stage C 책임 계약과 대표 급여 fixture | Stage D HTML Preview 렌더 | 간결한 홈택스 생성 흐름과 직원별 급여 준비값·`급여 준비 완료/급여 보완/특례 확인`만 표시하고 전체 제24호서식·최종세액·PII 입력·중복 카드를 표시하지 않음 | PASS·Preview |
+| S-1B-AW6 | 승인된 Stage D Preview와 현재 급여·직원 스키마 | Stage E Pre-Code | 급여 항목·4대보험·기납부 소득세/지방소득세 최소 필드와 tenant·사업장·연도·직원 scope를 고정하고 값 추정·역산을 금지 | PASS·문서 |
+| S-1B-AW7 | 완료 연도 직원별 급여 상태 | Stage E 상태 계약 | `급여 보완 > 특례 확인 > 급여 준비 완료` 우선순위와 화면 라벨 3종을 고정하고 진행 중 연도는 별도 상태로 분리 | PASS·문서 |
+| S-1B-AW8 | 현재 DB에 외국인·국외근로·감면·기부·농특세 정본 없음 | Stage E 특례 계약 | `해당 없음`으로 단정하거나 모든 직원을 특례로 만들지 않고 홈택스 직접 확인 책임으로만 표시 | PASS·문서 |
+| S-1B-AW9 | 승인 화면에 사업자 신고정보 입력/표시 없음 | Stage E persistence 결정 | billing profile을 재사용하지 않고 `client_filing_profile` migration·mutation을 첫 runtime에서 보류 | PASS·문서 |
+| S-1B-AW10 | 로딩·사업장 없음·급여 없음·진행 중 연도·오류·권한 없음 | Stage E 화면 상태 계약 | 헤더/연도 맥락을 유지하고 스켈레톤·다음 행동·재시도를 제공하며 과거/0원 값을 준비 완료처럼 표시하지 않음 | PASS·문서 |
+| S-1B-AW11 | 완료 연도 월별 확정 급여·보험·기납부세액 fixture | Stage F read model 집계 | 직원별 기본급·기타수당·식대·지급총액·4대보험·소득세·지방소득세 합계가 원천 line 합과 일치하고 상여를 별도 값으로 추정하지 않음 | Pending |
+| S-1B-AW12 | 급여 미마감과 중도입사/퇴사 신호가 함께 있는 직원 | Stage F 상태 판정 | `급여 보완`이 `특례 확인`보다 우선하고, 보완 후에는 `특례 확인`, 신호가 없으면 `급여 준비 완료`로 정확히 전환 | Pending |
+| S-1B-AW13 | tenant A/B·사업장 A/B·귀속연도 A/B 급여 | tenant A/사업장 A/연도 A 화면 렌더 | 다른 scope 직원·급여·합계가 섞이지 않고 동일 직원 중복 행이 없음 | Pending |
+| S-1B-AW14 | 진행 중 연도·사업장 없음·확정 급여 없음·loader 오류 | Stage F 화면 렌더 | 기간 진행 중/빈 상태/오류를 각각 표시하고 완료 카운트나 0원 확정값으로 오인시키지 않으며 오류는 재시도 가능 | Pending |
+| S-1B-AW15 | Stage F desktop/mobile runtime | 정적·브라우저 검증 | 승인 Preview의 한 줄 목적·홈택스 5단계·직원 표·상태 3종·행 상세를 유지하고 주민번호/공제자료 입력·파일/AI/자동입력/자동제출 UI와 신규 migration이 없음 | Pending |
 | S-1B-BS0 | 일반 과세 개인사업자 또는 법인 | 사업장현황신고 진입·navigation | 비대상 사업자에게 메뉴·미완료 badge·신고 blocker를 노출하지 않음 | Pending |
 
 ## 3. 자동화 계획
