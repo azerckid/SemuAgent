@@ -6,10 +6,10 @@
 
 ```text
 [Flow]
-현재: Phase 3 — 부가세 Path 1b runtime 구현
+현재: 완료 — 부가세 Path 1b runtime·검증
 Gate: HTML Preview·UI-First·Pre-Code·Component Plan 통과
-완료: Field Mapping(52), Preview(14), 프로젝트 오너 승인
-다음: read model -> runtime route -> 단위/브라우저 검증 -> 문서 sync
+완료: Field Mapping(52), Preview(14), 프로젝트 오너 승인, read model, runtime, 회귀·브라우저 검증
+다음: 지방소득세 특별징수 Path 1b Stage A·Mapping·Preview
 제외: 파일 generator, 자동 홈택스 입력·제출, AI 재호출, 신고서 값 추정
 ```
 
@@ -128,7 +128,12 @@ Zod schema가 다음 불변식을 강제한다.
 - [x] `(27)`을 SemuAgent ㉰ 값으로 표시하지 않는다.
 - [x] fixed-asset 구분·특수 조정·금액을 계정명이나 세율로 추정하지 않는다.
 - [x] 최초 렌더와 route 진입에서 AI provider 호출이 없다.
-- [ ] desktop/mobile 브라우저 E2E, tsc, 전체 테스트, lint, whitespace가 통과한다.
+- [x] desktop/mobile 브라우저 E2E, tsc, 전체 테스트, lint, whitespace가 통과한다.
+
+브라우저 검증은 승인된 ready Preview의 desktop/mobile 구조와 실제 로그인 runtime의
+blocked 상태를 나눠 확인했다. 라이브 샘플의 `확정 원장 출처 393건` blocker에서는
+값 표가 렌더링되지 않고 다음 행동만 표시됐으며, desktop과 410px mobile 모두 문서
+가로 넘침이 없었다. ready 값 매핑은 동일 계약의 단위·정적 회귀로 검증했다.
 
 ## 9. Related Documents
 

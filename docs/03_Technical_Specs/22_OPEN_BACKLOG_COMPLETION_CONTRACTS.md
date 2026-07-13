@@ -162,8 +162,8 @@ Path 1b** (confirmed A01 aggregate as a `항목 = 값` direct-entry summary), **
 1b screen is implemented** (2026-07-12) — `/dashboard/filing-support` shows the
 withholding value-summary screen with a local income tax reference value; Path 1a
 W1-W5 stay unstarted until a form is confirmed. **VAT is likewise assigned to
-Path 1b**. Its legal-row field mapping and HTML Preview are project-owner
-approved, while the Pre-Code Brief and runtime read model/screen remain pending. VAT
+Path 1b**. Its legal-row field mapping, HTML Preview, Pre-Code Brief and runtime
+read model/screen are implemented and verified (2026-07-13). VAT
 Stage A remains an optional Path 1a upgrade check for the official non-encrypted
 whole-return template and direct-acceptance path. No tax type ends as `blocked`.
 The fixed order and completion lines are in
@@ -181,7 +181,7 @@ screenshot-by-screenshot click tutorial and automatic navigation are excluded.
 |---|---|---|
 | **Validation** | Path 1 & 2 공통 | Implemented for simplified wage; repeated per tax type |
 | **Path 1a** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | 확인된 완료 세목 없음; VAT Stage A 등은 승격용 조사 |
-| **Path 1b** | 공식 양식 없을 때 확정값과 신고 메뉴·화면·행/칸 위치를 함께 제공 | 간이지급명세서 **완료(2026-07-13)**, 원천세 **완료(2026-07-12)**. 부가세: Mapping·Preview·Pre-Code·runtime 구현 완료, browser/전체 회귀 검증 중 |
+| **Path 1b** | 공식 양식 없을 때 확정값과 신고 메뉴·화면·행/칸 위치를 함께 제공 | 간이지급명세서 **완료(2026-07-13)**, 원천세 **완료(2026-07-12)**, 부가세 **완료(2026-07-13)** |
 | **Path 2** | 세무사무소 handoff ZIP | Deferred until full Path 1 beta (1a + 1b) |
 | **Path 3** | 인증·암호화 업로드 파일 | Excluded from current product scope |
 
@@ -208,7 +208,7 @@ Simplified wage and withholding retain historical validation assets but have no
 confirmed official non-encrypted directly accepted form, so both are assigned to
 Path 1b. VAT Stage A found official conversion flows for some schedules, but not a
 complete official non-encrypted whole-return template or verified direct-acceptance
-route, so VAT is assigned to Path 1b (Mapping·Preview complete, runtime pending) while Stage A stays a 1a
+route, so VAT is assigned to Path 1b (Mapping·Preview·runtime complete) while Stage A stays a 1a
 upgrade check. Other ordered tax types generate a Path 1a file only when their own
 Stage A confirms a form.
 

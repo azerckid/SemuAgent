@@ -114,7 +114,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 이 시나리오는 [Path 1 Roadmap §2.1](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md)의
 세목별 **Path 1a(양식·파일)** 완료선을 검증한다. 원천세는 공식 조사 결과 공식 비암호화
 업로드 양식이 없어 **Path 1b(직접입력 정리) 대상으로 결정**됐고 1b 화면을 구현했으므로
-1a W1~W5를 시작하지 않는다. 부가세도 Path 1b 대상이며(Mapping·Preview·Pre-Code·runtime 구현, browser 검증 중), Stage A
+1a W1~W5를 시작하지 않는다. 부가세도 Path 1b 대상이며(Mapping·Preview·Pre-Code·runtime·browser 검증 완료), Stage A
 공개 자료 감사에서는 현재 회계프로그램 파일변환 메뉴와 일부 첨부서류 도구를 확인했지만
 최신 비암호화 수용은 미확인이라 Stage A는 1a 승격용 선택 조사다. Stage A가 양식을 확인한
 세목만 S-91~S-99를 전용 fixture로 반복하며, 1a가 없는 세목은 아래 §2.11의 Path 1b 값 정리
@@ -133,7 +133,7 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-98 | 생성된 대표 비암호화 파일 | 홈택스/위택스 공식 파일 업로드 검증 | 암호화·별도 변환 없이 수용되거나, 미수용이면 해당 세목은 1a generator를 배포하지 않고 Path 1b(직접입력 정리)로 제공 | Pending |
 | S-99 | Path 1a 화면·가이드 | 렌더 | 단계별 위치 안내·자동제출·자격증명 저장·암호화 업로드·세무대리 문구가 없고 사용자 직접 업로드 책임을 표시 | Pending |
 
-### 2.11 Path 1b Direct-Entry Input Guide (간이지급·원천세 완료 · 부가세 runtime 검증 중)
+### 2.11 Path 1b Direct-Entry Input Guide (간이지급·원천세·부가세 완료)
 
 공식 비암호화 업로드 양식이 없는 세목(간이지급명세서·원천세·부가세 등)은 Path 1b 대상으로 결정됐다.
 간이지급명세서는 홈택스 직접작성 경로와 소득자별 근무기간·월 지급액·합계를, 원천세는
@@ -148,7 +148,7 @@ Path 1b는 파일 generator·자동입력·자동제출을 만들지 않는다.
 | S-1B2 | 원천세 1b 화면 | 렌더 | 홈택스 메뉴 경로·입력칸 위치·값이 표시되고 파일 다운로드·자동입력·자동제출·세무대리 문구가 없음 | PASS·정적/브라우저 |
 | S-1B3 | tenant A/B·사업장 A/B·귀속월 A/B | tenant A 범위 진입 | 선택 범위 이외 값이 요약에 섞이지 않고 PII가 서버에 영구 저장되지 않음 | Pending |
 | S-1B4 | provenance가 확인된 부가세 확정값 | VAT Path 1b 렌더 | 일반과세자 정기 확정신고의 법정 행 번호·금액·세액이 같은 scoped read model에서 표시 | PASS·단위/정적 |
-| S-1B5 | blocked/empty/stale/unsupported 상태 | VAT Path 1b 진입 | 이전 기간 값을 확정값처럼 표시하지 않고 상태별 다음 행동을 안내 | PASS·단위/정적 |
+| S-1B5 | blocked/empty/stale/unsupported 상태 | VAT Path 1b 진입 | 이전 기간 값을 확정값처럼 표시하지 않고 상태별 다음 행동을 안내 | PASS·단위/정적/브라우저(blocked) |
 | S-1B6 | 신고서 직접 입력 행·자동 합계 행·최종세액 행 | VAT Path 1b 렌더 | 각각 `값 비교·수정`·`자동 합계 대조`·`홈택스 최종 확인`으로 구분 | PASS·단위/정적 |
 | S-1B7 | SemuAgent ㉰ 소계와 홈택스 `(27)` 최종세액 | VAT Path 1b 렌더 | 두 값을 동일하게 표시하지 않고 `(27)`은 홈택스 계산값으로 확인 | PASS·단위/정적 |
 | S-1B8 | VAT Path 1b 화면 | 정적 분석 | AI 근거·증빙 workflow를 반복하지 않고 파일 생성·자동입력·자동제출·스크린샷 클릭 튜토리얼이 없음 | PASS·정적 |
@@ -164,7 +164,7 @@ Path 1b는 파일 generator·자동입력·자동제출을 만들지 않는다.
 - **API 구현 완료**: receipt metadata upload/delete, checklist toggle, tenant/staff guard(S-40~43, S-50~53). 실제 Blob 저장 환경은 JC-014에서 검증 완료.
 - **브라우저 수동 검증 완료**: `/dashboard/filing-support?period=2026-H1` 로그인 렌더와 승인 Preview 구조를 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 홈택스/EDI 접수증 파일 포맷별 업로드는 별도 fixture 확보 후 검증한다.
-- **Path 1a 파일 후속**: 간이지급명세서와 원천세는 공식 비암호화 업로드 양식을 확인하지 못해 Path 1b 화면을 구현했다. 간이지급의 과거 고정길이 후보 생성 UI는 제거했다. 부가세도 Path 1b Mapping·Preview·Pre-Code·runtime을 구현했고 browser 검증 중이다. Stage A 공개 자료 감사는 완료했지만 현재 메뉴는 회계프로그램 파일변환이고 공식 Excel 도구는 일부 첨부서류 전용이다. Stage A가 양식을 확인한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1a `done`으로 표시하지 않는다. 1a가 없는 세목은 §2.11 Path 1b 시나리오로 검증한다. 어떤 세목도 `blocked`로 두지 않는다.
+- **Path 1a 파일 후속**: 간이지급명세서와 원천세는 공식 비암호화 업로드 양식을 확인하지 못해 Path 1b 화면을 구현했다. 간이지급의 과거 고정길이 후보 생성 UI는 제거했다. 부가세도 Path 1b Mapping·Preview·Pre-Code·runtime·browser 검증을 완료했다. Stage A 공개 자료 감사는 완료했지만 현재 메뉴는 회계프로그램 파일변환이고 공식 Excel 도구는 일부 첨부서류 전용이다. Stage A가 양식을 확인한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1a `done`으로 표시하지 않는다. 1a가 없는 세목은 §2.11 Path 1b 시나리오로 검증한다. 어떤 세목도 `blocked`로 두지 않는다.
 
 ## 4. Related Documents
 
