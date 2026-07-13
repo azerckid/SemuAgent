@@ -221,7 +221,7 @@ The authoritative sequence and completion lines are in
    - The official WETAX Excel upload route is confirmed.
    - Do not infer workbook columns or build a generator before the authenticated
      original `B070101-02.xlsx` is acquired and hashed.
-6. **Annual wage statement — Stage A/B/C done, Stage D Preview next.**
+6. **Annual wage statement — Stage A~E done, Stage F runtime next.**
    - Official guidance confirms direct entry or own-program transformation, not
      an official non-encrypted upload form; route the tax type to Path 1b.
    - Stage B maps all statutory fields and records that the current DB does not
@@ -229,8 +229,12 @@ The authoritative sequence and completion lines are in
    - Stage C sets Hometax's generated statement as the final canonical result,
      defines filing-profile ownership and keeps resident/family/deduction PII
      out of SemuAgent.
-   - Stage D must Preview the payroll base-data handoff and exact Hometax flow,
-     not reproduce every statutory field.
+   - Stage D Preview and owner approval fixed the compact payroll base-data
+     handoff and exact Hometax generation flow without reproducing every field.
+   - Stage E fixed the existing-DB read model, three completed-year states,
+     loading/empty/error behavior and no-migration boundary.
+   - Stage F must connect the approved screen to actual tenant/client/year data
+     and close unit, static and browser QA.
    - Do not derive deductions, taxable base, determined tax or refund/additional
      collection from annual gross pay and withheld tax.
 7. **Business-status report — conditional follow-up.**
@@ -249,8 +253,8 @@ automatic submission do not interrupt this sequence.
 | Reconciliation Phase 2 | Brief 41 §9 complete and VAT gate/provenance consumers implemented — **done** |
 | One tax type (Path 1a) | Roadmap 36 §2.1 all conditions pass |
 | Path 1a beta | Two compatible tax types pass official non-encrypted upload verification and beta flow |
-| Path 1b coverage | Every applicable tax type without a confirmed form is assigned to Path 1b and its direct-entry preparation screen is built. Simplified wage·withholding·VAT — **done**. Annual wage — Stage C complete, Stage D Preview pending. Business status — conditional. Local income — Path 1a candidate. No applicable tax type ends `blocked` |
-| Planned tax matrix decision | Withholding and VAT are live Path 1b; local income is a Path 1a candidate awaiting the original workbook; annual wage is assigned to Path 1b with Stage C ownership complete and Stage D Preview next; business status requires an applicability gate before its Stage A |
+| Path 1b coverage | Every applicable tax type without a confirmed form is assigned to Path 1b and its direct-entry preparation screen is built. Simplified wage·withholding·VAT — **done**. Annual wage — Stage A~E complete, Stage F runtime pending. Business status — conditional. Local income — Path 1a candidate. No applicable tax type ends `blocked` |
+| Planned tax matrix decision | Withholding and VAT are live Path 1b; local income is a Path 1a candidate awaiting the original workbook; annual wage is assigned to Path 1b with Stage A~E complete and Stage F runtime next; business status requires an applicability gate before its Stage A |
 | Path 2 restart | Full Path 1 beta (1a files + 1b summary screens) is stable and a new UI-First Gate is approved |
 
 ## 8. Documentation Sync
@@ -263,7 +267,7 @@ current choices. For beta:
 - Encrypted Path 3 is outside the current product scope.
 - Exact Hometax menu/screen/row/field mapping is included in Path 1b; screenshot-by-screenshot click tutorials and automatic navigation are excluded.
 
-Related:
+## 9. Related Documents
 
 - [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md)
