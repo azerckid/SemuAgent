@@ -9,9 +9,9 @@
 대상: 연말정산 검토 화면과 구분되는 `근로소득 지급명세서` 신고 산출물
 공식 확인: 홈택스는 직접작성제출 또는 자체 프로그램 전자파일 변환제출을 안내
 판정: 공식 비암호화 업로드 양식은 확인되지 않음 → **Path 1b 대상**
-현재: Stage A 공식 경로 감사 + Stage B 법정 필드/canonical 공백 매핑 완료 · Preview/runtime 미착수
-다음: Annual Stage C 신뢰 가능한 연말정산 결과 정본 취득·확정 계약
-차단: 현재 연간 지급액·기납부세액만으로 전체 지급명세서 값을 추정하거나 화면을 먼저 제작하지 않음
+현재: Stage A 공식 경로 감사 + Stage B 필드 매핑 + Stage C 정본·책임 계약 완료
+다음: Annual Stage D 간결한 급여 기초자료 준비 HTML Preview·오너 승인
+차단: 현재 연간 지급액·기납부세액만으로 공제·결정세액을 추정하거나 runtime을 먼저 제작하지 않음
 조건부 후순위: 사업장현황신고는 면세 개인사업자에게만 적용되므로 별도 대상성 gate 뒤 진행
 제외: 회계프로그램 변환파일·암호화 파일·자동 제출·주민등록번호 DB 저장
 ```
@@ -31,9 +31,10 @@
    연간 신고 산출물이다. 이 문서의 JC-030 대상이다.
 
 Stage A는 공식 경로만 판정한다. [Stage B Mapping](./56_JC030_ANNUAL_WAGE_STATEMENT_FIELD_MAPPING.md)은
-현행 제24호서식 전체와 현재 DB를 대조했고, 완전한 연말정산 결과 정본이 없어 UI-First
-Gate를 열 수 없다고 판정했다. 실제 직접입력 화면은 Stage C가 신뢰 source를 확정한 뒤
-별도 작업으로 만든다.
+현행 제24호서식 전체와 현재 DB를 대조했고, 완전한 연말정산 결과 정본이 없어 Stage B
+UI-First Gate를 열 수 없다고 판정했다. [Stage C](./57_JC030_ANNUAL_WAGE_STATEMENT_CANONICAL_SOURCE_CONTRACT.md)는
+홈택스 생성 결과를 최종 정본으로 두고 SemuAgent가 확정 급여 기초자료만 준비하는
+책임 경계를 확정했다. 실제 화면은 Stage D Preview와 오너 승인 뒤에만 만든다.
 
 ## 2. Official Evidence
 
@@ -137,9 +138,9 @@ Path 1b 화면으로 표시하지 않는다.
 - 인적공제·소득/세액공제·과세표준·결정세액·차감징수세액은 정본이 없다.
 - 따라서 Stage B 매핑은 완료했지만 UI-First Gate는 **NO-GO**다.
 
-다음은 Stage C에서 신뢰 가능한 연말정산 결과 source, 공용 신고 사업장 profile, PII
-처리 경계를 결정하는 작업이다. 그전에는 기존 연말정산 준비·검토 화면을 지급명세서
-Path 1b 완료 화면으로 바꾸지 않는다.
+Stage C는 홈택스 생성 결과 source, 공용 신고 사업장 profile ownership, PII 처리
+경계를 결정했다. 기존 연말정산 준비·검토 화면은 Stage D Preview와 오너 승인 전까지
+지급명세서 Path 1b 완료 화면으로 바꾸지 않는다.
 
 ## 6. Conditional Business-Status Track
 
@@ -150,8 +151,8 @@ Path 1b 완료 화면으로 바꾸지 않는다.
 - 비대상 사업자에게 메뉴·미완료 badge·신고 blocker를 노출하지 않는다.
 - 대상 회사 fixture가 준비된 뒤 별도 Stage A를 진행한다.
 
-따라서 현재 보편적 급여 신고 흐름인 근로소득 지급명세서 Stage B를 완료했고, 다음은
-Stage C 정본 source 계약이다. 사업장현황신고는 조건부 후순위로 둔다.
+따라서 현재 보편적 급여 신고 흐름인 근로소득 지급명세서 Stage C까지 완료했고, 다음은
+Stage D HTML Preview다. 사업장현황신고는 조건부 후순위로 둔다.
 
 ## 7. Completion Line
 
@@ -170,14 +171,20 @@ Stage C 정본 source 계약이다. 사업장현황신고는 조건부 후순위
 - [x] 정산세액·공제·식별정보 공백을 추정 없이 처리하는 blocker 계약을 고정했다.
 - [x] 현재 정본으로는 Preview 제작 불가라는 NO-GO를 기록했다.
 
-### 7.3 Stage C Pending
+### 7.3 Stage C Complete
 
-- [ ] 신뢰 가능한 연말정산 결과 source와 import/확정 책임을 결정한다.
-- [ ] 공용 신고 사업장 profile과 PII 비저장 경계를 결정한다.
-- [ ] 대표 fixture에서 제24호서식 필드 완전성을 검증한다.
-- [ ] 통과 후 UI-First Preview를 프로젝트 오너에게 보고한다.
+- [x] 홈택스 편리한 연말정산 생성 결과를 최종 지급명세서 정본으로 결정했다.
+- [x] SemuAgent는 확정 급여 기초자료 준비만 담당하고 세액 계산·역산·결과 import를 하지 않는다.
+- [x] 공용 신고 사업장 profile ownership과 PII 비저장 경계를 결정했다.
+- [x] 주민번호·공제신고서·공제증빙·최종 PDF/HWP를 수집·저장하지 않는 계약을 고정했다.
 
-### 7.4 Path 1b Done
+### 7.4 Stage D Pending
+
+- [ ] 간결한 급여 기초자료 준비 HTML Preview를 제작한다.
+- [ ] 프로젝트 오너가 정보량·상태·홈택스 흐름을 승인한다.
+- [ ] 승인 전 runtime·schema·API를 만들지 않는다.
+
+### 7.5 Path 1b Done
 
 Stage A 문서만으로 세목 완료로 세지 않는다. Stage B, UI-First Gate, Pre-Code,
 read model, browser/QA, 문서 closeout을 모두 통과해야 Path 1b 완료다.

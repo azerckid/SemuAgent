@@ -169,10 +169,11 @@ whole-return template and direct-acceptance path. No tax type ends as `blocked`.
 Local-income special collection is a Path 1a candidate waiting for the
 authenticated WETAX workbook. Annual wage statement Stage A confirms the
 direct-entry/own-program conversion routes and assigns it to Path 1b. Its
-[Stage B mapping](56_JC030_ANNUAL_WAGE_STATEMENT_FIELD_MAPPING.md) is complete
-and records a UI-First **NO-GO** because the current canonical model cannot
-produce the complete statutory statement. Stage C must establish the trusted
-annual-settlement result source and filing-profile/PII ownership before any UI.
+[Stage B mapping](./56_JC030_ANNUAL_WAGE_STATEMENT_FIELD_MAPPING.md) is complete,
+and [Stage C](./57_JC030_ANNUAL_WAGE_STATEMENT_CANONICAL_SOURCE_CONTRACT.md)
+sets confirmed payroll base data as SemuAgent-owned while the deduction report
+and final annual wage statement remain Hometax-owned canonical results. Stage D
+may now create a compact HTML Preview; runtime remains blocked until owner approval.
 Business-status reporting is conditional on VAT-exempt sole-proprietor eligibility.
 The fixed order and completion lines are in
 [Path 1 Roadmap §§2–4](./36_PATH1_FORM_FILL_ROADMAP.md).
@@ -246,7 +247,7 @@ No applicable tax type ends as `blocked`. The implementation order is fixed in
 
 #### Path 1b — 직접입력 `항목 = 값` 정리 (양식 없을 때)
 
-Current state: **simplified wage, withholding and VAT done. Annual wage Stage B complete; Stage C source contract pending.**
+Current state: **simplified wage, withholding and VAT done. Annual wage Stage C complete; Stage D Preview pending.**
 Simplified wage, withholding and VAT are assigned to Path 1b because no official
 form is confirmed. Simplified wage shows the current Hometax direct-entry path,
 business/period values and employee-level work period, six monthly pay amounts,
@@ -262,10 +263,11 @@ read model and runtime value-summary screen are implemented and browser-verified
 Annual wage statement is assigned to Path 1b. Stage B mapped the complete legal
 field surface and confirmed that the current read model lacks the complete
 deduction, tax-credit, taxable-base, determined-tax and settlement-result
-sources. This is a product implementation prerequisite, not a terminal tax-type
-block: Stage C must define a trusted finalized payroll/year-end-settlement import
-or confirmation contract before Preview/runtime. Any applicable tax type without
-a confirmed official form is assigned to Path 1b instead of being blocked.
+sources. Stage C resolves this without inventing a tax engine or import contract:
+SemuAgent prepares confirmed employer payroll base data, while Hometax combines
+employee deduction reports and produces the final statement. Stage D must show
+that handoff in a compact Preview before runtime work. Any applicable tax type
+without a confirmed official form is assigned to Path 1b instead of being blocked.
 
 Done means (Path 1b, per tax type):
 
@@ -276,9 +278,10 @@ Done means (Path 1b, per tax type):
 - tenant/business/period isolation과 PII 비저장이 유지된다.
 
 Simplified wage (2026-07-13), withholding (2026-07-12) and VAT (2026-07-13)
-satisfy this line. Annual wage statement does not yet; Stage A and Stage B are
-complete, but Stage C trusted-source and ownership contracts must pass before a
-direct-entry screen can be approved.
+satisfy this line. Annual wage Stage C passed on 2026-07-14. For this tax type,
+the Path 1b screen must show SemuAgent-owned base data and the exact Hometax
+generation flow; it must not duplicate or estimate the Hometax-owned final
+deduction and settlement result. Stage D Preview and owner approval remain pending.
 
 #### Path 3 — 인증·암호화 파일 (excluded)
 
