@@ -123,6 +123,10 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 세목만 S-91~S-99를 전용 fixture로 반복하며, 1a가 없는 세목은 아래 §2.11의 Path 1b 값 정리
 시나리오로 검증한다(모두 Pending). 어떤 세목도 `blocked`로 두지 않는다.
 
+지방소득세 특별징수는 위택스 공식 매뉴얼에서 `B070101-02.xlsx` 엑셀파일신고 경로가
+확인되어 첫 Path 1a 후보가 됐다. 다만 로그인 원본을 입수하지 않았으므로 아래 지방소득세
+전용 원본·매핑·수용 시나리오를 통과하기 전에는 Preview나 generator를 구현하지 않는다.
+
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
 | S-90 | 공식 비암호화 업로드 양식 | 구현 착수 | 출처·버전·적용일·파일 형식·양식 구조·홈택스 직접 수용 메뉴가 문서화되지 않으면 generator 코드를 시작하지 않음 | Pending |
@@ -135,6 +139,10 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 | S-97 | 브라우저 다운로드 | 성공/오류/경고 상태 확인 | 실제 파일 다운로드, 정확한 filename/content type, 복구 가능한 오류 안내 | Pending |
 | S-98 | 생성된 대표 비암호화 파일 | 홈택스/위택스 공식 파일 업로드 검증 | 암호화·별도 변환 없이 수용되거나, 미수용이면 해당 세목은 1a generator를 배포하지 않고 Path 1b(직접입력 정리)로 제공 | Pending |
 | S-99 | Path 1a 화면·가이드 | 렌더 | 단계별 위치 안내·자동제출·자격증명 저장·암호화 업로드·세무대리 문구가 없고 사용자 직접 업로드 책임을 표시 | Pending |
+| S-1A-LI0 | 위택스 공개 공식 자료 | Stage A-1 감사 | `B070101-02.xlsx` 다운로드·엑셀파일신고·검증·제출 경로와 회계파일 경로의 분리가 출처와 함께 기록됨 | PASS·문서 |
+| S-1A-LI1 | 로그인 위택스 공식 Excel 원본 | 원본 입수 | 원본 SHA-256·입수일·메뉴·시트·열·유효성·숨김/보호/수식이 기록되고 자격증명·쿠키·PII는 기록하지 않음 | Pending |
+| S-1A-LI2 | 고정된 공식 Excel 구조와 JC-027 정본 | Field Mapping | `localIncomeTaxKrw`는 실제 저장값을 사용하고 과세표준·가감세액·관할지 등 정본 없는 값은 0·10%·gross 값으로 추정하지 않고 blocker로 남김 | Pending |
+| S-1A-LI3 | 대표 fixture로 만든 공식 Excel | 위택스 파일 검증 | 민간 회계파일·비밀번호·암호화·별도 변환 없이 수용되고 Preview 값·파일 값·위택스 검증 결과가 일치 | Pending |
 
 ### 2.11 Path 1b Direct-Entry Input Guide (간이지급·원천세·부가세 완료)
 
@@ -169,7 +177,7 @@ Path 1b는 파일 generator·자동입력·자동제출을 만들지 않는다.
 - **API 구현 완료**: receipt metadata upload/delete, checklist toggle, tenant/staff guard(S-40~43, S-50~53). 실제 Blob 저장 환경은 JC-014에서 검증 완료.
 - **브라우저 수동 검증 완료**: `/dashboard/filing-support?period=2026-H1` 로그인 렌더와 승인 Preview 구조를 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 홈택스/EDI 접수증 파일 포맷별 업로드는 별도 fixture 확보 후 검증한다.
-- **Path 1a 파일 후속**: 간이지급명세서와 원천세는 공식 비암호화 업로드 양식을 확인하지 못해 Path 1b 화면을 구현했다. 간이지급의 과거 고정길이 후보 생성 UI는 제거했다. 부가세도 Path 1b Mapping·Preview·Pre-Code·runtime·browser 검증을 완료했다. Stage A 공개 자료 감사는 완료했지만 현재 메뉴는 회계프로그램 파일변환이고 공식 Excel 도구는 일부 첨부서류 전용이다. Stage A가 양식을 확인한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1a `done`으로 표시하지 않는다. 1a가 없는 세목은 §2.11 Path 1b 시나리오로 검증한다. 어떤 세목도 `blocked`로 두지 않는다.
+- **Path 1a 파일 후속**: 간이지급명세서와 원천세는 공식 비암호화 업로드 양식을 확인하지 못해 Path 1b 화면을 구현했다. 간이지급의 과거 고정길이 후보 생성 UI는 제거했다. 부가세도 Path 1b Mapping·Preview·Pre-Code·runtime·browser 검증을 완료했다. 지방소득세 특별징수는 위택스 공식 `B070101-02.xlsx` 엑셀파일신고가 확인된 첫 Path 1a 후보이며, S-1A-LI1~LI3 통과 전에는 generator를 시작하지 않는다. Stage A가 양식을 확인한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1a `done`으로 표시하지 않는다. 1a가 없는 세목은 §2.11 Path 1b 시나리오로 검증한다. 어떤 세목도 `blocked`로 두지 않는다.
 
 ## 4. Related Documents
 

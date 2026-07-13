@@ -1,6 +1,6 @@
 # JC-030 VAT Path 1b Pre-Code Brief
 > Created: 2026-07-13 KST
-> Last Updated: 2026-07-13 KST
+> Last Updated: 2026-07-14 KST
 
 ## 0. Flow Status
 
@@ -9,7 +9,7 @@
 현재: 완료 — 부가세 Path 1b runtime·검증
 Gate: HTML Preview·UI-First·Pre-Code·Component Plan 통과
 완료: Field Mapping(52), Preview(14), 프로젝트 오너 승인, read model, runtime, 회귀·브라우저 검증
-다음: 지방소득세 특별징수 Path 1b Stage A·Mapping·Preview
+다음: 지방소득세 특별징수 Path 1a — 공식 `B070101-02.xlsx` 원본 입수·구조 고정
 제외: 파일 generator, 자동 홈택스 입력·제출, AI 재호출, 신고서 값 추정
 ```
 
