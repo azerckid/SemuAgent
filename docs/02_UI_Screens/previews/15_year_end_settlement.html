@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SemuAgent · 지방소득세 (UI Preview)</title>
+<title>SemuAgent · 연말정산 (UI Preview)</title>
 <style>
   :root {
     --bg: #f6f6f7;
@@ -66,6 +66,7 @@
   .section-head { display: flex; align-items: baseline; gap: 10px; }
   .section-head h2 { font-size: 15px; font-weight: 650; }
   .section-head .hint { font-size: 12px; color: var(--fg-subtle); }
+  .section-head .link { margin-left: auto; font-size: 12.5px; color: var(--accent); font-weight: 600; }
   .chip { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
   .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
   .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
@@ -79,7 +80,7 @@
   .hero h2 { font-size: 24px; letter-spacing: -.02em; margin-bottom: 8px; }
   .hero p { color: var(--fg-muted); font-size: 13px; max-width: 650px; }
   .progress { margin-top: 16px; height: 8px; background: #e4e4e7; border-radius: 999px; overflow: hidden; max-width: 520px; }
-  .progress > span { display: block; height: 100%; width: 80%; background: var(--accent); }
+  .progress > span { display: block; height: 100%; width: 64%; background: var(--accent); }
   .hero-metrics { display: grid; grid-template-columns: 1fr; gap: 8px; }
   .metric { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: #fcfcfd; }
   .metric .label { font-size: 11px; color: var(--fg-subtle); }
@@ -89,6 +90,7 @@
   .todo-row:last-child { border-bottom: 0; }
   .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--warn); }
   .dot.danger { background: var(--danger); }
+  .dot.ok { background: var(--ok); }
   .todo-row .title { font-weight: 650; font-size: 13.5px; }
   .todo-row .sub { color: var(--fg-subtle); font-size: 12px; margin-top: 2px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
@@ -98,14 +100,57 @@
   .ptable th { font-size: 11px; color: var(--fg-subtle); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #fcfcfd; }
   .ptable td.num, .ptable th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .ptable tr:last-child td { border-bottom: 0; }
-  .ptable tr.total td { font-weight: 700; background: #fcfcfd; }
   .ptable .emp { font-weight: 650; font-size: 13px; }
   .ptable .empcode { color: var(--fg-subtle); font-size: 11px; }
+  .ptable .miss { color: var(--danger); font-weight: 600; }
   .tablewrap { overflow-x: auto; }
   .boundary { border: 1px solid #bfdbfe; background: var(--accent-soft); border-radius: var(--radius); padding: 16px 18px; color: #1e3a8a; font-size: 12.5px; }
   .boundary b { color: #172554; }
-  .consistency { border: 1px solid #ddd6fe; background: var(--plan-soft); border-radius: var(--radius); padding: 14px 18px; color: #4c1d95; font-size: 12.5px; }
-  .consistency b { color: #3b0764; }
+  .fg-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .fg-panel .fg-head { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .fg-panel .fg-head h3 { font-size: 14px; font-weight: 650; }
+  .fg-panel .fg-head p { font-size: 12px; color: var(--fg-muted); margin-top: 4px; max-width: 720px; }
+  .fg-panel .fg-head .fg-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .fg-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border-bottom: 1px solid var(--border); }
+  .fg-stat { padding: 14px 18px; border-right: 1px solid var(--border); }
+  .fg-stat:last-child { border-right: 0; }
+  .fg-stat .label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; }
+  .fg-stat .value { font-size: 20px; font-weight: 750; margin-top: 4px; letter-spacing: -.02em; }
+  .fg-stat .sub { font-size: 11px; color: var(--fg-muted); margin-top: 4px; }
+  .fg-steps { padding: 16px 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border-bottom: 1px solid var(--border); }
+  .fg-step { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: #fcfcfd; }
+  .fg-step.active { border-color: #93c5fd; background: var(--accent-soft); }
+  .fg-step .num { font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
+  .fg-step .name { font-size: 12.5px; font-weight: 650; margin-top: 4px; }
+  .fg-step .desc { font-size: 11px; color: var(--fg-muted); margin-top: 4px; }
+  .fg-preview { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+  .fg-preview-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  .fg-preview-head h4 { font-size:13px; font-weight:700; }
+  .fg-preview-head span { font-size:11.5px; color:var(--fg-subtle); }
+  .fg-preview-grid { display:grid; grid-template-columns:.85fr 1.15fr; gap:14px; }
+  .fg-kv, .fg-filled-table { border:1px solid var(--border); border-radius:10px; background:#fff; overflow-x:auto; }
+  .direct-kv { display:grid; grid-template-columns:repeat(3,1fr); gap:10px 28px; }
+  .fg-kv-row { display:grid; grid-template-columns:120px 1fr; gap:10px; padding:9px 12px; border-bottom:1px solid var(--border); font-size:12px; }
+  .fg-kv-row:last-child { border-bottom:0; }
+  .fg-kv-row .k { color:var(--fg-subtle); }
+  .fg-kv-row .v { font-weight:650; }
+  .fg-filled-table table { width:100%; border-collapse:collapse; font-size:12px; }
+  .fg-filled-table th { text-align:left; background:#fafafa; color:var(--fg-subtle); font-size:11px; padding:9px 10px; }
+  .fg-filled-table td { padding:10px; border-top:1px solid var(--border); }
+  .fg-filled-table .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .fg-body { padding: 16px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .fg-box { border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .fg-box h4 { font-size: 12.5px; font-weight: 650; margin-bottom: 8px; }
+  .fg-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .fg-list li { font-size: 12px; color: var(--fg-muted); display: flex; align-items: flex-start; gap: 8px; }
+  .fg-list li::before { content: "·"; color: var(--fg-subtle); font-weight: 700; }
+  .fg-list li.ok { color: var(--ok); }
+  .fg-list li.warn { color: var(--warn); }
+  .fg-list li.danger { color: var(--danger); }
+  .fg-list li.muted { color: var(--fg-subtle); }
+  .fg-pii { border: 1px dashed var(--border-strong); border-radius: 10px; padding: 12px 14px; background: #fafafa; font-size: 12px; color: var(--fg-muted); }
+  .fg-pii b { color: var(--fg); }
+  .fg-foot { padding: 12px 18px; background: #fafafa; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--fg-muted); }
   .states { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .state { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 13px; min-height: 92px; }
   .state .s-title { font-size: 12px; font-weight: 650; margin-bottom: 6px; }
@@ -115,6 +160,12 @@
     .sidebar { position: static; height: auto; }
     .hero { grid-template-columns: 1fr; }
     .states { grid-template-columns: 1fr; }
+    .fg-grid { grid-template-columns: 1fr; }
+    .fg-stat { border-right: 0; border-bottom: 1px solid var(--border); }
+    .fg-stat:last-child { border-bottom: 0; }
+    .fg-steps { grid-template-columns: 1fr; }
+    .fg-preview-grid, .direct-kv { grid-template-columns: 1fr; }
+    .fg-body { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -139,8 +190,8 @@
       <a href="06_employee_directory.html" class="nav-item sub"><span class="ico">›</span> 직원 명부</a>
       <a href="05_filing_support.html" class="nav-item sub"><span class="ico">›</span> 원천세</a>
       <a href="09_payment_year_end.html" class="nav-item sub"><span class="ico">›</span> 지급명세서</a>
-      <a href="15_year_end_settlement.html" class="nav-item sub"><span class="ico">›</span> 연말정산</a>
-      <a href="10_local_income_tax.html" class="nav-item active sub"><span class="ico">›</span> 지방소득세</a>
+      <a href="15_year_end_settlement.html" class="nav-item active sub"><span class="ico">›</span> 연말정산</a>
+      <a href="10_local_income_tax.html" class="nav-item sub"><span class="ico">›</span> 지방소득세</a>
     </div>
     <a href="03_vat.html" class="nav-item"><span class="ico">％</span> 부가세</a>
     <div class="nav-group">
@@ -155,53 +206,51 @@
   </aside>
   <div class="main">
     <div class="topbar">
-      <div><div class="crumb"><a href="00_company_home.html">회사 홈</a> › <a href="04_payroll.html">급여·지급</a> › 지방소득세</div><h1>지방소득세 (원천세 특별징수분)</h1></div>
+      <div><div class="crumb"><a href="00_company_home.html">회사 홈</a> › <a href="04_payroll.html">급여·지급</a> › 연말정산</div><h1>연말정산</h1></div>
       <span class="co">샘플컴퍼니(주)</span>
-      <div class="right"><span class="pill">귀속기간 <span class="tag">2026년 6월</span> <span class="caret">▾</span></span></div>
+      <div class="right"><span class="pill">귀속연도 <span class="tag">2025</span> <span class="caret">▾</span></span></div>
     </div>
     <main class="content">
       <section class="hero">
         <div>
-          <div class="eyebrow">원천세 특별징수 지방소득세 준비</div>
-          <h2>원천세 신고 주기 기준으로 넣을 지방소득세를 확인합니다</h2>
-          <p>급여에서 실제로 원천징수된 지방소득세 기록을 직원별로 집계합니다. 근사치를 다시 계산하지 않고, 급여에 기록된 실제 값을 그대로 보여줍니다. 종합소득세·법인세분 지방소득세와 위택스 제출은 이 화면 범위 밖입니다.</p>
+          <div class="eyebrow">연말정산 준비·검토</div>
+          <h2>직원별 연간 지급액과 기납부 원천세를 확인합니다</h2>
+          <p>연간 급여와 기납부 원천세, 누락 및 중도퇴사 정산 필요 여부를 검토합니다. 결정세액·환급·추징 계산은 현재 범위에 포함하지 않습니다.</p>
           <div class="progress"><span></span></div>
         </div>
-        <div class="hero-metrics"><div class="metric"><div class="label">대상 인원</div><div class="value">5명</div></div><div class="metric"><div class="label">확인 필요</div><div class="value">1명</div></div><div class="metric"><div class="label">지방소득세 합계</div><div class="value">83,000</div></div></div>
+        <div class="hero-metrics"><div class="metric"><div class="label">대상 인원</div><div class="value">5명</div></div><div class="metric"><div class="label">확인 필요(누락)</div><div class="value">2명</div></div><div class="metric"><div class="label">데이터 준비 완료</div><div class="value">3명</div></div></div>
       </section>
 
       <section class="todo">
-        <div class="todo-row"><div class="dot danger"></div><div><div class="title">6월 급여 미확정 직원 1명</div><div class="sub">해당 월 급여를 확정해야 지방소득세 집계가 완전해집니다.</div></div><a class="btn primary" href="04_payroll.html">급여 열기</a></div>
+        <div class="todo-row"><div class="dot danger"></div><div><div class="title">3월 급여 미확정 직원 2명</div><div class="sub">해당 월 급여를 확정해야 반기 지급총액·원천세가 집계됩니다.</div></div><a class="btn primary" href="04_payroll.html">급여 열기</a></div>
+        <div class="todo-row"><div class="dot"></div><div><div class="title">인적사항 확인 필요 1명 (입사일·명부 매칭)</div><div class="sub">신고 준비 데이터에 필요한 입사일과 직원 명부 매칭 상태를 확인하세요.</div></div><a class="btn" href="06_employee_directory.html">직원 명부 열기</a></div>
       </section>
 
-      <div class="section-head"><h2>직원별 지방소득세 내역 (원천세 특별징수분)</h2><span class="hint">급여에 기록된 실제 원천징수·지방소득세 값</span></div>
+      <div class="section-head"><h2>연말정산 준비·검토</h2><span class="hint">직원별 연간 지급·기납부 원천세 집계 (정산액 계산은 v1 범위 밖)</span></div>
       <section class="card">
-        <div class="cardnote">귀속기간 <b>2026-06</b> · 원천세 신고 주기 기준(월별 기준 · 반기납부 특례는 누적 보기로 확장 가능) · 값은 확정 급여에서 집계됩니다(근사 계산 아님).</div>
+        <div class="cardnote">귀속연도 <b>2025</b> · 최근 완료 연도. 이 화면은 <b>연간 집계·누락 검토</b>까지 제공하며, 결정세액·환급/추징 계산은 후속 범위입니다.</div>
         <div class="tablewrap">
         <table class="ptable">
-          <thead><tr><th>직원</th><th class="num">지급총액</th><th class="num">소득세(국세)</th><th class="num">지방소득세(특별징수)</th><th>상태</th></tr></thead>
+          <thead><tr><th>직원</th><th>재직</th><th class="num">연간 지급합계</th><th class="num">기납부 원천세</th><th>누락</th><th>검토 상태</th></tr></thead>
           <tbody>
-            <tr><td><div class="emp">김대표</div><div class="empcode">E-001 · 대표</div></td><td class="num">7,000,000</td><td class="num">490,000</td><td class="num">49,000</td><td><span class="chip ok">준비 완료</span></td></tr>
-            <tr><td><div class="emp">이수민</div><div class="empcode">E-002 · 매니저</div></td><td class="num">3,600,000</td><td class="num">180,000</td><td class="num">18,000</td><td><span class="chip ok">준비 완료</span></td></tr>
-            <tr><td><div class="emp">박지훈</div><div class="empcode">E-003 · 사원</div></td><td class="num">3,000,000</td><td class="num">90,000</td><td class="num">9,000</td><td><span class="chip ok">준비 완료</span></td></tr>
-            <tr><td><div class="emp">정하늘</div><div class="empcode">E-004 · 사원</div></td><td class="num" style="color:var(--fg-subtle)">집계 대기</td><td class="num" style="color:var(--fg-subtle)">—</td><td class="num" style="color:var(--fg-subtle)">—</td><td><span class="chip warn">6월 급여 미확정</span></td></tr>
-            <tr><td><div class="emp">최윤서</div><div class="empcode">E-005 · 신입</div></td><td class="num">2,400,000</td><td class="num">72,000</td><td class="num">7,000</td><td><span class="chip ok">준비 완료</span></td></tr>
-            <tr class="total"><td>합계(준비 완료 4명)</td><td class="num">16,000,000</td><td class="num">832,000</td><td class="num">83,000</td><td></td></tr>
+            <tr><td><div class="emp">김대표</div><div class="empcode">E-001</div></td><td><span class="chip ok">재직</span></td><td class="num">84,000,000</td><td class="num">5,880,000</td><td>없음</td><td><span class="chip ok">검토 준비</span></td></tr>
+            <tr><td><div class="emp">이수민</div><div class="empcode">E-002</div></td><td><span class="chip ok">재직</span></td><td class="num">43,200,000</td><td class="num">2,160,000</td><td>없음</td><td><span class="chip ok">검토 준비</span></td></tr>
+            <tr><td><div class="emp">박지훈</div><div class="empcode">E-003</div></td><td><span class="chip ok">재직</span></td><td class="num">36,000,000</td><td class="num">1,080,000</td><td>없음</td><td><span class="chip ok">검토 준비</span></td></tr>
+            <tr><td><div class="emp">정하늘</div><div class="empcode">E-004</div></td><td><span class="chip ok">재직</span></td><td class="num" style="color:var(--fg-subtle)">집계 대기</td><td class="num" style="color:var(--fg-subtle)">—</td><td><span class="miss">3월 급여 누락</span></td><td><span class="chip warn">월 급여 확정 필요</span></td></tr>
+            <tr><td><div class="emp">한서준</div><div class="empcode">E-006</div></td><td><span class="chip muted">중도퇴사(9월)</span></td><td class="num">27,000,000</td><td class="num">810,000</td><td><span class="miss">퇴사 정산 확인</span></td><td><span class="chip warn">중도정산 검토</span></td></tr>
           </tbody>
         </table>
         </div>
       </section>
 
-      <section class="consistency"><b>원천세와 동일한 값</b> — 이 지방소득세 값은 급여·지급 하위 원천세 화면과 같은 실제 급여 기록에서 옵니다. 두 화면에서 다른 숫자가 보이지 않습니다.</section>
-
-      <section class="boundary"><b>책임 경계</b> — SemuAgent는 원천세에 딸린 지방소득세 특별징수 확정 데이터를 준비합니다. 종합소득세·법인세분 지방소득세, 위택스 신고·제출은 이 화면 범위 밖이며 사용자가 직접 수행합니다. 자동 제출·자격증명 저장은 하지 않습니다.</section>
+      <section class="boundary"><b>연말정산 준비 범위</b> — 연간 급여와 기납부 원천세의 누락·검토 상태를 정리합니다. 결정세액·환급·추징 계산과 자동 입력·자동 제출은 범위 밖입니다.</section>
 
       <div class="section-head"><h2>화면 상태 예시</h2><span class="hint">구현 시 동일한 상태 문구를 사용합니다</span></div>
       <section class="states">
-        <div class="state"><div class="s-title">Loading</div><div class="s-body">지방소득세 준비 상태를 불러오는 중입니다.</div></div>
-        <div class="state"><div class="s-title">Empty</div><div class="s-body">급여를 먼저 확정하면 지방소득세 준비 데이터가 채워집니다.</div></div>
+        <div class="state"><div class="s-title">Loading</div><div class="s-body">연말정산 준비 상태를 불러오는 중입니다.</div></div>
+        <div class="state"><div class="s-title">Empty</div><div class="s-body">급여를 먼저 확정하면 연말정산 준비 데이터가 채워집니다.</div></div>
         <div class="state"><div class="s-title">Error</div><div class="s-body">준비 상태를 불러오지 못했습니다. 다시 시도해 주세요.</div></div>
-        <div class="state"><div class="s-title">No Permission</div><div class="s-body">급여 정보 접근 권한이 있는 담당자만 볼 수 있습니다.</div></div>
+        <div class="state"><div class="s-title">No Permission</div><div class="s-body">급여·직원 정보 접근 권한이 있는 담당자만 볼 수 있습니다.</div></div>
       </section>
     </main>
   </div>

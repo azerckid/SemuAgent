@@ -1,6 +1,6 @@
 # Cadence Navigation Prototype Review
 > Created: 2026-07-11 KST
-> Last Updated: 2026-07-11 KST
+> Last Updated: 2026-07-13 KST
 
 ## 1. 결정 목적
 
@@ -19,7 +19,8 @@
 급여·지급
   직원 명부
   원천세
-  지급명세서·연말정산
+  지급명세서
+  연말정산
   지방소득세
 부가세
 연간신고
@@ -43,7 +44,7 @@
 | 화면 | 사용자가 확인할 것 | 주요 행동 |
 |:---|:---|:---|
 | 회사 홈 | 가장 가까운 신고 일정과 남은 blocker | 해당 세목으로 이동 |
-| 급여·지급 | 월 급여, 원천세, 지방소득세, 지급명세서, 직원 기준정보 | 급여 확정, 신고값 확인, 직원 정보 보완 |
+| 급여·지급 | 월 급여, 원천세, 지방소득세, 지급명세서, 연말정산, 직원 기준정보 | 급여 확정, 신고값 확인, 직원 정보 보완 |
 | 부가세 | 분기·반기 매출·매입, 공제·영세율·면세 판단 | AI 판단 확인·수정·확정 |
 | 연간신고 | 사업자 유형에 맞는 연간 신고 준비 상태 | 개인/법인/면세 여부에 맞는 세목만 확인 |
 
@@ -64,7 +65,8 @@
 | [04_payroll.html](./previews/04_payroll.html) | 급여·지급 상위 작업공간 |
 | [05_filing_support.html](./previews/05_filing_support.html) | 급여·지급 하위 원천세 준비값 |
 | [06_employee_directory.html](./previews/06_employee_directory.html) | 급여·지급 하위 직원 명부 |
-| [09_payment_year_end.html](./previews/09_payment_year_end.html) | 급여·지급 하위 지급명세서·연말정산 |
+| [09_payment_year_end.html](./previews/09_payment_year_end.html) | 급여·지급 하위 지급명세서 |
+| [15_year_end_settlement.html](./previews/15_year_end_settlement.html) | 급여·지급 하위 연말정산 |
 | [10_local_income_tax.html](./previews/10_local_income_tax.html) | 급여·지급 하위 지방소득세 |
 | [03_vat.html](./previews/03_vat.html) | 부가세 독립 작업공간 |
 | [08_filing_preparation.html](./previews/08_filing_preparation.html) | 연간신고 상위 작업공간 |
@@ -80,11 +82,11 @@
 ## 7. Acceptance Criteria
 
 - [x] Preview에서 `신고지원`, `신고 준비`가 상위 메뉴로 노출되지 않는다.
-- [x] 직원 명부·원천세·지급명세서·지방소득세가 `급여·지급` 아래에 보인다.
+- [x] 직원 명부·원천세·지급명세서·연말정산·지방소득세가 `급여·지급` 아래에 보인다.
 - [x] 부가세는 독립 상위 메뉴다.
 - [x] 연간신고는 사업자 유형에 맞는 세목만 노출한다.
 - [x] 회사 홈에서 `다가오는 신고`를 바로 확인할 수 있다.
-- [ ] 실제 앱 사이드바·breadcrumb·route가 같은 구조를 사용한다.
+- [x] 실제 앱 사이드바·breadcrumb·route가 같은 구조를 사용한다.
 - [ ] 기존 `신고지원`·`신고 준비` URL의 이동 정책을 구현하고 회귀 테스트한다.
 
 ## 8. Related Documents

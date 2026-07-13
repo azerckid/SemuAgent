@@ -39,7 +39,7 @@
 └───────────┴─────────────────────────────────────┘
 ```
 
-- Sidebar: 브랜드 → 회사 홈 → 자료수집 → 기장검토(자료대조원장) → 급여·지급(직원 명부·원천세·지급명세서·연말정산·지방소득세) → 부가세 → 연간신고(사업자 유형별) → 관리(설정·리마인드) → 사용자.
+- Sidebar: 브랜드 → 회사 홈 → 자료수집 → 기장검토(자료대조원장) → 급여·지급(직원 명부·원천세·지급명세서·연말정산·지방소득세, 지급명세서와 연말정산은 별도 메뉴) → 부가세 → 연간신고(사업자 유형별) → 관리(설정·리마인드) → 사용자.
   - 기장검토 하위에는 Path 1 첫 관문인 **자료대조원장**을 둔다.
   - 연간신고는 법인에 법인세, 일반 개인에 종합소득세, 면세 개인에 종합소득세·사업장현황신고만 노출한다.
   - `신고지원`·`신고 준비`는 상위 메뉴로 노출하지 않는다.
@@ -245,9 +245,9 @@
 - 자동제출·신규 산출 엔진·신규 DB는 JC-029 Preview 범위 밖이다.
 - 상태칩·State Card·Table 골격은 앞 화면들과 공통(DRY).
 
-### 4.11 지급명세서·연말정산 (09_payment_year_end.html, JC-024)
+### 4.11 지급명세서·연말정산 (09_payment_year_end.html · 15_year_end_settlement.html, JC-024)
 
-`급여·지급 > 지급명세서·연말정산`으로 진입하는 전용 검토 화면. 급여·직원 명부 데이터를 반기/연 단위로 집계한 **read-only** 화면이다.
+`급여·지급 > 지급명세서`와 `급여·지급 > 연말정산`을 별도 메뉴·라우트로 제공한다. 두 화면은 급여·직원 명부 read model을 공유하지만, 지급명세서는 반기 집계·홈택스 직접작성 값에, 연말정산은 연간 지급·기납부 원천세 검토에 집중한다.
 
 | 컴포넌트 | 역할 | 상태 |
 |:---|:---|:---|
@@ -255,12 +255,12 @@
 | Next Action List | 급여 미확정·인적사항 누락 blocker + 급여/직원 명부 CTA | danger/warn dot + 라우팅 |
 | 간이지급명세서 Table | 직원별 귀속기간·지급총액·원천징수세액·준비 상태(근로소득 반기) | 준비완료/누락 월/확인 필요 상태칩 |
 | Direct-Entry Value Panel (JC-030) | **Path 1b** — 홈택스 메뉴 경로·사업자/기간·소득자별 월 지급액·합계·인정상여 | read-only · 식별정보 미저장 |
-| 연말정산 Table | 직원별 재직·연간 지급합계·기납부 원천세·누락·검토 상태 | 검토 준비/월 급여 필요/중도정산 검토 |
+| 연말정산 Table | 직원별 재직·완료 연도 지급합계(진행 중 연도는 현재까지 합계)·기납부 원천세·누락·검토 상태 | 검토 준비/연도 진행 중/월 급여 필요/중도정산 검토 |
 | Responsibility Boundary | 신고 준비 데이터·JC-030 직접작성 값까지·파일/자동입력/자동제출 제외 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
 
 - 화면 언어는 "제출용"이 아니라 **"신고 준비 데이터"** 로 통일한다(제출 대행 뉘앙스 회피).
-- 단일 스크롤·직원 중심 표. mutation 없음(확인 필요는 기존 업무 화면으로 라우팅).
+- 각 화면은 단일 스크롤·직원 중심 표다. mutation 없음(확인 필요는 기존 업무 화면으로 라우팅).
 - 정산액 계산·자동제출은 JC-024 v1 범위 밖. **JC-030 직접작성 값 패널**은 같은 화면의 read-only 확장이며, 파일 생성 UI는 제공하지 않는다. 상태칩·State Card·Table 골격은 공통(DRY).
 
 ### 4.12 지방소득세 (10_local_income_tax.html, JC-027)
@@ -367,7 +367,8 @@
 - Preview (직원 명부): [06_employee_directory.html](./previews/06_employee_directory.html)
 - Preview (리마인드): [07_internal_reminder.html](./previews/07_internal_reminder.html)
 - Preview (연간신고): [08_filing_preparation.html](./previews/08_filing_preparation.html)
-- Preview (지급명세서·연말정산): [09_payment_year_end.html](./previews/09_payment_year_end.html)
+- Preview (지급명세서): [09_payment_year_end.html](./previews/09_payment_year_end.html)
+- Preview (연말정산): [15_year_end_settlement.html](./previews/15_year_end_settlement.html)
 - Preview (지방소득세): [10_local_income_tax.html](./previews/10_local_income_tax.html)
 - Preview (사업장현황신고): [11_business_status_report.html](./previews/11_business_status_report.html)
 

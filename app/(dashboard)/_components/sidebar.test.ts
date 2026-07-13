@@ -7,6 +7,8 @@ const sidebarSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/_compone
 const layoutSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/layout.tsx'), 'utf8')
 const sampleBannerSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/_components/sample-data-banner.tsx'), 'utf8')
 const companyHomePreview = readFileSync(join(workspaceRoot, 'docs/02_UI_Screens/previews/00_company_home.html'), 'utf8')
+const paymentStatementSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/dashboard/filing-preparation/payment-statements/_components/payment-statement-review.tsx'), 'utf8')
+const yearEndSettlementSource = readFileSync(join(workspaceRoot, 'app/(dashboard)/dashboard/filing-preparation/year-end-settlement/_components/year-end-settlement-review.tsx'), 'utf8')
 
 describe('dashboard sidebar cadence navigation (JC-036)', () => {
   const payrollChildRoutes = [
@@ -28,7 +30,12 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     {
       href: '/dashboard/filing-preparation/payment-statements',
       previewHref: '09_payment_year_end.html',
-      label: '지급명세서·연말정산',
+      label: '지급명세서',
+    },
+    {
+      href: '/dashboard/filing-preparation/year-end-settlement',
+      previewHref: '15_year_end_settlement.html',
+      label: '연말정산',
     },
     {
       href: '/dashboard/filing-preparation/local-income-tax',
@@ -37,7 +44,7 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     },
   ]
 
-  it('groups withholding/payment-statements/local-income-tax/employees under 급여·지급', () => {
+  it('groups withholding/payment-statements/year-end/local-income-tax/employees under 급여·지급', () => {
     expect(sidebarSource).toContain("href: '/dashboard/payroll'")
     expect(sidebarSource).toContain('PAYROLL_CHILD_NAV')
     expect(companyHomePreview).toContain('04_payroll.html')
@@ -48,6 +55,13 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
       expect(companyHomePreview).toContain(route.previewHref)
       expect(companyHomePreview).toContain(route.label)
     }
+  })
+
+  it('keeps the 지급명세서 and 연말정산 screen responsibilities separate', () => {
+    expect(paymentStatementSource).toContain('홈택스 직접작성 값 (JC-030)')
+    expect(paymentStatementSource).not.toContain('연말정산 준비·검토')
+    expect(yearEndSettlementSource).toContain('연말정산 준비·검토')
+    expect(yearEndSettlementSource).not.toContain('홈택스 직접작성 값 (JC-030)')
   })
 
   it('keeps 사업장현황신고 under 연간신고 and drops the old 신고지원/신고 준비 top-level menus', () => {

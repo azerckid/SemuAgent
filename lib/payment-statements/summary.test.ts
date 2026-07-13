@@ -3,11 +3,16 @@ import { describe, expect, it } from 'vitest'
 import {
   buildPaymentStatementBlockers,
   buildPaymentStatementHero,
+  buildSimplifiedStatementBlockers,
+  buildSimplifiedStatementHero,
   buildSimplifiedRow,
+  buildYearEndSettlementBlockers,
+  buildYearEndSettlementHero,
   buildYearEndRow,
   employeeKeyOf,
   resolveEmployeeGroupKey,
   resolveReportingContext,
+  resolveYearEndPeriodKey,
   type EmployeeProfileInput,
   type PayrollLineInput,
   type SimplifiedRow,
@@ -52,6 +57,15 @@ describe('resolveReportingContext', () => {
     expect(inH2.halfMonths).toEqual(H1)
     expect(inH2.requiredMonths).toEqual(H1)
     expect(inH2.yearMonths).toHaveLength(12)
+    expect(inH2.yearPeriodStatus).toBe('open')
+    expect(inH2.yearRequiredMonths).toEqual(H1)
+  })
+
+  it('defaults year-end settlement to the most recently completed year', () => {
+    const today = DateTime.fromISO('2026-07-13', { zone: 'Asia/Seoul' })
+    expect(resolveYearEndPeriodKey(today)).toBe('2025-H2')
+    expect(resolveYearEndPeriodKey(today, '2026-H1')).toBe('2026-H2')
+    expect(resolveYearEndPeriodKey(today, '2024')).toBe('2024-H2')
   })
 
   it('honors periodKey year + half (YYYY-H2)', () => {
@@ -199,6 +213,34 @@ describe('buildYearEndRow (연말정산 준비·검토)', () => {
     const row = buildYearEndRow({ ...base, lines: year, profile: undefined })
     expect(row.status).toBe('profile_incomplete')
   })
+
+  it('does not mark a partially elapsed current year as review-ready', () => {
+    const lines = year.slice(0, 7)
+    const row = buildYearEndRow({
+      ...base,
+      lines,
+      yearMonths: year.map((entry) => entry.period),
+      requiredMonths: H1,
+      periodStatus: 'open',
+      profile: profile(),
+    })
+    expect(row.annualGrossPayKrw).toBe(49_000_000)
+    expect(row.status).toBe('period_open')
+    expect(row.statusLabel).toBe('연도 진행 중')
+  })
+
+  it('requires every expected month after the reporting year is complete', () => {
+    const row = buildYearEndRow({
+      ...base,
+      lines: year.slice(0, 11),
+      yearMonths: year.map((entry) => entry.period),
+      requiredMonths: year.map((entry) => entry.period),
+      periodStatus: 'completed',
+      profile: profile(),
+    })
+    expect(row.status).toBe('needs_payroll')
+    expect(row.missingLabel).toContain('월 급여 누락')
+  })
 })
 
 describe('blockers + hero', () => {
@@ -216,6 +258,20 @@ describe('blockers + hero', () => {
     })
     expect(blockers.find((b) => b.id === 'payroll')?.href).toBe('/dashboard/payroll')
     expect(blockers.find((b) => b.id === 'profile')?.href).toBe('/dashboard/employees')
+  })
+
+  it('keeps payment and year-end blocker counts scoped to their own rows', () => {
+    const simplified = rows(['ready', 'ready'])
+    const yearEnd: YearEndRow[] = [
+      { employeeKey: 'k0', employeeName: 'e0', employeeCode: null, employeeStatus: 'active', employeeStatusLabel: '재직', annualGrossPayKrw: null, annualWithholdingTaxKrw: null, missingLabel: '월 급여 미확정', status: 'needs_payroll', statusLabel: '월 급여 확정 필요', tone: 'warn' },
+      { employeeKey: 'k1', employeeName: 'e1', employeeCode: null, employeeStatus: 'active', employeeStatusLabel: '재직', annualGrossPayKrw: null, annualWithholdingTaxKrw: null, missingLabel: '인적사항', status: 'profile_incomplete', statusLabel: '인적사항 확인', tone: 'danger' },
+    ]
+
+    expect(buildSimplifiedStatementBlockers(simplified)).toEqual([])
+    expect(buildYearEndSettlementBlockers(yearEnd).map((blocker) => blocker.id)).toEqual([
+      'year_end_payroll',
+      'year_end_profile',
+    ])
   })
 
   it('computes readiness = ready / total', () => {
@@ -249,5 +305,40 @@ describe('blockers + hero', () => {
     expect(hero.totalEmployees).toBe(2)
     expect(hero.readyCount).toBe(1)
     expect(hero.attentionCount).toBe(1)
+  })
+
+  it('keeps the 지급명세서 and 연말정산 screen metrics independent', () => {
+    const simplified = rows(['ready', 'ready'])
+    const yearEnd: YearEndRow[] = [
+      { employeeKey: 'k0', employeeName: 'e0', employeeCode: null, employeeStatus: 'active', employeeStatusLabel: '재직', annualGrossPayKrw: 100, annualWithholdingTaxKrw: 10, missingLabel: '없음', status: 'ready', statusLabel: '검토 준비', tone: 'ok' },
+      { employeeKey: 'k1', employeeName: 'e1', employeeCode: null, employeeStatus: 'terminated', employeeStatusLabel: '중도퇴사', annualGrossPayKrw: 90, annualWithholdingTaxKrw: 9, missingLabel: '퇴사 정산 확인', status: 'mid_year_settlement', statusLabel: '중도정산 검토', tone: 'warn' },
+    ]
+
+    expect(buildSimplifiedStatementHero(simplified)).toMatchObject({
+      readyCount: 2,
+      attentionCount: 0,
+      readinessPercent: 100,
+    })
+    expect(buildYearEndSettlementHero(yearEnd)).toMatchObject({
+      readyCount: 1,
+      attentionCount: 1,
+      readinessPercent: 50,
+    })
+  })
+
+  it('keeps an open year out of both attention and ready counts', () => {
+    const yearEnd: YearEndRow[] = [
+      { employeeKey: 'k0', employeeName: 'e0', employeeCode: null, employeeStatus: 'active', employeeStatusLabel: '재직', annualGrossPayKrw: 70, annualWithholdingTaxKrw: 7, missingLabel: '없음', status: 'period_open', statusLabel: '연도 진행 중', tone: 'muted' },
+    ]
+    expect(buildYearEndSettlementHero(yearEnd)).toMatchObject({
+      readyCount: 0,
+      attentionCount: 0,
+      periodOpenCount: 1,
+      readinessPercent: 0,
+    })
+    expect(buildPaymentStatementHero(rows(['ready']), yearEnd)).toMatchObject({
+      readyCount: 1,
+      attentionCount: 0,
+    })
   })
 })

@@ -40,7 +40,8 @@ const PAYROLL_CHILD_NAV = [
   { href: '/dashboard/payroll', label: '급여' },
   { href: '/dashboard/employees', label: '직원 명부' },
   { href: '/dashboard/filing-support', label: '원천세' },
-  { href: '/dashboard/filing-preparation/payment-statements', label: '지급명세서·연말정산' },
+  { href: '/dashboard/filing-preparation/payment-statements', label: '지급명세서' },
+  { href: '/dashboard/filing-preparation/year-end-settlement', label: '연말정산' },
   { href: '/dashboard/filing-preparation/local-income-tax', label: '지방소득세' },
 ] as const
 
