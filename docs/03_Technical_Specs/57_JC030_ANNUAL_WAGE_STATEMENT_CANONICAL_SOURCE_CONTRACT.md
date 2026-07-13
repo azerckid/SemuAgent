@@ -11,7 +11,7 @@
 정본 결정: 급여 기초자료는 SemuAgent, 공제신고서와 최종 지급명세서는 홈택스
 제품 역할: 홈택스 생성에 필요한 회사·직원별 기초자료 준비와 정합성 검증
 UI-First Gate: Stage D HTML Preview 제작 가능(GO), runtime은 오너 승인 전 금지
-다음: Annual Stage D — 간결한 홈택스 생성 준비 화면 Preview와 오너 확인
+다음: Annual Stage D — HTML Preview 제작 완료 · 오너 확인 대기
 금지: 연말정산 세액 자체 계산, 최종 지급명세서 역산, 주민번호·공제 PDF 저장/AI 전송
 ```
 
@@ -208,9 +208,9 @@ Stage D **HTML Preview 제작은 GO**다. 다만 이 승인은 위 §6의 간결
 - [x] 세액 계산 엔진과 결과 문서 import를 v1에서 제외했다.
 - [x] Stage D Preview의 최소 화면과 금지 요소를 고정했다.
 
-### 9.2 Stage D Pending
+### 9.2 Stage D Preview Complete · Owner Review Pending
 
-- [ ] [Payment/Year-end Preview](../02_UI_Screens/previews/09_payment_year_end.html) 또는 별도 Preview에 승인 범위를 시각화한다.
+- [x] [Year-end Settlement Preview](../02_UI_Screens/previews/15_year_end_settlement.html)에 승인 범위를 시각화한다.
 - [ ] 직원 표의 정보 밀도와 행 상세 구조를 프로젝트 오너에게 확인받는다.
 - [ ] 오너 승인 후 Screen Flow·UI Design·Pre-Code Brief를 동기화한다.
 - [ ] 그 뒤에만 read model 확장과 `client_filing_profile` migration 여부를 결정한다.
