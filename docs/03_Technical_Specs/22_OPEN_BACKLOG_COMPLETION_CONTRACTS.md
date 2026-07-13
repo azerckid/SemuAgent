@@ -173,8 +173,8 @@ direct-entry/own-program conversion routes and assigns it to Path 1b. Its
 and [Stage C](./57_JC030_ANNUAL_WAGE_STATEMENT_CANONICAL_SOURCE_CONTRACT.md)
 sets confirmed payroll base data as SemuAgent-owned while the deduction report
 and final annual wage statement remain Hometax-owned canonical results. Stage D
-Preview owner approval and Stage E Pre-Code are complete. Stage F runtime/QA is
-next and requires no new schema, mutation API or AI.
+Preview owner approval, Stage E Pre-Code and Stage F read-only runtime/QA are
+complete. No new schema, mutation API or AI was added.
 Business-status reporting is conditional on VAT-exempt sole-proprietor eligibility.
 The fixed order and completion lines are in
 [Path 1 Roadmap §§2–4](./36_PATH1_FORM_FILL_ROADMAP.md).
@@ -191,7 +191,7 @@ screenshot-by-screenshot click tutorial and automatic navigation are excluded.
 |---|---|---|
 | **Validation** | Path 1 & 2 공통 | Implemented for simplified wage; repeated per tax type |
 | **Path 1a** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | 확인된 완료 세목 없음; VAT Stage A 등은 승격용 조사 |
-| **Path 1b** | 공식 양식 없을 때 확정값과 신고 메뉴·화면·행/칸 위치를 함께 제공 | 간이지급명세서 **완료(2026-07-13)**, 원천세 **완료(2026-07-12)**, 부가세 **완료(2026-07-13)**, 근로소득 지급명세서 **Stage F runtime 대기** |
+| **Path 1b** | 공식 양식 없을 때 확정값과 신고 메뉴·화면·행/칸 위치를 함께 제공 | 간이지급명세서 **완료(2026-07-13)**, 원천세 **완료(2026-07-12)**, 부가세 **완료(2026-07-13)**, 근로소득 지급명세서 **완료(2026-07-14)** |
 | **Path 2** | 세무사무소 handoff ZIP | Deferred until full Path 1 beta (1a + 1b) |
 | **Path 3** | 인증·암호화 업로드 파일 | Excluded from current product scope |
 
@@ -248,7 +248,7 @@ No applicable tax type ends as `blocked`. The implementation order is fixed in
 
 #### Path 1b — 직접입력 `항목 = 값` 정리 (양식 없을 때)
 
-Current state: **simplified wage, withholding and VAT done. Annual wage Stage A~E complete; Stage F runtime/QA pending.**
+Current state: **simplified wage, withholding, VAT and annual wage done. Annual wage Stage A~F complete.**
 Simplified wage, withholding and VAT are assigned to Path 1b because no official
 form is confirmed. Simplified wage shows the current Hometax direct-entry path,
 business/period values and employee-level work period, six monthly pay amounts,
@@ -279,11 +279,11 @@ Done means (Path 1b, per tax type):
 - 신고 양식(해당 시 화면 명칭), 귀속기간, 사업자, 합계가 화면에 표시된다.
 - tenant/business/period isolation과 PII 비저장이 유지된다.
 
-Simplified wage (2026-07-13), withholding (2026-07-12) and VAT (2026-07-13)
-satisfy this line. Annual wage Stage A~E passed on 2026-07-14. For this tax type,
+Simplified wage (2026-07-13), withholding (2026-07-12), VAT (2026-07-13) and
+annual wage (2026-07-14) satisfy this line. Annual wage Stage A~F passed. For this tax type,
 the Path 1b screen must show SemuAgent-owned base data and the exact Hometax
 generation flow; it must not duplicate or estimate the Hometax-owned final
-deduction and settlement result. Stage F runtime, browser QA and docs closeout remain pending.
+deduction and settlement result. Stage F runtime, browser QA and docs closeout completed on 2026-07-14.
 
 #### Path 3 — 인증·암호화 파일 (excluded)
 

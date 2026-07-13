@@ -1,22 +1,10 @@
 import Link from 'next/link'
 import {
-  buildYearEndSettlementBlockers,
   buildYearEndSettlementHero,
   type PaymentStatementSummary,
-  type YearEndRow,
 } from '@/lib/payment-statements/summary'
-import {
-  ReviewBlockers,
-  ReviewCell,
-  ReviewChip,
-  ReviewEmployeeCell,
-  ReviewHeroMetric,
-  ReviewNumberCell,
-  ReviewSectionHead,
-  ReviewTableHeadCell,
-} from '../../_components/statement-review-ui'
-
-const KRW = new Intl.NumberFormat('ko-KR')
+import { ReviewTableHeadCell } from '../../_components/statement-review-ui'
+import { YearEndSettlementEmployeeRow } from './year-end-settlement-employee-row'
 
 interface YearEndSettlementEmptyStateProps {
   readonly tenantName: string
@@ -25,16 +13,19 @@ interface YearEndSettlementEmptyStateProps {
 export function YearEndSettlementEmptyState({ tenantName }: YearEndSettlementEmptyStateProps) {
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
-      <div className="border-b border-company-border bg-company-surface px-7 py-3.5">
-        <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 급여·지급 › 연말정산</p>
-        <h1 className="text-base font-semibold tracking-tight text-foreground">연말정산</h1>
-      </div>
-      <div className="px-7 pt-6">
-        <div className="max-w-[720px] rounded-xl border border-company-border bg-company-surface p-6 shadow-company-card">
+      <YearEndSettlementHeader tenantName={tenantName} />
+      <div className="px-4 pt-6 sm:px-7">
+        <div className="max-w-[720px] rounded-lg border border-company-border bg-company-surface p-6 shadow-company-card">
           <h2 className="text-sm font-semibold text-foreground">사업장을 먼저 등록해 주세요</h2>
           <p className="mt-1 text-[12.5px] text-company-fg-muted">
-            {tenantName}에 등록된 사업장이 있어야 연말정산 준비 데이터를 집계할 수 있습니다.
+            {tenantName}에 등록된 사업장이 있어야 홈택스 지급명세서 생성용 급여 기초자료를 준비할 수 있습니다.
           </p>
+          <Link
+            href="/dashboard/clients"
+            className="mt-4 inline-flex rounded-md border border-company-border-strong bg-company-surface px-3 py-1.5 text-[12.5px] font-semibold text-foreground"
+          >
+            사업장 등록으로 이동
+          </Link>
         </div>
       </div>
     </div>
@@ -45,101 +36,163 @@ interface YearEndSettlementReviewProps {
   readonly summary: PaymentStatementSummary
 }
 
+const HOMETAX_STEPS = ['기초자료 등록', '공제신고서 확인', '지급명세서 생성', '확인·수정', '제출'] as const
+
 export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProps) {
   const { context, yearEnd } = summary
   const hero = buildYearEndSettlementHero(yearEnd)
-  const blockers = buildYearEndSettlementBlockers(yearEnd)
   const isYearOpen = context.yearPeriodStatus === 'open'
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
-      <div className="flex items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
-        <div className="min-w-0">
-          <p className="text-[12.5px] font-medium text-company-fg-subtle">
-            회사 홈 › <Link href="/dashboard/payroll" className="hover:underline">급여·지급</Link> › 연말정산
-          </p>
-          <h1 className="text-base font-semibold tracking-tight text-foreground">연말정산</h1>
-        </div>
-        <span className="ml-auto text-[13px] font-medium text-company-fg-muted">{summary.tenant.name}</span>
-        <span className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
-          귀속연도 <span className="ml-1 rounded-full bg-[#eff6ff] px-1.5 py-0.5 text-[10.5px] font-bold text-[#2563eb]">{context.year}</span>
-        </span>
-      </div>
+      <YearEndSettlementHeader
+        tenantName={summary.tenant.name}
+        year={context.year}
+        isYearOpen={isYearOpen}
+      />
 
-      <div className="flex w-full max-w-[1240px] flex-col gap-[22px] px-7 pt-6 pb-12">
-        <section className="grid gap-6 rounded-xl border border-company-border bg-company-surface p-6 shadow-company-card lg:grid-cols-[1fr_300px]">
-          <div>
-            <p className="text-xs font-semibold text-company-fg-muted">연말정산 준비·검토</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">직원별 연간 지급액과 기납부 원천세를 확인합니다</h2>
-            <p className="mt-2 max-w-[650px] text-[13px] text-company-fg-muted">
-              연간 급여와 기납부 원천세, 누락 및 중도퇴사 정산 필요 여부를 검토합니다. 결정세액·환급·추징 계산은 현재 범위에 포함하지 않습니다.
+      <main className="flex w-full max-w-[1440px] flex-col gap-5 px-4 pt-6 pb-12 sm:px-7">
+        <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-[720px]">
+            <p className="text-xs font-semibold text-company-fg-muted">근로소득 지급명세서 · 홈택스 생성 준비</p>
+            <h2 className="mt-1.5 text-xl font-semibold tracking-tight sm:text-2xl">
+              홈택스 편리한 연말정산에서 지급명세서를 생성합니다
+            </h2>
+            <p className="mt-2 text-[13px] leading-5 text-company-fg-muted">
+              SemuAgent는 회사 급여 기초자료를 정리하고, 공제신고서 확인과 최종 생성·제출은 홈택스에서 진행합니다.
             </p>
-            <div className="mt-4 h-2 max-w-[520px] overflow-hidden rounded-full bg-company-border">
-              <span className="block h-full bg-[#2563eb]" style={{ width: `${hero.readinessPercent}%` }} />
-            </div>
           </div>
-          <div className="grid gap-2">
-            <ReviewHeroMetric label="대상 인원" value={`${hero.totalEmployees}명`} />
-            <ReviewHeroMetric label="확인 필요" value={`${hero.attentionCount}명`} />
-            {hero.periodOpenCount > 0 ? <ReviewHeroMetric label="연도 진행 중" value={`${hero.periodOpenCount}명`} /> : null}
-            <ReviewHeroMetric label="검토 준비" value={`${hero.readyCount}명`} />
+          <div className="grid min-w-0 grid-cols-2 divide-x divide-company-border overflow-hidden rounded-lg border border-company-border bg-company-surface sm:grid-cols-4">
+            <SummaryMetric label="대상" value={`${hero.totalEmployees}명`} />
+            <SummaryMetric label="준비 완료" value={`${hero.readyCount}명`} tone="ok" />
+            <SummaryMetric label="급여 보완" value={`${hero.payrollActionCount}명`} tone="warn" />
+            <SummaryMetric label="특례 확인" value={`${hero.specialCaseCount}명`} tone="warn" />
           </div>
         </section>
 
-        <ReviewBlockers blockers={blockers} />
+        <nav
+          aria-label="홈택스 연말정산 처리 흐름"
+          className="flex min-h-11 items-center gap-2 overflow-x-auto border-y border-company-border py-2 text-xs"
+        >
+          <span className="shrink-0 font-semibold text-company-fg-muted">홈택스 처리 흐름</span>
+          {HOMETAX_STEPS.map((step, index) => (
+            <span key={step} className="contents">
+              {index > 0 ? <span className="shrink-0 text-company-fg-subtle">→</span> : null}
+              <span className={index === 0
+                ? 'shrink-0 rounded-full bg-[#18181b] px-2.5 py-1 font-semibold text-white'
+                : 'shrink-0 text-company-fg-muted'}
+              >
+                {step}
+              </span>
+            </span>
+          ))}
+        </nav>
 
-        <ReviewSectionHead title="연말정산 준비·검토" hint="직원별 연간 지급·기납부 원천세 집계" />
-        <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
-          <p className="border-b border-company-border bg-[#fafafa] px-[18px] py-2.5 text-xs text-company-fg-muted">
-            귀속연도 <b>{context.year}</b> · {isYearOpen ? '진행 중 연도는 현재까지 집계하며 검토 준비로 확정하지 않습니다.' : '완료 연도의 연간 집계와 누락을 검토합니다.'} 결정세액·환급·추징 계산은 범위 밖입니다.
-          </p>
+        <section className="overflow-hidden rounded-lg border border-company-border bg-company-surface shadow-company-card">
+          <header className="flex flex-col gap-1 border-b border-company-border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-[18px]">
+            <div>
+              <h3 className="text-sm font-semibold">직원별 급여 기초자료</h3>
+              <p className="mt-0.5 text-xs text-company-fg-subtle">
+                {context.year}-01-01 ~ {context.year}-12-31 · {isYearOpen ? '완료 월까지의 확정 급여 기준' : '확정 급여 기준'}
+              </p>
+            </div>
+            {isYearOpen ? (
+              <span className="w-fit rounded-full border border-company-border bg-[#f4f4f5] px-2.5 py-1 text-[11.5px] font-semibold text-company-fg-muted">
+                연도 진행 중 · 준비 완료로 확정하지 않음
+              </span>
+            ) : null}
+          </header>
+
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-[12.5px]">
+            <table className="w-full min-w-[980px] border-collapse text-[12.5px]">
+              <colgroup>
+                <col className="w-[180px]" />
+                <col className="w-[150px]" />
+                <col />
+                <col className="w-[230px]" />
+                <col className="w-[130px]" />
+                <col className="w-12" />
+              </colgroup>
               <thead>
-                <tr className="bg-[#fcfcfd] text-[11px] uppercase tracking-[0.03em] text-company-fg-subtle">
+                <tr className="bg-[#fcfcfd] text-[11px] text-company-fg-subtle">
                   <ReviewTableHeadCell>직원</ReviewTableHeadCell>
-                  <ReviewTableHeadCell>재직</ReviewTableHeadCell>
-                  <ReviewTableHeadCell right>{isYearOpen ? '현재까지 지급합계' : '연간 지급합계'}</ReviewTableHeadCell>
-                  <ReviewTableHeadCell right>기납부 원천세</ReviewTableHeadCell>
-                  <ReviewTableHeadCell>누락</ReviewTableHeadCell>
-                  <ReviewTableHeadCell>검토 상태</ReviewTableHeadCell>
+                  <ReviewTableHeadCell>근무기간</ReviewTableHeadCell>
+                  <ReviewTableHeadCell>급여 준비값</ReviewTableHeadCell>
+                  <ReviewTableHeadCell>홈택스에서 확인</ReviewTableHeadCell>
+                  <ReviewTableHeadCell>상태</ReviewTableHeadCell>
+                  <ReviewTableHeadCell><span className="sr-only">상세</span></ReviewTableHeadCell>
                 </tr>
               </thead>
               <tbody>
                 {yearEnd.length === 0 ? (
-                  <tr><td colSpan={6} className="px-[18px] py-4 text-company-fg-muted">집계할 급여 데이터가 없습니다.</td></tr>
+                  <tr>
+                    <td colSpan={6} className="px-[18px] py-10 text-center">
+                      <p className="text-sm font-semibold text-foreground">완료 연도의 확정 급여가 없습니다</p>
+                      <p className="mt-1 text-xs text-company-fg-muted">급여와 직원 명부를 준비하면 직원별 기초자료가 표시됩니다.</p>
+                      <Link href="/dashboard/payroll" className="mt-3 inline-flex text-xs font-semibold text-[#2563eb] hover:underline">
+                        급여로 이동
+                      </Link>
+                    </td>
+                  </tr>
                 ) : null}
-                {yearEnd.map((row) => <YearEndRowView key={row.employeeKey} row={row} />)}
+                {yearEnd.map((row, index) => (
+                  <YearEndSettlementEmployeeRow
+                    key={row.employeeKey}
+                    row={row}
+                    defaultExpanded={index === 0}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
-        </section>
 
-        <section className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-4 text-[12.5px] text-[#1e3a8a]">
-          이 화면은 연말정산에 필요한 연간 급여와 기납부 원천세의 준비 상태를 확인합니다. 정산액 계산과 홈택스 자동 입력·제출은 하지 않습니다.
+          <footer className="border-t border-company-border bg-[#fafafa] px-4 py-3 text-xs text-company-fg-muted sm:px-[18px]">
+            <strong className="text-foreground">개인정보 경계:</strong> 주민등록번호와 공제신고서·공제증빙은 SemuAgent에 입력하거나 업로드하지 않고 홈택스에서 직접 확인합니다.
+            <span className="ml-1">결정세액·환급·추징도 홈택스 결과를 확인합니다.</span>
+          </footer>
         </section>
-      </div>
+      </main>
     </div>
   )
 }
 
-function YearEndRowView({ row }: { readonly row: YearEndRow }) {
+interface YearEndSettlementHeaderProps {
+  readonly tenantName: string
+  readonly year?: number
+  readonly isYearOpen?: boolean
+}
+
+function YearEndSettlementHeader({ tenantName, year, isYearOpen }: YearEndSettlementHeaderProps) {
   return (
-    <tr>
-      <ReviewEmployeeCell name={row.employeeName} code={row.employeeCode} />
-      <ReviewCell>
-        <ReviewChip tone={row.employeeStatus === 'terminated' ? 'muted' : 'ok'}>{row.employeeStatusLabel}</ReviewChip>
-      </ReviewCell>
-      <ReviewNumberCell>
-        {row.annualGrossPayKrw === null ? <span className="text-company-fg-subtle">집계 대기</span> : KRW.format(row.annualGrossPayKrw)}
-      </ReviewNumberCell>
-      <ReviewNumberCell>
-        {row.annualWithholdingTaxKrw === null ? <span className="text-company-fg-subtle">-</span> : KRW.format(row.annualWithholdingTaxKrw)}
-      </ReviewNumberCell>
-      <ReviewCell>
-        <span className={row.missingLabel === '없음' ? '' : 'font-semibold text-[#dc2626]'}>{row.missingLabel}</span>
-      </ReviewCell>
-      <ReviewCell><ReviewChip tone={row.tone}>{row.statusLabel}</ReviewChip></ReviewCell>
-    </tr>
+    <header className="flex items-center gap-4 border-b border-company-border bg-company-surface px-4 py-3.5 sm:px-7">
+      <div className="min-w-0">
+        <p className="truncate text-[12.5px] font-medium text-company-fg-subtle">
+          회사 홈 › <Link href="/dashboard/payroll" className="hover:underline">급여·지급</Link> › 연말정산
+        </p>
+        <h1 className="text-base font-semibold tracking-tight text-foreground">연말정산</h1>
+      </div>
+      <span className="ml-auto hidden text-[13px] font-medium text-company-fg-muted sm:inline">{tenantName}</span>
+      {year ? (
+        <span className="shrink-0 rounded-md border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
+          귀속연도 <strong className="ml-1">{year}</strong>{isYearOpen ? <span className="ml-1 text-[11px] text-company-fg-muted">진행 중</span> : null}
+        </span>
+      ) : null}
+    </header>
+  )
+}
+
+interface SummaryMetricProps {
+  readonly label: string
+  readonly value: string
+  readonly tone?: 'ok' | 'warn'
+}
+
+function SummaryMetric({ label, value, tone }: SummaryMetricProps) {
+  const toneClass = tone === 'ok' ? 'text-[#15803d]' : tone === 'warn' ? 'text-[#b45309]' : 'text-foreground'
+  return (
+    <div className="min-w-[92px] px-3 py-2.5">
+      <p className="text-[11px] text-company-fg-subtle">{label}</p>
+      <p className={`mt-0.5 text-base font-bold tabular-nums ${toneClass}`}>{value}</p>
+    </div>
   )
 }

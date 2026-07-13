@@ -12,7 +12,8 @@
 제품 역할: 홈택스 생성에 필요한 회사·직원별 기초자료 준비와 정합성 검증
 UI-First Gate: Stage D HTML Preview 오너 승인 완료(2026-07-14)
 Pre-Code Gate: Stage E Screen Flow·UI Design·read model·상태·화면 상태 계약 완료
-다음: Annual Stage F — 승인 Preview runtime 연결·단위/브라우저 QA·문서 closeout
+완료: Annual Stage F — 승인 Preview runtime 연결·단위/정적/브라우저 QA·문서 closeout
+다음: 근로소득 지급명세서 Path 1b 완료 상태 유지
 금지: 연말정산 세액 자체 계산, 최종 지급명세서 역산, 주민번호·공제 PDF 저장/AI 전송
 ```
 
@@ -249,7 +250,7 @@ Brief와 read model·상태·화면 상태 계약을 동기화했다. Stage F는
 - [x] 완료 연도 상태 3종과 `급여 보완 > 특례 확인 > 급여 준비 완료` 우선순위를 고정했다.
 - [x] 진행 중 연도·로딩·빈 상태·오류·권한 없음 표시 계약을 고정했다.
 - [x] 첫 runtime에 신규 DB·API·AI·민감정보 수집이 필요 없음을 확인했다.
-- [ ] Stage F runtime·단위/정적/브라우저 QA·문서 closeout을 완료한다.
+- [x] Stage F runtime·단위/정적/브라우저 QA·문서 closeout을 완료했다. (2026-07-14)
 
 ## 10. Related Documents
 

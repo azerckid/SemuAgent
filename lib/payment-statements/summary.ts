@@ -15,9 +15,21 @@ const DEFAULT_TZ = 'Asia/Seoul'
 
 export type PaymentStatementTone = 'ok' | 'warn' | 'danger' | 'muted'
 export type SimplifiedStatus = 'ready' | 'period_open' | 'needs_review' | 'missing_months' | 'profile_incomplete'
-export type YearEndStatus = 'ready' | 'period_open' | 'needs_payroll' | 'mid_year_settlement' | 'profile_incomplete'
+export type YearEndStatus = 'ready' | 'period_open' | 'payroll_action_required' | 'special_case_review'
 export type EmployeeStatus = 'active' | 'leave' | 'terminated'
 export type ReportingPeriodStatus = 'completed' | 'open'
+export type PayrollPeriodCloseStatus = 'open' | 'blocked' | 'closed'
+export type YearEndReasonCode =
+  | 'missing_profile'
+  | 'missing_hire_date'
+  | 'missing_month'
+  | 'duplicate_month'
+  | 'unexpected_payroll_month'
+  | 'period_not_closed'
+  | 'line_not_closed'
+  | 'gross_mismatch'
+  | 'mid_year_hire'
+  | 'mid_year_termination'
 
 export type ReportingContext = {
   year: number
@@ -42,10 +54,23 @@ export type PayrollLineInput = {
   status: 'ready' | 'needs_review' | 'closed'
 }
 
+export type AnnualPayrollLineInput = PayrollLineInput & {
+  periodCloseStatus: PayrollPeriodCloseStatus
+  baseSalaryKrw: number
+  mealAllowanceKrw: number
+  allowanceKrw: number
+  localIncomeTaxKrw: number
+  nationalPensionKrw: number
+  healthInsuranceKrw: number
+  longTermCareKrw: number
+  employmentInsuranceKrw: number
+}
+
 export type EmployeeProfileInput = {
   employeeCode: string | null
   displayName: string
   employeeStatus: EmployeeStatus
+  payrollEligibility?: 'eligible' | 'excluded'
   hireDate: string | null
   terminationDate: string | null
 }
@@ -68,12 +93,34 @@ export type YearEndRow = {
   employeeCode: string | null
   employeeStatus: EmployeeStatus
   employeeStatusLabel: string
+  workPeriodLabel: string
+  workPeriodDetail: string
+  annualBaseSalaryKrw: number | null
+  annualAllowanceKrw: number | null
+  annualMealAllowanceKrw: number | null
   annualGrossPayKrw: number | null
+  annualNationalPensionKrw: number | null
+  annualHealthInsuranceKrw: number | null
+  annualLongTermCareKrw: number | null
+  annualEmploymentInsuranceKrw: number | null
   annualWithholdingTaxKrw: number | null
-  missingLabel: string
+  annualLocalIncomeTaxKrw: number | null
+  payrollSummaryLabel: string
+  hometaxCheckLabel: string
+  hometaxCheckDetail: string
+  reasonCodes: YearEndReasonCode[]
+  issueLabels: string[]
   status: YearEndStatus
   statusLabel: string
   tone: PaymentStatementTone
+}
+
+export type YearEndSettlementHero = {
+  totalEmployees: number
+  readyCount: number
+  payrollActionCount: number
+  specialCaseCount: number
+  periodOpenCount: number
 }
 
 export type PaymentStatementBlocker = {
@@ -241,48 +288,204 @@ const EMPLOYEE_STATUS_LABEL: Record<EmployeeStatus, string> = {
 }
 
 const YEAR_END_LABEL: Record<YearEndStatus, { label: string; tone: PaymentStatementTone }> = {
-  ready: { label: '검토 준비', tone: 'ok' },
+  ready: { label: '급여 준비 완료', tone: 'ok' },
   period_open: { label: '연도 진행 중', tone: 'muted' },
-  needs_payroll: { label: '월 급여 확정 필요', tone: 'warn' },
-  mid_year_settlement: { label: '중도정산 검토', tone: 'warn' },
-  profile_incomplete: { label: '인적사항 확인', tone: 'danger' },
+  payroll_action_required: { label: '급여 보완', tone: 'warn' },
+  special_case_review: { label: '특례 확인', tone: 'warn' },
+}
+
+function parsedDate(value: string | null | undefined): DateTime | null {
+  if (!value) return null
+  const parsed = DateTime.fromISO(value, { zone: DEFAULT_TZ })
+  return parsed.isValid ? parsed : null
+}
+
+export function isEmployeeProfileRelevantForYear(profile: EmployeeProfileInput, year: number): boolean {
+  if (profile.payrollEligibility === 'excluded') return false
+  const yearStart = DateTime.fromObject({ year, month: 1, day: 1 }, { zone: DEFAULT_TZ })
+  const yearEnd = DateTime.fromObject({ year, month: 12, day: 31 }, { zone: DEFAULT_TZ })
+  const hire = parsedDate(profile.hireDate)
+  const termination = parsedDate(profile.terminationDate)
+  if (hire && hire.toMillis() > yearEnd.toMillis()) return false
+  if (termination && termination.toMillis() < yearStart.toMillis()) return false
+  return true
+}
+
+function formatMonthList(months: string[]): string {
+  return months.map((month) => `${Number(month.slice(5))}월`).join('·')
+}
+
+function workPeriodDisplay(params: {
+  yearMonths: string[]
+  requiredMonths: string[]
+  periodStatus: ReportingPeriodStatus
+  profile?: EmployeeProfileInput
+  midYearHire: boolean
+  midYearTermination: boolean
+}): { label: string; detail: string } {
+  const sourceMonths = params.periodStatus === 'open' ? params.requiredMonths : params.yearMonths
+  const months = expectedMonths(sourceMonths, params.profile)
+  if (months.length === 0) return { label: '집계 대기', detail: '완료 월 발생 전' }
+  const start = Number(months[0].slice(5))
+  const end = Number(months[months.length - 1].slice(5))
+  const label = start === end ? `${start}월` : `${start}~${end}월`
+  const notes = [
+    params.midYearHire ? '중도입사' : null,
+    params.midYearTermination ? '중도퇴사' : null,
+  ].filter((value): value is string => Boolean(value))
+  return {
+    label,
+    detail: `${months.length}개월${notes.length > 0 ? ` · ${notes.join('·')}` : ''}`,
+  }
+}
+
+function nullableSum(
+  lines: AnnualPayrollLineInput[],
+  field: keyof Pick<
+    AnnualPayrollLineInput,
+    | 'baseSalaryKrw'
+    | 'allowanceKrw'
+    | 'mealAllowanceKrw'
+    | 'grossPayKrw'
+    | 'nationalPensionKrw'
+    | 'healthInsuranceKrw'
+    | 'longTermCareKrw'
+    | 'employmentInsuranceKrw'
+    | 'incomeTaxKrw'
+    | 'localIncomeTaxKrw'
+  >,
+  canDisplay: boolean,
+): number | null {
+  return canDisplay ? lines.reduce((sum, line) => sum + line[field], 0) : null
 }
 
 export function buildYearEndRow(params: {
   employeeKey: string
   employeeName: string
   employeeCode: string | null
-  lines: PayrollLineInput[] // 연간 해당 직원 line
+  lines: AnnualPayrollLineInput[] // 연간 해당 직원 line
   yearMonths?: string[]
   requiredMonths?: string[]
   periodStatus?: ReportingPeriodStatus
   profile?: EmployeeProfileInput
 }): YearEndRow {
-  const { lines, profile } = params
+  const { profile } = params
   const employeeStatus: EmployeeStatus = profile?.employeeStatus ?? 'active'
-  const hasNeedsReview = lines.some((l) => l.status === 'needs_review')
-  const hasPayroll = lines.length > 0
-  const profileIncomplete = !profile || !profile.hireDate
-  const monthsPresent = new Set(lines.map((line) => line.period))
-  const expected = expectedMonths(params.requiredMonths ?? params.yearMonths ?? [...monthsPresent], profile)
-  const hasMissingMonths = expected.some((month) => !monthsPresent.has(month))
+  const requiredMonths = params.requiredMonths ?? params.yearMonths ?? params.lines.map((line) => line.period)
+  const yearMonths = params.yearMonths ?? requiredMonths
+  const periodStatus = params.periodStatus ?? 'completed'
+  const reportingYear = Number(yearMonths[0]?.slice(0, 4) ?? requiredMonths[0]?.slice(0, 4))
+  const hire = parsedDate(profile?.hireDate)
+  const termination = parsedDate(profile?.terminationDate)
+  const midYearHire = Boolean(hire && hire.year === reportingYear && hire.month > 1)
+  const midYearTermination = Boolean(
+    employeeStatus === 'terminated'
+    && termination
+    && termination.year === reportingYear
+    && termination.month < 12,
+  )
+  const expected = expectedMonths(requiredMonths, profile)
+  const expectedSet = new Set(expected)
+  const scopedLines = params.lines.filter((line) => requiredMonths.includes(line.period))
+  const linesByMonth = new Map<string, AnnualPayrollLineInput[]>()
+  for (const line of scopedLines) {
+    const monthLines = linesByMonth.get(line.period) ?? []
+    monthLines.push(line)
+    linesByMonth.set(line.period, monthLines)
+  }
 
-  const annualGrossPayKrw = hasPayroll ? lines.reduce((sum, l) => sum + l.grossPayKrw, 0) : null
-  const annualWithholdingTaxKrw = hasPayroll ? lines.reduce((sum, l) => sum + l.incomeTaxKrw, 0) : null
+  const reasonCodes: YearEndReasonCode[] = []
+  const issueLabels: string[] = []
+  const addReason = (code: YearEndReasonCode, label: string) => {
+    if (!reasonCodes.includes(code)) reasonCodes.push(code)
+    if (!issueLabels.includes(label)) issueLabels.push(label)
+  }
+
+  if (!profile) addReason('missing_profile', '직원 명부 연결 필요')
+  else if (!profile.hireDate) addReason('missing_hire_date', '입사일 확인 필요')
+
+  const missingMonths = expected.filter((month) => !linesByMonth.has(month))
+  if (missingMonths.length > 0) {
+    addReason(
+      'missing_month',
+      missingMonths.length === expected.length ? '연간 확정 급여 없음' : `${formatMonthList(missingMonths)} 급여 누락`,
+    )
+  }
+
+  const duplicateMonths = expected.filter((month) => (linesByMonth.get(month)?.length ?? 0) > 1)
+  if (duplicateMonths.length > 0) addReason('duplicate_month', `${formatMonthList(duplicateMonths)} 급여 중복 확인`)
+
+  const unexpectedMonths = [...linesByMonth.keys()].filter((month) => !expectedSet.has(month))
+  if (unexpectedMonths.length > 0) addReason('unexpected_payroll_month', `${formatMonthList(unexpectedMonths)} 근무기간 밖 급여 확인`)
+
+  const singleExpectedLines = expected.flatMap((month) => {
+    const monthLines = linesByMonth.get(month) ?? []
+    return monthLines.length === 1 ? monthLines : []
+  })
+  const periodNotClosed = singleExpectedLines.filter((line) => line.periodCloseStatus !== 'closed').map((line) => line.period)
+  if (periodNotClosed.length > 0) addReason('period_not_closed', `${formatMonthList(periodNotClosed)} 급여 마감 필요`)
+
+  const lineNotClosed = singleExpectedLines.filter((line) => line.status !== 'closed').map((line) => line.period)
+  if (lineNotClosed.length > 0) addReason('line_not_closed', `${formatMonthList(lineNotClosed)} 직원 급여 확정 필요`)
+
+  const grossMismatch = singleExpectedLines
+    .filter((line) => line.baseSalaryKrw + line.allowanceKrw + line.mealAllowanceKrw !== line.grossPayKrw)
+    .map((line) => line.period)
+  if (grossMismatch.length > 0) addReason('gross_mismatch', `${formatMonthList(grossMismatch)} 급여 항목 합계 확인`)
+
+  const payrollIssueCodes = new Set<YearEndReasonCode>([
+    'missing_profile',
+    'missing_hire_date',
+    'missing_month',
+    'duplicate_month',
+    'unexpected_payroll_month',
+    'period_not_closed',
+    'line_not_closed',
+    'gross_mismatch',
+  ])
+  const hasPayrollIssue = reasonCodes.some((code) => payrollIssueCodes.has(code))
+
+  if (midYearHire) addReason('mid_year_hire', '귀속연도 중도입사')
+  if (midYearTermination) addReason('mid_year_termination', '귀속연도 중도퇴사')
 
   let status: YearEndStatus
-  const missingParts: string[] = []
-  if (hasNeedsReview || !hasPayroll) missingParts.push('월 급여 미확정')
-  else if (hasMissingMonths) missingParts.push('월 급여 누락')
-  if (profileIncomplete) missingParts.push('인적사항')
-
-  if (employeeStatus === 'terminated') status = 'mid_year_settlement'
-  else if (hasNeedsReview || !hasPayroll || hasMissingMonths) status = 'needs_payroll'
-  else if (profileIncomplete) status = 'profile_incomplete'
-  else if (params.periodStatus === 'open') status = 'period_open'
+  if (hasPayrollIssue) status = 'payroll_action_required'
+  else if (periodStatus === 'open') status = 'period_open'
+  else if (midYearHire || midYearTermination) status = 'special_case_review'
   else status = 'ready'
 
-  if (employeeStatus === 'terminated' && missingParts.length === 0) missingParts.push('퇴사 정산 확인')
+  const canDisplayAmounts = !hasPayrollIssue && expected.length > 0 && singleExpectedLines.length === expected.length
+  const workPeriod = workPeriodDisplay({
+    yearMonths,
+    requiredMonths,
+    periodStatus,
+    profile,
+    midYearHire,
+    midYearTermination,
+  })
+
+  let payrollSummaryLabel = '보험·기납부세액 집계 완료'
+  let hometaxCheckLabel = '주민번호 · 공제신고서'
+  let hometaxCheckDetail = '홈택스에서 직접 확인'
+  if (status === 'payroll_action_required') {
+    payrollSummaryLabel = issueLabels[0] ?? '급여 자료 보완 필요'
+    hometaxCheckLabel = '급여 확정 후 확인'
+    hometaxCheckDetail = '홈택스 확인 항목은 그대로 유지'
+  } else if (status === 'period_open') {
+    payrollSummaryLabel = expected.length > 0 ? `${expected.length}개월 확정 급여 집계` : '완료 월 발생 전'
+  } else if (midYearHire && midYearTermination) {
+    payrollSummaryLabel = '현 근무지 급여 집계 완료'
+    hometaxCheckLabel = '종전근무지 · 중도정산'
+    hometaxCheckDetail = '홈택스 최종 반영 여부 확인'
+  } else if (midYearHire) {
+    payrollSummaryLabel = '현 근무지 급여 집계 완료'
+    hometaxCheckLabel = '종전근무지 · 공제신고서'
+    hometaxCheckDetail = '전 직장 원천징수영수증 확인'
+  } else if (midYearTermination) {
+    payrollSummaryLabel = '퇴사월까지 집계 완료'
+    hometaxCheckLabel = '중도정산 · 공제신고서'
+    hometaxCheckDetail = '홈택스 최종 반영 여부 확인'
+  }
 
   return {
     employeeKey: params.employeeKey,
@@ -290,9 +493,23 @@ export function buildYearEndRow(params: {
     employeeCode: params.employeeCode,
     employeeStatus,
     employeeStatusLabel: EMPLOYEE_STATUS_LABEL[employeeStatus],
-    annualGrossPayKrw,
-    annualWithholdingTaxKrw,
-    missingLabel: missingParts.length > 0 ? missingParts.join(' · ') : '없음',
+    workPeriodLabel: workPeriod.label,
+    workPeriodDetail: workPeriod.detail,
+    annualBaseSalaryKrw: nullableSum(singleExpectedLines, 'baseSalaryKrw', canDisplayAmounts),
+    annualAllowanceKrw: nullableSum(singleExpectedLines, 'allowanceKrw', canDisplayAmounts),
+    annualMealAllowanceKrw: nullableSum(singleExpectedLines, 'mealAllowanceKrw', canDisplayAmounts),
+    annualGrossPayKrw: nullableSum(singleExpectedLines, 'grossPayKrw', canDisplayAmounts),
+    annualNationalPensionKrw: nullableSum(singleExpectedLines, 'nationalPensionKrw', canDisplayAmounts),
+    annualHealthInsuranceKrw: nullableSum(singleExpectedLines, 'healthInsuranceKrw', canDisplayAmounts),
+    annualLongTermCareKrw: nullableSum(singleExpectedLines, 'longTermCareKrw', canDisplayAmounts),
+    annualEmploymentInsuranceKrw: nullableSum(singleExpectedLines, 'employmentInsuranceKrw', canDisplayAmounts),
+    annualWithholdingTaxKrw: nullableSum(singleExpectedLines, 'incomeTaxKrw', canDisplayAmounts),
+    annualLocalIncomeTaxKrw: nullableSum(singleExpectedLines, 'localIncomeTaxKrw', canDisplayAmounts),
+    payrollSummaryLabel,
+    hometaxCheckLabel,
+    hometaxCheckDetail,
+    reasonCodes,
+    issueLabels,
     status,
     statusLabel: YEAR_END_LABEL[status].label,
     tone: YEAR_END_LABEL[status].tone,
@@ -319,34 +536,6 @@ export function buildSimplifiedStatementBlockers(rows: SimplifiedRow[]): Payment
       id: 'profile',
       title: `인적사항 확인 필요 ${profileCount}명 (입사일·명부 매칭)`,
       description: '신고 준비 데이터에 필요한 입사일과 직원 명부 매칭 상태를 확인하세요.',
-      tone: 'warn',
-      href: '/dashboard/employees',
-      ctaLabel: '직원 명부 열기',
-    })
-  }
-  return blockers
-}
-
-export function buildYearEndSettlementBlockers(rows: YearEndRow[]): PaymentStatementBlocker[] {
-  const blockers: PaymentStatementBlocker[] = []
-  const payrollCount = rows.filter((row) => row.status === 'needs_payroll').length
-  const profileCount = rows.filter((row) => row.status === 'profile_incomplete').length
-
-  if (payrollCount > 0) {
-    blockers.push({
-      id: 'year_end_payroll',
-      title: `연간 급여 확인 필요 ${payrollCount}명`,
-      description: '확정 급여가 있어야 연간 지급액과 기납부 원천세를 집계할 수 있습니다.',
-      tone: 'danger',
-      href: '/dashboard/payroll',
-      ctaLabel: '급여 열기',
-    })
-  }
-  if (profileCount > 0) {
-    blockers.push({
-      id: 'year_end_profile',
-      title: `인적사항 확인 필요 ${profileCount}명`,
-      description: '연말정산 준비에 필요한 직원 명부와 재직 상태를 확인하세요.',
       tone: 'warn',
       href: '/dashboard/employees',
       ctaLabel: '직원 명부 열기',
@@ -389,18 +578,19 @@ export function buildSimplifiedStatementHero(rows: SimplifiedRow[]): PaymentStat
   })
 }
 
-export function buildYearEndSettlementHero(rows: YearEndRow[]): PaymentStatementHero {
-  return buildSectionHero({
+export function buildYearEndSettlementHero(rows: YearEndRow[]): YearEndSettlementHero {
+  return {
     totalEmployees: rows.length,
     readyCount: rows.filter((row) => row.status === 'ready').length,
+    payrollActionCount: rows.filter((row) => row.status === 'payroll_action_required').length,
+    specialCaseCount: rows.filter((row) => row.status === 'special_case_review').length,
     periodOpenCount: rows.filter((row) => row.status === 'period_open').length,
-  })
+  }
 }
 
 // 준비 완료는 반기(simplified)와 연말정산(yearEnd) 둘 다 ready일 때만이다.
-// yearEnd만 보는 것(예: 중도퇴사 → mid_year_settlement)도 hero/허브 attention에
-// 반영해야, 연말정산 표의 "중도정산 검토"가 hero·허브 트랙에서 "데이터 준비"로
-// 어긋나 보이지 않는다.
+// yearEnd의 급여 보완·특례 확인도 허브 attention에 반영해 화면과 공통 상태가
+// 어긋나 보이지 않게 한다. 진행 중 연도는 attention과 ready 양쪽에서 제외한다.
 export function buildPaymentStatementHero(simplified: SimplifiedRow[], yearEnd: YearEndRow[]): PaymentStatementSummary['hero'] {
   const totalEmployees = simplified.length
   const yearEndByKey = new Map(yearEnd.map((r) => [r.employeeKey, r]))
@@ -441,7 +631,11 @@ async function loadRows(tenantId: string, context: ReportingContext) {
   if (!businessEntity) return { tenantRow, businessEntity: null, lines: [], profiles: [] }
 
   const periodRows = await db
-    .select({ id: payrollPeriodSummary.id, period: payrollPeriodSummary.payrollPeriod })
+    .select({
+      id: payrollPeriodSummary.id,
+      period: payrollPeriodSummary.payrollPeriod,
+      closeStatus: payrollPeriodSummary.closeStatus,
+    })
     .from(payrollPeriodSummary)
     .where(and(
       eq(payrollPeriodSummary.tenantId, tenantId),
@@ -449,6 +643,7 @@ async function loadRows(tenantId: string, context: ReportingContext) {
       inArray(payrollPeriodSummary.payrollPeriod, context.yearMonths),
     ))
   const periodById = new Map(periodRows.map((r) => [r.id, r.period]))
+  const periodCloseStatusById = new Map(periodRows.map((r) => [r.id, r.closeStatus]))
 
   const lineRows = periodRows.length > 0
     ? await db
@@ -456,8 +651,16 @@ async function loadRows(tenantId: string, context: ReportingContext) {
           periodSummaryId: payrollEmployeeLine.periodSummaryId,
           employeeCode: payrollEmployeeLine.employeeCode,
           employeeName: payrollEmployeeLine.employeeName,
+          baseSalaryKrw: payrollEmployeeLine.baseSalaryKrw,
+          mealAllowanceKrw: payrollEmployeeLine.mealAllowanceKrw,
+          allowanceKrw: payrollEmployeeLine.allowanceKrw,
           grossPayKrw: payrollEmployeeLine.grossPayKrw,
           incomeTaxKrw: payrollEmployeeLine.incomeTaxKrw,
+          localIncomeTaxKrw: payrollEmployeeLine.localIncomeTaxKrw,
+          nationalPensionKrw: payrollEmployeeLine.nationalPensionKrw,
+          healthInsuranceKrw: payrollEmployeeLine.healthInsuranceKrw,
+          longTermCareKrw: payrollEmployeeLine.longTermCareKrw,
+          employmentInsuranceKrw: payrollEmployeeLine.employmentInsuranceKrw,
           status: payrollEmployeeLine.status,
         })
         .from(payrollEmployeeLine)
@@ -468,12 +671,21 @@ async function loadRows(tenantId: string, context: ReportingContext) {
         ))
     : []
 
-  const lines: PayrollLineInput[] = lineRows.map((r) => ({
+  const lines: AnnualPayrollLineInput[] = lineRows.map((r) => ({
     employeeCode: r.employeeCode,
     employeeName: r.employeeName,
     period: periodById.get(r.periodSummaryId) ?? '',
+    periodCloseStatus: periodCloseStatusById.get(r.periodSummaryId) ?? 'open',
+    baseSalaryKrw: r.baseSalaryKrw,
+    mealAllowanceKrw: r.mealAllowanceKrw,
+    allowanceKrw: r.allowanceKrw,
     grossPayKrw: r.grossPayKrw,
     incomeTaxKrw: r.incomeTaxKrw,
+    localIncomeTaxKrw: r.localIncomeTaxKrw,
+    nationalPensionKrw: r.nationalPensionKrw,
+    healthInsuranceKrw: r.healthInsuranceKrw,
+    longTermCareKrw: r.longTermCareKrw,
+    employmentInsuranceKrw: r.employmentInsuranceKrw,
     status: r.status,
   }))
 
@@ -482,6 +694,7 @@ async function loadRows(tenantId: string, context: ReportingContext) {
       employeeCode: employeeProfile.employeeCode,
       displayName: employeeProfile.displayName,
       employeeStatus: employeeProfile.employeeStatus,
+      payrollEligibility: employeeProfile.payrollEligibility,
       hireDate: employeeProfile.hireDate,
       terminationDate: employeeProfile.terminationDate,
     })
@@ -499,7 +712,7 @@ type EmployeeGroup = {
   employeeKey: string
   employeeName: string
   employeeCode: string | null
-  lines: PayrollLineInput[]
+  lines: AnnualPayrollLineInput[]
   profile?: EmployeeProfileInput
 }
 
@@ -524,7 +737,7 @@ export function resolveEmployeeGroupKey(
   return { key: code ? `code:${code}` : `name:${name}` }
 }
 
-function assemble(lines: PayrollLineInput[], profiles: EmployeeProfileInput[], context: ReportingContext) {
+function assemble(lines: AnnualPayrollLineInput[], profiles: EmployeeProfileInput[], context: ReportingContext) {
   const profileByCode = new Map<string, EmployeeProfileInput>()
   const profileByName = new Map<string, EmployeeProfileInput>()
   for (const p of profiles) {
@@ -554,6 +767,7 @@ function assemble(lines: PayrollLineInput[], profiles: EmployeeProfileInput[], c
 
   // 급여 line이 아직 없는 직원(명부에만 존재)도 반영한다.
   for (const p of profiles) {
+    if (!isEmployeeProfileRelevantForYear(p, context.year)) continue
     const { key } = resolveEmployeeGroupKey({ employeeCode: p.employeeCode, name: p.displayName }, profileByCode, profileByName)
     const existing = groups.get(key)
     if (existing) {
@@ -567,6 +781,7 @@ function assemble(lines: PayrollLineInput[], profiles: EmployeeProfileInput[], c
   const yearEnd: YearEndRow[] = []
 
   for (const group of groups.values()) {
+    if (group.profile?.payrollEligibility === 'excluded') continue
     simplified.push(buildSimplifiedRow({
       employeeKey: group.employeeKey,
       employeeName: group.employeeName,

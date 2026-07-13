@@ -397,6 +397,8 @@ function sampleDeductionsFor(spec: SampleEmployeeSpec, grossPayKrw: number): Sam
 }
 
 function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
+  const hasNeedsReview = FIRST_RUN_SAMPLE_EMPLOYEES.some((spec) => spec.needsReview === true)
+
   return FIRST_RUN_SAMPLE_EMPLOYEES.map((spec, i): typeof payrollEmployeeLine.$inferInsert => {
     const mealAllowanceKrw = spec.mealAllowanceKrw ?? 0
     // 과세소득(기본급+기타수당)으로 4대보험·소득세 근사를 계산하고, 지급계는 비과세 식대까지 더한다.
@@ -436,7 +438,7 @@ function buildSamplePayrollLines(params: SeedParams, periodSummaryId: string) {
       deductionTotalKrw,
       netPayKrw: grossPayKrw - deductionTotalKrw,
       noticeMatchStatus: needsReview ? 'missing_notice' : 'matched',
-      status: needsReview ? 'needs_review' : 'ready',
+      status: needsReview ? 'needs_review' : hasNeedsReview ? 'ready' : 'closed',
       issueCode: needsReview ? 'insurance_start_date_missing' : null,
       issueMessage: needsReview ? '신규 입사자 4대보험 취득일 확인 필요' : null,
       createdAt: params.timestamp,
@@ -735,7 +737,7 @@ export function buildFirstRunSampleSeedPlan(params: SeedParams) {
     deductionTotalKrw: payrollLines.reduce((sum, line) => sum + (line.deductionTotalKrw ?? 0), 0),
     netPayKrw: payrollLines.reduce((sum, line) => sum + (line.netPayKrw ?? 0), 0),
     noticeImportStatus: 'matched',
-    closeStatus: 'closed',
+    closeStatus: payrollLines.some((line) => line.status === 'needs_review') ? 'blocked' : 'closed',
     payslipStatus: 'ready',
     withholdingStatementStatus: 'ready',
     insuranceStatementStatus: 'ready',

@@ -67,6 +67,15 @@ describe('first-run sample seed plan', () => {
     expect(summary.refs).toBeGreaterThan(400)
   })
 
+  it('keeps a closed sample payroll period and its employee lines in the same final state', () => {
+    const plan = buildPlan()
+
+    expect(plan.payrollSummaries).toHaveLength(1)
+    expect(plan.payrollSummaries[0]?.closeStatus).toBe('closed')
+    expect(plan.payrollLines).toHaveLength(11)
+    expect(plan.payrollLines.every((line) => line.status === 'closed')).toBe(true)
+  })
+
 
   it('does not auto-regenerate visible or deleted sample datasets (S-03/S-04)', () => {
     expect(resolveExistingFirstRunSampleDataset([
