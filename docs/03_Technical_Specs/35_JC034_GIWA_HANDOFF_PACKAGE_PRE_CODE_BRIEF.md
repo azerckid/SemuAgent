@@ -1,6 +1,6 @@
 # JC-034 GIWA Handoff Package Pre-Code Technical Brief
 > Created: 2026-07-07 04:15 KST
-> Last Updated: 2026-07-07 23:04 KST
+> Last Updated: 2026-07-13
 
 ## 0. Governing Principle
 
@@ -12,8 +12,8 @@ JC-034는 **Filing Path 2** 를 구현한다. 회사가 확정한 신고 준비 
 - SemuAgent는 홈택스에 제출하지 않는다. 사무소는 위하고·세무사랑 등 **검정 SW**로 전자신고·대리 제출한다.
 - v1은 **ZIP Export only** — SemuAgent↔GIWA API·실시간 연동·세무대리 알선 없음.
 - **JC-030 Validation** 을 Path 1·2 공통 게이트로 재사용한다. blocking 오류 시 export 차단.
-- 소득자 식별정보는 [JC-030 PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)와 동일 — **일회성 입력·서버 미저장**.
-- 생성 ZIP·plain SC 첨부는 **v1 기본: 다운로드 후 서버 미보관**.
+- v1 ZIP에는 소득자 주민등록번호·외국인등록번호를 포함하지 않는다.
+- 생성 ZIP은 **v1 기본: 다운로드 후 서버 미보관**.
 - UI·문구는 Path 1 베타 이후 신규 Preview로 다시 승인한다. 기존 [08_filing_preparation.html](../02_UI_Screens/previews/08_filing_preparation.html) `#jc-034-handoff-export` 패널은 Path 1-only preview로 supersede되었다.
 - 제품·범위 게이트: [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [Product Baseline §3](../01_Concept_Design/01_PRODUCT_BASELINE.md).
 
@@ -42,10 +42,9 @@ v1 최소 트랙: 간이지급 반기 + 원천세 summary + 부가세 summary
 5. 적용 시 선택 트랙:
    - `local_income` — JC-027 지방소득세(원천 특별징수분)
    - `business_status` — JC-028 사업장현황신고 (면세 개인만 applicable)
-6. 선택 첨부: JC-030 Validation 통과 시 **plain SC 파일** (`attachments/SC{bizRegNo10}`)
-7. Export 전 **handoff 확인** + **감사 로그**(PII 없음)
-8. Validation blocking 시 export 차단 + UI blocker 목록
-9. 단위 테스트: manifest Zod, CSV 빌더, tenant 격리, empty/inapplicable track, validation gating
+6. Export 전 **handoff 확인** + **감사 로그**(PII 없음)
+7. Validation blocking 시 export 차단 + UI blocker 목록
+8. 단위 테스트: manifest Zod, CSV 빌더, tenant 격리, empty/inapplicable track, validation gating
 
 ### 제외 (v1)
 
@@ -96,7 +95,6 @@ semuagent-handoff-{businessRegNo10}-{exportDateYYYYMMDD}.zip
 | `payment-statements/year-end-prep.csv` | 조건부 | 지급명세서 트랙 선택 시 (연말 준비 행) |
 | `local-income-tax/lines.csv` | 조건부 | 지방소득세 트랙 선택 시 |
 | `business-status/summary.csv` | 조건부 | 사업장현황 트랙·applicable 시 |
-| `attachments/SC{bizRegNo10}` | N | 사용자 opt-in + JC-030 Validation 통과 시 plain 파일 |
 
 ### 3.3 CSV 공통 규칙
 
@@ -338,11 +336,11 @@ long format: handoff 행마다 1 CSV row (동일 fiscal_year 반복).
 | `local_income` | `attentionCount > 0` |
 | `business_status` | not applicable · `attentionCount > 0` |
 
-### 6.2 JC-030 Validation (plain SC 첨부 시)
+### 6.2 JC-030 Validation
 
-- `includePlainSimplifiedWageFile === true` 일 때만 `employeePii`·submission meta 수신.
-- `lib/efiling-simplified-wage/validate.ts` — `hasBlockingIssues` true면 **전체 export 400**.
-- SC 첨부 없이 ZIP만 export할 때는 PII 입력 단계 **생략**.
+- `payment_statement` 트랙은 Path 1b와 같은 월별/반기 합계·준비상태 검증을 재사용한다.
+- blocker가 있으면 **전체 export 400**.
+- 간이지급 plain 파일과 PII 입력 payload는 포함하지 않는다.
 
 ### 6.3 inapplicable track
 
@@ -489,7 +487,7 @@ manifest.json과 CSV 컬럼 정의: SemuAgent JC-034 schemaVersion 1.0
 | Q4 | 면세 사업자 + vat 트랙 선택 | UI disable 또는 400 |
 | Q5 | business_status + 법인 | not applicable |
 | Q6 | 최소 3트랙 + 확인 체크 | ZIP + manifest Zod pass |
-| Q7 | plain SC opt-in + PII 누락 | 400 JC-030 validation |
+| Q7 | 간이지급 월별 합계 불일치 | 400 JC-030 validation |
 | Q8 | export 성공 | `filing_handoff_export_log` 1행, PII 없음 |
 | Q9 | ZIP 내 CSV | UTF-8 BOM, 헤더 일치 |
 | Q10 | 서버 | ZIP bytes 미보관 |
@@ -502,7 +500,6 @@ manifest.json과 CSV 컬럼 정의: SemuAgent JC-034 schemaVersion 1.0
 | **2** | `validate-export.ts` + summary read model |
 | **3** | export API + audit log migration |
 | **4** | 신고 준비 UI 패널 + GET summary |
-| **5** | optional plain SC attachment path |
 
 ## 13. Related Documents
 

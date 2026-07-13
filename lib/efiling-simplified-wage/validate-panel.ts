@@ -11,7 +11,7 @@ function issue(
 }
 
 /**
- * Slice 1b panel — data·structure readiness without PII (V-08) or submission meta (V-09).
+ * Path 1b panel — direct-entry data readiness without PII (V-08) or submission metadata.
  * Never includes residentId values in messages.
  */
 export function validateDataReadiness(input: BuildSimplifiedWageInput): ValidationIssue[] {
@@ -37,7 +37,7 @@ export function validateDataReadiness(input: BuildSimplifiedWageInput): Validati
   const readyEmployees = input.employees.filter((e) => e.simplifiedStatus === 'ready')
 
   if (readyEmployees.length === 0 && input.employees.length > 0) {
-    issues.push(issue('V-07', 'error', '파일에 포함할 준비 완료 직원이 없습니다.'))
+    issues.push(issue('V-07', 'error', '홈택스 직접작성에 옮길 준비 완료 직원이 없습니다.'))
   }
 
   for (const emp of input.employees) {

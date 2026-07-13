@@ -78,7 +78,7 @@ export function PaymentStatementReview({
             <p className="text-xs font-semibold text-company-fg-muted">근로소득 지급명세서 · 연말정산 준비</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">직원별 소득·원천세 데이터를 신고 준비 기준으로 정리합니다</h2>
             <p className="mt-2 max-w-[650px] text-[13px] text-company-fg-muted">
-              월별 급여의 지급액·원천세를 반기/연 단위로 집계해, 간이지급명세서와 연말정산에 넣을 신고 준비 데이터를 확인·검토합니다. 정산액 계산과 전자신고 파일 생성은 이 화면 범위 밖입니다.
+              월별 급여의 지급액·원천세를 반기/연 단위로 집계해, 간이지급명세서와 연말정산에 넣을 신고 준비 데이터를 확인·검토합니다. 간이지급명세서는 아래에서 홈택스 직접작성 값까지 정리합니다.
             </p>
             <div className="mt-4 h-2 max-w-[520px] overflow-hidden rounded-full bg-company-border">
               <span className="block h-full bg-[#2563eb]" style={{ width: `${hero.readinessPercent}%` }} />
@@ -138,8 +138,8 @@ export function PaymentStatementReview({
         {efiling && (
           <>
             <SectionHead
-              title="전자신고 파일 생성 (JC-030)"
-              hint="근로소득 간이지급명세서 · 홈택스 변환제출용 파일 후보"
+              title="홈택스 직접작성 값 (JC-030)"
+              hint="근로소득 간이지급명세서 · Path 1b"
             />
             <SimplifiedWageEfilingPanel efiling={efiling} />
           </>
@@ -172,8 +172,8 @@ export function PaymentStatementReview({
         <section className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-4 text-[12.5px] text-[#1e3a8a]">
           <b className="text-[#172554]">책임 경계</b> — 홈택스 입력·제출 전에 확인할 <b>신고 준비 데이터</b>를 정리합니다. 정산액 계산·연말정산 자동 제출은 이번 범위에 포함하지 않습니다.
           {efiling
-            ? ' 간이지급명세서 전자신고 파일 생성(JC-030)은 위 패널에서 파일 후보·사전검증까지만 제공하며, 홈택스 업로드·제출은 사용자가 직접 합니다.'
-            : ' 전자신고 파일 생성·홈택스 제출은 이번 범위에 포함하지 않습니다.'}
+            ? ' 간이지급명세서(JC-030)는 위 패널에서 홈택스 직접작성 경로와 입력값을 제공하며, 실제 입력·제출은 사용자가 직접 합니다.'
+            : ' 홈택스 직접작성 값 정리·제출은 이번 범위에 포함하지 않습니다.'}
           {' '}자동 제출·자격증명 저장은 하지 않습니다.
         </section>
       </div>

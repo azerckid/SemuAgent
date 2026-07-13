@@ -1,6 +1,10 @@
 # JC-030 Slice 0b E-Filing File PII Policy
 > Created: 2026-07-06 23:05 KST
-> Last Updated: 2026-07-10 16:01 KST
+> Last Updated: 2026-07-13
+
+> **현재 판정:** 간이지급명세서는 Path 1b 직접작성 화면으로 전환되어 앱에서 소득자
+> 식별정보를 입력받지 않는다. 이 문서는 향후 공식 Path 1a 파일이 확인될 경우를 위한
+> 과거 파일 생성 정책으로 보존한다.
 
 ## 0. Flow Status
 

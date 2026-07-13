@@ -46,9 +46,7 @@ ZIP root must include at minimum:
    - `payment-statements/` — JC-024 간이지급·연말정산 준비 데이터
    - `local-income-tax/` — JC-027 원천 특별징수분
    - `business-status/` — JC-028 (if applicable)
-3. **Optional plain SC attachment** — from JC-030 Validation / Path 1 output (간이지급 v1),
-   for firm cross-check; not positioned as Path 3 certified upload file.
-4. **`README-handoff.txt`** — responsibility boundary, what the firm should do next,
+3. **`README-handoff.txt`** — responsibility boundary, what the firm should do next,
    what SemuAgent did not certify.
 
 Format inside ZIP: **Excel and/or CSV** per track (human + GIWA staff friendly).
@@ -57,8 +55,7 @@ JSON mirrors allowed for machine import in v2.
 ## 4. PII And Consent
 
 - Export includes only data the company already entered or approved in SemuAgent.
-- Resident registration numbers for wage statements: follow [JC-030 PII Policy](./27_JC030_EFILING_FILE_PII_POLICY.md)
-  — one-time input at export time if needed; not persisted server-side after export completes.
+- Resident registration numbers are not included in the current package contract.
 - User must confirm handoff scope and recipient firm name (or "manual delivery") before download.
 - Audit log: who exported, when, which period, which tracks (no raw PII in logs).
 
@@ -80,7 +77,7 @@ GIWA-side ingest automation is **v2** after field compatibility is validated in 
 | JC-030 layer | Role in JC-034 (Path 2) |
 |---|---|
 | **Validation** | Required before ZIP assembly |
-| **Path 1 output** | Optional attachment inside ZIP for firm cross-check |
+| **Path 1 output** | Confirmed summary CSV values; no simplified-wage plain file attachment |
 | **Path 3** | Not used in Path 2 v1 |
 
 JC-034 must reuse `lib/efiling-simplified-wage` validation where 간이지급 is included.

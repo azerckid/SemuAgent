@@ -24,16 +24,16 @@ value, but does not build a file generator (B~G), screenshot-by-screenshot click
 tutorial or automatic navigation.
 Encrypted electronic-file generation stays out of scope, and no tax type ends
 as `blocked` — a tax type without an official form is **assigned to Path 1b**.
-Path 1b is a decided routing outcome. As of 2026-07-12 the withholding 1b
-value-summary screen is **implemented**; the VAT 1b Mapping and HTML Preview are
+Path 1b is a decided routing outcome. As of 2026-07-13 the simplified-wage and withholding 1b
+value-summary screens are **implemented**; the VAT 1b Mapping and HTML Preview are
 project-owner approved, while the Pre-Code Brief and runtime implementation are pending.
 
 ## 1. Current Answer
 
 The common data-preparation foundation is now complete through Reconciliation
-Ledger Phase 2. Path 1a (official upload file) is implemented for one tax type;
+Ledger Phase 2. No tax type has completed Path 1a official direct-acceptance;
 tax types without a confirmed official form are **assigned to Path 1b**
-(direct-entry value summary) rather than being blocked. Withholding's 1b screen
+(direct-entry value summary) rather than being blocked. Simplified-wage and withholding 1b screens
 is implemented; VAT's 1b UI-First Gate is complete and runtime is pending.
 
 | Step | Current state | Evidence | Remaining gap |
@@ -44,23 +44,23 @@ is implemented; VAT's 1b UI-First Gate is complete and runtime is pending.
 | 신고 준비 공통 gate | **Live** | `loadReconciliationPath1Gate`, filing-preparation summary | VAT is the first consumer; payroll-only routes intentionally do not inherit unrelated bookkeeping blockers |
 | 부가세 확정 원장 provenance | **Live** | `lib/vat/facts.ts`, `lib/vat/provenance.ts`, rebuild/package gates | Exact VAT facts are not manufactured for old/sample rows; unresolved rows remain correctly blocked |
 | 세목별 신고 준비 데이터 | Live for core tracks | VAT, payroll/withholding, payment statements, local income, business status read models | A ready data screen is the Path 1b endpoint; Path 1a additionally needs an official upload file |
-| 양식에 채워질 값 확인 | Live for simplified wage and withholding | `lib/efiling-simplified-wage`, `lib/efiling-withholding` | Withholding has no confirmed official form → Path 1b value-summary screen live; VAT Path 1a form is a Stage A upgrade only |
-| 홈택스 업로드용 파일 (Path 1a) | Live for simplified wage only | simplified-wage generate API and upload guide | Withholding is Path 1b (no file, by design); VAT, local income, business status and annual statement 1a files remain conditional on a confirmed form |
-| 홈택스 직접입력 정리 (Path 1b) | **Live for withholding; VAT Mapping·Preview approved** | 확정값 + 메뉴 경로·화면명·행/칸 위치 매핑 | VAT Pre-Code Brief and runtime read model/screen are pending |
+| 입력할 값 확인 | Live for simplified wage and withholding | `lib/efiling-simplified-wage`, `lib/efiling-withholding` | Both are Path 1b; VAT Path 1a form is a Stage A upgrade only |
+| 홈택스 업로드용 파일 (Path 1a) | 완료 세목 없음 | official form and direct acceptance required | Historical simplified-wage candidate API is not exposed as an active product output |
+| 홈택스 직접입력 정리 (Path 1b) | **Live for simplified wage and withholding; VAT Mapping·Preview approved** | 확정값 + 메뉴 경로·화면명·행/칸 위치 매핑 | VAT Pre-Code Brief and runtime read model/screen are pending |
 | 최종 제출 | User only | Product Baseline, Roadmap 36 | Auto-submit and credential storage remain excluded |
 
 The useful status is therefore qualitative, not a single percentage:
 
 - **Common confirmed-data foundation:** complete for the planned v1 exact-match flow.
-- **Tax-type upload files (Path 1a):** one tax type implemented; withholding has
-  no confirmed official form and is assigned to Path 1b; VAT Path 1a is a
+- **Tax-type upload files (Path 1a):** no tax type has completed official
+  non-encrypted direct-acceptance; VAT Path 1a is a
   Stage A upgrade.
 - **Direct-entry summaries (Path 1b):** the routing decision is made for any tax
-  type without a confirmed form (so no tax type ends as `blocked`). Withholding's
-  1b value-summary screen is **implemented** (`/dashboard/filing-support`); VAT's
+  type without a confirmed form (so no tax type ends as `blocked`). Simplified wage
+  and withholding value-summary screens are **implemented**; VAT's
   Mapping and Preview are complete, but runtime is **not yet implemented**.
-- **Path 1 beta:** Path 1a beta is not complete until simplified wage and one
-  additional tax type pass the full non-encrypted upload-file verification line;
+- **Path 1 beta:** Path 1a beta is not complete until at least two tax types pass
+  the full non-encrypted upload-file verification line;
   encrypted fallback is never used. Path 1b coverage still needs VAT's
   value-summary screen built.
 - **Planned Path 1a matrix:** not complete until the remaining ordered tax types
@@ -211,8 +211,8 @@ The authoritative sequence and completion lines are in
 6. **Repeat per tax type: build the Path 1b screen, add Path 1a via Stage A~G when
    an official form is confirmed, for local-income special collection, business-status
    report and annual payment statement.**
-7. **Run Path 1a beta after simplified wage and one additional compatible tax
-   type satisfy the per-tax 1a completion line; Path 1b screens remain pending.**
+7. **Run Path 1a beta after two compatible tax types satisfy the per-tax 1a
+   completion line; simplified wage and withholding Path 1b are already live.**
 
 Path 2, encrypted Path 3, screenshot-by-screenshot direct-entry tutorials and
 automatic submission do not interrupt this sequence.
@@ -223,8 +223,8 @@ automatic submission do not interrupt this sequence.
 |:---|:---|
 | Reconciliation Phase 2 | Brief 41 §9 complete and VAT gate/provenance consumers implemented — **done** |
 | One tax type (Path 1a) | Roadmap 36 §2.1 all conditions pass |
-| Path 1a beta | Simplified wage + one additional tax type pass official non-encrypted upload verification and beta flow |
-| Path 1b coverage | Every tax type without a confirmed form is assigned to Path 1b and its `항목 = 값` direct-entry summary screen is built. Withholding — **done**. VAT, local income, business status, annual statement — pending. No tax type ends `blocked` |
+| Path 1a beta | Two compatible tax types pass official non-encrypted upload verification and beta flow |
+| Path 1b coverage | Every tax type without a confirmed form is assigned to Path 1b and its `항목 = 값` direct-entry summary screen is built. Simplified wage·withholding — **done**. VAT, local income, business status, annual statement — pending. No tax type ends `blocked` |
 | Planned tax matrix decision | Withholding, VAT, local income, business status and annual statement each pass §2.1 (Path 1a) or are assigned to Path 1b with official Stage A evidence that no form exists |
 | Path 2 restart | Full Path 1 beta (1a files + 1b summary screens) is stable and a new UI-First Gate is approved |
 
