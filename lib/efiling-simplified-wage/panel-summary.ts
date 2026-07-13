@@ -41,6 +41,7 @@ export type SimplifiedWageEfilingSummary = {
   stats: {
     readyCount: number
     attentionCount: number
+    periodOpenCount: number
     totalEmployees: number
   }
   validationItems: EfilingValidationDisplayItem[]
@@ -85,6 +86,10 @@ function simplifiedStatusMessage(status: string): string {
   }
 }
 
+function isAttentionStatus(status: string): boolean {
+  return status === 'needs_review' || status === 'missing_months' || status === 'profile_incomplete'
+}
+
 function formatYmd(value: string): string {
   if (!/^\d{8}$/.test(value)) return value
   return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`
@@ -101,7 +106,8 @@ export function buildSimplifiedWageEfilingSummary(params: {
   const { context, simplified } = paymentSummary
 
   const readyCount = simplified.filter((row) => row.status === 'ready').length
-  const attentionCount = simplified.length - readyCount
+  const attentionCount = simplified.filter((row) => isAttentionStatus(row.status)).length
+  const periodOpenCount = simplified.filter((row) => row.status === 'period_open').length
   const employeeNameByKey = new Map(simplified.map((row) => [row.employeeKey, row.employeeName]))
 
   const dataIssues = validateDataReadiness({
@@ -123,7 +129,7 @@ export function buildSimplifiedWageEfilingSummary(params: {
 
   const validationItems: EfilingValidationDisplayItem[] = []
   for (const row of simplified) {
-    if (row.status !== 'ready') {
+    if (isAttentionStatus(row.status)) {
       validationItems.push({
         id: `row:${row.employeeKey}`,
         tone: row.tone === 'danger' ? 'danger' : 'warn',
@@ -163,6 +169,7 @@ export function buildSimplifiedWageEfilingSummary(params: {
     stats: {
       readyCount,
       attentionCount,
+      periodOpenCount,
       totalEmployees: simplified.length,
     },
     validationItems,

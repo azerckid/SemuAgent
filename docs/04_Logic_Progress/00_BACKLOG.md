@@ -571,7 +571,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] 전자신고 파일 생성은 포함하지 않는다(JC-030 경계)
   - [x] 제출은 사용자 승인 기반(JC-023 원칙), 자격증명 원문 미저장 (read-only, mutation 없음)
   - [x] 급여·원천세·직원명부 기존 데이터와 정합 (신규 테이블·마이그레이션 없음)
-- Document Sync Check: 구현 완료(2026-07-05). 구현 파일: `lib/payment-statements/summary.ts`(반기·연말정산 집계·순수함수), `lib/payment-statements/summary.test.ts`(14건), `app/(dashboard)/dashboard/filing-preparation/payment-statements/`(page·_components/payment-statement-review·loading·error), `lib/filing-preparation/summary.ts`(payment_statement 트랙 roadmap→live). 전체 206파일 1360건 통과, tsc/eslint/build 클린. 기존 컬럼만 조회(payroll·employee_profile) — 신규 마이그레이션 없음(프로덕션 DB 조치 불필요).
+  - [x] 기간 미지정 진입은 최근 완료 반기를 기본 선택하고, 진행 중 반기의 현재·미래 월을 `월 급여 누락`으로 세지 않는다. 정상 행은 `기간 진행 중`으로 분리해 준비 완료·확인 필요 어느 쪽에도 과대 집계하지 않는다. (2026-07-13 정합화)
+- Document Sync Check: 구현 완료(2026-07-05), 기간 정합화(2026-07-13). 구현 파일: `lib/payment-statements/summary.ts`(반기·연말정산 집계·순수함수, 최근 완료 반기·`period_open`), `lib/efiling-simplified-wage/`(직접작성 값·진행 중 기간 격리), `app/(dashboard)/dashboard/filing-preparation/payment-statements/`(page·_components/payment-statement-review·loading·error), `lib/filing-preparation/summary.ts`(payment_statement 트랙 roadmap→live). 기존 컬럼만 조회(payroll·employee_profile) — 신규 마이그레이션 없음(프로덕션 DB 조치 불필요).
 
 ### JC-025 · 종합소득세 신고 지원 (개인사업자) — self-filing 보조 (우선순위 중 · 법적 경계 주의)
 

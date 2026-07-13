@@ -30,11 +30,13 @@ function paymentSummary(over: Partial<PaymentStatementSummary> = {}): PaymentSta
       year: 2026,
       half: 1,
       halfMonths: H1_MONTHS,
+      requiredMonths: H1_MONTHS,
       yearMonths: H1_MONTHS,
       halfLabel: '2026년 상반기',
       halfRangeLabel: '2026-01 ~ 2026-06',
+      periodStatus: 'completed',
     },
-    hero: { totalEmployees: 1, attentionCount: 0, readyCount: 1, readinessPercent: 100 },
+    hero: { totalEmployees: 1, attentionCount: 0, readyCount: 1, periodOpenCount: 0, readinessPercent: 100 },
     blockers: [],
     simplified: [simplifiedRow()],
     yearEnd: [],
@@ -172,6 +174,7 @@ describe('buildSimplifiedWageEfilingSummary', () => {
 
     expect(summary.stats.readyCount).toBe(1)
     expect(summary.stats.attentionCount).toBe(1)
+    expect(summary.stats.periodOpenCount).toBe(0)
     expect(summary.stats.totalEmployees).toBe(2)
     expect(summary.validationItems.some((i) => i.employeeName === 'Lee')).toBe(true)
     expect(summary.validationItems.some((i) => i.ruleId === 'V-08')).toBe(false)
@@ -217,5 +220,45 @@ describe('buildSimplifiedWageEfilingSummary', () => {
     expect(summary.validationItems.some((i) => i.ruleId === 'V-08')).toBe(false)
     expect(summary.directEntry.employees).toHaveLength(0)
     expect(summary.hasBlockingDataIssues).toBe(true)
+  })
+
+  it('keeps an active half out of attention and direct-entry values until the period closes', () => {
+    const activeContext = {
+      ...paymentSummary().context,
+      half: 2 as const,
+      halfMonths: ['2026-07', '2026-08', '2026-09', '2026-10', '2026-11', '2026-12'],
+      requiredMonths: [],
+      halfLabel: '2026년 하반기',
+      halfRangeLabel: '2026-07 ~ 2026-12',
+      periodStatus: 'open' as const,
+    }
+    const summary = buildSimplifiedWageEfilingSummary({
+      paymentSummary: paymentSummary({
+        context: activeContext,
+        simplified: [simplifiedRow({ status: 'period_open', statusLabel: '기간 진행 중', tone: 'muted' })],
+        hero: { totalEmployees: 1, attentionCount: 0, readyCount: 0, periodOpenCount: 1, readinessPercent: 0 },
+      }),
+      business: {
+        businessRegistrationNumber: '1234567890',
+        businessName: 'Haesol',
+        representativeName: 'Kim',
+        submitterKind: 'individual',
+        maskedBusinessRegistrationNumber: null,
+      },
+      employees: [readySegment({
+        simplifiedStatus: 'period_open',
+        workPeriodStart: '20260701',
+        workPeriodEnd: '20261231',
+        grossPayKrw: 7_000_000,
+        monthlyGrossPayKrw: { '2026-07': 7_000_000 },
+      })],
+      missingPayrollMonths: [],
+      submittedOn: '20260713',
+    })
+
+    expect(summary.stats).toMatchObject({ readyCount: 0, attentionCount: 0, periodOpenCount: 1 })
+    expect(summary.validationItems).toEqual([])
+    expect(summary.directEntry.employees).toEqual([])
+    expect(summary.hasBlockingDataIssues).toBe(false)
   })
 })

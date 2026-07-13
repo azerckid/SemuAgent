@@ -36,12 +36,15 @@ export function validateDataReadiness(input: BuildSimplifiedWageInput): Validati
 
   const readyEmployees = input.employees.filter((e) => e.simplifiedStatus === 'ready')
 
-  if (readyEmployees.length === 0 && input.employees.length > 0) {
+  const attentionEmployees = input.employees.filter((employee) =>
+    employee.simplifiedStatus !== 'ready' && employee.simplifiedStatus !== 'period_open')
+
+  if (readyEmployees.length === 0 && attentionEmployees.length > 0) {
     issues.push(issue('V-07', 'error', '홈택스 직접작성에 옮길 준비 완료 직원이 없습니다.'))
   }
 
   for (const emp of input.employees) {
-    if (emp.simplifiedStatus !== 'ready') {
+    if (emp.simplifiedStatus !== 'ready' && emp.simplifiedStatus !== 'period_open') {
       issues.push(
         issue(
           'V-07',

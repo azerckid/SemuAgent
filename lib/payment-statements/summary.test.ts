@@ -38,15 +38,20 @@ const profile = (over: Partial<EmployeeProfileInput> = {}): EmployeeProfileInput
 })
 
 describe('resolveReportingContext', () => {
-  it('derives H1/H2 from today when no periodKey', () => {
-    const h1 = resolveReportingContext(DateTime.fromISO('2026-03-10', { zone: 'Asia/Seoul' }))
-    expect(h1.half).toBe(1)
-    expect(h1.halfMonths).toEqual(H1)
-    expect(h1.yearMonths).toHaveLength(12)
-    const h2 = resolveReportingContext(DateTime.fromISO('2026-09-10', { zone: 'Asia/Seoul' }))
-    expect(h2.half).toBe(2)
-    expect(h2.halfMonths[0]).toBe('2026-07')
-    expect(h2.halfMonths[5]).toBe('2026-12')
+  it('defaults to the most recently completed half', () => {
+    const inH1 = resolveReportingContext(DateTime.fromISO('2026-03-10', { zone: 'Asia/Seoul' }))
+    expect(inH1.year).toBe(2025)
+    expect(inH1.half).toBe(2)
+    expect(inH1.halfMonths[0]).toBe('2025-07')
+    expect(inH1.halfMonths[5]).toBe('2025-12')
+    expect(inH1.periodStatus).toBe('completed')
+
+    const inH2 = resolveReportingContext(DateTime.fromISO('2026-07-13', { zone: 'Asia/Seoul' }))
+    expect(inH2.year).toBe(2026)
+    expect(inH2.half).toBe(1)
+    expect(inH2.halfMonths).toEqual(H1)
+    expect(inH2.requiredMonths).toEqual(H1)
+    expect(inH2.yearMonths).toHaveLength(12)
   })
 
   it('honors periodKey year + half (YYYY-H2)', () => {
@@ -54,6 +59,13 @@ describe('resolveReportingContext', () => {
     expect(ctx.year).toBe(2025)
     expect(ctx.half).toBe(2)
     expect(ctx.halfMonths[0]).toBe('2025-07')
+    expect(ctx.periodStatus).toBe('completed')
+  })
+
+  it('does not require the current or future months in an explicitly opened active half', () => {
+    const ctx = resolveReportingContext(DateTime.fromISO('2026-09-10', { zone: 'Asia/Seoul' }), '2026-H2')
+    expect(ctx.periodStatus).toBe('open')
+    expect(ctx.requiredMonths).toEqual(['2026-07', '2026-08'])
   })
 })
 
@@ -110,6 +122,31 @@ describe('buildSimplifiedRow (간이지급명세서 반기)', () => {
     const lines = ['2026-03', '2026-04', '2026-05', '2026-06'].map((m) => line(m))
     const row = buildSimplifiedRow({ ...base, lines, profile: profile({ hireDate: '2026-03-05' }) })
     expect(row.status).toBe('ready')
+  })
+
+  it('marks an active half as period_open without treating future months as missing', () => {
+    const row = buildSimplifiedRow({
+      ...base,
+      halfMonths: ['2026-07', '2026-08', '2026-09', '2026-10', '2026-11', '2026-12'],
+      requiredMonths: [],
+      periodStatus: 'open',
+      lines: [line('2026-07')],
+      profile: profile(),
+    })
+    expect(row.status).toBe('period_open')
+    expect(row.statusLabel).toBe('기간 진행 중')
+  })
+
+  it('still flags a missing completed month inside an active half', () => {
+    const row = buildSimplifiedRow({
+      ...base,
+      halfMonths: ['2026-07', '2026-08', '2026-09', '2026-10', '2026-11', '2026-12'],
+      requiredMonths: ['2026-07', '2026-08'],
+      periodStatus: 'open',
+      lines: [line('2026-07')],
+      profile: profile(),
+    })
+    expect(row.status).toBe('missing_months')
   })
 
   it('flags profile_incomplete when hireDate missing (주민번호는 검증 대상 아님)', () => {
@@ -187,6 +224,15 @@ describe('blockers + hero', () => {
     expect(hero.readyCount).toBe(2)
     expect(hero.attentionCount).toBe(2)
     expect(hero.readinessPercent).toBe(50)
+  })
+
+  it('does not count an open reporting period as attention or ready', () => {
+    const simplified = rows(['period_open', 'period_open'])
+    const hero = buildPaymentStatementHero(simplified, [])
+    expect(hero.readyCount).toBe(0)
+    expect(hero.attentionCount).toBe(0)
+    expect(hero.periodOpenCount).toBe(2)
+    expect(buildPaymentStatementBlockers({ simplified, yearEnd: [] })).toEqual([])
   })
 
   it('P1 regression: a yearEnd-only issue (e.g. mid_year_settlement) counts as attention', () => {

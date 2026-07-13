@@ -87,6 +87,7 @@ export function PaymentStatementReview({
           <div className="grid gap-2">
             <HeroMetric label="대상 인원" value={`${hero.totalEmployees}명`} />
             <HeroMetric label="확인 필요" value={`${hero.attentionCount}명`} />
+            {hero.periodOpenCount > 0 ? <HeroMetric label="기간 진행 중" value={`${hero.periodOpenCount}명`} /> : null}
             <HeroMetric label="데이터 준비 완료" value={`${hero.readyCount}명`} />
           </div>
         </section>

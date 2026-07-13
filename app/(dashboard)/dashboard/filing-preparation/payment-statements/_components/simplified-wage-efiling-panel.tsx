@@ -50,6 +50,13 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
         <EfilingStat label="먼저 확인할 직원" value={`${stats.attentionCount}명`} sub="급여 누락·명부 매칭 확인" />
       </div>
 
+      {stats.periodOpenCount > 0 ? (
+        <div className="border-b border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-3 text-[12px] text-[#1e40af]">
+          <b>{efiling.context.halfLabel}는 진행 중입니다.</b>{' '}
+          아직 오지 않은 월은 누락으로 세지 않으며, 반기 종료 후 직접작성 값이 준비됩니다.
+        </div>
+      ) : null}
+
       <div className="border-b border-company-border bg-[#f8fafc] px-[18px] py-4">
         <h4 className="text-[12.5px] font-semibold">홈택스 입력 경로</h4>
         <ol className="mt-2.5 grid gap-2 lg:grid-cols-3">

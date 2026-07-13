@@ -31,7 +31,7 @@ function missingPayrollMonths(
   context: ReportingContext,
   periodMonthsPresent: Set<string>,
 ): string[] {
-  return context.halfMonths.filter((m) => !periodMonthsPresent.has(m))
+  return context.requiredMonths.filter((m) => !periodMonthsPresent.has(m))
 }
 
 async function loadPayrollDetail(tenantId: string, clientId: string, context: ReportingContext) {
