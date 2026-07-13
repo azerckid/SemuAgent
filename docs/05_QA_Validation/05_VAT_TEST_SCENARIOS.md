@@ -150,10 +150,10 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-106 | 동일 fingerprint/version의 AI 결과가 저장됨 | 같은 VAT 화면을 10회 재진입 | 저장 결과를 즉시 표시하고 추가 provider 호출 0회 | PARTIAL·VAI-7b 저장 결과 재사용 PASS, 브라우저 10회는 VAI-7d Pending |
+| S-106 | 동일 fingerprint/version의 AI 결과가 저장됨 | 같은 VAT 화면을 20회 재진입 | 저장 결과를 즉시 표시하고 추가 provider 호출 0회 | PASS·VAI-7d dev Chrome 20회 reload, AI API 0회·DB 전후 무변경 |
 | S-107 | AI 결과가 없거나 stale인 행이 존재 | VAT page 최초 진입 | VAT 표를 먼저 렌더하고 해당 행만 `확인 중`; 최초 서버 렌더 provider 호출 0회 | PASS·VAI-7c 계약 + VAI-7d dev 브라우저 `data-vat-initial-provider-calls=0`, 표 선렌더 확인 |
-| S-108 | 거래 사실·증빙·VAT fact·규칙 또는 prompt version 변경 | 화면 재진입 | 이전 결과를 stale로 표시하고 해당 scope/fingerprint 신규 실행을 정확히 1회 생성 | PARTIAL·VAI-7c stale 상태·trigger/lease DB PASS, 브라우저 E2E Pending |
-| S-109 | 같은 사용자가 같은 기간 VAT 화면을 여러 탭에서 동시에 엶 | 비동기 판단 시작 | 동일 scope/fingerprint의 활성 실행은 하나이고 나머지는 기존 상태를 재사용 | PARTIAL·VAI-7b 동시 reservation/lease DB PASS, VAI-7c API E2E Pending |
+| S-108 | 거래 사실·증빙·VAT fact·규칙 또는 prompt version 변경 | 화면 재진입 | 이전 결과를 stale로 표시하고 해당 scope/fingerprint 신규 실행을 정확히 1회 생성 | PASS·VAI-7d stale browser/API/DB E2E, attempt 1회 증가 |
+| S-109 | 같은 사용자가 같은 기간 VAT 화면을 여러 탭에서 동시에 엶 | 비동기 판단 시작 | 동일 scope/fingerprint의 활성 실행은 하나이고 나머지는 기존 상태를 재사용 | PASS·VAI-7d two-tab POST, 비소유 checking 재사용·active lease 1개 |
 | S-110 | provider timeout·quota·invalid schema·전체 실패 | 비동기 판단 중 | 전체 화면 loading 없이 해당 행만 수동 확인으로 전환하고 표·mutation 계속 사용 | PASS·VAI-7c 단위 + VAI-7d dev 브라우저 재확인 24.8초/17.8초, 최신 `manual_fallback` 저장·표/버튼 유지 확인 |
 | S-111 | 저장 결과가 있으나 사용자가 새 판단을 원함 | `AI 다시 확인` 클릭 | 명시적 신규 실행 1회, 기존 사용자 확정값·canonical VAT fact 미변경 | PASS·VAI-7c force lease/API + VAI-7d dev 브라우저 명시 클릭 POST 확인 |
 | S-112 | 사용자 최종 확정 행 | 자동 비동기 판단 대상 계산 | provider 호출 대상에서 제외, 규칙 변경은 기존 결정 덮기 대신 재검토 상태만 표시 | PASS·VAI-7c workflow/실행 선택 회귀 |

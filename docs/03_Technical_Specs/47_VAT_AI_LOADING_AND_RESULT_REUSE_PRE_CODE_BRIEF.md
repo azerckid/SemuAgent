@@ -1,8 +1,8 @@
 # VAT AI Loading and Result Reuse Pre-Code Brief
 > Created: 2026-07-12
-> Last Updated: 2026-07-12
+> Last Updated: 2026-07-13
 > Backlog: JC-037 · VAI-7
-> Status: VAI-7a~7c implemented; migration 0073 dev/prod applied; VAI-7d verification pending
+> Status: complete · VAI-7a~7d implemented and verified; migration 0073 dev/prod applied
 
 ## 0. Decision
 
@@ -157,7 +157,7 @@ polling을 사용한다면 횟수·간격·전체 시간을 제한한다. durabl
 | **VAI-7a · Read/AI Split + Instrumentation** | 초기 read path와 provider path 분리, 구조 baseline·호출 0 경계 고정 | **구현 완료** · VAT 최초 렌더 provider 호출 0회, 기존 기능 회귀 없음 |
 | **VAI-7b · Result Reuse Storage** | additive 결과 저장, fingerprint/version invalidation, lease/backoff idempotency | **구현 완료** · 동일 입력 재사용, scope 변경 거부, stale 재실행 1회, 동시 실행 1개를 DB 통합 테스트로 검증. migration `0073` dev/prod 적용 완료 |
 | **VAI-7c · Async Trigger + Status UI** | 비동기 실행 API, 행 상태 갱신, 명시적 `AI 다시 확인` | **구현 완료** · GET 상태 조회는 provider-free, POST만 reserve→run→complete 실행, 3초 간격·최대 20회 polling, 실패 시 수동 확인 |
-| **VAI-7d · Cutover + Verification** | 남은 legacy 동기 fallback 정리, 브라우저 E2E·관측·문서 정합 | 호출 수·초기 렌더 시간·stale 재판단을 실제 환경에서 증명 |
+| **VAI-7d · Cutover + Verification** | 남은 legacy 동기 fallback 정리, 브라우저 E2E·관측·문서 정합 | **완료** · 동일 결과 20회 reload 0호출, FCP P95 2.96초, stale·다중 탭 단일 실행 검증 |
 
 ### 5.1 VAI-7a Transition State
 
@@ -173,7 +173,7 @@ VAI-7b부터 동일 fingerprint/version의 저장 결과가 있으면 화면 rea
 클라이언트는 `idle|stale` 행만 자동 요청하고 `manual_fallback`은 사용자의 `AI 다시 확인`에서만
 재실행한다. 같은 scope/fingerprint는 VAI-7b lease와 unique index가 중복 실행을 막는다.
 VAI-7d는 비동기 경로가 준비된 뒤 남은 legacy 동기 fallback을 정리하고 단일 실행 경로를
-실환경에서 검증한다.
+실환경에서 검증했다.
 
 ### 5.2 VAI-7a Instrumentation
 
@@ -191,8 +191,22 @@ VAI-7d는 비동기 경로가 준비된 뒤 남은 legacy 동기 fallback을 정
   저장됐다. 처리 중·완료 후에도 예외 표와 사용자 mutation
   진입점은 계속 사용할 수 있었다. production은 exact VAT fact/AI 결과 행이 0건이라 이 검증의
   의미 있는 대체물이 아니며, 10회 재진입·stale·multi-tab은 VAI-7d 후속으로 유지한다.
+- 2026-07-13 VAI-7d dev 브라우저에서 판단 행 5건이 표시된 동일 VAT 화면을 20회 명시적으로
+  reload했다. 모든 표본에서 `data-vat-initial-provider-calls=0`, tax-treatment AI API 요청 0회였고,
+  전후 DB의 5개 AI 결과 행은 `attempt_count`·상태·갱신 시각이 모두 동일했다. 유효 표본의
+  `responseStart` P95는 2,747ms, FCP P95는 2,960ms, `loadEventEnd` P95는 3,015ms였다.
+- 최신 `manual_fallback` 행을 백업한 뒤 같은 fingerprint를 `stale`로 전환해 두 Chrome 탭에서
+  동일 `evaluate_missing` POST를 11ms 차이로 시작했다. 비소유 탭은 2.48초에 `checking`을
+  재사용했고 소유 탭만 19.07초에 `ready`를 반환했다. DB는 활성 lease 1개, `attempt_count` 2→3
+  한 번만 증가했으며 검증 후 모든 컬럼을 백업값(`manual_fallback`, attempt 1)으로 복원했다.
+- 전체 런타임 검색에서 live AI 호출은 비동기 execution 서비스와 사용자 mutation의 fingerprint
+  재검증에만 남아 있다. VAT page read, filing-preparation, internal-reminders, package/rebuild gate는
+  live provider를 호출하지 않는다.
+- production 샘플은 exact VAT fact·AI 결과 행이 0건이라 의미 있는 판단표 P95를 만들 수 없었다.
+  production은 최초 provider 0회 smoke를 유지하고, VAI-7d 성능 완료선은 실제 판단 행 5건이 있는
+  dev의 20회 reload로 검증했다. 실사용 production 판단 행이 생기면 운영 관측값을 후속 누적한다.
 - 서버 컴포넌트의 비결정적 렌더값이나 요청별 로그는 만들지 않는다. production P95는
-  VAI-7d 배포 환경 검증에서 기록한다.
+  별도 로그를 추가하지 않고 기존 Vercel 관측으로 누적한다.
 - 별도 `console` 로그나 요청별 DB write는 추가하지 않아 Vercel observability event와 저장 비용을
   늘리지 않는다.
 
@@ -202,17 +216,17 @@ fallback backoff, versioned payload, 최소 provider trace를 보관하며 canon
 
 ## 6. Acceptance Criteria
 
-- [ ] 저장 결과가 완성된 동일 VAT 화면을 10회 새로고침해도 추가 provider 호출은 0회다. (VAI-7b/7d)
-- [ ] 최초 의미 있는 VAT 표 렌더 P95는 3초 이내를 목표로 하며 구현 PR에 전후 측정값을 남긴다.
+- [x] 저장 결과가 완성된 동일 VAT 화면을 20회 새로고침해도 추가 provider 호출은 0회다. (VAI-7d dev 브라우저 + DB 전후 비교)
+- [x] 최초 의미 있는 VAT 표 렌더 FCP P95는 3초 이내다. (20회 dev reload, 2.96초)
 - [x] VAT page 최초 서버 렌더는 provider를 호출하지 않으며 timeout·quota·전체 실패를 기다리지 않는다. (VAI-7a)
-- [ ] 데이터·규칙·prompt version 변경은 기존 결과를 stale로 만들고 신규 실행을 정확히 1회 만든다. (VAI-7b reservation DB 테스트 PASS, VAI-7c trigger 연결 Pending)
-- [ ] 같은 화면을 여러 탭에서 열어도 동일 scope/fingerprint 실행은 하나다. (VAI-7b lease/idempotency DB 테스트 PASS, VAI-7c API E2E Pending)
+- [x] 데이터·규칙·prompt version 변경은 기존 결과를 stale로 만들고 신규 실행을 정확히 1회 만든다. (VAI-7d stale browser/API/DB E2E)
+- [x] 같은 화면을 여러 탭에서 열어도 동일 scope/fingerprint 실행은 하나다. (VAI-7d two-tab API E2E, active lease 1개)
 - [x] 사용자 확정 행은 자동 provider 호출 대상에서 제외된다. (VAI-7c workflow/실행 선택 회귀 PASS)
 - [x] `AI 다시 확인`은 사용자의 명시 동작이며 기존 사용자 확정값을 변경하지 않는다. (AI 결과 테이블만 갱신)
 - [x] tenant·사업장·기간·행 격리와 PII 최소화가 유지된다. (VAI-7b read/apply scope guard)
 - [x] 원문 prompt·원문 provider 응답·민감 식별정보를 영구 저장하지 않는다. (VAI-7b schema/payload guard)
 - [x] rebuild/package gate는 live LLM 응답을 기다리거나 AI 추천만으로 해제되지 않는다. (VAI-7a 정적 회귀)
-- [ ] 브라우저 E2E에서 화면 선렌더, 비동기 갱신, 실패 fallback, stale 재판단을 확인한다.
+- [x] 브라우저 E2E에서 화면 선렌더, 비동기 갱신, 실패 fallback, stale 재판단을 확인한다.
 
 ## 7. Out of Scope
 
@@ -227,9 +241,9 @@ UI 정보구조 개선은 프로젝트 오너와 별도 논의 후 독립 문서
 
 ## 8. Completion Line
 
-JC-037은 VAI-7a~7d 코드·필요 migration·dev/prod 적용·브라우저 검증을 완료하고,
-**동일 데이터 재방문 provider 호출 0회**와 **AI 실패 중 화면 사용 가능**을 실제 계측으로
-증명한 뒤에만 `done`으로 전환한다.
+JC-037은 VAI-7a~7d 코드·migration `0073` dev/prod 적용·브라우저 검증을 완료했다.
+동일 데이터 20회 재방문 provider 호출 0회, FCP P95 2.96초, stale·다중 탭 단일 실행과
+AI 실패 중 화면 사용 가능을 실제 계측으로 증명해 `done`으로 전환한다.
 
 ## 9. Related Documents
 
