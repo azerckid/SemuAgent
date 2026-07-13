@@ -1,6 +1,6 @@
 # SemuAgent Product Baseline
 > Created: 2026-07-01 17:55
-> Last Updated: 2026-07-12 KST
+> Last Updated: 2026-07-14 KST
 
 ## Purpose
 
@@ -10,8 +10,24 @@ materials, then complete filing through **Path 1 first**:
 `source collection -> classification/bookkeeping -> VAT calculation -> payroll -> review/approval -> filing-material package -> Path 1`
 
 SemuAgent is not automatic tax filing and is not a tax-representative marketplace.
-Final Hometax submission and payment remain outside SemuAgent unless a separately
-approved JC-023 flow exists.
+Final **Hometax/Wetax** submission and payment remain outside SemuAgent unless a
+separately approved JC-023 flow exists.
+
+### 제품 목적 (확정 정의 · 2026-07-14 프로젝트 오너 승인)
+
+사업자가 **통장·카드·세금계산서·현금영수증·급여 자료**를 올리면, 이를 **대조·정리**하여
+각 세금 신고에 필요한 값과 수정할 항목을 보여주고, 사용자가 **홈택스·위택스에서 직접
+신고**할 수 있도록 돕는다. 핵심은 세무대리나 자동 신고가 아니라 다음 다섯 가지다:
+
+1. 자료 **누락·중복·불일치** 확인
+2. **공제 가능성 등 절세 항목 발견**
+3. 신고에 사용할 **확정값 정리**
+4. 홈택스에서 **그대로 둘 것과 수정할 것** 안내
+5. 공식 양식이 있으면 **양식 작성 지원(1a)**, 없으면 **직접 입력할 값 제공(1b)**
+
+즉, 흩어진 사업 자료를 신고 가능한 상태로 정리하는 **자가신고 보조 에이전트**다.
+**최종 확인과 제출은 사용자가 직접** 한다. 홈택스(국세)와 위택스(지방세)는 동급 신고
+대상으로 다룬다.
 
 ## Filing Path Priority (신고 완료 경로 우선순위)
 
@@ -133,9 +149,10 @@ Path 1 파일 다운로드와 Path 2 ZIP Export **모두** 전에, 확정 데이
 - Classify transactions and generate reviewable bookkeeping entries.
 - Prepare VAT-period summaries and supporting schedules.
 - Assist VAT tax treatment review with official-rule, prior-pattern, and conditional AI evidence; keep deductible/non-deductible, proration, taxable/zero-rated/exempt decisions under explicit user confirmation.
+- **Detect tax-saving opportunities** (절세 항목) such as misclassified input-VAT deduction candidates, and surface them for user review. Candidates are shown broadly; canonical values change only through a strict user-confirmed gate — never auto-applied (JC-041).
 - Calculate payroll from structured company payroll inputs.
 - Generate filing-material output for **Path 1**: an official non-encrypted upload file where a form exists (1a), otherwise an on-screen `field = value` summary for manual Hometax entry (1b).
-- Provide Hometax upload guidance and e-filing file validation (JC-030 Path 1).
+- Provide **Hometax/Wetax** upload/entry guidance and e-filing file validation (JC-030 Path 1), including what to leave as-is and what to correct on the filing screen.
 - Store submission receipts, payment notices, and audit trail.
 - Use AI-assisted automation for source classification, missing-item checks,
   reminders, and filing-preparation updates.
