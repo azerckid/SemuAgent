@@ -1,6 +1,9 @@
+import { ExternalLink } from 'lucide-react'
+import {
+  HOMETAX_SIMPLIFIED_WAGE_DIRECT_ENTRY_STEPS,
+  HOMETAX_SIMPLIFIED_WAGE_DIRECT_ENTRY_URL,
+} from '@/lib/efiling-simplified-wage/hometax-guide'
 import type { SimplifiedWageEfilingSummary } from '@/lib/efiling-simplified-wage/summary'
-import { SimplifiedWageEfilingGenerateForm } from './simplified-wage-efiling-generate-form'
-import { SimplifiedWageEfilingUploadGuide } from './simplified-wage-efiling-upload-guide'
 
 const LIST_TONE: Record<string, string> = {
   ok: 'text-[#16a34a]',
@@ -9,152 +12,144 @@ const LIST_TONE: Record<string, string> = {
   muted: 'text-company-fg-subtle',
 }
 
-const STAT_SUB = 'text-[11px] text-company-fg-subtle'
-
 export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: SimplifiedWageEfilingSummary }) {
-  const { stats, formatChecks, validationItems } = efiling
+  const { stats, validationItems, directEntry } = efiling
 
   return (
     <section
-      id="jc-030-efiling-panel"
-      className="overflow-hidden rounded-xl border border-[#ddd6fe] bg-gradient-to-b from-[#faf5ff] to-company-surface shadow-company-card"
-      aria-label="전자신고 파일 생성 패널"
+      id="jc-030-direct-entry-panel"
+      className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card"
+      aria-label="홈택스 직접작성 값 정리"
     >
-      <div className="flex flex-col gap-4 border-b border-[#e9e5ff] px-[18px] py-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-4 border-b border-company-border px-[18px] py-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <h3 className="text-[15px] font-semibold text-foreground">간이지급명세서(근로소득) 전자신고 파일 후보</h3>
-          <p className="mt-1 max-w-[720px] text-[12.5px] leading-relaxed text-company-fg-muted">
-            확정된 반기 집계 데이터를 바탕으로 홈택스 변환제출 규격을 사전검증할 plain 파일 후보를 준비합니다.
-            자동 제출·자격증명 저장은 하지 않으며, 암호화·적합성 검정 전까지 홈택스 제출 가능 파일이라고 보장하지 않습니다.
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-[15px] font-semibold text-foreground">홈택스 직접작성 값 정리</h3>
+            <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2 py-0.5 text-[10.5px] font-semibold text-[#1d4ed8]">
+              Path 1b
+            </span>
+          </div>
+          <p className="mt-1 max-w-[760px] text-[12.5px] leading-relaxed text-company-fg-muted">
+            현재 확인된 제출 경로는 홈택스 직접작성입니다. 아래 값은 확정 급여에서 집계했으며,
+            SemuAgent가 홈택스에 로그인하거나 대신 입력·제출하지 않습니다.
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <a
-            href="#jc-030-validation-results"
-            className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-xs font-semibold"
-          >
-            검증 결과 보기
-          </a>
-        </div>
+        <a
+          href={HOMETAX_SIMPLIFIED_WAGE_DIRECT_ENTRY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-xs font-semibold"
+        >
+          홈택스 열기
+          <ExternalLink className="size-3.5" aria-hidden="true" />
+        </a>
       </div>
 
-      <div className="grid gap-3 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-3">
-        <EfilingStat label="데이터 준비 완료" value={`${stats.readyCount}명`} sub="반기 집계·명부 매칭 완료" />
-        <EfilingStat label="확인 필요" value={`${stats.attentionCount}명`} sub="급여 누락·인적사항 확인" />
-        <EfilingStat label="식별정보 입력" value={`${stats.piiInputCount}명`} sub="파일 생성 직전 1회 입력 · 서버 미저장" />
+      <div className="grid gap-3 border-b border-company-border px-[18px] py-4 sm:grid-cols-2">
+        <EfilingStat label="입력값 준비 완료" value={`${stats.readyCount}명`} sub="근무기간·월별 지급액·반기 합계" />
+        <EfilingStat label="먼저 확인할 직원" value={`${stats.attentionCount}명`} sub="급여 누락·명부 매칭 확인" />
       </div>
 
-      <div className="grid gap-2 border-b border-[#e9e5ff] px-[18px] py-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StepCard step={1} title="데이터 확인" desc="JC-024 반기 집계·누락 검토" />
-        <StepCard step={2} active title="식별정보 입력" desc="요청 동안만 사용 · DB·로그 미저장" />
-        <StepCard step={3} active title="양식 채움 확인" desc="파일에 들어갈 값 눈으로 확인" />
-        <StepCard step={4} active title="다운로드 · 홈택스 안내" desc="plain 후보 다운로드 · 직접 확인" />
+      <div className="border-b border-company-border bg-[#f8fafc] px-[18px] py-4">
+        <h4 className="text-[12.5px] font-semibold">홈택스 입력 경로</h4>
+        <ol className="mt-2.5 grid gap-2 lg:grid-cols-3">
+          {HOMETAX_SIMPLIFIED_WAGE_DIRECT_ENTRY_STEPS.map((step) => (
+            <li key={step.order} className="flex gap-2.5 rounded-lg border border-company-border bg-company-surface px-3 py-2.5 text-[12px] leading-relaxed">
+              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-[10px] font-bold text-white">
+                {step.order}
+              </span>
+              <span>{step.label}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-2 text-[11px] text-company-fg-subtle">
+          홈택스 메뉴명은 개편될 수 있습니다. 최종 입력 전 현재 홈택스 화면의 항목명을 확인하세요.
+        </p>
       </div>
 
-      <div className="border-b border-[#e9e5ff] px-[18px] py-4">
+      <div className="border-b border-company-border px-[18px] py-4">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-          <h4 className="text-[13px] font-semibold">양식에 채워질 값 확인</h4>
-          <p className="text-[11.5px] text-company-fg-subtle">다운로드 전에 SemuAgent가 파일에 넣을 값을 확인합니다.</p>
+          <h4 className="text-[13px] font-semibold">사업자·신고기간 값</h4>
+          <p className="text-[11.5px] text-company-fg-subtle">홈택스 기본정보 화면에서 확인할 값입니다.</p>
         </div>
-        <div className="mt-3 grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="rounded-[10px] border border-company-border bg-company-surface p-3.5">
-            <dl className="grid gap-2 text-[12px]">
-              {efiling.filledFormPreview.rows.map((row) => (
-                <div key={row.id} className="grid grid-cols-[112px_1fr] gap-2 border-b border-company-border/70 pb-2 last:border-b-0 last:pb-0">
-                  <dt className="text-company-fg-subtle">{row.label}</dt>
-                  <dd className="font-medium text-foreground">
-                    {row.value}
-                    {row.note ? <span className="ml-1 font-normal text-company-fg-subtle">({row.note})</span> : null}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-          <div className="overflow-hidden rounded-[10px] border border-company-border bg-company-surface">
-            <table className="w-full border-collapse text-left text-[12px]">
-              <thead className="bg-[#fafafa] text-[11px] text-company-fg-subtle">
-                <tr>
-                  <th className="px-3 py-2 font-semibold">소득자</th>
-                  <th className="px-3 py-2 font-semibold">근로기간</th>
-                  <th className="px-3 py-2 text-right font-semibold">지급총액</th>
-                  <th className="px-3 py-2 font-semibold">식별정보</th>
-                </tr>
-              </thead>
-              <tbody>
-                {efiling.filledFormPreview.employees.length > 0 ? efiling.filledFormPreview.employees.map((row) => (
-                  <tr key={row.employeeKey} className="border-t border-company-border">
-                    <td className="px-3 py-2 font-medium">{row.employeeName}</td>
-                    <td className="px-3 py-2 text-company-fg-muted">{row.workPeriodLabel}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{formatKrw(row.grossPayKrw)}</td>
-                    <td className="px-3 py-2 text-company-fg-muted">{row.residentIdStatus}</td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan={4} className="px-3 py-4 text-center text-company-fg-muted">파일에 포함할 준비 완료 직원이 없습니다.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <dl className="mt-3 grid gap-x-8 gap-y-2 rounded-[10px] border border-company-border bg-[#fcfcfd] p-3.5 text-[12px] sm:grid-cols-2 lg:grid-cols-3">
+          {directEntry.overview.map((row) => (
+            <div key={row.id} className="grid grid-cols-[100px_1fr] gap-2">
+              <dt className="text-company-fg-subtle">{row.label}</dt>
+              <dd className="font-medium text-foreground">
+                {row.value}
+                {row.note ? <span className="ml-1 font-normal text-company-fg-subtle">({row.note})</span> : null}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
-      <div className="grid gap-4 px-[18px] py-4 lg:grid-cols-2">
-        <div className="rounded-[10px] border border-company-border bg-company-surface p-3.5">
-          <h4 className="text-[13px] font-semibold">파일 규격 상태</h4>
-          <ul className="mt-2.5 space-y-1.5 text-[12.5px]">
-            {formatChecks.map((item) => (
-              <li key={item.id} className={LIST_TONE[item.tone] ?? LIST_TONE.muted}>
-                {item.label}
+      <div className="px-[18px] py-4">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h4 className="text-[13px] font-semibold">소득자별 직접작성 값</h4>
+          <p className="text-[11.5px] text-company-fg-subtle">원천징수세액은 간이지급명세서 입력값이 아닙니다.</p>
+        </div>
+        <div className="mt-3 overflow-x-auto rounded-[10px] border border-company-border">
+          <table className="w-full min-w-[980px] border-collapse text-left text-[12px]">
+            <thead className="bg-[#fafafa] text-[11px] text-company-fg-subtle">
+              <tr>
+                <th className="px-3 py-2 font-semibold">소득자</th>
+                <th className="px-3 py-2 font-semibold">근무기간</th>
+                {efiling.context.halfMonths.map((period) => (
+                  <th key={period} className="px-3 py-2 text-right font-semibold">{Number(period.slice(5))}월</th>
+                ))}
+                <th className="px-3 py-2 text-right font-semibold">지급총액</th>
+                <th className="px-3 py-2 text-right font-semibold">인정상여</th>
+                <th className="px-3 py-2 font-semibold">식별정보</th>
+              </tr>
+            </thead>
+            <tbody>
+              {directEntry.employees.length > 0 ? directEntry.employees.map((row) => (
+                <tr key={row.employeeKey} className="border-t border-company-border">
+                  <td className="whitespace-nowrap px-3 py-2 font-medium">{row.employeeName}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-company-fg-muted">{row.workPeriodLabel}</td>
+                  {row.monthlyPay.map((month) => (
+                    <td key={month.period} className="whitespace-nowrap px-3 py-2 text-right tabular-nums">
+                      {formatKrw(month.grossPayKrw)}
+                    </td>
+                  ))}
+                  <td className="whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums">{formatKrw(row.grossPayKrw)}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{formatKrw(row.recognizedBonusKrw)}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-company-fg-muted">홈택스에서 직접 입력</td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan={11} className="px-3 py-4 text-center text-company-fg-muted">
+                    직접작성에 옮길 준비 완료 직원이 없습니다.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-[11px] text-company-fg-subtle">
+          주민등록번호·외국인등록번호는 앱에 저장하지 않습니다. 홈택스 직접작성 화면에서 사용자가 직접 입력합니다.
+        </p>
+      </div>
+
+      {validationItems.length > 0 ? (
+        <div id="jc-030-validation-results" className="border-t border-company-border bg-[#fffbeb] px-[18px] py-3.5">
+          <h4 className="text-[12.5px] font-semibold text-[#92400e]">직접작성 전에 확인</h4>
+          <ul className="mt-2 space-y-1 text-[12px]">
+            {validationItems.map((item) => (
+              <li key={item.id} className={LIST_TONE[item.tone]}>
+                {item.employeeName ? <><b>{item.employeeName}</b>{' — '}{item.message}</> : item.message}
               </li>
             ))}
           </ul>
         </div>
+      ) : null}
 
-        <div id="jc-030-validation-results" className="rounded-[10px] border border-company-border bg-company-surface p-3.5">
-          <h4 className="text-[13px] font-semibold">사전검증 결과</h4>
-          {validationItems.length === 0 ? (
-            <p className="mt-2.5 text-[12.5px] text-company-fg-muted">검증할 직원 데이터가 없습니다.</p>
-          ) : (
-            <ul className="mt-2.5 space-y-1.5 text-[12.5px]">
-              {validationItems.map((item) => (
-                <li key={item.id} className={LIST_TONE[item.tone]}>
-                  {item.employeeName ? (
-                    <>
-                      <span className="font-semibold">{item.employeeName}</span>
-                      {' — '}
-                      {item.message}
-                    </>
-                  ) : (
-                    item.message
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="mt-3 rounded-lg border border-[#bfdbfe] bg-[#eff6ff] px-3 py-2.5 text-[11.5px] text-[#1e3a8a]">
-            <b className="text-[#172554]">PII 안내</b>
-            {' — '}
-            소득자 식별정보는 파일 생성에만 사용되며 서버·로그·스토리지에 저장되지 않습니다. 직원 명부에 주민등록번호를 추가하지 않습니다.
-          </p>
-        </div>
-      </div>
-
-      <SimplifiedWageEfilingGenerateForm efiling={efiling} />
-
-      <SimplifiedWageEfilingUploadGuide />
-
-      <div className="border-t border-[#e9e5ff] bg-[#faf5ff] px-[18px] py-3.5 text-[12px] leading-relaxed text-[#4c1d95]">
-        <b className="text-[#3b0764]">책임 경계</b>
+      <div className="border-t border-company-border bg-[#f8fafc] px-[18px] py-3.5 text-[12px] leading-relaxed text-company-fg-muted">
+        <b className="text-foreground">책임 경계</b>
         {' — '}
-        본 기능은 「암호화 전 plain 파일 후보」 생성·「파일변환신고 전 사전검증」까지입니다.
-        홈택스 제출 가능 파일 보장·자동 신고·대리 제출을 표시하지 않습니다.
-        {efiling.fileNamePreview && (
-          <>
-            {' '}
-            예상 파일명: <span className="font-mono text-[11px]">{efiling.fileNamePreview}</span>
-          </>
-        )}
+        이 화면은 홈택스 직접작성에 옮길 값을 정리합니다. 파일 생성·자동 입력·자동 제출·대리 신고는 제공하지 않습니다.
       </div>
     </section>
   )
@@ -162,42 +157,14 @@ export function SimplifiedWageEfilingPanel({ efiling }: { readonly efiling: Simp
 
 function EfilingStat({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
-    <div className="rounded-[10px] border border-[#e9e5ff] bg-company-surface px-3 py-2.5">
-      <p className={`${STAT_SUB} font-medium`}>{label}</p>
+    <div className="rounded-[10px] border border-company-border bg-[#fcfcfd] px-3 py-2.5">
+      <p className="text-[11px] font-medium text-company-fg-subtle">{label}</p>
       <p className="mt-0.5 text-xl font-bold tracking-tight">{value}</p>
-      <p className={STAT_SUB}>{sub}</p>
+      <p className="text-[11px] text-company-fg-subtle">{sub}</p>
     </div>
   )
 }
 
 function formatKrw(value: number) {
   return `${value.toLocaleString('ko-KR')}원`
-}
-
-function StepCard({
-  step,
-  title,
-  desc,
-  active,
-}: {
-  step: number
-  title: string
-  desc: string
-  active?: boolean
-}) {
-  return (
-    <div
-      className={`rounded-[10px] border px-3 py-2.5 ${
-        active
-          ? 'border-[#7c3aed] bg-[#f5f3ff]'
-          : 'border-company-border bg-company-surface opacity-80'
-      }`}
-    >
-      <p className={`text-[10px] font-bold uppercase tracking-wide ${active ? 'text-[#7c3aed]' : 'text-company-fg-subtle'}`}>
-        STEP {step}
-      </p>
-      <p className="mt-0.5 text-[12.5px] font-semibold">{title}</p>
-      <p className="mt-0.5 text-[11px] text-company-fg-subtle">{desc}</p>
-    </div>
-  )
 }

@@ -1,6 +1,10 @@
 # JC-030 — 근로소득 간이지급명세서 전자신고 필드 매핑
 > Created: 2026-07-07 00:30 KST
-> Last Updated: 2026-07-10 16:01 KST
+> Last Updated: 2026-07-13
+
+> **현재 사용:** 이 문서의 월별 지급액·근무기간·지급총액 매핑은 Path 1b 직접작성
+> read model의 근거로 재사용한다. A/B/C 고정길이 파일 생성은 과거 기술 검증 자산이며
+> 활성 사용자 경로가 아니다. 현재 계약은 [Brief 30](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md)을 따른다.
 
 ## 0. Flow Status
 

@@ -254,14 +254,14 @@
 | Prep Hero | 대상 인원·확인 필요(누락)·데이터 준비 완료 요약 | 진행률 + 카운트 |
 | Next Action List | 급여 미확정·인적사항 누락 blocker + 급여/직원 명부 CTA | danger/warn dot + 라우팅 |
 | 간이지급명세서 Table | 직원별 귀속기간·지급총액·원천징수세액·준비 상태(근로소득 반기) | 준비완료/누락 월/확인 필요 상태칩 |
-| E-Filing File Panel (JC-030) | **Path 1** — 간이지급 plain 양식 파일·사전검증·PII 1회 입력·홈택스 안내 | Scope Gate §5.3 · 서버 미저장 |
+| Direct-Entry Value Panel (JC-030) | **Path 1b** — 홈택스 메뉴 경로·사업자/기간·소득자별 월 지급액·합계·인정상여 | read-only · 식별정보 미저장 |
 | 연말정산 Table | 직원별 재직·연간 지급합계·기납부 원천세·누락·검토 상태 | 검토 준비/월 급여 필요/중도정산 검토 |
-| Responsibility Boundary | 신고 준비 데이터·JC-030 파일 후보까지·정산액 계산·홈택스 제출 제외 | accent 안내 박스 |
+| Responsibility Boundary | 신고 준비 데이터·JC-030 직접작성 값까지·파일/자동입력/자동제출 제외 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
 
 - 화면 언어는 "제출용"이 아니라 **"신고 준비 데이터"** 로 통일한다(제출 대행 뉘앙스 회피).
 - 단일 스크롤·직원 중심 표. mutation 없음(확인 필요는 기존 업무 화면으로 라우팅).
-- 정산액 계산·자동제출은 JC-024 v1 범위 밖. **JC-030 파일 생성 패널**은 동일 화면 확장(UI Preview)이며 구현은 별도 슬라이스. 상태칩·State Card·Table 골격은 공통(DRY).
+- 정산액 계산·자동제출은 JC-024 v1 범위 밖. **JC-030 직접작성 값 패널**은 같은 화면의 read-only 확장이며, 파일 생성 UI는 제공하지 않는다. 상태칩·State Card·Table 골격은 공통(DRY).
 
 ### 4.12 지방소득세 (10_local_income_tax.html, JC-027)
 

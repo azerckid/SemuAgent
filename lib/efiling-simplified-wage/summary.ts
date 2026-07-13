@@ -2,7 +2,9 @@ import { loadSimplifiedWageEfilingContext } from './efiling-context'
 import { buildSimplifiedWageEfilingSummary } from './panel-summary'
 
 export type {
-  EfilingFormatCheck,
+  DirectEntryEmployeeRow,
+  DirectEntryMonthValue,
+  DirectEntryOverviewRow,
   EfilingPanelTone,
   EfilingValidationDisplayItem,
   SimplifiedWageEfilingSummary,

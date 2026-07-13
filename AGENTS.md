@@ -49,8 +49,9 @@ boundary before shipping.
 - MVP creates reviewable bookkeeping, VAT, payroll, and filing-material
   packages that a company can use to submit directly through Hometax.
 - The app may guide users through uploading an official non-encrypted filing
-  form/file and preserve submission receipts. It does not provide a Hometax
-  screen-by-screen direct-entry workflow.
+  form/file and preserve submission receipts. When no such form is confirmed,
+  it may show the exact Hometax menu/screen and the values to enter. It does not
+  provide screenshot-by-screenshot click tutorials, automatic entry, or filing.
 - fcrypt, electronic-filing passwords, encrypted Hometax upload files, and
   filing-software certification tooling are outside the current product scope.
 - AI automation may assist source collection, classification, missing-item

@@ -136,7 +136,7 @@ describe('pendingPiiIssue', () => {
 })
 
 describe('buildSimplifiedWageEfilingSummary', () => {
-  it('surfaces employee blockers and PII pending without download', () => {
+  it('builds direct-entry values and surfaces employee blockers without file metadata', () => {
     const summary = buildSimplifiedWageEfilingSummary({
       paymentSummary: paymentSummary({
         simplified: [
@@ -170,29 +170,29 @@ describe('buildSimplifiedWageEfilingSummary', () => {
       submittedOn: '20260705',
     })
 
-    expect(summary.downloadAvailable).toBe(false)
     expect(summary.stats.readyCount).toBe(1)
     expect(summary.stats.attentionCount).toBe(1)
-    expect(summary.stats.piiInputCount).toBe(1)
-    expect(summary.readyEmployees).toHaveLength(1)
-    expect(summary.readyEmployees[0]?.employeeName).toBe('KimRep')
+    expect(summary.stats.totalEmployees).toBe(2)
     expect(summary.validationItems.some((i) => i.employeeName === 'Lee')).toBe(true)
-    expect(summary.validationItems.some((i) => i.ruleId === 'V-08')).toBe(true)
-    expect(summary.fileNamePreview).toBe('SC1234567890')
-    expect(summary.formatChecks.some((c) => c.tone === 'muted')).toBe(true)
-    expect(summary.filledFormPreview.rows).toEqual(
+    expect(summary.validationItems.some((i) => i.ruleId === 'V-08')).toBe(false)
+    expect(summary.directEntry.overview).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ label: '신고 양식', value: '근로소득 간이지급명세서' }),
+        expect.objectContaining({ label: '작성 화면', value: '간이지급명세서(근로소득) 직접작성' }),
         expect.objectContaining({ label: '소득자 수', value: '1명' }),
         expect.objectContaining({ label: '지급총액 합계', value: '42,000,000원' }),
       ]),
     )
-    expect(summary.filledFormPreview.employees).toEqual([
+    expect(summary.directEntry.employees).toEqual([
       expect.objectContaining({
         employeeName: 'KimRep',
         workPeriodLabel: '2026-01-01 ~ 2026-06-30',
         grossPayKrw: 42_000_000,
-        residentIdStatus: '파일 생성 직전 일회성 입력',
+        recognizedBonusKrw: 0,
+        monthlyPay: H1_MONTHS.map((period) => ({
+          period,
+          label: `${Number(period.slice(5))}월`,
+          grossPayKrw: 7_000_000,
+        })),
       }),
     ])
   })
@@ -215,6 +215,7 @@ describe('buildSimplifiedWageEfilingSummary', () => {
     })
 
     expect(summary.validationItems.some((i) => i.ruleId === 'V-08')).toBe(false)
+    expect(summary.directEntry.employees).toHaveLength(0)
     expect(summary.hasBlockingDataIssues).toBe(true)
   })
 })

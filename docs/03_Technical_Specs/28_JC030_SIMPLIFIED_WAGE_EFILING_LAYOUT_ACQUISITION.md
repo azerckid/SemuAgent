@@ -1,16 +1,19 @@
 # JC-030 Slice 0a — 근로소득 간이지급명세서 전자신고 레이아웃 입수
 > Created: 2026-07-06 23:15 KST
-> Last Updated: 2026-07-10 16:01 KST
+> Last Updated: 2026-07-13
+
+> **현재 판정:** 이 문서는 고정길이 전산매체 규격의 과거 조사 기록이다. 공식 공개
+> 제출방법에서 비암호화 직접 업로드 양식을 확인하지 못했으므로 활성 제품 경로는
+> [Path 1b 직접작성 Brief](./30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md)다.
 
 ## 0. Flow Status
 
 ```text
 [Flow]
-현재: JC-030 Slice 1 — HWP 참조본 입수·필드 매핑·Pre-Code Brief 초안
-Gate: 부분 통과 (Brief 승인 전 · 코드 착수 금지 유지)
-완료: scratch 참조 HWP(2019·2021) · Field Mapping(29) · Pre-Code Brief(30)
-다음: Brief 사용자 승인 → 구현 슬라이스 1a(build-records)
-필요 확인: 제출 직전 홈택스 자료실 최신 HWP·정오표
+현재: 역사적 전산매체 조사 보존
+완료: scratch 참조 HWP(2019·2021) · Field Mapping(29) · 후보 builder
+판정: 공식 비암호화 직접 업로드 수용 미확인 → Path 1a 활성화 안 함
+활성 경로: Path 1b 홈택스 직접작성 값 정리
 ```
 
 라벨 — **[확실]** 공식 URL·게시판 확인 · **[추정]** 실무 블로그·2차 안내 · **[미확인]** SemuAgent 미다운로드 HWP 내부 필드 정의
@@ -91,8 +94,9 @@ JC-030 v1 1순위 후보는 **근로소득 간이지급명세서** 전자신고(
 - 제출 방법: https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=239045&mi=40990
 - 홈택스 바로가기(간이지급): https://www.hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=44&tm2lIdx=4401000000&tm3lIdx=4401100000
 
-홈택스 화면에 값을 옮겨 적는 방식도 SemuAgent 범위가 아니다. 현재 남은 Gate는
-암호화·별도 변환 없이 공식 비암호화 파일을 직접 수용하는 경로의 확인이다.
+홈택스 화면에 값을 옮겨 적는 **직접작성 값 정리**는 현재 SemuAgent Path 1b 범위다.
+다만 화면 캡처 기반 클릭별 튜토리얼, 자동 입력·제출은 범위가 아니다. 공식 비암호화
+파일 직접 수용 경로가 새로 확인되기 전까지 고정길이 후보 파일은 활성 UI에 노출하지 않는다.
 
 ## 5. File Format Overview (Pre-Code Brief 입력용)
 

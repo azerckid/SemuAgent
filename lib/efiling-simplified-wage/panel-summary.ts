@@ -1,17 +1,10 @@
 import type { PaymentStatementTone } from '@/lib/payment-statements/summary'
 import type { PaymentStatementSummary, ReportingContext } from '@/lib/payment-statements/summary'
-import { buildFileName, digitsOnly } from './format'
 import type { BuildSimplifiedWageInput, SubmitterKind, ValidationIssue } from './types'
 import { hasBlockingIssues } from './validate'
-import { pendingPiiIssue, pendingSubmissionMetaIssues, validateDataReadiness } from './validate-panel'
+import { validateDataReadiness } from './validate-panel'
 
 export type EfilingPanelTone = PaymentStatementTone
-
-export type EfilingFormatCheck = {
-  id: string
-  label: string
-  tone: EfilingPanelTone | 'muted'
-}
 
 export type EfilingValidationDisplayItem = {
   id: string
@@ -21,20 +14,26 @@ export type EfilingValidationDisplayItem = {
   ruleId?: ValidationIssue['ruleId']
 }
 
-export type EfilingFilledFormPreviewRow = {
+export type DirectEntryOverviewRow = {
   id: string
   label: string
   value: string
   note?: string
 }
 
-export type EfilingFilledFormEmployeeRow = {
+export type DirectEntryMonthValue = {
+  period: string
+  label: string
+  grossPayKrw: number
+}
+
+export type DirectEntryEmployeeRow = {
   employeeKey: string
   employeeName: string
   workPeriodLabel: string
+  monthlyPay: DirectEntryMonthValue[]
   grossPayKrw: number
   recognizedBonusKrw: number
-  residentIdStatus: string
 }
 
 export type SimplifiedWageEfilingSummary = {
@@ -42,22 +41,14 @@ export type SimplifiedWageEfilingSummary = {
   stats: {
     readyCount: number
     attentionCount: number
-    piiInputCount: number
     totalEmployees: number
   }
-  readyEmployees: Array<{ employeeKey: string; employeeName: string }>
-  activeStep: 1
-  formatChecks: EfilingFormatCheck[]
   validationItems: EfilingValidationDisplayItem[]
-  filledFormPreview: {
-    rows: EfilingFilledFormPreviewRow[]
-    employees: EfilingFilledFormEmployeeRow[]
+  directEntry: {
+    overview: DirectEntryOverviewRow[]
+    employees: DirectEntryEmployeeRow[]
   }
   hasBlockingDataIssues: boolean
-  fileNamePreview: string | null
-  businessRegistrationMasked: string | null
-  submitterKind: SubmitterKind | null
-  downloadAvailable: false
 }
 
 export type EfilingBusinessContext = {
@@ -72,12 +63,9 @@ function issueToDisplay(
   issue: ValidationIssue,
   employeeNameByKey: Map<string, string>,
 ): EfilingValidationDisplayItem {
-  const tone: EfilingPanelTone =
-    issue.severity === 'error' ? 'danger' : 'warn'
-
   return {
     id: `${issue.ruleId}:${issue.employeeKey ?? 'global'}:${issue.message}`,
-    tone,
+    tone: issue.severity === 'error' ? 'danger' : 'warn',
     message: issue.message,
     employeeName: issue.employeeKey ? employeeNameByKey.get(issue.employeeKey) : undefined,
     ruleId: issue.ruleId,
@@ -112,13 +100,11 @@ export function buildSimplifiedWageEfilingSummary(params: {
   const { paymentSummary, business, employees, missingPayrollMonths: missingMonths, submittedOn } = params
   const { context, simplified } = paymentSummary
 
-  const readyCount = simplified.filter((r) => r.status === 'ready').length
+  const readyCount = simplified.filter((row) => row.status === 'ready').length
   const attentionCount = simplified.length - readyCount
-  const piiInputCount = readyCount
+  const employeeNameByKey = new Map(simplified.map((row) => [row.employeeKey, row.employeeName]))
 
-  const employeeNameByKey = new Map(simplified.map((r) => [r.employeeKey, r.employeeName]))
-
-  const draftInput: BuildSimplifiedWageInput = {
+  const dataIssues = validateDataReadiness({
     year: context.year,
     half: context.half,
     submittedOn,
@@ -133,20 +119,15 @@ export function buildSimplifiedWageEfilingSummary(params: {
     contactPhone: '',
     employees,
     missingPayrollMonths: missingMonths,
-  }
-
-  const dataIssues = validateDataReadiness(draftInput)
-  const metaIssues = pendingSubmissionMetaIssues()
-  const piiIssue = pendingPiiIssue(readyCount)
+  })
 
   const validationItems: EfilingValidationDisplayItem[] = []
-
   for (const row of simplified) {
     if (row.status !== 'ready') {
       validationItems.push({
         id: `row:${row.employeeKey}`,
         tone: row.tone === 'danger' ? 'danger' : 'warn',
-        message: `${simplifiedStatusMessage(row.status)}`,
+        message: simplifiedStatusMessage(row.status),
         employeeName: row.employeeName,
         ruleId: 'V-07',
       })
@@ -158,94 +139,45 @@ export function buildSimplifiedWageEfilingSummary(params: {
     validationItems.push(issueToDisplay(issue, employeeNameByKey))
   }
 
-  if (piiIssue) {
-    validationItems.push(issueToDisplay(piiIssue, employeeNameByKey))
-  }
-
-  for (const issue of metaIssues) {
-    validationItems.push(issueToDisplay(issue, employeeNameByKey))
-  }
-
-  const regDigits = business.businessRegistrationNumber ? digitsOnly(business.businessRegistrationNumber) : ''
-  const structuralOk =
-    regDigits.length === 10 &&
-    business.businessName.trim().length > 0 &&
-    (business.representativeName?.trim().length ?? 0) > 0
-
-  if (structuralOk) {
-    validationItems.push({
-      id: 'structural:reg-period',
-      tone: 'ok',
-      message: '사업자등록번호·귀속기간 형식 — 문제 없음',
-    })
-  }
-
-  const formatChecks: EfilingFormatCheck[] = [
-    { id: 'target', label: '대상 세목: 근로소득 간이지급명세서 (반기)', tone: 'ok' },
-    {
-      id: 'period',
-      label: `귀속기간: ${context.halfRangeLabel} · 제출 주기 반기`,
-      tone: 'ok',
-    },
-    { id: 'layout', label: '공식 레이아웃 입수 경로 확정 (홈택스 자료실)', tone: 'ok' },
-    { id: 'mapping', label: '필드 매핑·Pre-Code Brief 확정', tone: 'ok' },
-    {
-      id: 'conformance',
-      label: '적합성 검정 전 — 「국세청 검증 완료」 표시 금지',
-      tone: 'muted',
-    },
-  ]
-
-  const fileNamePreview =
-    regDigits.length === 10 ? buildFileName(business.businessRegistrationNumber!) : null
-
-  const readyEmployees = simplified
-    .filter((r) => r.status === 'ready')
-    .map((r) => ({ employeeKey: r.employeeKey, employeeName: r.employeeName }))
-  const readyEmployeeKeys = new Set(readyEmployees.map((r) => r.employeeKey))
-  const filledEmployeeRows: EfilingFilledFormEmployeeRow[] = employees
-    .filter((emp) => readyEmployeeKeys.has(emp.employeeKey))
-    .map((emp) => ({
-      employeeKey: emp.employeeKey,
-      employeeName: emp.employeeName,
-      workPeriodLabel: `${formatYmd(emp.workPeriodStart)} ~ ${formatYmd(emp.workPeriodEnd)}`,
-      grossPayKrw: emp.grossPayKrw,
-      recognizedBonusKrw: emp.recognizedBonusKrw,
-      residentIdStatus: '파일 생성 직전 일회성 입력',
+  const readyEmployeeKeys = new Set(
+    simplified.filter((row) => row.status === 'ready').map((row) => row.employeeKey),
+  )
+  const directEntryEmployees: DirectEntryEmployeeRow[] = employees
+    .filter((employee) => readyEmployeeKeys.has(employee.employeeKey))
+    .map((employee) => ({
+      employeeKey: employee.employeeKey,
+      employeeName: employee.employeeName,
+      workPeriodLabel: `${formatYmd(employee.workPeriodStart)} ~ ${formatYmd(employee.workPeriodEnd)}`,
+      monthlyPay: context.halfMonths.map((period) => ({
+        period,
+        label: `${Number(period.slice(5))}월`,
+        grossPayKrw: employee.monthlyGrossPayKrw[period] ?? 0,
+      })),
+      grossPayKrw: employee.grossPayKrw,
+      recognizedBonusKrw: employee.recognizedBonusKrw,
     }))
-  const readyGrossPayTotal = filledEmployeeRows.reduce((sum, row) => sum + row.grossPayKrw, 0)
+  const grossPayTotal = directEntryEmployees.reduce((sum, row) => sum + row.grossPayKrw, 0)
 
   return {
     context,
     stats: {
       readyCount,
       attentionCount,
-      piiInputCount,
       totalEmployees: simplified.length,
     },
-    readyEmployees,
-    activeStep: 1,
-    formatChecks,
     validationItems,
-    filledFormPreview: {
-      rows: [
-        { id: 'file-name', label: '파일명', value: fileNamePreview ?? '사업자등록번호 확인 필요' },
-        { id: 'tax-type', label: '신고 양식', value: '근로소득 간이지급명세서' },
+    directEntry: {
+      overview: [
+        { id: 'form', label: '작성 화면', value: '간이지급명세서(근로소득) 직접작성' },
         { id: 'period', label: '귀속기간', value: context.halfRangeLabel },
-        { id: 'submitted-on', label: '작성 기준일', value: formatYmd(submittedOn) },
         { id: 'business-number', label: '사업자등록번호', value: business.maskedBusinessRegistrationNumber ?? '설정 필요' },
         { id: 'business-name', label: '상호', value: business.businessName || '설정 필요' },
         { id: 'representative-name', label: '대표자', value: business.representativeName || '설정 필요' },
-        { id: 'employee-count', label: '소득자 수', value: `${filledEmployeeRows.length}명`, note: '준비 완료 직원만 파일에 포함' },
-        { id: 'gross-pay-total', label: '지급총액 합계', value: `${readyGrossPayTotal.toLocaleString('ko-KR')}원` },
-        { id: 'obligor-id', label: '원천징수의무자 식별번호', value: '파일 생성 직전 일회성 입력', note: 'DB 저장 안 함' },
+        { id: 'employee-count', label: '소득자 수', value: `${directEntryEmployees.length}명`, note: '준비 완료 직원' },
+        { id: 'gross-pay-total', label: '지급총액 합계', value: `${grossPayTotal.toLocaleString('ko-KR')}원` },
       ],
-      employees: filledEmployeeRows,
+      employees: directEntryEmployees,
     },
     hasBlockingDataIssues: hasBlockingIssues(dataIssues) || attentionCount > 0,
-    fileNamePreview,
-    businessRegistrationMasked: business.maskedBusinessRegistrationNumber,
-    submitterKind: business.submitterKind,
-    downloadAvailable: false,
   }
 }

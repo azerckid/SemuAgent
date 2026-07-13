@@ -149,9 +149,11 @@ Non-goals before done:
 
 Type: 공통 검증 + Path 1a 공식 비암호화 업로드 파일 또는 Path 1b 직접입력 정리. 암호화 파일은 범위 밖.
 
-Current gate: **JC-030 epic is in progress.** The simplified-wage tax-type v1
-(Slices 1a–2a, 3) is implemented on main as the first Path 1a form, but that does
-not complete the JC-030 epic or Path 1a beta. Reconciliation Phase 2 and the VAT
+Current gate: **JC-030 epic is in progress.** Simplified wage and withholding now
+satisfy the Path 1b completion line. Simplified wage's historical fixed-width
+candidate did not prove direct non-encrypted Hometax acceptance, so its file/PII/
+download UI was retired and replaced with the direct-entry value screen on
+2026-07-13. This does not complete the JC-030 epic or Path 1a beta. Reconciliation Phase 2 and the VAT
 confirmed-ledger gate/provenance foundation are complete. The withholding W0 audit
 confirms **no official non-encrypted upload form**: official NTS guidance exposes
 Hometax direct entry or an accounting-program conversion file with password input,
@@ -178,20 +180,21 @@ screenshot-by-screenshot click tutorial and automatic navigation are excluded.
 | Layer | Filing Path | Status |
 |---|---|---|
 | **Validation** | Path 1 & 2 공통 | Implemented for simplified wage; repeated per tax type |
-| **Path 1a** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | In progress — simplified wage form implemented; withholding no form, VAT Stage A is the 1a upgrade check |
-| **Path 1b** | 공식 양식 없을 때 확정값과 신고 메뉴·화면·행/칸 위치를 함께 제공 | 원천세: **구현 완료(2026-07-12)**. 부가세: **Mapping·Preview 오너 승인 완료, Pre-Code Brief·runtime 대기**. 나머지 양식 미확인 세목: 대상 결정·화면 구현 대기 (`blocked` 없음) |
+| **Path 1a** | 홈택스가 직접 수용하는 공식 비암호화 양식·파일 작성 | 확인된 완료 세목 없음; VAT Stage A 등은 승격용 조사 |
+| **Path 1b** | 공식 양식 없을 때 확정값과 신고 메뉴·화면·행/칸 위치를 함께 제공 | 간이지급명세서 **완료(2026-07-13)**, 원천세 **완료(2026-07-12)**. 부가세: Mapping·Preview 오너 승인 완료, Pre-Code Brief·runtime 대기 |
 | **Path 2** | 세무사무소 handoff ZIP | Deferred until full Path 1 beta (1a + 1b) |
 | **Path 3** | 인증·암호화 업로드 파일 | Excluded from current product scope |
 
 #### Validation — 공통 검증 (Path 1 & 2)
 
-Current state: `lib/efiling-simplified-wage` on main — layout validation, non-encrypted candidate build, tests.
+Current state: `lib/efiling-simplified-wage` on main — direct-entry readiness,
+monthly/half totals and historical layout-validation assets.
 
 Done means:
 
-- For at least one approved tax type (간이지급명세서 v1), SemuAgent validates confirmed data against the official layout before Path 1 download; later Path 2 ZIP export reuses this validation.
-- Validation covers required fields, totals, period, and format; errors/warnings are shown.
-- PII follows one-time non-storage policy; tests cover validation, PII non-persistence, tenant isolation.
+- SemuAgent validates confirmed data against the applicable Path 1a layout or Path 1b field mapping.
+- Validation covers required fields, totals, period, tenant scope and tax-type-specific blockers.
+- PII is not persisted; current simplified-wage Path 1b does not collect it at all.
 
 Remaining:
 
@@ -200,10 +203,10 @@ Remaining:
 
 #### Path 1a — 홈택스 업로드용 양식·파일 작성 지원 (양식 있을 때)
 
-Current state: simplified-wage non-encrypted file candidate, form-fill preview
-and Hometax upload guide are on main. Withholding retains Slice 1a validation
-assets but has no confirmed official form, so it is assigned to Path 1b (1b screen
-implemented, see below). VAT Stage A found official conversion flows for some schedules, but not a
+Current state: no tax type has completed the Path 1a operational acceptance line.
+Simplified wage and withholding retain historical validation assets but have no
+confirmed official non-encrypted directly accepted form, so both are assigned to
+Path 1b. VAT Stage A found official conversion flows for some schedules, but not a
 complete official non-encrypted whole-return template or verified direct-acceptance
 route, so VAT is assigned to Path 1b (Mapping·Preview complete, runtime pending) while Stage A stays a 1a
 upgrade check. Other ordered tax types generate a Path 1a file only when their own
@@ -223,9 +226,8 @@ Done means (Path 1a, per tax type v1):
 - A representative file passes Hometax/Witax non-encrypted upload validation;
   implementation without this operational verification remains open.
 
-Path 1a beta means simplified wage and one additional compatible tax type satisfy
-the per-tax 1a completion line above. Withholding has no confirmed form, so the
-next tax type whose Stage A confirms a form becomes the beta companion. VAT is the
+Path 1a beta means at least two compatible tax types satisfy the per-tax 1a
+completion line above. VAT is the
 current Stage A track. JC-030 planned-matrix decision close means withholding, VAT,
 local-income special collection, business-status report, and annual payment
 statement each either satisfy the per-tax 1a completion line or are assigned to
@@ -234,8 +236,12 @@ Path 1b with official Stage A evidence that no form exists. No tax type ends as
 
 #### Path 1b — 직접입력 `항목 = 값` 정리 (양식 없을 때)
 
-Current state: **withholding done, VAT UI-First in progress.** Withholding and VAT are both
-assigned to Path 1b because no official form is confirmed. Withholding's 1b
+Current state: **simplified wage and withholding done, VAT UI-First in progress.**
+Simplified wage, withholding and VAT are assigned to Path 1b because no official
+form is confirmed. Simplified wage shows the current Hometax direct-entry path,
+business/period values and employee-level work period, six monthly pay amounts,
+gross total and recognized bonus. It does not collect identifiers or expose a
+file generator. Withholding's 1b
 `항목 = 값` value-summary screen shipped 2026-07-12
 (`/dashboard/filing-support`, `WithholdingEfilingPanel`) — it shows A01
 employee count/gross pay/income tax plus a local income tax reference value,
@@ -255,7 +261,7 @@ Done means (Path 1b, per tax type):
 - 신고 양식(해당 시 화면 명칭), 귀속기간, 사업자, 합계가 화면에 표시된다.
 - tenant/business/period isolation과 PII 비저장이 유지된다.
 
-Withholding satisfies this line (2026-07-12). VAT does not yet because the
+Simplified wage (2026-07-13) and withholding (2026-07-12) satisfy this line. VAT does not yet because the
 approved runtime screen and its scoped read model are not implemented.
 
 #### Path 3 — 인증·암호화 파일 (excluded)
