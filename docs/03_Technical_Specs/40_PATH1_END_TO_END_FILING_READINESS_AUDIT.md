@@ -1,6 +1,6 @@
 # Path 1 End-to-End Filing Readiness Audit
 > Created: 2026-07-07 23:29 KST
-> Last Updated: 2026-07-13 KST
+> Last Updated: 2026-07-14 KST
 
 ## 0. Purpose
 
@@ -24,17 +24,20 @@ value, but does not build a file generator (B~G), screenshot-by-screenshot click
 tutorial or automatic navigation.
 Encrypted electronic-file generation stays out of scope, and no tax type ends
 as `blocked` — a tax type without an official form is **assigned to Path 1b**.
-Path 1b is a decided routing outcome. As of 2026-07-13 the simplified-wage and withholding 1b
-value-summary screens are **implemented**; the VAT 1b Mapping and HTML Preview are
-project-owner approved, while the Pre-Code Brief and runtime implementation are pending.
+Path 1b is a decided routing outcome. As of 2026-07-14 the simplified-wage,
+withholding and VAT 1b value-summary screens are **implemented**. Local income
+is a Path 1a candidate waiting for its authenticated WETAX workbook. Annual wage
+statement Stage A is complete and assigns the tax type to Path 1b, but Stage B
+field/canonical-data mapping is pending. Business-status reporting is a
+conditional track for VAT-exempt sole proprietors, not the common next step.
 
 ## 1. Current Answer
 
 The common data-preparation foundation is now complete through Reconciliation
 Ledger Phase 2. No tax type has completed Path 1a official direct-acceptance;
 tax types without a confirmed official form are **assigned to Path 1b**
-(direct-entry value summary) rather than being blocked. Simplified-wage and withholding 1b screens
-is implemented; VAT's 1b UI-First Gate is complete and runtime is pending.
+(direct-entry value summary) rather than being blocked. Simplified-wage,
+withholding and VAT 1b screens are implemented.
 
 | Step | Current state | Evidence | Remaining gap |
 |:---|:---|:---|:---|
@@ -46,7 +49,7 @@ is implemented; VAT's 1b UI-First Gate is complete and runtime is pending.
 | 세목별 신고 준비 데이터 | Live for core tracks | VAT, payroll/withholding, payment statements, local income, business status read models | A ready data screen is the Path 1b endpoint; Path 1a additionally needs an official upload file |
 | 입력할 값 확인 | Live for simplified wage, withholding and VAT | `lib/efiling-simplified-wage`, `lib/efiling-withholding`, `lib/vat/hometax-input-summary.ts` | All three are Path 1b; VAT Path 1a form is a Stage A upgrade only |
 | 홈택스 업로드용 파일 (Path 1a) | 완료 세목 없음 | official form and direct acceptance required | Historical simplified-wage candidate API is not exposed as an active product output |
-| 홈택스 직접입력 정리 (Path 1b) | **Live for simplified wage, withholding and VAT** | 확정값 + 메뉴 경로·화면명·행/칸 위치 매핑 | Local income, business status and annual statement remain pending |
+| 홈택스 직접입력 정리 (Path 1b) | **Live for simplified wage, withholding and VAT** | 확정값 + 메뉴 경로·화면명·행/칸 위치 매핑 | Annual wage statement Stage B mapping is next; business status is conditional |
 | 최종 제출 | User only | Product Baseline, Roadmap 36 | Auto-submit and credential storage remain excluded |
 
 The useful status is therefore qualitative, not a single percentage:
@@ -60,8 +63,9 @@ The useful status is therefore qualitative, not a single percentage:
   withholding and VAT value-summary screens are **implemented**.
 - **Path 1 beta:** Path 1a beta is not complete until at least two tax types pass
   the full non-encrypted upload-file verification line;
-  encrypted fallback is never used. Path 1b coverage next needs local-income
-  special collection, business-status and annual-statement screens.
+  encrypted fallback is never used. Local income is a Path 1a candidate waiting
+  for its official workbook. Path 1b coverage next needs annual-wage Stage B
+  mapping before any screen; business status stays conditional.
 - **Planned Path 1a matrix:** not complete until the remaining ordered tax types
   each either pass the 1a completion line or are assigned to 1b with the 1b screen built.
 
@@ -149,15 +153,15 @@ The following remain explicitly deferred, not hidden Phase 2 work:
 
 These are added only if a target tax-type file proves they are required.
 
-### 5.2 Form-Fill Preview Exists For One Complete Tax Type
+### 5.2 Direct-Entry Screens Establish The Path 1b Pattern
 
 Simplified wage shows the repeatable pattern:
 
-- official form name and period;
+- official Hometax direct-entry route and period;
 - business identity and target employees;
-- totals and validation;
-- one-time PII input status;
-- generated-file and Hometax upload boundary.
+- employee-level monthly pay, totals and validation;
+- identifiers remain a Hometax direct-entry responsibility;
+- no generated file, PII input form or conversion-upload claim.
 
 Withholding keeps the preparation/validation panel and is assigned to Path 1b:
 official guidance exposes Hometax direct entry or password-based accounting-program
@@ -166,9 +170,13 @@ aggregate is shown as a `항목 = 값` direct-entry summary instead of a generat
 file — **that 1b screen is live.** VAT Stage A has confirmed
 some schedule-level file conversion flows but not an official non-encrypted
 whole-return template or verified direct-acceptance route, so VAT is assigned to
-Path 1b (Mapping·Preview·runtime complete) while Path 1a stays a Stage A upgrade. Local income,
-business status and annual statements are likewise assigned to Path 1b and add
-Path 1a files only when their own Stage A confirms an official form.
+Path 1b (Mapping·Preview·runtime complete) while Path 1a stays a Stage A upgrade.
+Local income is not assigned to 1b because WETAX documents an official Excel
+upload route; the original workbook still requires authenticated access.
+Annual wage statement is assigned to 1b after its Stage A audit, but its current
+read model lacks the complete deduction, tax-credit and determined-tax fields,
+so Stage B mapping precedes any Preview/runtime. Business status is conditional
+on a VAT-exempt sole-proprietor eligibility gate.
 
 ### 5.3 File Verification Must Be Part Of Path 1a Done
 
@@ -203,12 +211,21 @@ The authoritative sequence and completion lines are in
 4. **If VAT Stage A confirms a form, complete VAT Path 1a B~G.**
    - Reuse the completed Phase 2 gate and provenance source of truth.
    - Limit the 1a claim to the exact return or schedule files officially supported.
-5. **If VAT Stage A finds no form, VAT stays on Path 1b and the next Stage A moves
-   to local-income special collection.**
-6. **Repeat per tax type: build the Path 1b screen, add Path 1a via Stage A~G when
-   an official form is confirmed, for local-income special collection, business-status
-   report and annual payment statement.**
-7. **Run Path 1a beta after two compatible tax types satisfy the per-tax 1a
+5. **Local-income special collection — Path 1a candidate, external wait.**
+   - The official WETAX Excel upload route is confirmed.
+   - Do not infer workbook columns or build a generator before the authenticated
+     original `B070101-02.xlsx` is acquired and hashed.
+6. **Annual wage statement — Stage A done, Stage B next.**
+   - Official guidance confirms direct entry or own-program transformation, not
+     an official non-encrypted upload form; route the tax type to Path 1b.
+   - Map every statutory/Hometax field to a canonical source, explicit user
+     entry, Hometax check or v1 exclusion before producing a Preview.
+   - Do not derive deductions, taxable base, determined tax or refund/additional
+     collection from annual gross pay and withheld tax.
+7. **Business-status report — conditional follow-up.**
+   - Start only after a VAT-exempt sole-proprietor eligibility gate and target
+     fixture exist; hide it from ineligible businesses.
+8. **Run Path 1a beta after two compatible tax types satisfy the per-tax 1a
    completion line; simplified wage and withholding Path 1b are already live.**
 
 Path 2, encrypted Path 3, screenshot-by-screenshot direct-entry tutorials and
@@ -221,8 +238,8 @@ automatic submission do not interrupt this sequence.
 | Reconciliation Phase 2 | Brief 41 §9 complete and VAT gate/provenance consumers implemented — **done** |
 | One tax type (Path 1a) | Roadmap 36 §2.1 all conditions pass |
 | Path 1a beta | Two compatible tax types pass official non-encrypted upload verification and beta flow |
-| Path 1b coverage | Every tax type without a confirmed form is assigned to Path 1b and its `항목 = 값` direct-entry summary screen is built. Simplified wage·withholding·VAT — **done**. Local income, business status, annual statement — pending. No tax type ends `blocked` |
-| Planned tax matrix decision | Withholding, VAT, local income, business status and annual statement each pass §2.1 (Path 1a) or are assigned to Path 1b with official Stage A evidence that no form exists |
+| Path 1b coverage | Every applicable tax type without a confirmed form is assigned to Path 1b and its `항목 = 값` direct-entry summary screen is built. Simplified wage·withholding·VAT — **done**. Annual wage — Stage B pending. Business status — conditional. Local income — Path 1a candidate. No applicable tax type ends `blocked` |
+| Planned tax matrix decision | Withholding and VAT are live Path 1b; local income is a Path 1a candidate awaiting the original workbook; annual wage is assigned to Path 1b with Stage B pending; business status requires an applicability gate before its Stage A |
 | Path 2 restart | Full Path 1 beta (1a files + 1b summary screens) is stable and a new UI-First Gate is approved |
 
 ## 8. Documentation Sync
@@ -245,4 +262,6 @@ Related:
 - [VAT Confirmed-Ledger Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md)
 - [Withholding W0 Final Audit](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md)
 - [VAT Stage A Audit](./43_JC030_VAT_NONENCRYPTED_UPLOAD_TEMPLATE_AUDIT.md)
+- [Local Income Tax Stage A Audit](./54_JC030_LOCAL_INCOME_TAX_UPLOAD_TEMPLATE_ACQUISITION.md)
+- [Annual Wage Statement Stage A Audit](./55_JC030_ANNUAL_WAGE_STATEMENT_STAGE_A_AUDIT.md)
 - [Filing Support QA](../05_QA_Validation/07_FILING_SUPPORT_TEST_SCENARIOS.md)

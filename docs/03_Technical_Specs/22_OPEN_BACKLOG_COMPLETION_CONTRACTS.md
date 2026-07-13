@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-13 KST
+> Last Updated: 2026-07-14 KST
 
 ## 0. Purpose
 
@@ -166,6 +166,11 @@ Path 1b**. Its legal-row field mapping, HTML Preview, Pre-Code Brief and runtime
 read model/screen are implemented and verified (2026-07-13). VAT
 Stage A remains an optional Path 1a upgrade check for the official non-encrypted
 whole-return template and direct-acceptance path. No tax type ends as `blocked`.
+Local-income special collection is a Path 1a candidate waiting for the
+authenticated WETAX workbook. Annual wage statement Stage A confirms the
+direct-entry/own-program conversion routes and assigns it to Path 1b; Stage B
+must map the complete statutory fields and canonical-data gaps before any UI.
+Business-status reporting is conditional on VAT-exempt sole-proprietor eligibility.
 The fixed order and completion lines are in
 [Path 1 Roadmap §§2–4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
@@ -209,8 +214,9 @@ confirmed official non-encrypted directly accepted form, so both are assigned to
 Path 1b. VAT Stage A found official conversion flows for some schedules, but not a
 complete official non-encrypted whole-return template or verified direct-acceptance
 route, so VAT is assigned to Path 1b (Mapping·Preview·runtime complete) while Stage A stays a 1a
-upgrade check. Other ordered tax types generate a Path 1a file only when their own
-Stage A confirms a form.
+upgrade check. Local income is the first Path 1a candidate, but its authenticated
+official workbook is not yet acquired. Other applicable tax types generate a
+Path 1a file only when their own Stage A confirms a form.
 
 Done means (Path 1a, per tax type v1):
 
@@ -227,16 +233,17 @@ Done means (Path 1a, per tax type v1):
   implementation without this operational verification remains open.
 
 Path 1a beta means at least two compatible tax types satisfy the per-tax 1a
-completion line above. VAT is the
-current Stage A track. JC-030 planned-matrix decision close means withholding, VAT,
-local-income special collection, business-status report, and annual payment
-statement each either satisfy the per-tax 1a completion line or are assigned to
-Path 1b with official Stage A evidence that no form exists. No tax type ends as
-`blocked`. The implementation order is fixed in [Roadmap §4](./36_PATH1_FORM_FILL_ROADMAP.md).
+completion line above. Local income is the current external-wait Path 1a track.
+JC-030 planned-matrix decision close means withholding, VAT and annual wage
+statement have their applicable 1a/1b completion lines satisfied, local income
+either completes 1a or is re-audited if the official workbook cannot be acquired,
+and business status is completed only for eligible VAT-exempt sole proprietors.
+No applicable tax type ends as `blocked`. The implementation order is fixed in
+[Roadmap §4](./36_PATH1_FORM_FILL_ROADMAP.md).
 
 #### Path 1b — 직접입력 `항목 = 값` 정리 (양식 없을 때)
 
-Current state: **simplified wage and withholding done, VAT UI-First in progress.**
+Current state: **simplified wage, withholding and VAT done. Annual wage Stage B pending.**
 Simplified wage, withholding and VAT are assigned to Path 1b because no official
 form is confirmed. Simplified wage shows the current Hometax direct-entry path,
 business/period values and employee-level work period, six monthly pay amounts,
@@ -247,11 +254,12 @@ file generator. Withholding's 1b
 employee count/gross pay/income tax plus a local income tax reference value,
 and the panel copy was rewritten from 1a-pending framing (binary layout
 wait, conversion-upload guide, disabled download) to the confirmed 1b
-framing. VAT's legal-row field mapping and separate HTML Preview are
-project-owner approved; the Pre-Code Brief and runtime value-summary screen remain pending.
-The underlying confirmed VAT facts already exist in the validation read models. Any tax type
-without a confirmed official form is assigned to Path 1b instead of being
-blocked.
+framing. VAT's legal-row field mapping, HTML Preview, Pre-Code Brief, scoped
+read model and runtime value-summary screen are implemented and browser-verified.
+Annual wage statement is assigned to Path 1b, but its current read model lacks
+the complete deduction, tax-credit and determined-tax fields. Its Stage B
+mapping must close those gaps before Preview/runtime. Any applicable tax type
+without a confirmed official form is assigned to Path 1b instead of being blocked.
 
 Done means (Path 1b, per tax type):
 
@@ -261,8 +269,9 @@ Done means (Path 1b, per tax type):
 - 신고 양식(해당 시 화면 명칭), 귀속기간, 사업자, 합계가 화면에 표시된다.
 - tenant/business/period isolation과 PII 비저장이 유지된다.
 
-Simplified wage (2026-07-13) and withholding (2026-07-12) satisfy this line. VAT does not yet because the
-approved runtime screen and its scoped read model are not implemented.
+Simplified wage (2026-07-13), withholding (2026-07-12) and VAT (2026-07-13)
+satisfy this line. Annual wage statement does not yet; Stage A is complete and
+Stage B field/canonical-data mapping is next.
 
 #### Path 3 — 인증·암호화 파일 (excluded)
 

@@ -127,6 +127,11 @@ Data Contract·Derivation·Mutation·Acceptance를 검증 케이스로 옮긴다
 확인되어 첫 Path 1a 후보가 됐다. 다만 로그인 원본을 입수하지 않았으므로 아래 지방소득세
 전용 원본·매핑·수용 시나리오를 통과하기 전에는 Preview나 generator를 구현하지 않는다.
 
+근로소득 지급명세서는 국세청 공식 안내에서 직접작성 또는 자체 프로그램 변환제출만
+확인되어 Path 1b 대상으로 판정됐다. 현재 연말정산 read model은 전체 법정 필드를
+보유하지 않으므로, 아래 Stage B 시나리오를 통과하기 전 Preview/runtime을 만들지 않는다.
+사업장현황신고는 면세 개인사업자 조건부 시나리오로 후순위에 둔다.
+
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
 | S-90 | 공식 비암호화 업로드 양식 | 구현 착수 | 출처·버전·적용일·파일 형식·양식 구조·홈택스 직접 수용 메뉴가 문서화되지 않으면 generator 코드를 시작하지 않음 | Pending |
@@ -169,6 +174,11 @@ Path 1b는 파일 generator·자동입력·자동제출을 만들지 않는다.
 | S-1B12 | 소득자 식별정보 | 간이지급 Path 1b 렌더 | 앱 입력란 없이 `홈택스에서 직접 입력`으로 표시하고 DB/API로 전송하지 않음 | PASS·정적 |
 | S-1B13 | 2026년 7월, `period` 미지정 | 지급명세서 진입 | 진행 중인 하반기가 아니라 최근 완료 반기인 `2026-H1`을 기본 선택 | PASS·단위/브라우저 |
 | S-1B14 | 2026년 7월, `?period=2026-H2`, 7월 급여만 존재 | 지급명세서·Path 1b 렌더 | 8~12월을 누락으로 세지 않고 `기간 진행 중`으로 표시하며 확인 필요 0명·직접작성 값 0명으로 분리 | PASS·단위/브라우저 |
+| S-1B-AW0 | 국세청 2025 원천징수의무자 신고안내·주요서식 | 근로소득 지급명세서 Stage A 감사 | 직접작성·자체 프로그램 변환제출·법정 HWP를 구분하고, 공식 비암호화 업로드 양식 미확인으로 Path 1b 판정 | PASS·문서 |
+| S-1B-AW1 | 근로소득 지급명세서 법정/홈택스 필드 전체 | Stage B Field Mapping | 각 필드가 canonical source·명시적 사용자 입력·홈택스 확인·v1 제외 중 하나로 빠짐없이 분류 | Pending |
+| S-1B-AW2 | 공제·과세표준·결정세액·환급/추징 정본 없음 | Stage B 또는 후속 read model | 연간 지급액·기납부세액에서 역산하거나 0으로 채우지 않고 blocker로 표시 | Pending |
+| S-1B-AW3 | Stage B를 통과한 근로소득 지급명세서 직접입력 모델 | Preview/runtime 렌더 | 동일 tenant·사업장·연도의 같은 정본에서 입력 위치·값을 표시하고 주민등록번호·변환파일·자동제출을 저장/생성하지 않음 | Pending |
+| S-1B-BS0 | 일반 과세 개인사업자 또는 법인 | 사업장현황신고 진입·navigation | 비대상 사업자에게 메뉴·미완료 badge·신고 blocker를 노출하지 않음 | Pending |
 
 ## 3. 자동화 계획
 
@@ -177,13 +187,13 @@ Path 1b는 파일 generator·자동입력·자동제출을 만들지 않는다.
 - **API 구현 완료**: receipt metadata upload/delete, checklist toggle, tenant/staff guard(S-40~43, S-50~53). 실제 Blob 저장 환경은 JC-014에서 검증 완료.
 - **브라우저 수동 검증 완료**: `/dashboard/filing-support?period=2026-H1` 로그인 렌더와 승인 Preview 구조를 확인.
 - **후속 E2E**: JC-014에서 실제 Blob·AI 파싱·정규화 저장은 통과했다. 실제 홈택스/EDI 접수증 파일 포맷별 업로드는 별도 fixture 확보 후 검증한다.
-- **Path 1a 파일 후속**: 간이지급명세서와 원천세는 공식 비암호화 업로드 양식을 확인하지 못해 Path 1b 화면을 구현했다. 간이지급의 과거 고정길이 후보 생성 UI는 제거했다. 부가세도 Path 1b Mapping·Preview·Pre-Code·runtime·browser 검증을 완료했다. 지방소득세 특별징수는 위택스 공식 `B070101-02.xlsx` 엑셀파일신고가 확인된 첫 Path 1a 후보이며, S-1A-LI1~LI3 통과 전에는 generator를 시작하지 않는다. Stage A가 양식을 확인한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1a `done`으로 표시하지 않는다. 1a가 없는 세목은 §2.11 Path 1b 시나리오로 검증한다. 어떤 세목도 `blocked`로 두지 않는다.
+- **Path 1a 파일 후속**: 간이지급명세서와 원천세는 공식 비암호화 업로드 양식을 확인하지 못해 Path 1b 화면을 구현했다. 간이지급의 과거 고정길이 후보 생성 UI는 제거했다. 부가세도 Path 1b Mapping·Preview·Pre-Code·runtime·browser 검증을 완료했다. 지방소득세 특별징수는 위택스 공식 `B070101-02.xlsx` 엑셀파일신고가 확인된 첫 Path 1a 후보이며, S-1A-LI1~LI3 통과 전에는 generator를 시작하지 않는다. 근로소득 지급명세서는 Path 1b 대상이지만 S-1B-AW1~AW2를 통과하기 전 화면을 만들지 않는다. 사업장현황신고는 S-1B-BS0 대상성 gate가 선행한다. Stage A가 양식을 확인한 정확한 파일 범위에만 S-91~S-99를 적용하며, S-98 전에는 어떤 세목도 Path 1a `done`으로 표시하지 않는다. 1a가 없는 세목은 §2.11 Path 1b 시나리오로 검증한다. 어떤 적용 세목도 `blocked`로 두지 않는다.
 
 ## 4. Related Documents
 
 - **UI_Screens**: [Filing Support Prototype Review](../02_UI_Screens/07_FILING_SUPPORT_PROTOTYPE_REVIEW.md) · [HTML Preview](../02_UI_Screens/previews/05_filing_support.html)
 - **Technical_Specs**: [Filing Support Pre-Code Brief](../03_Technical_Specs/09_FILING_SUPPORT_PRE_CODE_BRIEF.md) · [DB Schema](../03_Technical_Specs/03_DB_SCHEMA.md) · [Component & Library Plan](../03_Technical_Specs/02_COMPONENT_LIBRARY_PLAN.md)
 - **Technical_Specs**: [VAT Pre-Code Brief](../03_Technical_Specs/07_VAT_PRE_CODE_BRIEF.md) · [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md)
-- **Technical_Specs**: [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [Withholding Pre-Code Brief](../03_Technical_Specs/39_JC030_WITHHOLDING_EFILING_PRE_CODE_BRIEF.md) · [Path 1 E2E Audit](../03_Technical_Specs/40_PATH1_END_TO_END_FILING_READINESS_AUDIT.md)
+- **Technical_Specs**: [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [Withholding Pre-Code Brief](../03_Technical_Specs/39_JC030_WITHHOLDING_EFILING_PRE_CODE_BRIEF.md) · [Path 1 E2E Audit](../03_Technical_Specs/40_PATH1_END_TO_END_FILING_READINESS_AUDIT.md) · [Annual Wage Stage A Audit](../03_Technical_Specs/55_JC030_ANNUAL_WAGE_STATEMENT_STAGE_A_AUDIT.md)
 - **Logic_Progress**: [Backlog](../04_Logic_Progress/00_BACKLOG.md) - JC-013 Context Lock
 - **QA_Validation**: [VAT Test Scenarios](./05_VAT_TEST_SCENARIOS.md) · [Payroll Test Scenarios](./06_PAYROLL_TEST_SCENARIOS.md) - 선행 화면 QA 패턴
