@@ -947,7 +947,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-042 · 제품 목적 기준 UI 정합화
 
-- Status: `doing` (Slices A-C 구현 완료 · Slice D1-D2 완료 · D3 대기)
+- Status: `done` (Slices A-D 구현 완료)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접사용·자가신고 보조 목적.
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [회사 설정 Preview](../02_UI_Screens/previews/16_company_settings.html) · [공통 신고 패턴 Review](../02_UI_Screens/17_SHARED_FILING_PATTERNS_PROTOTYPE_REVIEW.md) - 실제 업무 화면과 Preview 검토 자료의 경계.
 - Related HTML Preview: [17_shared_filing_patterns.html](../02_UI_Screens/previews/17_shared_filing_patterns.html) - blocker·기간·홈택스/위택스 안내 공통 패턴 오너 확인 화면.
@@ -974,7 +974,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] Slice D Preview 오너 확인.
   - [x] Slice D1 `ActionBlockerList` 공통화와 네 화면 적용.
   - [x] Slice D2 `PeriodContextControl` 공통화와 지원 화면 적용.
-  - [ ] Slice D3 `FilingPortalGuide` 공통화와 홈택스·위택스 안내 수준 정렬.
+  - [x] Slice D3 `FilingPortalGuide` 공통화와 홈택스·위택스 안내 수준 정렬.
 - Document Sync Check (2026-07-14): 전체 UI 감사 결과를 한 번에 섞지 않고 사용자 영향과 위험 순서대로 4개 Slice로 고정했다. 첫 PR은 표시 계층 정리만 수행하며 DB·API·세무 계산·자료대조 mutation을 변경하지 않는다.
 - Document Sync Check (2026-07-14, Slice B): 자료대조원장에 서버가 지원하는 월·분기·반기 전환과 이전·다음 이동, 현재 탭 내 검색, 중복 의심 탭을 연결했다. 중복은 동일 출처·방향·날짜·금액·정규화 거래처·적요가 모두 같은 경우에만 표시하며 자동 제외하지 않는다. 사용자는 별도 거래 확인 감사 메모 또는 현재 행 중복 제외를 선택하고, 미해결 중복 수는 자료대조원장과 신고 준비가 공유하는 Path 1 gate에 포함한다.
 - Document Sync Check (2026-07-14, Slice C UI-First): 인증 후 회사 홈 진입, 온보딩의 기술 식별자 제거, 설정의 회사 정보·사용자 관리 2탭, 업무메일·다사업장 배정 비노출을 Preview 16과 Brief 60에 고정했다. 물리 `client`·`staff`·mailbox와 기존 API는 runtime 구현에서도 보존한다.
@@ -983,6 +983,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-14, Slice D owner approval): Preview 17의 정보 밀도·기간 위치·홈택스/위택스 정보 순서·위택스 원본 미입수 표현·모바일 적층을 승인했다. runtime은 Brief 61의 D1 → D2 → D3 순서로 분리한다.
 - Document Sync Check (2026-07-14, Slice D1): 표시 전용 `ActionBlockerList`를 추가해 신고 준비 허브·지급명세서·지방소득세·사업장현황신고의 중복 blocker DOM을 교체했다. 원본 blocker 계산·CTA 목적지·DB/API는 변경하지 않았고, 빈 목록 숨김과 모바일 CTA 적층을 공통 계약으로 고정했다.
 - Document Sync Check (2026-07-14, Slice D2): 표시 전용 `PeriodContextControl`을 추가해 신고 준비 허브·지급명세서·지방소득세·사업장현황신고·연말정산의 Topbar 기간 표시를 통일했다. 기존 도메인 resolver가 최신 허용 기간을 결정하고, 별도 순수 URL 어댑터가 실제 href만 전달하므로 공통 컴포넌트는 기간을 추정하거나 라우팅 상태를 만들지 않는다.
+- Document Sync Check (2026-07-14, Slice D3): 표시 전용 `FilingPortalGuide`를 추가해 원천세 홈택스 직접작성 안내와 지방소득세 위택스 안내를 `대상 세목 → 준비값 → 사용자 행동 → 포털 이동` 순서로 통일했다. 위택스는 공식 Excel 원본 미입수 사실에 따라 `source_pending`을 유지하며 파일 다운로드·업로드 가능·검증 완료로 표시하지 않는다. DB·API·세액 계산·신고 gate는 변경하지 않았다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

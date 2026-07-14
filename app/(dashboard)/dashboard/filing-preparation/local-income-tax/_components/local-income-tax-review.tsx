@@ -1,6 +1,10 @@
 import Link from 'next/link'
 import type { LocalIncomeTaxRow, LocalIncomeTaxSummary, LocalIncomeTaxTone } from '@/lib/local-income-tax/summary'
 import { ActionBlockerList } from '../../_components/action-blocker-list'
+import {
+  FilingPortalGuide,
+  type FilingPortalGuideItem,
+} from '../../_components/filing-portal-guide'
 import { PeriodContextControl, type PeriodContext } from '../../_components/period-context-control'
 
 const CHIP_TONE: Record<LocalIncomeTaxTone, string> = {
@@ -11,6 +15,7 @@ const CHIP_TONE: Record<LocalIncomeTaxTone, string> = {
 }
 
 const KRW = new Intl.NumberFormat('ko-KR')
+const WETAX_LOCAL_INCOME_TAX_URL = 'https://www.wetax.go.kr/etr/lit/b0701/B070101M00.do'
 
 function Chip({ tone, children }: { tone: LocalIncomeTaxTone; children: React.ReactNode }) {
   return (
@@ -47,6 +52,16 @@ export function LocalIncomeTaxReview({
   readonly periodContext: PeriodContext
 }) {
   const { period, hero, blockers, rows, totals } = summary
+  const portalItems: FilingPortalGuideItem[] = [
+    {
+      portal: 'wetax',
+      scopeLabel: '지방소득세 특별징수',
+      readiness: 'source_pending',
+      preparedValueLabel: `확정 지방소득세 ${KRW.format(totals.localIncomeTaxKrw)}원과 신고기간 ${period.periodKey}`,
+      userActionLabel: '위택스에서 신고·제출',
+      externalHref: WETAX_LOCAL_INCOME_TAX_URL,
+    },
+  ]
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
@@ -119,9 +134,7 @@ export function LocalIncomeTaxReview({
           <b className="text-[#2e1065]">원천세와 동일한 값</b> — 이 지방소득세 값은 원천세 준비값 확인에 표시되는 지방소득세와 같은 실제 급여 기록에서 옵니다. 두 화면에서 다른 숫자가 보이지 않습니다.
         </section>
 
-        <section className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-[18px] py-4 text-[12.5px] text-[#1e3a8a]">
-          <b className="text-[#172554]">책임 경계</b> — SemuAgent는 원천세에 딸린 지방소득세 특별징수 확정 데이터를 준비합니다. 종합소득세·법인세분 지방소득세, 위택스 신고·제출은 이 화면 범위 밖이며 사용자가 직접 수행합니다. 자동 제출·자격증명 저장은 하지 않습니다.
-        </section>
+        <FilingPortalGuide items={portalItems} />
       </div>
     </div>
   )

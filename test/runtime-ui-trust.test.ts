@@ -127,4 +127,22 @@ describe('runtime UI trust boundaries', () => {
     expect(sharedControl).not.toContain('URLSearchParams')
     expect(sharedControl).not.toContain('router.')
   })
+
+  it('uses one portal guide without overstating the pending Wetax source (S-48/S-49)', () => {
+    const withholding = source('app/(dashboard)/dashboard/filing-support/_components/withholding-efiling-panel.tsx')
+    const localIncomeTax = source('app/(dashboard)/dashboard/filing-preparation/local-income-tax/_components/local-income-tax-review.tsx')
+    const sharedGuide = source('app/(dashboard)/dashboard/filing-preparation/_components/filing-portal-guide.tsx')
+
+    expect(withholding).toContain('<FilingPortalGuide')
+    expect(withholding).toContain("portal: 'hometax'")
+    expect(withholding).toContain("portal: 'wetax'")
+    expect(localIncomeTax).toContain('<FilingPortalGuide')
+    expect(localIncomeTax).toContain("readiness: 'source_pending'")
+    expect(sharedGuide.indexOf('SemuAgent에서 준비')).toBeLessThan(sharedGuide.indexOf('사용자가 수행'))
+    expect(sharedGuide).toContain('공식 원본 입수 대기')
+
+    for (const overstatement of ['파일 다운로드', '업로드 가능', '검증 완료']) {
+      expect(`${withholding}\n${localIncomeTax}\n${sharedGuide}`).not.toContain(overstatement)
+    }
+  })
 })

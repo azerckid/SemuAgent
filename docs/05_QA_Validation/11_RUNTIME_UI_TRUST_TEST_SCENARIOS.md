@@ -27,8 +27,8 @@
 | S-45 | 신고 준비 blocker 1건 이상 | 화면 확인 | 상태·제목·설명·한 개 CTA가 같은 순서로 보인다 | PASS · unit + runtime guard |
 | S-46 | 신고 준비 blocker 0건 | 화면 확인 | 빈 blocker 패널을 표시하지 않는다 | PASS · unit + runtime guard |
 | S-47 | 기간 이동 지원/미지원 화면 | 데스크톱·모바일 확인 | 실제 href가 있는 이동만 활성화하고 현재 기간은 Topbar 한 위치에 표시한다 | PASS · unit + runtime guard |
-| S-48 | 홈택스·위택스 안내 | 화면 확인 | 대상 세목·준비값·사용자 행동·포털 이동을 같은 순서로 표시한다 | Pending · Slice D3 |
-| S-49 | 위택스 공식 Excel 원본 미입수 | 화면 확인 | 파일 생성 가능·검증 완료로 표시하지 않고 원본 입수 대기임을 밝힌다 | Pending · Slice D3 |
+| S-48 | 홈택스·위택스 안내 | 화면 확인 | 대상 세목·준비값·사용자 행동·포털 이동을 같은 순서로 표시한다 | PASS · unit + Chrome |
+| S-49 | 위택스 공식 Excel 원본 미입수 | 화면 확인 | 파일 생성 가능·검증 완료로 표시하지 않고 원본 입수 대기임을 밝힌다 | PASS · unit + Chrome |
 
 ## 3. 자동화
 

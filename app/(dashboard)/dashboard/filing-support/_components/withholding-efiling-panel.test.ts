@@ -38,8 +38,9 @@ describe('withholding-efiling-panel Hometax input guide (JC-030)', () => {
   })
 
   it('separates local income tax into the Wetax flow', () => {
-    expect(source).toContain('위택스 별도 신고')
-    expect(source).toContain('홈택스 원천세 신고서에 합산하지 않습니다')
+    expect(source).toContain('FilingPortalGuide')
+    expect(source).toContain("readiness: 'source_pending'")
+    expect(source).toContain('위택스에서 신고·제출')
     expect(source).toContain('efiling.localIncomeTaxKrw')
   })
 

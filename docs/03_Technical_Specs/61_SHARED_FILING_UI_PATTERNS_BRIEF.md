@@ -2,7 +2,7 @@
 
 > Created: 2026-07-14
 > Last Updated: 2026-07-14
-> Status: UI-First Gate owner approved · D1-D2 runtime complete · D3 pending
+> Status: UI-First Gate owner approved · D1-D3 runtime complete
 
 ## 0. 목적
 
