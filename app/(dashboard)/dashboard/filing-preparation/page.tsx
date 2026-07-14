@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { requireTenantSession } from '@/lib/auth-helpers'
+import { buildCompanyHomePeriod } from '@/lib/company-home/summary'
+import { buildPeriodNavigationHrefs } from '@/lib/filing-preparation/period-navigation'
 import { loadFilingPreparationSummary } from '@/lib/filing-preparation/summary'
 import { FilingPreparationBusinessEntityEmptyState, FilingPreparationHub } from './_components/filing-preparation-hub'
 
@@ -26,5 +28,17 @@ export default async function FilingPreparationPage({ searchParams }: PageProps)
     return <FilingPreparationBusinessEntityEmptyState tenantName={summary.tenant.name} />
   }
 
-  return <FilingPreparationHub summary={summary} />
+  const latestPeriod = buildCompanyHomePeriod({ timezone: summary.tenant.timezone })
+  const periodContext = {
+    label: '기준 기간',
+    value: summary.period.label,
+    ...buildPeriodNavigationHrefs({
+      pathname: '/dashboard/filing-preparation',
+      periodKey: summary.period.key,
+      latestPeriodKey: latestPeriod.key,
+      granularity: 'half_year',
+    }),
+  }
+
+  return <FilingPreparationHub periodContext={periodContext} summary={summary} />
 }

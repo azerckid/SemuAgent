@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import { requireTenantSession } from '@/lib/auth-helpers'
 import { loadSimplifiedWageEfilingSummary } from '@/lib/efiling-simplified-wage/summary'
-import { loadPaymentStatementSummary } from '@/lib/payment-statements/summary'
+import { buildPeriodNavigationHrefs } from '@/lib/filing-preparation/period-navigation'
+import { loadPaymentStatementSummary, resolveReportingContext } from '@/lib/payment-statements/summary'
+import { now } from '@/lib/time'
 import { PaymentStatementEmptyState, PaymentStatementReview } from './_components/payment-statement-review'
 
 type PageProps = {
@@ -30,5 +32,17 @@ export default async function PaymentStatementsPage({ searchParams }: PageProps)
     return <PaymentStatementEmptyState tenantName={summary.tenant.name} />
   }
 
-  return <PaymentStatementReview summary={summary} efiling={efiling} />
+  const latestContext = resolveReportingContext(now(summary.tenant.timezone))
+  const periodContext = {
+    label: '기간',
+    value: summary.context.halfLabel,
+    ...buildPeriodNavigationHrefs({
+      pathname: '/dashboard/filing-preparation/payment-statements',
+      periodKey: `${summary.context.year}-H${summary.context.half}`,
+      latestPeriodKey: `${latestContext.year}-H${latestContext.half}`,
+      granularity: 'half_year',
+    }),
+  }
+
+  return <PaymentStatementReview efiling={efiling} periodContext={periodContext} summary={summary} />
 }

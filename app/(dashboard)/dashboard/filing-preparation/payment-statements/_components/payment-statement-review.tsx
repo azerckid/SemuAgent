@@ -16,6 +16,7 @@ import {
   ReviewTableHeadCell,
 } from '../../_components/statement-review-ui'
 import { ActionBlockerList } from '../../_components/action-blocker-list'
+import { PeriodContextControl, type PeriodContext } from '../../_components/period-context-control'
 import { SimplifiedWageEfilingPanel } from './simplified-wage-efiling-panel'
 
 const KRW = new Intl.NumberFormat('ko-KR')
@@ -46,29 +47,27 @@ export function PaymentStatementEmptyState({ tenantName }: PaymentStatementEmpty
 interface PaymentStatementReviewProps {
   readonly summary: PaymentStatementSummary
   readonly efiling: SimplifiedWageEfilingSummary | null
+  readonly periodContext: PeriodContext
 }
 
-export function PaymentStatementReview({ summary, efiling }: PaymentStatementReviewProps) {
+export function PaymentStatementReview({ summary, efiling, periodContext }: PaymentStatementReviewProps) {
   const { context, simplified } = summary
   const hero = buildSimplifiedStatementHero(simplified)
   const blockers = buildSimplifiedStatementBlockers(simplified)
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
-      <div className="flex items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
+      <div className="flex flex-wrap items-center gap-3 border-b border-company-border bg-company-surface px-4 py-3.5 sm:px-7">
         <div className="min-w-0">
           <p className="text-[12.5px] font-medium text-company-fg-subtle">
             회사 홈 › <Link href="/dashboard/payroll" className="hover:underline">급여·지급</Link> › 지급명세서
           </p>
           <h1 className="text-base font-semibold tracking-tight text-foreground">지급명세서</h1>
         </div>
-        <span className="ml-auto text-[13px] font-medium text-company-fg-muted">{summary.tenant.name}</span>
-        <span className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
-          귀속연도 <span className="ml-1 rounded-full bg-[#eff6ff] px-1.5 py-0.5 text-[10.5px] font-bold text-[#2563eb]">{context.year}</span>
-        </span>
-        <span className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
-          기간 <span className="ml-1 rounded-full bg-[#eff6ff] px-1.5 py-0.5 text-[10.5px] font-bold text-[#2563eb]">{context.halfLabel}</span>
-        </span>
+        <div className="ml-auto flex min-w-0 items-center gap-2">
+          <span className="hidden text-[13px] font-medium text-company-fg-muted md:inline">{summary.tenant.name}</span>
+          <PeriodContextControl context={periodContext} />
+        </div>
       </div>
 
       <div className="flex w-full max-w-[1240px] flex-col gap-[22px] px-7 pt-6 pb-12">
