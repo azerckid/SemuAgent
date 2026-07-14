@@ -947,7 +947,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-042 · 제품 목적 기준 UI 정합화
 
-- Status: `doing` (Slices A-C 구현 완료 · Slice D UI-First 진행 중)
+- Status: `doing` (Slices A-C 구현 완료 · Slice D Preview 오너 승인 · D1 대기)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접사용·자가신고 보조 목적.
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [회사 설정 Preview](../02_UI_Screens/previews/16_company_settings.html) · [공통 신고 패턴 Review](../02_UI_Screens/17_SHARED_FILING_PATTERNS_PROTOTYPE_REVIEW.md) - 실제 업무 화면과 Preview 검토 자료의 경계.
 - Related HTML Preview: [17_shared_filing_patterns.html](../02_UI_Screens/previews/17_shared_filing_patterns.html) - blocker·기간·홈택스/위택스 안내 공통 패턴 오너 확인 화면.
@@ -971,7 +971,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] Slice C 로그인·온보딩 기본 진입과 설정 runtime 정리.
   - [x] Slice D 기존 blocker·기간·포털 안내 구현 감사.
   - [x] Slice D HTML Preview·Prototype Review·Pre-Code 계약 작성.
-  - [ ] Slice D Preview 오너 확인.
+  - [x] Slice D Preview 오너 확인.
   - [ ] Slice D1 `ActionBlockerList` 공통화와 네 화면 적용.
   - [ ] Slice D2 `PeriodContextControl` 공통화와 지원 화면 적용.
   - [ ] Slice D3 `FilingPortalGuide` 공통화와 홈택스·위택스 안내 수준 정렬.
@@ -980,6 +980,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-14, Slice C UI-First): 인증 후 회사 홈 진입, 온보딩의 기술 식별자 제거, 설정의 회사 정보·사용자 관리 2탭, 업무메일·다사업장 배정 비노출을 Preview 16과 Brief 60에 고정했다. 물리 `client`·`staff`·mailbox와 기존 API는 runtime 구현에서도 보존한다.
 - Document Sync Check (2026-07-14, Slice C runtime): 로그인·기존 회사 활성화·신규 온보딩 완료 뒤 회사 홈으로 이동한다. organization slug는 서버가 생성하며, 설정은 회사 정보·사용자 관리 2탭만 노출한다. 업무메일 read query와 UI props는 제거했지만 mailbox 데이터·API·`client`·`staff` 물리 모델은 보존했다.
 - Document Sync Check (2026-07-14, Slice D UI-First): 네 화면의 중복 blocker DOM, 화면별 기간 표시 차이, 홈택스·위택스 안내 수준 차이를 감사했다. Preview 17과 Brief 61에 표시 전용 공통 계약을 고정했으며, 오너 승인 전 runtime 공통 컴포넌트 구현은 시작하지 않는다.
+- Document Sync Check (2026-07-14, Slice D owner approval): Preview 17의 정보 밀도·기간 위치·홈택스/위택스 정보 순서·위택스 원본 미입수 표현·모바일 적층을 승인했다. runtime은 Brief 61의 D1 → D2 → D3 순서로 분리한다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 

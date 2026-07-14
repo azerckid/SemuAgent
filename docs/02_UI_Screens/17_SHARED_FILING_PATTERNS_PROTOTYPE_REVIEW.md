@@ -2,7 +2,7 @@
 
 > Created: 2026-07-14
 > Last Updated: 2026-07-14
-> Status: Preview complete · owner review pending
+> Status: owner approved · runtime implementation pending
 > Preview: [17_shared_filing_patterns.html](./previews/17_shared_filing_patterns.html)
 
 ## 1. 검토 목적
@@ -39,11 +39,13 @@
 
 ## 5. 오너 확인
 
-- [ ] 확인 필요 목록의 정보 밀도가 적절하다.
-- [ ] 기간 선택이 한 위치에서 이해된다.
-- [ ] 홈택스·위택스 안내가 같은 수준으로 읽힌다.
-- [ ] 위택스의 `공식 원본 입수 대기` 표현이 과장 없이 정확하다.
-- [ ] 모바일 적층 순서가 자연스럽다.
+- [x] 확인 필요 목록의 정보 밀도가 적절하다.
+- [x] 기간 선택이 한 위치에서 이해된다.
+- [x] 홈택스·위택스 안내가 같은 수준으로 읽힌다.
+- [x] 위택스의 `공식 원본 입수 대기` 표현이 과장 없이 정확하다.
+- [x] 모바일 적층 순서가 자연스럽다.
+
+2026-07-14 오너 승인 후 [Brief 61](../03_Technical_Specs/61_SHARED_FILING_UI_PATTERNS_BRIEF.md) §3의 D1 → D2 → D3 순서로 runtime을 구현한다.
 
 ## 6. Related Documents
 
