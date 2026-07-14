@@ -10,14 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { WorkEmailAddressesPanel } from '../../emails/_components/work-email-addresses-panel'
-import type {
-  WorkEmailAddressRow,
-  WorkEmailStaffOption,
-} from '../../emails/_components/mail-console-types'
 import { TAX_ENTITY_TYPES, TAX_ENTITY_TYPE_LABEL, type TaxEntityType } from '@/lib/validations/business-entity'
 
-const SETTINGS_TABS = ['tenant', 'staff', 'mail', 'clients'] as const
+const SETTINGS_TABS = ['tenant', 'staff'] as const
 
 type Tab = (typeof SETTINGS_TABS)[number]
 
@@ -28,16 +23,9 @@ function resolveSettingsTab(value: string | null): Tab {
 interface TenantData {
   id: string
   name: string
-  subdomain: string
   timezone: string
   reminderDaysBefore: number
   plan: string
-}
-
-interface StaffMailboxInfo {
-  id: string
-  address: string
-  state: string
 }
 
 interface StaffRow {
@@ -48,15 +36,6 @@ interface StaffRow {
   phone: string | null
   active: boolean
   clientCount: number
-  mailbox: StaffMailboxInfo | null
-}
-
-const MAILBOX_STATE_LABEL: Record<string, string> = {
-  reserved: '예약',
-  active: '활성',
-  paused: '일시정지',
-  handoff_required: '인계 필요',
-  retired: '폐기',
 }
 
 interface Props {
@@ -64,8 +43,6 @@ interface Props {
   staffList: StaffRow[]
   currentUserId: string
   currentStaffPhone: string
-  workEmailAddresses: WorkEmailAddressRow[]
-  workEmailStaffOptions: WorkEmailStaffOption[]
   businessEntityTaxType: TaxEntityType | null
 }
 
@@ -96,8 +73,6 @@ export function SettingsPanel({
   staffList: initialStaff,
   currentUserId,
   currentStaffPhone,
-  workEmailAddresses,
-  workEmailStaffOptions,
   businessEntityTaxType,
 }: Props) {
   const router = useRouter()
@@ -112,7 +87,7 @@ export function SettingsPanel({
   const [tenantSaving, setTenantSaving] = useState(false)
   const [tenantError, setTenantError] = useState('')
 
-  // ── 내 프로필 state (전화번호는 담당자 목록의 본인 행에서 인라인 편집)
+  // ── 내 프로필 state (전화번호는 사용자 목록의 본인 행에서 인라인 편집)
   // savedPhone: 마지막으로 저장된 기준값. 취소 시 초기 props가 아니라 이 값으로 되돌린다.
   const [myPhone, setMyPhone] = useState(currentStaffPhone)
   const [savedPhone, setSavedPhone] = useState(currentStaffPhone)
@@ -140,7 +115,7 @@ export function SettingsPanel({
     }
   }
 
-  // ── 담당자 state
+  // ── 사용자 state
   const [staffList, setStaffList] = useState(initialStaff)
   const [addEmail, setAddEmail] = useState('')
   const [addRole, setAddRole] = useState<'STAFF' | 'TENANT_ADMIN'>('STAFF')
@@ -149,9 +124,6 @@ export function SettingsPanel({
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
-
-  const currentStaff = initialStaff.find((staffMember) => staffMember.id === currentUserId)
-  const canManageMailSettings = currentStaff?.role === 'TENANT_ADMIN'
 
   const saveTenantSettings = async (successMessage: string) => {
     setTenantSaving(true)
@@ -254,10 +226,8 @@ export function SettingsPanel({
   }
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'tenant', label: '회사 설정' },
-    { key: 'staff', label: '담당자 관리' },
-    { key: 'mail', label: '업무메일 설정' },
-    { key: 'clients', label: '사업장 관리' },
+    { key: 'tenant', label: '회사 정보' },
+    { key: 'staff', label: '사용자 관리' },
   ]
 
   return (
@@ -294,19 +264,6 @@ export function SettingsPanel({
                 </div>
 
                 <div className="grid gap-1.5">
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="tenant-subdomain" className="text-sm font-medium text-foreground">서브도메인</label>
-                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">변경 불가</Badge>
-                  </div>
-                  <Input
-                    id="tenant-subdomain"
-                    value={initialTenant.subdomain}
-                    readOnly
-                    className="bg-muted text-muted-foreground"
-                  />
-                </div>
-
-                <div className="grid gap-1.5">
                   <label htmlFor="tenant-timezone" className="text-sm font-medium text-foreground">기본 타임존</label>
                   <Select
                     id="tenant-timezone"
@@ -317,7 +274,7 @@ export function SettingsPanel({
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </Select>
-                  <p className="text-xs text-muted-foreground">토큰 만료일과 메일 자동화 기준 시각 계산에 사용합니다.</p>
+                  <p className="text-xs text-muted-foreground">신고 일정과 날짜 계산에 사용합니다.</p>
                 </div>
 
                 <div className="grid gap-1.5">
@@ -360,18 +317,18 @@ export function SettingsPanel({
           </form>
         )}
 
-        {/* ── 담당자 관리 탭 */}
+        {/* ── 사용자 관리 탭 */}
         {tab === 'staff' && (
           <div className="max-w-4xl space-y-4">
-            {/* 담당자 목록 */}
+            {/* 사용자 목록 */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">담당자</CardTitle>
-                <CardDescription>회사 내부 담당자의 권한·활성 상태를 관리합니다. 내 전화번호는 본인 행의 수정 버튼으로 편집합니다.</CardDescription>
+                <CardTitle className="text-base">사용자 관리</CardTitle>
+                <CardDescription>회사에 로그인할 사용자와 권한을 관리합니다. 내 전화번호는 본인 행의 수정 버튼으로 편집합니다.</CardDescription>
               </CardHeader>
               <CardContent className="overflow-x-auto p-0">
               {staffList.length === 0 ? (
-                <p className="px-5 py-8 text-sm text-muted-foreground text-center">등록된 담당자가 없습니다</p>
+                <p className="px-5 py-8 text-sm text-muted-foreground text-center">등록된 사용자가 없습니다</p>
               ) : (
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200">
@@ -379,9 +336,7 @@ export function SettingsPanel({
                       <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">이름</th>
                       <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">이메일</th>
                       <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">전화번호</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">역할</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">사업장</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">업무 메일함</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">권한</th>
                       <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">상태</th>
                       <th className="px-4 py-2.5 text-right text-xs font-medium text-gray-500">액션</th>
                     </tr>
@@ -459,27 +414,8 @@ export function SettingsPanel({
                           </td>
                           <td className="px-4 py-3">
                             <Badge variant={s.role === 'TENANT_ADMIN' ? 'info' : 'secondary'}>
-                              {s.role === 'TENANT_ADMIN' ? '관리자' : '담당자'}
+                              {s.role === 'TENANT_ADMIN' ? '관리자' : '일반 사용자'}
                             </Badge>
-                          </td>
-                          <td className="px-4 py-3 text-gray-500">{s.clientCount}개</td>
-                          <td className="px-4 py-3">
-                            {s.mailbox ? (
-                              <div className="flex flex-wrap items-center gap-1.5">
-                                <span className="text-xs text-gray-700">{s.mailbox.address}</span>
-                                <Badge variant={
-                                  s.mailbox.state === 'active'
-                                    ? 'success'
-                                    : s.mailbox.state === 'paused' || s.mailbox.state === 'handoff_required'
-                                      ? 'warning'
-                                      : 'secondary'
-                                }>
-                                  {MAILBOX_STATE_LABEL[s.mailbox.state] ?? s.mailbox.state}
-                                </Badge>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-gray-300">-</span>
-                            )}
                           </td>
                           <td className="px-4 py-3">
                             <Badge variant={s.active ? 'success' : 'secondary'}>
@@ -513,14 +449,14 @@ export function SettingsPanel({
                                   disabled={!!actionLoading}
                                   className="text-xs px-2 py-1 border border-gray-200 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-50"
                                 >
-                                  {isLoadingRole ? '…' : s.role === 'TENANT_ADMIN' ? '담당자로' : '관리자로'}
+                                  {isLoadingRole ? '…' : s.role === 'TENANT_ADMIN' ? '일반 사용자로' : '관리자로'}
                                 </button>
                                 <button
                                   onClick={() =>
                                     handleStaffAction(s.id, s.active ? 'deactivate' : 'activate')
                                   }
                                   disabled={!!actionLoading || (s.clientCount > 0 && s.active)}
-                                  title={s.clientCount > 0 && s.active ? `사업장 ${s.clientCount}곳 배정됨 — 먼저 재배정 필요` : ''}
+                                  title={s.clientCount > 0 && s.active ? '현재 회사 업무가 배정되어 있어 비활성화할 수 없습니다.' : ''}
                                   className="text-xs px-2 py-1 border border-gray-200 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-50"
                                 >
                                   {isLoadingToggle ? '…' : s.active ? '비활성화' : '활성화'}
@@ -537,10 +473,10 @@ export function SettingsPanel({
               </CardContent>
             </Card>
 
-            {/* 담당자 추가 */}
+            {/* 사용자 추가 */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">담당자 추가</CardTitle>
+                <CardTitle className="text-base">사용자 추가</CardTitle>
                 <CardDescription>SemuAgent에 가입된 계정만 추가할 수 있습니다.</CardDescription>
               </CardHeader>
               <CardContent>
@@ -558,7 +494,7 @@ export function SettingsPanel({
                     onChange={(e) => setAddRole(e.target.value as 'STAFF' | 'TENANT_ADMIN')}
                     className="w-32"
                   >
-                    <option value="STAFF">담당자</option>
+                    <option value="STAFF">일반 사용자</option>
                     <option value="TENANT_ADMIN">관리자</option>
                   </Select>
                   <Button type="submit" disabled={addLoading}>{addLoading ? '추가 중…' : '추가'}</Button>
@@ -569,49 +505,6 @@ export function SettingsPanel({
           </div>
         )}
 
-        {/* ── 업무메일 설정 탭 */}
-        {tab === 'mail' && (
-          <div className="max-w-5xl space-y-5">
-            <div className="space-y-2">
-              <h2 className="text-base font-semibold text-foreground">업무메일 설정</h2>
-              <p className="text-sm text-muted-foreground">
-                담당자별 업무전용 이메일주소를 관리합니다.
-              </p>
-            </div>
-
-            <section className="space-y-3">
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">업무전용 이메일</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  담당자가 바뀌어도 업무 메일주소와 회신 이력은 회사 업무 기록으로 남아 다음 담당자에게 인계됩니다.
-                </p>
-              </div>
-              <WorkEmailAddressesPanel
-                addresses={workEmailAddresses}
-                staffOptions={workEmailStaffOptions}
-                isAdmin={canManageMailSettings}
-              />
-            </section>
-          </div>
-        )}
-
-        {/* ── 사업장 관리 탭 */}
-        {tab === 'clients' && (
-          <Card className="max-w-2xl">
-            <CardHeader>
-              <CardTitle className="text-base">사업장 관리</CardTitle>
-              <CardDescription>사업장 추가, 담당자 배정, 회사별 분석 기준 입력은 사업장 관리 화면에서 처리합니다.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link
-                href="/dashboard/clients"
-                className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                사업장 관리 화면으로 이동 →
-              </Link>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   )

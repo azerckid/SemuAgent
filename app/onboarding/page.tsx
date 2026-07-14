@@ -7,7 +7,6 @@ import { organization } from '@/lib/auth-client'
 export default function OnboardingPage() {
   const router = useRouter()
   const [name, setName] = useState('')
-  const [subdomain, setSubdomain] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   // 이미 회사(조직/테넌트)가 있는 사용자가 여기로 오면(예: 활성 테넌트 미설정 상태로 진입),
@@ -25,7 +24,7 @@ export default function OnboardingPage() {
         if (!active) return
         if (orgs && orgs.length > 0) {
           await organization.setActive({ organizationId: orgs[0].id })
-          if (active) router.replace('/dashboard/clients')
+          if (active) router.replace('/dashboard')
           return
         }
         setCheckingExisting(false)
@@ -50,7 +49,7 @@ export default function OnboardingPage() {
       const res = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, subdomain }),
+        body: JSON.stringify({ name }),
       })
 
       if (!res.ok) {
@@ -62,7 +61,7 @@ export default function OnboardingPage() {
 
       const { orgId } = await res.json()
       await organization.setActive({ organizationId: orgId })
-      router.push('/dashboard/clients')
+      router.push('/dashboard')
     } catch {
       setError('서버 오류가 발생했습니다')
       setLoading(false)
@@ -113,21 +112,6 @@ export default function OnboardingPage() {
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="예: 샘플컴퍼니(주)"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">서브도메인</label>
-            <div className="flex items-center gap-1">
-              <input
-                type="text"
-                required
-                value={subdomain}
-                onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="sejong"
-              />
-            </div>
-            <p className="text-xs text-gray-400 mt-1">소문자, 숫자, 하이픈만 사용 가능</p>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

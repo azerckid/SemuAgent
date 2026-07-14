@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { randomUUID } from 'crypto'
 import { createTenantSchema } from '@/lib/validations/match'
 import { createTenantWithOrg } from '@/lib/services/org-sync'
 import { ensureFirstRunSampleDataset } from '@/lib/first-run-sample/seed'
 import { requireSession } from '@/lib/auth-helpers'
+import { buildCompanyOrganizationSlug } from '@/lib/onboarding/company-organization-slug'
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +18,10 @@ export async function POST(req: Request) {
     }
 
     const org = await createTenantWithOrg(
-      { name: parsed.data.name, subdomain: parsed.data.subdomain },
+      {
+        name: parsed.data.name,
+        subdomain: buildCompanyOrganizationSlug(parsed.data.name, randomUUID()),
+      },
       await headers(),
     )
 

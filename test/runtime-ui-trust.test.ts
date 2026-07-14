@@ -49,4 +49,33 @@ describe('runtime UI trust boundaries', () => {
     expect(settings).not.toContain('세목 트랙')
     expect(settings).not.toContain('Billing 화면')
   })
+
+  it('uses the company home as the single-company entry point (S-40/S-41)', () => {
+    const signIn = source('app/(auth)/sign-in/page.tsx')
+    const onboarding = source('app/onboarding/page.tsx')
+    const onboardingRoute = source('app/api/onboarding/route.ts')
+
+    expect(signIn).toContain("router.push('/dashboard')")
+    expect(signIn).not.toContain("router.push('/dashboard/clients')")
+    expect(onboarding).toContain("router.replace('/dashboard')")
+    expect(onboarding).toContain("router.push('/dashboard')")
+    expect(onboarding).not.toContain('서브도메인')
+    expect(onboarding).not.toContain('setSubdomain')
+    expect(onboardingRoute).toContain('buildCompanyOrganizationSlug')
+  })
+
+  it('keeps company settings focused on company information and users (S-42/S-44)', () => {
+    const settingsPage = source('app/(dashboard)/dashboard/settings/page.tsx')
+    const settingsPanel = source('app/(dashboard)/dashboard/settings/_components/settings-panel.tsx')
+
+    expect(settingsPanel).toContain("const SETTINGS_TABS = ['tenant', 'staff'] as const")
+    expect(settingsPanel).toContain("{ key: 'tenant', label: '회사 정보' }")
+    expect(settingsPanel).toContain("{ key: 'staff', label: '사용자 관리' }")
+    expect(settingsPanel).toContain('일반 사용자')
+    for (const removed of ['담당자 관리', '업무메일 설정', '사업장 관리', '업무 메일함', 'tenant-subdomain']) {
+      expect(settingsPanel).not.toContain(removed)
+    }
+    expect(settingsPage).not.toContain('staffMailbox')
+    expect(settingsPage).not.toContain('workEmailAddresses')
+  })
 })

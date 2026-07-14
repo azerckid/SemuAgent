@@ -19,11 +19,11 @@
 | S-10 | 실제 데이터 로딩·빈 상태·오류 | 해당 상태 발생 | 기존 loading/error/empty 경로가 상태를 표시한다 | PASS · existing routes |
 | S-20 | Slice A 전후 | 정적 분석 | DB·API·세액 계산·migration 변경이 없다 | PASS · diff |
 | S-30 | 데스크톱·모바일 | 핵심 화면 스크린샷 비교 | 제거된 블록 자리에 겹침·과도한 공백·가로 넘침이 없다 | PASS · Chrome |
-| S-40 | 기존 회사 사용자가 로그인 | 인증과 회사 활성화 완료 | 다사업장 관리가 아니라 회사 홈으로 이동한다 | Pending · Slice C runtime |
-| S-41 | 신규 사용자가 회사 등록 완료 | first-run sample 생성 결과와 무관하게 | 회사 홈으로 이동하고 기술 식별자 입력을 요구하지 않는다 | Pending · Slice C runtime |
-| S-42 | 설정 정상 화면 | 탭과 표 확인 | 회사 정보·사용자 관리만 보이고 업무메일·사업장 배정 열이 없다 | PASS · Preview 16 |
-| S-43 | 관리자 | 사용자 추가·권한·활성 상태 변경 | 기존 tenant 격리와 관리자 권한 검증을 유지한다 | Pending · Slice C runtime |
-| S-44 | 오래된 설정 링크 `?tab=mail` 또는 `?tab=clients` | 화면 진입 | 오류 없이 회사 정보 탭으로 돌아온다 | Pending · Slice C runtime |
+| S-40 | 기존 회사 사용자가 로그인 | 인증과 회사 활성화 완료 | 다사업장 관리가 아니라 회사 홈으로 이동한다 | PASS · unit |
+| S-41 | 신규 사용자가 회사 등록 완료 | first-run sample 생성 결과와 무관하게 | 회사 홈으로 이동하고 기술 식별자 입력을 요구하지 않는다 | PASS · unit |
+| S-42 | 설정 정상 화면 | 탭과 표 확인 | 회사 정보·사용자 관리만 보이고 업무메일·사업장 배정 열이 없다 | PASS · unit + Preview 16 |
+| S-43 | 관리자 | 사용자 추가·권한·활성 상태 변경 | 기존 tenant 격리와 관리자 권한 검증을 유지한다 | PASS · existing API |
+| S-44 | 오래된 설정 링크 `?tab=mail` 또는 `?tab=clients` | 화면 진입 | 오류 없이 회사 정보 탭으로 돌아온다 | PASS · unit |
 
 ## 3. 자동화
 

@@ -1,7 +1,7 @@
 # Company Direct-Use Settings Prototype Review
 
 > Created: 2026-07-14
-> Status: owner review pending
+> Status: owner approved · runtime implementation complete
 > Preview: [16_company_settings.html](./previews/16_company_settings.html)
 
 ## 1. 검토 목적
@@ -27,9 +27,9 @@
 
 ## 4. 오너 확인
 
-- [ ] 로그인 후 회사 홈 진입이 맞다.
-- [ ] 설정 2탭의 정보 밀도가 충분하다.
-- [ ] 업무메일·사업장 배정 비노출이 맞다.
-- [ ] 사용자 관리 용어가 회사 직접사용 목적에 맞다.
+- [x] 로그인 후 회사 홈 진입이 맞다.
+- [x] 설정 2탭의 정보 밀도가 충분하다.
+- [x] 업무메일·사업장 배정 비노출이 맞다.
+- [x] 사용자 관리 용어가 회사 직접사용 목적에 맞다.
 
-승인 후 [Brief 60](../03_Technical_Specs/60_COMPANY_DIRECT_SHELL_CLEANUP_BRIEF.md) §4 순서로 runtime을 구현한다.
+2026-07-14 오너 승인 후 [Brief 60](../03_Technical_Specs/60_COMPANY_DIRECT_SHELL_CLEANUP_BRIEF.md) §4 순서로 runtime을 구현했다.
