@@ -947,10 +947,11 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-042 · 제품 목적 기준 UI 정합화
 
-- Status: `doing` (Slices A-C 구현 완료 · Slice D 대기)
+- Status: `doing` (Slices A-C 구현 완료 · Slice D Preview 오너 승인 · D1 대기)
 - Related Concept Docs: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 직접사용·자가신고 보조 목적.
-- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [회사 설정 Preview](../02_UI_Screens/previews/16_company_settings.html) - 실제 업무 화면과 Preview 검토 자료의 경계.
-- Related Technical Docs: [Product Purpose UI Alignment Brief](../03_Technical_Specs/58_PRODUCT_PURPOSE_UI_ALIGNMENT_BRIEF.md) · [Reconciliation Ledger Core Flow Brief](../03_Technical_Specs/59_RECONCILIATION_LEDGER_CORE_FLOW_BRIEF.md) · [Company Direct-Use Shell Cleanup Brief](../03_Technical_Specs/60_COMPANY_DIRECT_SHELL_CLEANUP_BRIEF.md).
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [회사 설정 Preview](../02_UI_Screens/previews/16_company_settings.html) · [공통 신고 패턴 Review](../02_UI_Screens/17_SHARED_FILING_PATTERNS_PROTOTYPE_REVIEW.md) - 실제 업무 화면과 Preview 검토 자료의 경계.
+- Related HTML Preview: [17_shared_filing_patterns.html](../02_UI_Screens/previews/17_shared_filing_patterns.html) - blocker·기간·홈택스/위택스 안내 공통 패턴 오너 확인 화면.
+- Related Technical Docs: [Product Purpose UI Alignment Brief](../03_Technical_Specs/58_PRODUCT_PURPOSE_UI_ALIGNMENT_BRIEF.md) · [Reconciliation Ledger Core Flow Brief](../03_Technical_Specs/59_RECONCILIATION_LEDGER_CORE_FLOW_BRIEF.md) · [Company Direct-Use Shell Cleanup Brief](../03_Technical_Specs/60_COMPANY_DIRECT_SHELL_CLEANUP_BRIEF.md) · [Shared Filing UI Patterns Brief](../03_Technical_Specs/61_SHARED_FILING_UI_PATTERNS_BRIEF.md).
 - Related QA Docs: [Runtime UI Trust Test Scenarios](../05_QA_Validation/11_RUNTIME_UI_TRUST_TEST_SCENARIOS.md).
 - Origin: 2026-07-14 전체 UI 목적 정합성 감사. 회사 직접사용 제품의 핵심 흐름과 무관한 데모 블록·내부 개발 용어·회계사무소 잔재가 실제 화면에 남아 있고, 자료대조원장의 일부 핵심 조작과 중복 탐지가 주 사용자 동선에서 약하다는 점을 확인했다.
 - Fixed Order:
@@ -968,11 +969,18 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] Slice B 자료대조원장 월·분기·반기 이동, 검색, 보수적 중복 탐지, 별도 거래 확인/중복 제외와 shared Path 1 gate 연동.
   - [x] Slice C 회사 직접사용 셸 Preview와 Pre-Code 계약 작성.
   - [x] Slice C 로그인·온보딩 기본 진입과 설정 runtime 정리.
-  - [ ] Slice D 공통 컴포넌트·위택스 동등 안내.
+  - [x] Slice D 기존 blocker·기간·포털 안내 구현 감사.
+  - [x] Slice D HTML Preview·Prototype Review·Pre-Code 계약 작성.
+  - [x] Slice D Preview 오너 확인.
+  - [ ] Slice D1 `ActionBlockerList` 공통화와 네 화면 적용.
+  - [ ] Slice D2 `PeriodContextControl` 공통화와 지원 화면 적용.
+  - [ ] Slice D3 `FilingPortalGuide` 공통화와 홈택스·위택스 안내 수준 정렬.
 - Document Sync Check (2026-07-14): 전체 UI 감사 결과를 한 번에 섞지 않고 사용자 영향과 위험 순서대로 4개 Slice로 고정했다. 첫 PR은 표시 계층 정리만 수행하며 DB·API·세무 계산·자료대조 mutation을 변경하지 않는다.
 - Document Sync Check (2026-07-14, Slice B): 자료대조원장에 서버가 지원하는 월·분기·반기 전환과 이전·다음 이동, 현재 탭 내 검색, 중복 의심 탭을 연결했다. 중복은 동일 출처·방향·날짜·금액·정규화 거래처·적요가 모두 같은 경우에만 표시하며 자동 제외하지 않는다. 사용자는 별도 거래 확인 감사 메모 또는 현재 행 중복 제외를 선택하고, 미해결 중복 수는 자료대조원장과 신고 준비가 공유하는 Path 1 gate에 포함한다.
 - Document Sync Check (2026-07-14, Slice C UI-First): 인증 후 회사 홈 진입, 온보딩의 기술 식별자 제거, 설정의 회사 정보·사용자 관리 2탭, 업무메일·다사업장 배정 비노출을 Preview 16과 Brief 60에 고정했다. 물리 `client`·`staff`·mailbox와 기존 API는 runtime 구현에서도 보존한다.
 - Document Sync Check (2026-07-14, Slice C runtime): 로그인·기존 회사 활성화·신규 온보딩 완료 뒤 회사 홈으로 이동한다. organization slug는 서버가 생성하며, 설정은 회사 정보·사용자 관리 2탭만 노출한다. 업무메일 read query와 UI props는 제거했지만 mailbox 데이터·API·`client`·`staff` 물리 모델은 보존했다.
+- Document Sync Check (2026-07-14, Slice D UI-First): 네 화면의 중복 blocker DOM, 화면별 기간 표시 차이, 홈택스·위택스 안내 수준 차이를 감사했다. Preview 17과 Brief 61에 표시 전용 공통 계약을 고정했으며, 오너 승인 전 runtime 공통 컴포넌트 구현은 시작하지 않는다.
+- Document Sync Check (2026-07-14, Slice D owner approval): Preview 17의 정보 밀도·기간 위치·홈택스/위택스 정보 순서·위택스 원본 미입수 표현·모바일 적층을 승인했다. runtime은 Brief 61의 D1 → D2 → D3 순서로 분리한다.
 
 ### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
 
