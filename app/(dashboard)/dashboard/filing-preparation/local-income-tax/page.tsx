@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { requireTenantSession } from '@/lib/auth-helpers'
+import { buildCompanyHomePeriod } from '@/lib/company-home/summary'
+import { buildPeriodNavigationHrefs } from '@/lib/filing-preparation/period-navigation'
 import { loadLocalIncomeTaxSummary } from '@/lib/local-income-tax/summary'
 import { LocalIncomeTaxEmptyState, LocalIncomeTaxReview } from './_components/local-income-tax-review'
 
@@ -26,5 +28,17 @@ export default async function LocalIncomeTaxPage({ searchParams }: PageProps) {
     return <LocalIncomeTaxEmptyState tenantName={summary.tenant.name} />
   }
 
-  return <LocalIncomeTaxReview summary={summary} />
+  const latestPeriod = buildCompanyHomePeriod({ timezone: summary.tenant.timezone })
+  const periodContext = {
+    label: '귀속기간',
+    value: summary.period.periodLabel,
+    ...buildPeriodNavigationHrefs({
+      pathname: '/dashboard/filing-preparation/local-income-tax',
+      periodKey: summary.period.periodKey,
+      latestPeriodKey: latestPeriod.endMonth,
+      granularity: 'month',
+    }),
+  }
+
+  return <LocalIncomeTaxReview periodContext={periodContext} summary={summary} />
 }

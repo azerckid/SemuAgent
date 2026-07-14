@@ -97,4 +97,34 @@ describe('runtime UI trust boundaries', () => {
     expect(sharedList).toContain('if (items.length === 0) return null')
     expect(sharedList).toContain('sm:grid-cols-[10px_minmax(0,1fr)_auto]')
   })
+
+  it('uses one period context surface and only server-built navigation hrefs (S-47)', () => {
+    const periodScreens = [
+      'app/(dashboard)/dashboard/filing-preparation/_components/filing-preparation-hub.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/payment-statements/_components/payment-statement-review.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/local-income-tax/_components/local-income-tax-review.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/business-status-report/_components/business-status-report-review.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/year-end-settlement/_components/year-end-settlement-review.tsx',
+    ]
+
+    for (const file of periodScreens) {
+      expect(source(file)).toContain('<PeriodContextControl')
+    }
+
+    const periodPages = [
+      'app/(dashboard)/dashboard/filing-preparation/page.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/payment-statements/page.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/local-income-tax/page.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/business-status-report/page.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/year-end-settlement/page.tsx',
+    ]
+    for (const file of periodPages) {
+      expect(source(file)).toContain('buildPeriodNavigationHrefs')
+    }
+
+    const sharedControl = source('app/(dashboard)/dashboard/filing-preparation/_components/period-context-control.tsx')
+    expect(sharedControl).toContain("data-period-navigation={hasNavigation ? 'navigable' : 'read-only'}")
+    expect(sharedControl).not.toContain('URLSearchParams')
+    expect(sharedControl).not.toContain('router.')
+  })
 })

@@ -7,6 +7,7 @@ import {
   type FilingPrepTrackCard,
 } from '@/lib/filing-preparation/summary'
 import { ActionBlockerList } from './action-blocker-list'
+import { PeriodContextControl, type PeriodContext } from './period-context-control'
 
 const CHIP_TONE: Record<FilingPrepTone, string> = {
   ok: 'text-[#16a34a] bg-[#f0fdf4] border-[#bbf7d0]',
@@ -43,25 +44,31 @@ export function FilingPreparationBusinessEntityEmptyState({ tenantName }: { read
   )
 }
 
-export function FilingPreparationHub({ summary }: { readonly summary: FilingPrepSummary }) {
-  const { period, hero, blockers, foundation, tracks, businessEntity } = summary
+export function FilingPreparationHub({
+  summary,
+  periodContext,
+}: {
+  readonly summary: FilingPrepSummary
+  readonly periodContext: PeriodContext
+}) {
+  const { hero, blockers, foundation, tracks, businessEntity } = summary
   const typeLabel = businessEntity ? businessTypeLabel(businessEntity.businessType) : '미지정'
   const blockerItems = blockers.map(({ domain, ...blocker }) => ({ id: domain, ...blocker }))
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
-      <div className="flex items-center gap-4 border-b border-company-border bg-company-surface px-7 py-3.5">
+      <div className="flex flex-wrap items-center gap-3 border-b border-company-border bg-company-surface px-4 py-3.5 sm:px-7">
         <div className="min-w-0">
           <p className="text-[12.5px] font-medium text-company-fg-subtle">회사 홈 › 연간신고</p>
           <h1 className="text-base font-semibold tracking-tight text-foreground">연간신고</h1>
         </div>
-        <span className="ml-auto text-[13px] font-medium text-company-fg-muted">{summary.tenant.name}</span>
-        <span className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
-          사업자 유형 <span className="ml-1 rounded-full bg-[#eff6ff] px-1.5 py-0.5 text-[10.5px] font-bold text-[#2563eb]">{typeLabel}</span>
-        </span>
-        <span className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
-          기준 기간 <span className="ml-1 rounded-full bg-[#eff6ff] px-1.5 py-0.5 text-[10.5px] font-bold text-[#2563eb]">{period.label}</span>
-        </span>
+        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+          <span className="hidden text-[13px] font-medium text-company-fg-muted md:inline">{summary.tenant.name}</span>
+          <span className="rounded-lg border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
+            사업자 유형 <span className="ml-1 rounded-full bg-[#eff6ff] px-1.5 py-0.5 text-[10.5px] font-bold text-[#2563eb]">{typeLabel}</span>
+          </span>
+          <PeriodContextControl context={periodContext} />
+        </div>
       </div>
 
       <div className="flex w-full max-w-[1240px] flex-col gap-[22px] px-7 pt-6 pb-12">

@@ -3,6 +3,7 @@ import {
   buildYearEndSettlementHero,
   type PaymentStatementSummary,
 } from '@/lib/payment-statements/summary'
+import { PeriodContextControl, type PeriodContext } from '../../_components/period-context-control'
 import { ReviewTableHeadCell } from '../../_components/statement-review-ui'
 import { YearEndSettlementEmployeeRow } from './year-end-settlement-employee-row'
 
@@ -34,11 +35,12 @@ export function YearEndSettlementEmptyState({ tenantName }: YearEndSettlementEmp
 
 interface YearEndSettlementReviewProps {
   readonly summary: PaymentStatementSummary
+  readonly periodContext: PeriodContext
 }
 
 const HOMETAX_STEPS = ['기초자료 등록', '공제신고서 확인', '지급명세서 생성', '확인·수정', '제출'] as const
 
-export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProps) {
+export function YearEndSettlementReview({ summary, periodContext }: YearEndSettlementReviewProps) {
   const { context, yearEnd } = summary
   const hero = buildYearEndSettlementHero(yearEnd)
   const isYearOpen = context.yearPeriodStatus === 'open'
@@ -46,9 +48,8 @@ export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProp
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
       <YearEndSettlementHeader
+        periodContext={periodContext}
         tenantName={summary.tenant.name}
-        year={context.year}
-        isYearOpen={isYearOpen}
       />
 
       <main className="flex w-full max-w-[1440px] flex-col gap-5 px-4 pt-6 pb-12 sm:px-7">
@@ -158,13 +159,12 @@ export function YearEndSettlementReview({ summary }: YearEndSettlementReviewProp
 
 interface YearEndSettlementHeaderProps {
   readonly tenantName: string
-  readonly year?: number
-  readonly isYearOpen?: boolean
+  readonly periodContext?: PeriodContext
 }
 
-function YearEndSettlementHeader({ tenantName, year, isYearOpen }: YearEndSettlementHeaderProps) {
+function YearEndSettlementHeader({ tenantName, periodContext }: YearEndSettlementHeaderProps) {
   return (
-    <header className="flex items-center gap-4 border-b border-company-border bg-company-surface px-4 py-3.5 sm:px-7">
+    <header className="flex flex-wrap items-center gap-3 border-b border-company-border bg-company-surface px-4 py-3.5 sm:px-7">
       <div className="min-w-0">
         <p className="truncate text-[12.5px] font-medium text-company-fg-subtle">
           회사 홈 › <Link href="/dashboard/payroll" className="hover:underline">급여·지급</Link> › 연말정산
@@ -172,11 +172,7 @@ function YearEndSettlementHeader({ tenantName, year, isYearOpen }: YearEndSettle
         <h1 className="text-base font-semibold tracking-tight text-foreground">연말정산</h1>
       </div>
       <span className="ml-auto hidden text-[13px] font-medium text-company-fg-muted sm:inline">{tenantName}</span>
-      {year ? (
-        <span className="shrink-0 rounded-md border border-company-border-strong bg-company-surface px-3 py-1.5 text-[13px] font-medium">
-          귀속연도 <strong className="ml-1">{year}</strong>{isYearOpen ? <span className="ml-1 text-[11px] text-company-fg-muted">진행 중</span> : null}
-        </span>
-      ) : null}
+      {periodContext ? <PeriodContextControl context={periodContext} /> : null}
     </header>
   )
 }

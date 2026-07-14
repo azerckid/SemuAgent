@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { requireTenantSession } from '@/lib/auth-helpers'
-import { loadYearEndSettlementSummary } from '@/lib/payment-statements/summary'
+import { buildPeriodNavigationHrefs } from '@/lib/filing-preparation/period-navigation'
+import { loadYearEndSettlementSummary, resolveYearEndPeriodKey } from '@/lib/payment-statements/summary'
+import { now } from '@/lib/time'
 import {
   YearEndSettlementEmptyState,
   YearEndSettlementReview,
@@ -29,5 +31,18 @@ export default async function YearEndSettlementPage({ searchParams }: PageProps)
     return <YearEndSettlementEmptyState tenantName={summary.tenant.name} />
   }
 
-  return <YearEndSettlementReview summary={summary} />
+  const latestYear = resolveYearEndPeriodKey(now(summary.tenant.timezone)).slice(0, 4)
+  const isYearOpen = summary.context.yearPeriodStatus === 'open'
+  const periodContext = {
+    label: '귀속연도',
+    value: `${summary.context.year}년${isYearOpen ? ' · 진행 중' : ''}`,
+    ...buildPeriodNavigationHrefs({
+      pathname: '/dashboard/filing-preparation/year-end-settlement',
+      periodKey: String(summary.context.year),
+      latestPeriodKey: latestYear,
+      granularity: 'year',
+    }),
+  }
+
+  return <YearEndSettlementReview periodContext={periodContext} summary={summary} />
 }
