@@ -339,6 +339,21 @@
 - 서브도메인·사업장 수·업무 메일함·업무메일 설정은 기본 설정 화면에 노출하지 않는다.
 - 물리 `client`·`staff` 모델과 기존 권한·메일 데이터는 이 화면 정리만으로 삭제하지 않는다.
 
+### 4.16 신고 준비 공통 패턴 (17_shared_filing_patterns.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| ActionBlockerList | 먼저 해결할 항목과 단일 CTA | danger / warn / empty-hidden |
+| PeriodContextControl | 현재 기간과 지원되는 이전·다음 이동 | navigable / read-only |
+| FilingPortalGuide | 포털별 준비값과 사용자 행동 | ready / source-pending |
+| Submission Boundary | 자동 입력·제출·납부를 하지 않는 경계 | info |
+
+- 공통 컴포넌트는 도메인의 상태 계산을 대신하지 않는다. 각 화면이 만든 표시 데이터를 같은 구조로 렌더링한다.
+- blocker는 모바일에서 CTA를 본문 아래로 내려 겹침을 막는다.
+- 기간 이동 버튼은 실제 href가 있을 때만 활성화한다. 공통 컴포넌트가 기간을 추정하지 않는다.
+- 홈택스·위택스는 같은 정보 순서를 사용하되, 공식 양식 확인 상태는 포털별 사실에 따라 다르게 표시한다.
+- `source-pending` 상태는 파일 다운로드·업로드 가능·검증 완료 표현을 금지한다.
+
 ## 5. 핵심 CTA 우선순위
 
 **회사 홈**
@@ -393,6 +408,7 @@
 - Preview (지방소득세): [10_local_income_tax.html](./previews/10_local_income_tax.html)
 - Preview (사업장현황신고): [11_business_status_report.html](./previews/11_business_status_report.html)
 - Preview (회사 설정): [16_company_settings.html](./previews/16_company_settings.html)
+- Preview (신고 준비 공통 패턴): [17_shared_filing_patterns.html](./previews/17_shared_filing_patterns.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -410,6 +426,7 @@
 - **UI_Screens**: [Internal Reminder Prototype Review](./09_INTERNAL_REMINDER_PROTOTYPE_REVIEW.md) - 리마인드 확인 결과
 - **UI_Screens**: [Cadence Navigation Prototype Review](./13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) - cadence 기반 사이드바 계약
 - **UI_Screens**: [Company Direct-Use Settings Prototype Review](./16_COMPANY_SETTINGS_PROTOTYPE_REVIEW.md) - 회사 직접사용 셸 UI-First 검토
+- **UI_Screens**: [Shared Filing UI Patterns Prototype Review](./17_SHARED_FILING_PATTERNS_PROTOTYPE_REVIEW.md) - 공통 blocker·기간·포털 안내 UI-First 검토
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
 - **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 구현 전 데이터·mutation 계약

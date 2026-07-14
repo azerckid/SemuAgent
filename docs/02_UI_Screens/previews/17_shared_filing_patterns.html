@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SemuAgent · 신고 준비 공통 패턴 (Slice D UI Preview)</title>
+<style>
+  :root {
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --surface-subtle: #fafafa;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --green: #15803d;
+    --green-soft: #f0fdf4;
+    --amber: #b45309;
+    --amber-soft: #fffbeb;
+    --red: #dc2626;
+    --radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; }
+  .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+  .sidebar {
+    position: sticky; top: 0; height: 100vh; padding: 20px 14px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
+  .logo { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; background: var(--fg); color: white; font-weight: 750; }
+  .brand-name { font-size: 15px; font-weight: 700; }
+  .brand-sub { color: var(--fg-subtle); font-size: 11px; }
+  .nav-label { padding: 14px 8px 6px; color: var(--fg-subtle); font-size: 10.5px; font-weight: 700; text-transform: uppercase; }
+  .nav-item { min-height: 34px; padding: 7px 9px; border-radius: 7px; display: flex; align-items: center; color: var(--fg-muted); font-size: 13px; }
+  .nav-item.active { background: #f4f4f5; color: var(--fg); font-weight: 700; }
+  .spacer { flex: 1; }
+  .user { border-top: 1px solid var(--border); padding: 12px 8px 2px; }
+  .user-name { font-size: 12.5px; font-weight: 650; }
+  .user-role { color: var(--fg-subtle); font-size: 11px; }
+  .main { min-width: 0; }
+  .topbar {
+    min-height: 62px; padding: 12px 28px; border-bottom: 1px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .breadcrumb { color: var(--fg-subtle); font-size: 11.5px; }
+  .title { font-size: 16px; font-weight: 700; }
+  .company { margin-left: auto; color: var(--fg-muted); font-size: 12.5px; }
+  .context { display: flex; align-items: center; gap: 8px; }
+  .context-badge { min-height: 32px; padding: 6px 9px; border: 1px solid var(--border-strong); border-radius: 7px; background: var(--surface); font-size: 11.5px; }
+  .context-badge b { margin-left: 5px; color: var(--blue); }
+  .period-control { display: flex; align-items: center; border: 1px solid var(--border-strong); border-radius: 7px; overflow: hidden; }
+  .period-button { min-height: 31px; padding: 0 10px; border: 0; background: var(--surface); color: var(--fg-muted); font-size: 11.5px; font-weight: 650; cursor: pointer; }
+  .period-button:disabled { color: var(--fg-subtle); cursor: not-allowed; }
+  .period-value { min-width: 104px; padding: 6px 11px; border-right: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; font-size: 12px; font-weight: 700; }
+  .content { width: min(1120px, 100%); padding: 26px 28px 56px; display: grid; gap: 22px; }
+  .page-intro h1 { font-size: 22px; font-weight: 750; }
+  .page-intro p { margin-top: 4px; max-width: 680px; color: var(--fg-muted); font-size: 12.5px; }
+  .section-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 9px; }
+  .section-head h2 { font-size: 15px; font-weight: 700; }
+  .section-head p { color: var(--fg-subtle); font-size: 11.5px; }
+  .panel { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+  .blocker-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  .blocker-row:last-child { border-bottom: 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+  .dot.danger { background: var(--red); }
+  .blocker-title { font-size: 13px; font-weight: 700; }
+  .blocker-desc { margin-top: 1px; color: var(--fg-muted); font-size: 11.5px; }
+  .button { min-height: 31px; padding: 5px 10px; border: 1px solid var(--border-strong); border-radius: 7px; background: var(--surface); color: var(--fg); font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .button.primary { border-color: var(--fg); background: var(--fg); color: #fff; }
+  .portal-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 17px 18px; border-bottom: 1px solid var(--border); }
+  .portal-row:last-child { border-bottom: 0; }
+  .portal-name { font-size: 14px; font-weight: 750; }
+  .portal-scope { margin-top: 2px; color: var(--fg-muted); font-size: 11.5px; }
+  .label { color: var(--fg-subtle); font-size: 10.5px; font-weight: 700; }
+  .value { margin-top: 3px; font-size: 12.5px; font-weight: 650; }
+  .chip { display: inline-flex; min-height: 22px; align-items: center; margin-top: 6px; padding: 2px 7px; border: 1px solid var(--border); border-radius: 999px; font-size: 10.5px; font-weight: 700; }
+  .chip.ready { border-color: #bbf7d0; background: var(--green-soft); color: var(--green); }
+  .chip.pending { border-color: #fde68a; background: var(--amber-soft); color: var(--amber); }
+  .boundary { padding: 13px 15px; border: 1px solid #bfdbfe; border-radius: var(--radius); background: var(--blue-soft); color: #1e3a8a; font-size: 11.5px; }
+  .boundary b { color: #172554; }
+  .period-note { color: var(--fg-subtle); font-size: 11px; }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: static; width: 100%; height: auto; padding: 12px 14px; border-right: 0; border-bottom: 1px solid var(--border); }
+    .sidebar .nav-label, .sidebar .nav-item, .sidebar .spacer, .sidebar .user { display: none; }
+    .brand { padding: 0; }
+    .topbar { align-items: flex-start; padding: 12px 16px; }
+    .company { display: none; }
+    .context { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+    .content { padding: 22px 16px 44px; }
+    .portal-row { grid-template-columns: 1fr 1fr; }
+    .portal-action { justify-self: start; }
+  }
+  @media (max-width: 560px) {
+    .topbar { display: grid; }
+    .context { margin-left: 0; justify-content: flex-start; }
+    .context-badge { display: none; }
+    .blocker-row { grid-template-columns: 10px minmax(0, 1fr); }
+    .blocker-row .button { grid-column: 2; justify-self: start; }
+    .portal-row { grid-template-columns: 1fr; gap: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">자</div><div><div class="brand-name">SemuAgent</div><div class="brand-sub">회사 세무·회계 운영</div></div></div>
+    <div class="nav-item">회사 홈</div>
+    <div class="nav-label">운영 흐름</div>
+    <div class="nav-item">자료수집</div>
+    <div class="nav-item">기장검토</div>
+    <div class="nav-item">급여·지급</div>
+    <div class="nav-item">부가세</div>
+    <div class="nav-item active">연간신고</div>
+    <div class="nav-label">관리</div>
+    <div class="nav-item">설정</div>
+    <div class="nav-item">리마인드</div>
+    <div class="spacer"></div>
+    <div class="user"><div class="user-name">남형석</div><div class="user-role">샘플컴퍼니 · 관리자</div></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><div class="breadcrumb">회사 홈 › 신고 준비</div><div class="title">신고 준비</div></div>
+      <div class="company">샘플컴퍼니(주)</div>
+      <div class="context">
+        <div class="context-badge">사업자 유형 <b>법인사업자</b></div>
+        <div class="period-control" aria-label="기준 기간 선택">
+          <button id="period-prev" class="period-button" type="button">이전</button>
+          <div id="period-value" class="period-value" aria-live="polite">2026년 상반기</div>
+          <button id="period-next" class="period-button" type="button" disabled>다음</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="page-intro">
+        <h1>확인할 일과 신고할 곳을 한 흐름으로 봅니다</h1>
+        <p>먼저 해결할 항목을 처리한 뒤, 준비된 값을 홈택스·위택스에서 확인하고 제출합니다.</p>
+      </section>
+
+      <section>
+        <div class="section-head"><h2>먼저 처리할 항목</h2><p>해결할 항목이 없으면 이 영역은 표시하지 않습니다</p></div>
+        <div class="panel">
+          <article class="blocker-row">
+            <span class="dot danger" aria-hidden="true"></span>
+            <div><div class="blocker-title">자료대조원장 미해결 6건</div><div class="blocker-desc">증빙·계정항목·제외 사유를 확인해야 신고값을 확정할 수 있습니다.</div></div>
+            <button class="button primary" type="button">자료대조원장 열기</button>
+          </article>
+          <article class="blocker-row">
+            <span class="dot" aria-hidden="true"></span>
+            <div><div class="blocker-title">급여 미확정 2명</div><div class="blocker-desc">원천세와 지방소득세 값에 포함할 급여를 먼저 확정하세요.</div></div>
+            <button class="button" type="button">급여 열기</button>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><h2>신고할 곳과 준비된 값</h2><p>두 포털을 같은 정보 순서로 안내합니다</p></div>
+        <div class="panel">
+          <article class="portal-row">
+            <div><div class="portal-name">홈택스</div><div class="portal-scope">부가세·원천세·지급명세서</div><span class="chip ready">입력값 준비</span></div>
+            <div><div class="label">SemuAgent에서 준비</div><div class="value">확정 금액과 신고서 입력 위치</div></div>
+            <div><div class="label">사용자가 수행</div><div class="value">홈택스에서 비교·수정 후 제출</div></div>
+            <div class="portal-action"><button class="button" type="button">홈택스 열기</button></div>
+          </article>
+          <article class="portal-row">
+            <div><div class="portal-name">위택스</div><div class="portal-scope">지방소득세 특별징수</div><span class="chip pending">공식 원본 입수 대기</span></div>
+            <div><div class="label">SemuAgent에서 준비</div><div class="value">확정 지방소득세와 신고기간</div></div>
+            <div><div class="label">사용자가 수행</div><div class="value">위택스에서 신고·제출</div></div>
+            <div class="portal-action"><button class="button" type="button">위택스 열기</button></div>
+          </article>
+        </div>
+      </section>
+
+      <p id="period-note" class="period-note">2026년 상반기 기준으로 준비 상태를 표시합니다.</p>
+
+      <section class="boundary">
+        <b>제출 경계</b> — SemuAgent는 확정값과 확인 위치를 정리합니다. 로그인·자동 입력·자동 제출·납부는 수행하지 않으며, 공식 원본을 입수하지 않은 경로를 파일 생성 가능하다고 표시하지 않습니다.
+      </section>
+    </div>
+  </main>
+</div>
+<script>
+  const periods = ["2025년 하반기", "2026년 상반기"];
+  let periodIndex = 1;
+  const value = document.getElementById("period-value");
+  const note = document.getElementById("period-note");
+  const prev = document.getElementById("period-prev");
+  const next = document.getElementById("period-next");
+  function renderPeriod() {
+    value.textContent = periods[periodIndex];
+    note.textContent = periods[periodIndex] + " 기준으로 준비 상태를 표시합니다.";
+    prev.disabled = periodIndex === 0;
+    next.disabled = periodIndex === periods.length - 1;
+  }
+  prev.addEventListener("click", () => { if (periodIndex > 0) { periodIndex -= 1; renderPeriod(); } });
+  next.addEventListener("click", () => { if (periodIndex < periods.length - 1) { periodIndex += 1; renderPeriod(); } });
+</script>
+</body>
+</html>
