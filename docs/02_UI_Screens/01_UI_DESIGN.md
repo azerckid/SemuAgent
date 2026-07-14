@@ -325,6 +325,20 @@
 - 기존 8개 승인 Preview의 채워진 화면을 first-run sample 목표 상태로 사용한다. 별도 신규 HTML Preview는 만들지 않고, 이 섹션과 [First-run Sample Data Pre-Code Brief](../03_Technical_Specs/12_FIRST_RUN_SAMPLE_DATA_PRE_CODE_BRIEF.md)를 구현 계약으로 삼는다.
 - 상태칩·버튼·dialog는 기존 shadcn `card`/`badge`/`button`/`dialog`를 재사용한다.
 
+### 4.15 회사 직접사용 설정 (16_company_settings.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Settings Tabs | 회사 정보·사용자 관리만 노출 | active / inactive |
+| Company Form | 회사명·시간대·사업자 유형 저장, 요금제 이동 | default / saving / error |
+| User Table | 회사 사용자·전화번호·권한·활성 상태 | 관리자 / 일반 사용자 / 비활성 |
+| Add User Action | 가입된 계정 추가 | default / submitting / error |
+
+- 인증·온보딩 성공 뒤 회사 홈으로 진입한다. 다사업장 관리 화면을 기본 랜딩으로 사용하지 않는다.
+- 사용자 화면에서 `담당자` 대신 `사용자`, `STAFF` 대신 `일반 사용자`를 사용한다.
+- 서브도메인·사업장 수·업무 메일함·업무메일 설정은 기본 설정 화면에 노출하지 않는다.
+- 물리 `client`·`staff` 모델과 기존 권한·메일 데이터는 이 화면 정리만으로 삭제하지 않는다.
+
 ## 5. 핵심 CTA 우선순위
 
 **회사 홈**
@@ -378,6 +392,7 @@
 - Preview (연말정산): [15_year_end_settlement.html](./previews/15_year_end_settlement.html)
 - Preview (지방소득세): [10_local_income_tax.html](./previews/10_local_income_tax.html)
 - Preview (사업장현황신고): [11_business_status_report.html](./previews/11_business_status_report.html)
+- Preview (회사 설정): [16_company_settings.html](./previews/16_company_settings.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
@@ -394,6 +409,7 @@
 - **UI_Screens**: [Employee Directory Prototype Review](./08_EMPLOYEE_DIRECTORY_PROTOTYPE_REVIEW.md) - 직원 명부 확인 결과
 - **UI_Screens**: [Internal Reminder Prototype Review](./09_INTERNAL_REMINDER_PROTOTYPE_REVIEW.md) - 리마인드 확인 결과
 - **UI_Screens**: [Cadence Navigation Prototype Review](./13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) - cadence 기반 사이드바 계약
+- **UI_Screens**: [Company Direct-Use Settings Prototype Review](./16_COMPANY_SETTINGS_PROTOTYPE_REVIEW.md) - 회사 직접사용 셸 UI-First 검토
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
 - **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 구현 전 데이터·mutation 계약
