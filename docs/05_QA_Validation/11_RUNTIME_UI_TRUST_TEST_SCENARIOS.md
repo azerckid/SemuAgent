@@ -24,8 +24,8 @@
 | S-42 | 설정 정상 화면 | 탭과 표 확인 | 회사 정보·사용자 관리만 보이고 업무메일·사업장 배정 열이 없다 | PASS · unit + Preview 16 |
 | S-43 | 관리자 | 사용자 추가·권한·활성 상태 변경 | 기존 tenant 격리와 관리자 권한 검증을 유지한다 | PASS · existing API |
 | S-44 | 오래된 설정 링크 `?tab=mail` 또는 `?tab=clients` | 화면 진입 | 오류 없이 회사 정보 탭으로 돌아온다 | PASS · unit |
-| S-45 | 신고 준비 blocker 1건 이상 | 화면 확인 | 상태·제목·설명·한 개 CTA가 같은 순서로 보인다 | Pending · Slice D1 |
-| S-46 | 신고 준비 blocker 0건 | 화면 확인 | 빈 blocker 패널을 표시하지 않는다 | Pending · Slice D1 |
+| S-45 | 신고 준비 blocker 1건 이상 | 화면 확인 | 상태·제목·설명·한 개 CTA가 같은 순서로 보인다 | PASS · unit + runtime guard |
+| S-46 | 신고 준비 blocker 0건 | 화면 확인 | 빈 blocker 패널을 표시하지 않는다 | PASS · unit + runtime guard |
 | S-47 | 기간 이동 지원/미지원 화면 | 데스크톱·모바일 확인 | 실제 href가 있는 이동만 활성화하고 현재 기간은 Topbar 한 위치에 표시한다 | Pending · Slice D2 |
 | S-48 | 홈택스·위택스 안내 | 화면 확인 | 대상 세목·준비값·사용자 행동·포털 이동을 같은 순서로 표시한다 | Pending · Slice D3 |
 | S-49 | 위택스 공식 Excel 원본 미입수 | 화면 확인 | 파일 생성 가능·검증 완료로 표시하지 않고 원본 입수 대기임을 밝힌다 | Pending · Slice D3 |

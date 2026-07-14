@@ -6,6 +6,7 @@ import {
   type FilingPrepTone,
   type FilingPrepTrackCard,
 } from '@/lib/filing-preparation/summary'
+import { ActionBlockerList } from './action-blocker-list'
 
 const CHIP_TONE: Record<FilingPrepTone, string> = {
   ok: 'text-[#16a34a] bg-[#f0fdf4] border-[#bbf7d0]',
@@ -45,6 +46,7 @@ export function FilingPreparationBusinessEntityEmptyState({ tenantName }: { read
 export function FilingPreparationHub({ summary }: { readonly summary: FilingPrepSummary }) {
   const { period, hero, blockers, foundation, tracks, businessEntity } = summary
   const typeLabel = businessEntity ? businessTypeLabel(businessEntity.businessType) : '미지정'
+  const blockerItems = blockers.map(({ domain, ...blocker }) => ({ id: domain, ...blocker }))
 
   return (
     <div className="flex min-h-full flex-col bg-company-bg">
@@ -82,26 +84,7 @@ export function FilingPreparationHub({ summary }: { readonly summary: FilingPrep
           </div>
         </section>
 
-        {/* 다음 할 일 (blockers) */}
-        {blockers.length > 0 && (
-          <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
-            {blockers.map((blocker) => (
-              <div key={blocker.domain} className="grid grid-cols-[12px_1fr_auto] items-center gap-3.5 border-b border-company-border px-[18px] py-3.5 last:border-b-0">
-                <span className={`size-2 rounded-full ${blocker.tone === 'danger' ? 'bg-[#dc2626]' : 'bg-[#d97706]'}`} />
-                <div>
-                  <p className="text-[13.5px] font-semibold">{blocker.title}</p>
-                  <p className="mt-0.5 text-xs text-company-fg-subtle">{blocker.description}</p>
-                </div>
-                <Link
-                  href={blocker.href}
-                  className={`whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold ${blocker.tone === 'danger' ? 'border-[#18181b] bg-[#18181b] text-white' : 'border-company-border-strong bg-company-surface'}`}
-                >
-                  {blocker.ctaLabel}
-                </Link>
-              </div>
-            ))}
-          </section>
-        )}
+        <ActionBlockerList items={blockerItems} />
 
         {/* 공통 기반 */}
         <SectionHead title="공통 기반" hint="모든 신고에 함께 쓰는 자료 준비 단계" />

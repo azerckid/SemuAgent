@@ -1,6 +1,4 @@
-import Link from 'next/link'
 import type {
-  PaymentStatementBlocker,
   PaymentStatementTone,
 } from '@/lib/payment-statements/summary'
 
@@ -89,28 +87,4 @@ export function ReviewNumberCell({ children }: { readonly children: React.ReactN
 
 export function ReviewCell({ children }: { readonly children: React.ReactNode }) {
   return <td className="whitespace-nowrap border-b border-company-border px-[18px] py-2.5">{children}</td>
-}
-
-export function ReviewBlockers({ blockers }: { readonly blockers: PaymentStatementBlocker[] }) {
-  if (blockers.length === 0) return null
-
-  return (
-    <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
-      {blockers.map((blocker) => (
-        <div key={blocker.id} className="grid grid-cols-[12px_1fr_auto] items-center gap-3.5 border-b border-company-border px-[18px] py-3.5 last:border-b-0">
-          <span className={`size-2 rounded-full ${blocker.tone === 'danger' ? 'bg-[#dc2626]' : 'bg-[#d97706]'}`} />
-          <div>
-            <p className="text-[13.5px] font-semibold">{blocker.title}</p>
-            <p className="mt-0.5 text-xs text-company-fg-subtle">{blocker.description}</p>
-          </div>
-          <Link
-            href={blocker.href}
-            className={`whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold ${blocker.tone === 'danger' ? 'border-[#18181b] bg-[#18181b] text-white' : 'border-company-border-strong bg-company-surface'}`}
-          >
-            {blocker.ctaLabel}
-          </Link>
-        </div>
-      ))}
-    </section>
-  )
 }

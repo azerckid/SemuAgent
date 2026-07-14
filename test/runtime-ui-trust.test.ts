@@ -78,4 +78,23 @@ describe('runtime UI trust boundaries', () => {
     expect(settingsPage).not.toContain('staffMailbox')
     expect(settingsPage).not.toContain('workEmailAddresses')
   })
+
+  it('uses one shared blocker surface across filing screens (S-45/S-46)', () => {
+    const blockerScreens = [
+      'app/(dashboard)/dashboard/filing-preparation/_components/filing-preparation-hub.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/payment-statements/_components/payment-statement-review.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/local-income-tax/_components/local-income-tax-review.tsx',
+      'app/(dashboard)/dashboard/filing-preparation/business-status-report/_components/business-status-report-review.tsx',
+    ]
+
+    for (const file of blockerScreens) {
+      const runtimeSource = source(file)
+      expect(runtimeSource).toContain('<ActionBlockerList')
+      expect(runtimeSource).not.toContain('grid-cols-[12px_1fr_auto]')
+    }
+
+    const sharedList = source('app/(dashboard)/dashboard/filing-preparation/_components/action-blocker-list.tsx')
+    expect(sharedList).toContain('if (items.length === 0) return null')
+    expect(sharedList).toContain('sm:grid-cols-[10px_minmax(0,1fr)_auto]')
+  })
 })

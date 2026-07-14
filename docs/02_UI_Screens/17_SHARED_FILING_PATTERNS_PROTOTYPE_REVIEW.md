@@ -2,7 +2,7 @@
 
 > Created: 2026-07-14
 > Last Updated: 2026-07-14
-> Status: owner approved · runtime implementation pending
+> Status: owner approved · D1 runtime complete · D2 pending
 > Preview: [17_shared_filing_patterns.html](./previews/17_shared_filing_patterns.html)
 
 ## 1. 검토 목적

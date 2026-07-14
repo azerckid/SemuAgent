@@ -7,7 +7,6 @@ import {
   type SimplifiedRow,
 } from '@/lib/payment-statements/summary'
 import {
-  ReviewBlockers,
   ReviewCell,
   ReviewChip,
   ReviewEmployeeCell,
@@ -16,6 +15,7 @@ import {
   ReviewSectionHead,
   ReviewTableHeadCell,
 } from '../../_components/statement-review-ui'
+import { ActionBlockerList } from '../../_components/action-blocker-list'
 import { SimplifiedWageEfilingPanel } from './simplified-wage-efiling-panel'
 
 const KRW = new Intl.NumberFormat('ko-KR')
@@ -91,7 +91,7 @@ export function PaymentStatementReview({ summary, efiling }: PaymentStatementRev
           </div>
         </section>
 
-        <ReviewBlockers blockers={blockers} />
+        <ActionBlockerList items={blockers} />
 
         <ReviewSectionHead title="간이지급명세서 (근로소득 · 반기)" hint="월별 급여 원천을 반기 단위로 집계한 신고 준비 데이터" />
         <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { LocalIncomeTaxRow, LocalIncomeTaxSummary, LocalIncomeTaxTone } from '@/lib/local-income-tax/summary'
+import { ActionBlockerList } from '../../_components/action-blocker-list'
 
 const CHIP_TONE: Record<LocalIncomeTaxTone, string> = {
   ok: 'text-[#16a34a] bg-[#f0fdf4] border-[#bbf7d0]',
@@ -74,22 +75,7 @@ export function LocalIncomeTaxReview({ summary }: { readonly summary: LocalIncom
           </div>
         </section>
 
-        {blockers.length > 0 && (
-          <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
-            {blockers.map((blocker) => (
-              <div key={blocker.id} className="grid grid-cols-[12px_1fr_auto] items-center gap-3.5 border-b border-company-border px-[18px] py-3.5 last:border-b-0">
-                <span className="size-2 rounded-full bg-[#dc2626]" />
-                <div>
-                  <p className="text-[13.5px] font-semibold">{blocker.title}</p>
-                  <p className="mt-0.5 text-xs text-company-fg-subtle">{blocker.description}</p>
-                </div>
-                <Link href={blocker.href} className="whitespace-nowrap rounded-lg border border-[#18181b] bg-[#18181b] px-3 py-1.5 text-xs font-semibold text-white">
-                  {blocker.ctaLabel}
-                </Link>
-              </div>
-            ))}
-          </section>
-        )}
+        <ActionBlockerList items={blockers} />
 
         <SectionHead title="직원별 지방소득세 내역 (원천세 특별징수분)" hint="급여에 기록된 실제 원천징수·지방소득세 값" />
         <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">

@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import type {
   BusinessStatusAmountRow,
-  BusinessStatusBlocker,
   BusinessStatusHandoffRow,
   BusinessStatusReportSummary,
   BusinessStatusTone,
 } from '@/lib/business-status-report/summary'
+import { ActionBlockerList } from '../../_components/action-blocker-list'
 
 const CHIP_TONE: Record<BusinessStatusTone, string> = {
   ok: 'text-[#16a34a] bg-[#f0fdf4] border-[#bbf7d0]',
@@ -89,7 +89,7 @@ export function BusinessStatusReportReview({ summary }: { readonly summary: Busi
           <b className="text-[#2e1065]">대상 분기</b> — 이 화면은 사업자 유형이 <b>면세 개인</b>인 사업장만 사용합니다. 과세사업자와 법인은 사업장현황신고 대상이 아니며, 사업자 유형이 미지정이면 설정에서 먼저 확인합니다.
         </section>
 
-        {blockers.length > 0 && <BlockerList blockers={blockers} />}
+        <ActionBlockerList items={blockers} />
 
         <section className="grid gap-4 lg:grid-cols-4">
           <SummaryCard label="수입금액" value={`${KRW.format(hero.revenueTotalKrw)}원`} />
@@ -133,28 +133,6 @@ function EligibilityState({ summary }: { summary: BusinessStatusReportSummary })
           {cta}
         </Link>
       </div>
-    </section>
-  )
-}
-
-function BlockerList({ blockers }: { blockers: BusinessStatusBlocker[] }) {
-  return (
-    <section className="overflow-hidden rounded-xl border border-company-border bg-company-surface shadow-company-card">
-      {blockers.map((blocker) => (
-        <div key={blocker.id} className="grid grid-cols-[12px_1fr_auto] items-center gap-3.5 border-b border-company-border px-[18px] py-3.5 last:border-b-0">
-          <span className={`size-2 rounded-full ${blocker.tone === 'danger' ? 'bg-[#dc2626]' : 'bg-[#d97706]'}`} />
-          <div>
-            <p className="text-[13.5px] font-semibold">{blocker.title}</p>
-            <p className="mt-0.5 text-xs text-company-fg-subtle">{blocker.description}</p>
-          </div>
-          <Link
-            href={blocker.href}
-            className={`whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold ${blocker.tone === 'danger' ? 'border-[#18181b] bg-[#18181b] text-white' : 'border-company-border-strong bg-company-surface'}`}
-          >
-            {blocker.ctaLabel}
-          </Link>
-        </div>
-      ))}
     </section>
   )
 }
