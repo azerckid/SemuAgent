@@ -1028,8 +1028,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 - Status: `todo` (제품 방향 승인, A2A 질의응답 진행 중, 구현 미승인)
 - Related Concept Docs: [Agent-to-Agent Tax Collaboration Master Plan](../01_Concept_Design/03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md) - 연결·Ready·직접 수신·검토 대기 원칙의 임시 공통 정본. [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - Path 2 주 경로와 책임 경계.
-- Related UI Docs: N/A - A2A-7에서 SemuAgent 전송 화면과 JARYO 수신·검토 화면을 함께 정의한다.
-- Related HTML Preview: N/A - A2A-7에서 양쪽 화면 Preview를 제작하고 오너 승인 전 runtime을 구현하지 않는다.
+- Related UI Docs: [Screen Flow §4h](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design §4.4, §4.4a](../02_UI_Screens/01_UI_DESIGN.md) - SemuAgent 발신 측 전송 확인 화면(부가세 첫 slice). JARYO 수신·검토 화면은 아직 미정의.
+- Related HTML Preview: [A2A Transfer Confirmation Prototype Review](../02_UI_Screens/18_A2A_TRANSFER_CONFIRMATION_PROTOTYPE_REVIEW.md) - SemuAgent 부가세 전송 확인 Preview 제작 완료(2026-07-16), **오너 확인 대기**. JARYO 수신 화면 Preview는 후속. 오너 승인 전 runtime 구현 금지.
 - Related Technical Docs: N/A - A2A-2~A2A-5 질의응답 후 versioned 공통 계약, API, 사업자 매핑, 원본 전송, 보안 명세를 작성한다.
 - Related QA Docs: N/A - 기술 계약 승인 후 tenant·사업자·세목·기간 격리, 재시도, 중복 수신, hash, 수신 상태 동기화 시나리오를 작성한다.
 - Component & Library Plan: N/A - A2A-7에서 양쪽 기존 자산 재사용 범위와 신규 공통 계약 모듈을 확정한다.
