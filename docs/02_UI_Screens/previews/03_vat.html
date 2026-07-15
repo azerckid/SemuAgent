@@ -189,12 +189,15 @@
   .mobile-bar { display: none; }
 
   /* A2A-7 transfer entry point */
-  .a2a-entry { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid #bbf7d0; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 20px; }
+  .a2a-entry { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 20px; }
+  .a2a-entry.ready { border-color: #bbf7d0; }
+  .a2a-entry.not-ready { border-color: #fde68a; }
   .a2a-entry-text { display: flex; align-items: center; gap: 12px; }
   .a2a-entry-title { font-size: 13.5px; font-weight: 650; }
   .a2a-entry-sub { font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
   .btn-primary { margin-left: auto; flex-shrink: 0; background: var(--accent); color: #fff; font-size: 13px; font-weight: 650; border: 1px solid var(--accent); border-radius: 8px; padding: 9px 16px; cursor: pointer; white-space: nowrap; }
   .btn-primary:hover { opacity: .92; }
+  .btn-primary[disabled] { background: #e4e4e7; border-color: #e4e4e7; color: var(--fg-subtle); cursor: not-allowed; }
   .btn-secondary { background: var(--surface); color: var(--fg); font-size: 13px; font-weight: 650; border: 1px solid var(--border-strong); border-radius: 8px; padding: 9px 16px; cursor: pointer; }
   @media (max-width: 767px) { .a2a-entry { flex-direction: column; align-items: stretch; } .btn-primary { margin-left: 0; text-align: center; } }
 
@@ -316,16 +319,18 @@
         </div>
       </div>
 
-      <!-- A2A-7: Ready 상태에서만 노출하는 세무사무소 전송 진입점. 즉시 전송하지 않고 전송 확인 화면으로 이동한다. -->
-      <div class="a2a-entry ready">
+      <!-- A2A-7: Ready 상태에서만 진입점을 활성화한다. 이 스냅샷은 아래 "신고 전 수정 필요" 2건이
+           미확정 상태(예정 세액)이므로 Not Ready로 표시한다. Ready 상태의 활성 진입점 예시는
+           "다른 상태 보기"에서 확인한다. -->
+      <div class="a2a-entry not-ready">
         <div class="a2a-entry-text">
-          <span class="chip ok">Ready</span>
+          <span class="chip warn">Not Ready</span>
           <div>
-            <div class="a2a-entry-title">이 기간의 부가세 자료가 세무사무소로 보낼 준비가 됐습니다</div>
-            <div class="a2a-entry-sub">미해결 항목 0건 · 연결된 사무소: 샘플세무회계사무소</div>
+            <div class="a2a-entry-title">신고 전 수정 필요 2건을 확정하면 세무사무소로 보낼 수 있습니다</div>
+            <div class="a2a-entry-sub">공제·안분 판단이 남아 있어 예정 세액입니다</div>
           </div>
         </div>
-        <a class="btn-primary" href="18_a2a_transfer_confirmation.html">세무사무소로 보내기</a>
+        <button class="btn-primary" disabled title="신고 전 수정 필요 항목을 먼저 확정하세요">세무사무소로 보내기</button>
       </div>
 
       <!-- VAI-9d: 확정된 불공제 설명과 분리된 절세 후보 작업대. 후보가 0건이면 섹션 전체를 렌더하지 않는다. -->
@@ -534,6 +539,22 @@
         </div>
       </details>
 
+      <details class="alt-state">
+        <summary>다른 상태 보기 · 세무사무소 전송 진입점(Ready)</summary>
+        <div class="workflow-demo">
+          <div class="a2a-entry ready" style="border-radius:0;box-shadow:none;">
+            <div class="a2a-entry-text">
+              <span class="chip ok">Ready</span>
+              <div>
+                <div class="a2a-entry-title">이 기간의 부가세 자료가 세무사무소로 보낼 준비가 됐습니다</div>
+                <div class="a2a-entry-sub">미해결 항목 0건 · 연결된 사무소: 샘플세무회계사무소</div>
+              </div>
+            </div>
+            <a class="btn-primary" href="18_a2a_transfer_confirmation.html">세무사무소로 보내기</a>
+          </div>
+        </div>
+      </details>
+
       <div class="note">
         <b>Preview 안내</b> — 이 화면은 <b>부가세</b> UI 확인용 정적 프리뷰(VUI-1b + VAI-7c + VAI-9e)입니다. 데이터는 전부 가공값(샘플컴퍼니(주))이며 실제 재무·세무 데이터가 아닙니다.
         변경: 화면 상태 예시 삭제, 매입세액 공제 검토를 신고 전 수정 필요 작업대로 통합, 별도 홈택스·사용자 확정 열과 하단 신고 준비·차단 이유·책임 문구를 삭제하고 관련 행동을 공제 판단 상세 안으로 이동, 동작 없는 상단 "확정 신고" 삭제.
@@ -542,9 +563,12 @@
         VAI-8e: 기본 셀에는 결론 한 줄만 유지하고, 펼친 상세에서 실제로 찾은 근거와 홈택스 행동을 보여줍니다. 담당자 이관은 허용된 행에만 질문 한 개와 답변에 따른 결론 변화를 표시하며, 일반 적용 대신 답변하고 확정하도록 합니다.
         VAI-9d/9e: `추가 공제 가능성`은 신고 전 수정 필요와 분리하고, 기본 행에는 재분류 방향과 최대 가능 금액만 표시합니다. 신뢰도·근거·부족 자료와 사용자 액션은 펼쳐보기 안에 두며 후보가 0건이면 섹션을 렌더하지 않습니다. 공제 재분류는 업무 목적/참석자·적격증빙·사용자 명시 확정을 모두 요구합니다.
         VUI-1d: 767px 이하에서는 고정 사이드바를 숨기고 전체 메뉴 버튼을 표시하며, expected_no_change 행과 빈 수정 섹션을 렌더하지 않습니다.
-        A2A-7: Ready 상태에서만 `세무사무소로 보내기` 진입점을 노출합니다. 클릭 즉시 전송하지 않고 별도
-        <a href="18_a2a_transfer_confirmation.html" style="color:var(--accent);font-weight:600;">전송 확인 화면</a>으로 이동합니다(마스터플랜 §5.3, §8.17.4).
-        오너 승인 전에는 runtime 구현을 시작하지 않습니다.
+        A2A-7: `세무사무소로 보내기` 진입점은 Ready 상태에서만 활성화합니다. 이 스냅샷은 신고 전 수정
+        필요 2건이 남아 Not Ready 상태로 표시하며, 클릭해도 즉시 전송되지 않는 별도
+        <a href="18_a2a_transfer_confirmation.html" style="color:var(--accent);font-weight:600;">전송 확인 화면</a>은
+        Ready일 때만 도달합니다(마스터플랜 §5.3, §6.2, §8.17.4). Ready 상태의 활성 진입점 예시는
+        `다른 상태 보기 · 세무사무소 전송 진입점(Ready)`에서 확인합니다. 오너 승인 전에는 runtime 구현을
+        시작하지 않습니다.
       </div>
     </div>
   </div>

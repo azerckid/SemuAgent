@@ -149,7 +149,7 @@
 | VAT Package API Gate | package/rebuild 요청 시 미완료 자료를 서버에서 차단 | 화면에 별도 준비 카드·차단 이유 목록을 반복하지 않고 API에서만 강제 |
 | VAT Path 1b Input Summary | 확정 부가세 값을 홈택스 신고서 행·칸과 연결 | 별도 `홈택스 입력값` 화면. 한 개 표에서 `신고서 위치/금액/세액/확인 방식` 표시, AI 설명 반복 없음 |
 | Hidden Empty State | 수정 거래가 0건일 때 불필요한 작업대 제거 | `신고 전 수정 필요` 섹션 전체를 렌더하지 않고 Hero에 `수정할 거래가 없습니다` 한 줄만 표시 |
-| A2A Transfer Entry | Ready 상태에서만 노출하는 세무사무소 전송 진입점 | Hero 바로 아래 배너(Ready 칩 + 연결 사무소명 + `세무사무소로 보내기`). 즉시 전송하지 않고 전송 확인 화면으로 이동(A2A-7, §4.4a) |
+| A2A Transfer Entry | Ready 상태에서만 활성화하는 세무사무소 전송 진입점 | Hero 바로 아래 배너. Not Ready(공제·안분 미확정)에서는 warn 칩 + 비활성 버튼, Ready(blocker 0건)에서만 ok 칩 + 연결 사무소명 + 활성 `세무사무소로 보내기`로 전송 확인 화면 이동(A2A-7, §4.4a). 03_vat.html 기본 스냅샷은 신고 전 수정 필요 2건이 남아 Not Ready이며, Ready 예시는 `다른 상태 보기`에 별도 제공 |
 
 ### 4.4a A2A 전송 확인 (18_a2a_transfer_confirmation.html)
 

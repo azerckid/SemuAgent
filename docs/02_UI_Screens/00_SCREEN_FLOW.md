@@ -279,9 +279,12 @@ Path 1b `홈택스 입력값`은 기존 판단 작업대와 분리한다. AI 출
 
 ## 4h. A2A 전송 확인 화면 흐름 (JC-044, A2A-7)
 
-진입: 부가세 화면(03_vat.html)의 Ready 배너. VAT package gate `isReady`가 참이고 미해결 blocker가
-0건일 때만 `세무사무소로 보내기` 진입점을 노출한다(마스터플랜 §6.2). 클릭 즉시 전송하지 않고
-별도 전송 확인 화면(18_a2a_transfer_confirmation.html)으로 이동한다.
+진입: 부가세 화면(03_vat.html)의 전송 진입점 배너. VAT package gate `isReady`가 참이고 미해결
+blocker가 0건일 때만 `세무사무소로 보내기`를 활성화한다(마스터플랜 §6.2). Not Ready 상태에서는
+같은 자리에 미해결 항목 안내와 비활성 버튼만 표시하고 클릭해도 이동하지 않는다. 03_vat.html의
+기본 스냅샷은 신고 전 수정 필요 2건이 남아 있어 Not Ready를 기본으로 표시하며, Ready 상태의
+활성 진입점은 같은 파일의 `다른 상태 보기`에서 별도로 확인한다. Ready에서 클릭하면 즉시
+전송하지 않고 별도 전송 확인 화면(18_a2a_transfer_confirmation.html)으로 이동한다.
 
 연계: 확정 부가세 원장의 준비값·해결된 예외·provenance fingerprint를 읽어 표시하며, 전송 대상은
 사업자 1곳×세목 1개×신고기간 1개×snapshot 1개의 독립 전송 단위다(§5.1). 연결된 세무회계사무소
