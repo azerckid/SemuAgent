@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SemuAgent · 세무사무소로 전송 확인 (UI Preview · A2A-7)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --fg: #18181b;
+    --fg-muted: #71717a;
+    --fg-subtle: #a1a1aa;
+    --brand: #18181b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #f0fdf4;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 1px 3px rgba(24,24,27,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  /* Sidebar (shared shell) */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .brand .name { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+  .brand .sub { font-size: 11px; color: var(--fg-subtle); }
+  .nav-label { font-size: 11px; color: var(--fg-subtle); font-weight: 600; padding: 14px 8px 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; cursor: pointer; font-size: 13.5px; }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .8; }
+  .nav-item:hover { background: #f4f4f5; color: var(--fg); }
+  .nav-item.active-parent { background: #fafafa; color: var(--fg); font-weight: 600; }
+  .nav-group { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item.sub { padding: 6px 10px 6px 28px; font-size: 12.5px; }
+  .nav-item.sub .ico { width: 14px; font-size: 11px; opacity: .55; }
+  .sidebar .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .user .av { width: 28px; height: 28px; border-radius: 999px; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .user .who { font-size: 12.5px; font-weight: 600; }
+  .user .role { font-size: 11px; color: var(--fg-subtle); }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .crumb { font-size: 12.5px; color: var(--fg-subtle); font-weight: 500; }
+  .crumb a:hover { color: var(--fg-muted); text-decoration: underline; }
+  .topbar h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .topbar .co { color: var(--fg-muted); font-weight: 500; font-size: 13px; margin-left: auto; }
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 880px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; }
+  .card-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .card-head h2 { font-size: 14.5px; font-weight: 650; }
+  .card-head .hint { font-size: 12px; color: var(--fg-subtle); }
+
+  .chip { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border: 1px solid #fde68a; }
+  .chip.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid #fecaca; }
+  .chip.muted { color: var(--fg-muted); background: #f4f4f5; border: 1px solid var(--border); }
+
+  /* Connection status */
+  .connection-row { display: flex; align-items: center; gap: 14px; }
+  .office-av { width: 40px; height: 40px; border-radius: 10px; background: #f4f4f5; border: 1px solid var(--border); display: grid; place-items: center; font-weight: 700; font-size: 15px; color: var(--fg-muted); flex-shrink: 0; }
+  .office-name { font-size: 14px; font-weight: 650; }
+  .office-meta { font-size: 12px; color: var(--fg-subtle); margin-top: 2px; }
+
+  /* Key-value grid */
+  .kv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 24px; }
+  .kv-item .k { font-size: 11.5px; color: var(--fg-subtle); font-weight: 600; }
+  .kv-item .v { font-size: 13.5px; font-weight: 600; margin-top: 3px; }
+  .kv-item .v.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 500; color: var(--fg-muted); }
+
+  /* Ready status banner */
+  .ready-banner { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--ok-soft); border: 1px solid #bbf7d0; }
+  .ready-banner .txt { font-size: 12.5px; font-weight: 600; color: #14532d; }
+  .ready-banner .sub { font-size: 11.5px; color: #16a34a; font-weight: 500; }
+
+  /* Prepared value summary */
+  .value-grid { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 0; align-items: stretch; }
+  .value-cell { padding: 4px 20px; border-right: 1px solid var(--border); }
+  .value-cell:first-child { padding-left: 0; }
+  .value-cell.result { border-right: 0; padding-right: 0; text-align: right; }
+  .value-cell .k { font-size: 11.5px; color: var(--fg-muted); font-weight: 600; }
+  .value-cell .v { font-size: 20px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .value-cell.result .v { color: var(--accent); }
+  .value-op { display: grid; place-items: center; font-size: 18px; color: var(--fg-subtle); }
+
+  /* Source scope table */
+  table { width: 100%; border-collapse: collapse; }
+  colgroup .src-detail-col { width: 110px; }
+  thead th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--fg-subtle); padding: 10px 0; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.amt { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 20px; }
+  td.detail-col { text-align: right; }
+  .source-detail summary { list-style: none; cursor: pointer; color: var(--accent); font-size: 12.5px; font-weight: 600; }
+  .source-detail summary::-webkit-details-marker { display: none; }
+  .source-detail summary::after { content: " ▾"; }
+  .source-detail[open] summary::after { content: " ▴"; }
+  .source-list { margin-top: 10px; background: #fafafa; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .source-list-row { display: flex; justify-content: space-between; padding: 9px 12px; font-size: 12px; }
+  .source-list-row + .source-list-row { border-top: 1px solid var(--border); }
+  .source-list-row .fn { color: var(--fg-muted); }
+  .source-list-row .fv { color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
+
+  /* Resolved exceptions */
+  .exception-item { padding: 12px 0; border-bottom: 1px dashed var(--border); }
+  .exception-item:last-child { border-bottom: 0; padding-bottom: 0; }
+  .exception-item:first-child { padding-top: 0; }
+  .exception-title { font-size: 13px; font-weight: 650; }
+  .exception-reason { font-size: 12px; color: var(--fg-muted); margin-top: 3px; }
+  .exception-meta { font-size: 11px; color: var(--fg-subtle); margin-top: 4px; }
+
+  /* Fingerprint / audit footer */
+  .fingerprint-note { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 11.5px; color: var(--fg-subtle); padding-top: 12px; border-top: 1px solid var(--border); margin-top: 4px; }
+  .fingerprint-note .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  /* CTA row */
+  .cta-row { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .btn-primary { background: var(--accent); color: #fff; font-size: 13.5px; font-weight: 650; border: 1px solid var(--accent); border-radius: 8px; padding: 10px 18px; cursor: pointer; }
+  .btn-primary:hover { opacity: .92; }
+  .btn-secondary { background: var(--surface); color: var(--fg); font-size: 13.5px; font-weight: 650; border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px 18px; cursor: pointer; }
+  .cta-note { font-size: 11.5px; color: var(--fg-subtle); margin-right: auto; }
+
+  /* Blocked (fingerprint mismatch) state */
+  .block-banner { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 10px; background: var(--warn-soft); border: 1px solid #fde68a; }
+  .block-banner .ico { font-size: 16px; color: var(--warn); }
+  .block-banner .txt { font-size: 13px; font-weight: 650; color: #78350f; }
+  .block-banner .sub { font-size: 12px; color: #92400e; margin-top: 3px; font-weight: 500; }
+
+  /* Alternate state toggle (matches 03_vat.html convention) */
+  details.alt-state { font-size: 12.5px; }
+  details.alt-state > summary { list-style: none; cursor: pointer; font-weight: 600; color: var(--accent); }
+  details.alt-state > summary::-webkit-details-marker { display: none; }
+  .workflow-demo { margin-top: 10px; }
+
+  .note { font-size: 12px; color: var(--fg-subtle); background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .note b { color: var(--fg-muted); }
+  .mobile-bar { display: none; }
+
+  @media (max-width: 767px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { display: none; }
+    .mobile-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .mobile-bar .brand { padding: 0; }
+    .mobile-menu { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 18px; }
+    .topbar { padding: 12px 16px; gap: 10px; flex-wrap: wrap; }
+    .content { padding: 20px 16px 40px; }
+    .card { padding: 16px; }
+    .kv-grid { grid-template-columns: 1fr; }
+    .value-grid { grid-template-columns: 1fr; gap: 10px; }
+    .value-cell, .value-cell:first-child, .value-cell.result { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; text-align: left; }
+    .value-op { display: none; }
+    .cta-row { flex-direction: column-reverse; align-items: stretch; }
+    .cta-note { margin-right: 0; text-align: center; }
+    .fingerprint-note { flex-direction: column; align-items: flex-start; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="mobile-bar">
+    <div class="brand"><div class="logo">자</div><div><div class="name">SemuAgent</div><div class="sub">회사 세무·회계 운영</div></div></div>
+    <button class="mobile-menu" aria-label="전체 메뉴 열기">☰</button>
+  </div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="00_company_home.html" class="brand">
+      <div class="logo">자</div>
+      <div>
+        <div class="name">SemuAgent</div>
+        <div class="sub">회사 세무·회계 운영</div>
+      </div>
+    </a>
+
+    <a href="00_company_home.html" class="nav-item"><span class="ico">◧</span> 회사 홈</a>
+    <div class="nav-label">운영 흐름</div>
+    <a href="01_source_collection.html" class="nav-item"><span class="ico">↥</span> 자료수집</a>
+    <div class="nav-group">
+      <a href="02_bookkeeping_review.html" class="nav-item"><span class="ico">▤</span> 기장검토</a>
+      <a href="12_reconciliation_ledger.html" class="nav-item sub"><span class="ico">›</span> 자료대조원장</a>
+    </div>
+    <div class="nav-group">
+      <a href="04_payroll.html" class="nav-item"><span class="ico">₩</span> 급여·지급</a>
+      <a href="04_payroll.html" class="nav-item sub"><span class="ico">›</span> 급여</a>
+      <a href="06_employee_directory.html" class="nav-item sub"><span class="ico">›</span> 직원 명부</a>
+      <a href="05_filing_support.html" class="nav-item sub"><span class="ico">›</span> 원천세</a>
+      <a href="09_payment_year_end.html" class="nav-item sub"><span class="ico">›</span> 지급명세서</a>
+      <a href="15_year_end_settlement.html" class="nav-item sub"><span class="ico">›</span> 연말정산</a>
+      <a href="10_local_income_tax.html" class="nav-item sub"><span class="ico">›</span> 지방소득세</a>
+    </div>
+    <div class="nav-group">
+      <a href="03_vat.html" class="nav-item active-parent"><span class="ico">％</span> 부가세</a>
+      <span class="nav-item sub"><span class="ico">›</span> 세무사무소로 전송</span>
+    </div>
+    <div class="nav-group">
+      <a href="08_filing_preparation.html" class="nav-item"><span class="ico">◷</span> 연간신고</a>
+      <a href="08_filing_preparation.html#corporate-tax" class="nav-item sub"><span class="ico">›</span> 법인세</a>
+    </div>
+    <div class="nav-label">관리</div>
+    <div class="nav-item"><span class="ico">⚙</span> 설정</div>
+    <a href="07_internal_reminder.html" class="nav-item"><span class="ico">✉</span> 리마인드</a>
+    <div class="spacer"></div>
+    <div class="user">
+      <div class="av">김</div>
+      <div>
+        <div class="who">김대표</div>
+        <div class="role">샘플컴퍼니(주) · 대표</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumb"><a href="00_company_home.html">회사 홈</a> › <a href="03_vat.html">부가세</a> › 세무사무소로 전송</div>
+        <h1>세무사무소로 전송 확인</h1>
+      </div>
+      <span class="co">샘플컴퍼니(주)</span>
+    </div>
+
+    <div class="content">
+
+      <!-- 1. Connection status -->
+      <div class="card">
+        <div class="card-head">
+          <h2>수신 세무회계사무소</h2>
+          <span class="hint">연결 상태를 확인합니다</span>
+        </div>
+        <div class="connection-row">
+          <div class="office-av">세</div>
+          <div>
+            <div class="office-name">샘플세무회계사무소</div>
+            <div class="office-meta">연결됨 · 2026-06-02 연결 승인 · 담당자 박세무</div>
+          </div>
+          <span class="chip ok" style="margin-left:auto;">연결됨</span>
+        </div>
+      </div>
+
+      <!-- 2. Transmission unit summary -->
+      <div class="card">
+        <div class="card-head">
+          <h2>전송 대상</h2>
+          <span class="hint">사업자 1곳 × 세목 1개 × 신고기간 1개 × snapshot 1개</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-item"><div class="k">사업자</div><div class="v">샘플컴퍼니(주)</div></div>
+          <div class="kv-item"><div class="k">신고 세목</div><div class="v">부가가치세</div></div>
+          <div class="kv-item"><div class="k">신고기간</div><div class="v">2026년 1기 (2026-01-01 ~ 2026-06-30)</div></div>
+          <div class="kv-item"><div class="k">snapshot version</div><div class="v mono">v3 · 2026-07-16 04:12 확정</div></div>
+        </div>
+        <div style="margin-top:16px;">
+          <div class="ready-banner">
+            <span class="chip ok">Ready</span>
+            <div>
+              <div class="txt">미해결 blocker 0건 · 치명적 무결성 오류 0건</div>
+              <div class="sub">공제·과세유형·안분 사용자 확정, 증빙 연결, 확정 원장 provenance 검증을 모두 통과했습니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Prepared value summary -->
+      <div class="card">
+        <div class="card-head">
+          <h2>신고 준비값 요약</h2>
+          <span class="hint">현재 확정 원장 기준</span>
+        </div>
+        <div class="value-grid">
+          <div class="value-cell">
+            <div class="k">매출세액</div>
+            <div class="v">32,000,000</div>
+          </div>
+          <div class="value-op">−</div>
+          <div class="value-cell">
+            <div class="k">매입세액(공제)</div>
+            <div class="v">18,000,000</div>
+          </div>
+          <div class="value-op">=</div>
+          <div class="value-cell result">
+            <div class="k">납부(예정) 세액</div>
+            <div class="v">14,000,000</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Source scope -->
+      <div class="card">
+        <div class="card-head">
+          <h2>포함 원본 자료</h2>
+          <span class="hint">이 신고 이벤트의 Ready 판단과 준비값 생성에 실제 사용된 자료만 포함합니다</span>
+        </div>
+        <table>
+          <colgroup><col><col style="width:90px"><col class="src-detail-col"></colgroup>
+          <thead><tr><th>자료유형</th><th style="text-align:right">건수</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td>세금계산서(매출·매입)</td>
+              <td class="amt">86건</td>
+              <td class="detail-col">
+                <details class="source-detail">
+                  <summary>펼쳐보기</summary>
+                  <div class="source-list">
+                    <div class="source-list-row"><span class="fn">tax-invoice-2026-06-021.pdf</span><span class="fv">1,320,000원</span></div>
+                    <div class="source-list-row"><span class="fn">tax-invoice-2026-06-014.pdf</span><span class="fv">2,200,000원</span></div>
+                    <div class="source-list-row"><span class="fn">외 84건</span><span class="fv">전체 목록은 원본 저장소에서 확인</span></div>
+                  </div>
+                </details>
+              </td>
+            </tr>
+            <tr>
+              <td>법인카드 매입</td>
+              <td class="amt">214건</td>
+              <td class="detail-col">
+                <details class="source-detail">
+                  <summary>펼쳐보기</summary>
+                  <div class="source-list">
+                    <div class="source-list-row"><span class="fn">card-2026-06-088.csv 행 12</span><span class="fv">18,000원</span></div>
+                    <div class="source-list-row"><span class="fn">외 213건</span><span class="fv">전체 목록은 원본 저장소에서 확인</span></div>
+                  </div>
+                </details>
+              </td>
+            </tr>
+            <tr>
+              <td>현금영수증</td>
+              <td class="amt">37건</td>
+              <td class="detail-col">
+                <details class="source-detail">
+                  <summary>펼쳐보기</summary>
+                  <div class="source-list">
+                    <div class="source-list-row"><span class="fn">cash-receipt-2026-06-009.pdf</span><span class="fv">9,000원</span></div>
+                    <div class="source-list-row"><span class="fn">외 36건</span><span class="fv">전체 목록은 원본 저장소에서 확인</span></div>
+                  </div>
+                </details>
+              </td>
+            </tr>
+            <tr>
+              <td>통장 거래내역</td>
+              <td class="amt">2건</td>
+              <td class="detail-col">
+                <details class="source-detail">
+                  <summary>펼쳐보기</summary>
+                  <div class="source-list">
+                    <div class="source-list-row"><span class="fn">bank-statement-2026-06.xlsx</span><span class="fv">1기 전체</span></div>
+                    <div class="source-list-row"><span class="fn">bank-statement-2026-05.xlsx</span><span class="fv">1기 전체</span></div>
+                  </div>
+                </details>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 5. Resolved exceptions -->
+      <div class="card">
+        <div class="card-head">
+          <h2>해결된 예외</h2>
+          <span class="hint">사용자가 명시적으로 처리 방향을 확정한 항목</span>
+        </div>
+        <div class="exception-item">
+          <div class="exception-title">거래처 접대 식대 (○○한정식) · 1,320,000원</div>
+          <div class="exception-reason">처리: 공제 불가로 확정 — 기업업무추진비 관련 매입세액(부가가치세법 제39조)</div>
+          <div class="exception-meta">확인자: 김대표 · 2026-07-14 10:22</div>
+        </div>
+        <div class="exception-item">
+          <div class="exception-title">면세사업분 공통매입 (○○물산) · 2,200,000원</div>
+          <div class="exception-reason">처리: 공급가액 비율 안분 확정 — 실지귀속 불명확, 공통매입세액 안분계산 적용</div>
+          <div class="exception-meta">확인자: 김대표 · 2026-07-14 11:05</div>
+        </div>
+      </div>
+
+      <!-- 6. Fingerprint + final CTA -->
+      <div class="card">
+        <div class="fingerprint-note">
+          <span>확인 시점 fingerprint <span class="mono">fp_9a41c2…e08b</span> · 서버 현재 fingerprint와 일치</span>
+          <span>전송 시 사용자, 확인시각, 수신 사무소, 세목·기간, snapshot version, fingerprint, 포함 자료 범위가 감사 이력에 기록됩니다</span>
+        </div>
+        <div class="cta-row" style="margin-top:16px;">
+          <span class="cta-note">전송 후에도 사무소 검토 전까지는 재확인·재전송이 가능합니다.</span>
+          <button class="btn-secondary">취소</button>
+          <button class="btn-primary">세무사무소로 전송</button>
+        </div>
+      </div>
+
+      <!-- Alternate state: fingerprint mismatch / re-check required -->
+      <details class="alt-state">
+        <summary>다른 상태 보기 · 재확인 필요(fingerprint 불일치)</summary>
+        <div class="workflow-demo">
+          <div class="card" style="border-color:#fde68a;">
+            <div class="block-banner">
+              <span class="ico">!</span>
+              <div>
+                <div class="txt">확인한 이후 원본 자료 또는 판단이 변경됐습니다</div>
+                <div class="sub">이전에 확인한 fingerprint <span class="mono" style="font-family:ui-monospace,monospace;">fp_9a41c2…e08b</span>와 현재 원장 fingerprint가 다릅니다. 최신 내용을 다시 확인해야 전송할 수 있습니다.</div>
+              </div>
+            </div>
+            <div class="cta-row" style="margin-top:16px;">
+              <button class="btn-secondary">부가세로 돌아가서 확인</button>
+              <button class="btn-primary" disabled style="opacity:.5;cursor:not-allowed;" title="최신 내용을 다시 확인해야 활성화됩니다">세무사무소로 전송</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="note">
+        <b>Preview 안내</b> — 이 화면은 <b>세무사무소로 전송 확인</b> UI 확인용 정적 프리뷰(A2A-7)입니다.
+        데이터는 전부 가공값(샘플컴퍼니(주) · 샘플세무회계사무소)이며 실제 신고·전송 데이터가 아닙니다.
+        <br /><br />
+        범위: A2A Master Plan §5.3(Pre-Send User Confirmation), §5.1(Transmission Unit), §5.2(Source Scope),
+        §6.2(VAT Ready Contract), §8.17(전송·수신 화면 분리)를 근거로 부가세 첫 slice 화면만 제작했습니다.
+        원천세·지급명세서 등 후속 세목은 같은 envelope에 세목별 payload만 추가하는 방식으로 확장합니다(§8.17.22-24).
+        <br /><br />
+        이 화면은 진입점(03_vat.html)에서만 도달하며, 클릭 즉시 전송하지 않고 이 화면에서 전체 범위를 검토한 뒤
+        `세무사무소로 전송`으로 최종 승인합니다. 최종 CTA 문구는 §5.3을 정본으로 통일했습니다(§8.17.4 원문 `확인하고 전송`은
+        본 Preview 승인과 함께 §5.3에 맞춰 수정).
+        <br /><br />
+        범위 밖: `세무사무소 연결` 관리 화면(상담 신청·수임 승인·연결 해지, §7.1)은 별도 화면 책임이며 이 Preview에
+        포함하지 않았습니다. 전송 진행 중·전송 완료·기술 오류 상태, JARYO 수신 측 화면은 후속 Preview에서 다룹니다.
+        오너 승인 전에는 API·DB·runtime 구현을 시작하지 않습니다(§14).
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

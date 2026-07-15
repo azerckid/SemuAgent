@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-16 02:03
+> Last Updated: 2026-07-16 06:10
 
 ## 1. 디자인 방향
 
@@ -149,6 +149,26 @@
 | VAT Package API Gate | package/rebuild 요청 시 미완료 자료를 서버에서 차단 | 화면에 별도 준비 카드·차단 이유 목록을 반복하지 않고 API에서만 강제 |
 | VAT Path 1b Input Summary | 확정 부가세 값을 홈택스 신고서 행·칸과 연결 | 별도 `홈택스 입력값` 화면. 한 개 표에서 `신고서 위치/금액/세액/확인 방식` 표시, AI 설명 반복 없음 |
 | Hidden Empty State | 수정 거래가 0건일 때 불필요한 작업대 제거 | `신고 전 수정 필요` 섹션 전체를 렌더하지 않고 Hero에 `수정할 거래가 없습니다` 한 줄만 표시 |
+| A2A Transfer Entry | Ready 상태에서만 노출하는 세무사무소 전송 진입점 | Hero 바로 아래 배너(Ready 칩 + 연결 사무소명 + `세무사무소로 보내기`). 즉시 전송하지 않고 전송 확인 화면으로 이동(A2A-7, §4.4a) |
+
+### 4.4a A2A 전송 확인 (18_a2a_transfer_confirmation.html)
+
+| 컴포넌트 | 역할 | 상태 |
+|:---|:---|:---|
+| Connection Status Card | 수신 세무회계사무소와 현재 연결 상태 확인 | 사무소명·연결일·담당자 + `연결됨` 칩 |
+| Transmission Unit Summary | 정본 전송 단위(사업자 1곳×세목 1개×신고기간 1개×snapshot 1개) 확인 | 사업자·세목·신고기간·snapshot version 4열 + Ready 배너(blocker/무결성 오류 0건) |
+| Prepared Value Summary | 신고 준비값 요약 | 부가세 Hero와 동일한 3셀(매출세액 − 매입세액 = 납부세액) 재사용 |
+| Source Scope Table | 자료유형별 실제 사용 원본 건수와 상세 목록 | 세금계산서·카드·현금영수증·통장 4행, 행별 `펼쳐보기`로 원본 파일·금액 노출 |
+| Resolved Exceptions List | 사용자가 명시적으로 확정한 예외와 처리 방향 | 항목·처리 방향·근거 + 확인자·확인시각 |
+| Fingerprint Confirmation | 확인 시점과 서버 현재 fingerprint 비교 | 일치 시 안내 문구만, 불일치 시 전송 차단(아래 Blocked 상태) |
+| Final Transfer CTA | 전송 최종 승인 | `취소`(secondary) + `세무사무소로 전송`(primary, accent). 클릭 즉시 전송 완료로 넘어가지 않고 서버가 fingerprint를 재검증 |
+| Fingerprint Mismatch Block | 확인 이후 원본·판단이 바뀐 상태 | warn 배너 + `세무사무소로 전송` 비활성화 + `부가세로 돌아가서 확인`만 활성 |
+
+- 이 화면은 03_vat.html의 `세무사무소로 보내기`에서만 도달하며 독립 진입 경로를 만들지 않는다(마스터플랜 §8.17.4).
+- 최종 CTA 문구는 `세무사무소로 전송`(§5.3)으로 통일한다.
+- `세무사무소 연결` 관리 화면(상담 신청·수임 승인·연결 해지)은 별도 화면 책임이며 이 화면에 통합하지 않는다(§8.17.1, §8.17.5).
+- 전송 진행 중·전송 완료·기술 오류 상태와 JARYO 수신 측 화면은 후속 Preview에서 다룬다.
+- 오너 승인 전에는 API·DB·runtime 구현을 시작하지 않는다.
 
 - 사이드바 "부가세"에 공제 검토 대기 건수 카운트 배지(warn)를 노출한다.
 - **검토 자료 마감 잠금**: 자료수집·자료대조·사용자 세무판단·확정 원장 fingerprint 중 하나라도 미완이면 `is-disabled` + `disabled` + `aria-disabled="true"` muted 버튼으로 잠금을 명시하고, 위에 사유(locknote)를 함께 노출한다. exact 입력은 유효하지만 snapshot만 stale인 경우에만 별도 재계산 버튼을 제공한다.
@@ -417,6 +437,7 @@
 - Preview (사업장현황신고): [11_business_status_report.html](./previews/11_business_status_report.html)
 - Preview (회사 설정): [16_company_settings.html](./previews/16_company_settings.html)
 - Preview (신고 준비 공통 패턴): [17_shared_filing_patterns.html](./previews/17_shared_filing_patterns.html)
+- Preview (A2A 전송 확인): [18_a2a_transfer_confirmation.html](./previews/18_a2a_transfer_confirmation.html)
 
 ## 7. Related Documents
 - **Concept_Design**: [Conversational Tax Workspace Product Direction](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 대화 진입과 구조화 검토·확정의 역할 계약
