@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-14
+> Last Updated: 2026-07-16 02:03
 
 ## 1. 디자인 방향
 
@@ -8,6 +8,14 @@
 - 기반: JARYO-GIWA의 shadcn/ui + Tailwind 자산 재사용. 중립(zinc/slate) 팔레트.
 - 톤: 마케팅적 과장 없음. 첫 화면부터 "작동하는 제품"(대시보드).
 - 이모지 미사용, 상태는 색상 + 텍스트 라벨로 이중 전달.
+
+### 1.1 대화형 첫 화면 전략 (JC-043 · Preview 대기)
+
+- 대화는 요청·파일 업로드·설명·라우팅의 중심 진입점으로 사용할 수 있다.
+- 다가오는 신고, 미확정, Ready 상태는 스크롤되는 대화 안에 숨기지 않고 지속 영역에 둔다.
+- AI 결과는 텍스트 답변만이 아니라 건수·상태·CTA가 있는 action card로 표시한다.
+- 거래·세액·급여의 수정·확정은 기존 구조화 표 또는 승인된 검토 panel에서 수행한다.
+- 현행 Sidebar·Topbar·워크스페이스는 CUI-1 Preview 승인 전 변경하지 않는다.
 
 ## 2. 디자인 토큰 (HTML Preview 기준)
 
@@ -236,7 +244,7 @@
 |:---|:---|:---|
 | Annual Filing Hero | 사업자 유형·귀속연도·연간 세목 준비율·확인 필요 | 진행률 + blocker 카운트 |
 | **Path 1 Completion Flow** | 1a: 홈택스 업로드용 양식·파일 작성·양식 채움 확인·업로드 안내 / 1b: 항목=값 직접입력 정리 | 베타 중심 경로 |
-| **Path Boundary Notice** | Path 2(사무소 ZIP)는 Path 1 베타 이후, 암호화 Path 3은 범위 밖임을 안내 | 책임 경계 |
+| **Path Boundary Notice** | Path 2는 JARYO 직접 전달·최초 검토 대기이며 ZIP은 fallback, 암호화 Path 3은 범위 밖임을 안내 | 책임 경계 |
 | Annual Filing Cards | 법인세/종합소득세/사업장현황신고 중 해당 세목만 표시 | 준비 상태·blocker·Path 1 상태 |
 | Responsibility Boundary | Path 1 책임 경계·자동입력·자동제출 제외·1b는 메뉴 경로와 신고서 행·칸 위치까지 안내 | accent 안내 박스 |
 | State Card | 로딩/빈/오류/권한 없음 표준 | 스켈레톤·빈안내·오류+재시도 |
@@ -411,6 +419,7 @@
 - Preview (신고 준비 공통 패턴): [17_shared_filing_patterns.html](./previews/17_shared_filing_patterns.html)
 
 ## 7. Related Documents
+- **Concept_Design**: [Conversational Tax Workspace Product Direction](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 대화 진입과 구조화 검토·확정의 역할 계약
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 사용자
 - **Concept_Design**: [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) - 신고 준비 파이프라인 방향
 - **UI_Screens**: [Screen Flow](./00_SCREEN_FLOW.md) - 사용자 흐름 및 데이터 입출력

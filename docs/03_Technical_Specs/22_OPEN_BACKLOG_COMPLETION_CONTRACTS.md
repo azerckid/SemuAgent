@@ -1,6 +1,6 @@
 # Open Backlog Completion Contracts
 > Created: 2026-07-05 21:34
-> Last Updated: 2026-07-14 KST
+> Last Updated: 2026-07-16 02:39 KST
 
 ## 0. Purpose
 
@@ -16,7 +16,7 @@ Rule: an open backlog item may not start implementation unless its completion co
 | 세무판단 보조 | Explains tax-treatment possibilities and keeps final confirmation with the user | JC-035 |
 | 공통 검증 | Validates confirmed data against official layout (Path 1 & 2) | JC-030 Validation |
 | Path 1 제출 준비물 | 1a 홈택스 업로드용 양식·파일 작성 또는 1b 직접입력 `항목 = 값` 정리 | JC-030 Path 1, JC-013 |
-| Path 2 사무소 handoff | ZIP/package for JARYO-GIWA (자료기와) | JC-034 |
+| Path 2 사무소 handoff | Direct A2A to JARYO review queue; ZIP only as fallback | JC-044, JC-034 fallback |
 | 제품 범위 밖 | Encrypted Hometax files, fcrypt and certification tooling | Archived JC-030 research |
 | 제출 자동화 | Attempts submission after explicit user approval | JC-023 |
 | 기반 정리 | Removes copied GIWA assumptions or legacy surfaces | JC-031 |
@@ -208,7 +208,7 @@ Done means:
 
 Remaining:
 
-- [ ] JC-034 v1 consumes validation output in ZIP (after full Path 1 beta, 1a + 1b)
+- [ ] JC-044 direct A2A and JC-034 ZIP fallback consume the same validation output (after full Path 1 beta, 1a + 1b)
 - [ ] UI shows Path 1 (1a/1b) as active, Path 2 as deferred and encrypted Path 3 as out of scope where mentioned
 
 #### Path 1a — 홈택스 업로드용 양식·파일 작성 지원 (양식 있을 때)
@@ -334,10 +334,49 @@ Non-goals before done:
 - AI의 자동 최종확정.
 - 모든 복잡한 세무 예외의 자동 처리.
 
-### JC-034 — GIWA handoff package (Path 2 · ZIP Export v1)
+### JC-044 — SemuAgent↔JARYO direct A2A handoff
 
-Current gate: scope fixed in [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md), but
-**implementation deferred** until the full Path 1 beta (1a files + 1b summary screens) is stable ([Path 1 Roadmap §2.2](./36_PATH1_FORM_FILL_ROADMAP.md)). JC-034's required deliverables are the per-tax summary CSVs (withholding, VAT, etc.), which depend on the 1b summary work; Path 1a files are only optional ZIP attachments, so Path 1a beta alone does not gate Path 2. The earlier 08 preview handoff panel is superseded by the Path 1-only filing-preparation preview.
+Current gate: product direction is approved in the
+[A2A Master Plan](../01_Concept_Design/03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md).
+Implementation remains blocked until the owner completes A2A-2 through A2A-7, both product UIs
+pass the UI-First Gate, and the shared versioned contract is approved. Full Path 1 beta remains
+the upstream data-readiness gate.
+
+May start implementation only after:
+
+- [x] VAT first-slice Ready, source scope, and user approval contract is fixed; later tax types require explicit extensions.
+- [ ] JARYO business mapping, review-pending receipt, acceptance, supplement, and technical-error states are fixed.
+- [ ] Consent, privacy roles, retention, revocation, and audit contract is fixed.
+- [ ] Versioned schema, API, idempotency key, fingerprint, file-hash, retry, and authorization contract is approved.
+- [ ] SemuAgent send and JARYO receive/review HTML Previews are owner-approved.
+- [ ] Pre-Code Brief, Component & Library Plan, and QA scenarios are approved.
+
+First implementation slice: **VAT**. It must prove the complete direct A2A lifecycle before the
+shared contract is expanded to withholding, payment statements, or other filing events.
+
+Done means:
+
+- The user explicitly sends one Ready filing-type and period snapshot.
+- Structured filing data and the source materials used for that snapshot are delivered directly.
+- JARYO registers the receipt under the linked business with initial status `SemuAgent 수신 · 검토 대기`.
+- Receipt does not automatically overwrite JARYO canonical bookkeeping or filing data.
+- Retries are idempotent and validate contract version, fingerprint, and file hashes.
+- Acceptance, supplement request, technical error, and retransmission states remain consistent in both products.
+- When direct integration is unavailable, the user can use the separate JC-034 ZIP fallback.
+- The first VAT slice passes Ready, explicit send, JARYO review-pending receipt, acceptance, supplement request, technical error, and retransmission E2E.
+
+Non-goals:
+
+- Shared database access or either product writing directly to the other product's database.
+- Automatic promotion of received data into final bookkeeping or filing canonical state.
+- Tax-firm marketplace, referral fees, contract-document management, or fee payment.
+- Automatic Hometax filing.
+
+### JC-034 — GIWA handoff manual fallback (ZIP Export)
+
+Current gate: fallback scope is fixed in [JC-034 Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md),
+but **implementation deferred** until the full Path 1 beta is stable and JC-044 direct A2A has confirmed
+that a manual fallback is still required. JC-034 is not the primary Path 2 delivery mechanism.
 
 May start implementation only after:
 
@@ -346,7 +385,7 @@ May start implementation only after:
 - [ ] Copy approved: existing firm only, no marketplace/referral language
 - [ ] JC-030 Validation integrated for 간이지급 v1 scope
 
-Done means (v1):
+Done means (fallback):
 
 - User can export a ZIP for a selected period containing manifest + at least one track section.
 - Export is blocked when Validation has blocking errors (configurable per track).
@@ -354,14 +393,14 @@ Done means (v1):
 - README-handoff states firm responsibility for filing and certified SW submission.
 - Tests cover manifest schema, tenant isolation, empty/inapplicable tracks, and validation gating.
 
-Non-goals (v1):
+Non-goals (fallback):
 
-- SemuAgent ↔ GIWA real-time API
+- SemuAgent ↔ JARYO direct A2A implementation (JC-044)
 - Tax-firm discovery, referral fees, or bookkeeping-fee sharing
 - Hometax submission or certificate storage
 - Replacing firm's Wehago/Semusarang workflow
 
-v2 (separate contract update): invitation link, API push, receipt sync back to SemuAgent.
+Direct API delivery and receipt sync are governed by the separate JC-044 contract.
 
 ### JC-031 — 레거시 GIWA upload/email 서브시스템 은퇴
 

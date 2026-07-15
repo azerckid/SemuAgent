@@ -1,16 +1,19 @@
-# JC-034 GIWA Handoff Package Pre-Code Technical Brief
+# JC-034 GIWA Handoff ZIP Fallback Pre-Code Technical Brief
 > Created: 2026-07-07 04:15 KST
-> Last Updated: 2026-07-13
+> Last Updated: 2026-07-16 02:03 KST
+
+> 2026-07-16 Owner Decision: JC-044 직접 A2A가 Path 2 주 경로다. 이 문서는 직접 연동을
+> 사용할 수 없는 비연동·장애 상황의 수동 ZIP fallback 구현 계약만 보존한다.
 
 ## 0. Governing Principle
 
-JC-034는 **Filing Path 2** 를 구현한다. 회사가 확정한 신고 준비 데이터를 **수임 세무사무소**가
+JC-034는 **Filing Path 2의 수동 fallback**을 구현한다. 회사가 확정한 신고 준비 데이터를 **수임 세무사무소**가
 **자료기와(JARYO-GIWA)** 에서 검토할 수 있는 **구조화 handoff ZIP**으로 보낸다.
 
 - **구현 우선순위:** Path 1(홈택스 양식 기입·신고 보조) 세목 확대가 **JC-034 코드 착수보다 선행**한다 ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)).
 
 - SemuAgent는 홈택스에 제출하지 않는다. 사무소는 위하고·세무사랑 등 **검정 SW**로 전자신고·대리 제출한다.
-- v1은 **ZIP Export only** — SemuAgent↔GIWA API·실시간 연동·세무대리 알선 없음.
+- fallback은 **ZIP Export only** — SemuAgent↔JARYO 직접 연동은 JC-044, 세무대리 알선은 범위 밖이다.
 - **JC-030 Validation** 을 Path 1·2 공통 게이트로 재사용한다. blocking 오류 시 export 차단.
 - v1 ZIP에는 소득자 주민등록번호·외국인등록번호를 포함하지 않는다.
 - 생성 ZIP은 **v1 기본: 다운로드 후 서버 미보관**.
@@ -21,16 +24,16 @@ JC-034는 **Filing Path 2** 를 구현한다. 회사가 확정한 신고 준비 
 
 ```text
 [Flow]
-현재: Filing Path 2 — JC-034 Pre-Code Brief 보존, 구현 착수 보류
+현재: Filing Path 2 fallback — JC-034 Pre-Code Brief 보존, 구현 착수 보류
 Gate: Path 1 베타 안정화 선행
 미완료: UI-First Gate — Path 1 베타 이후 신규 Preview 재승인 필요
-다음: Path 1 베타 후 JC-034 Scope/Preview 재검토
-v1 최소 트랙: 간이지급 반기 + 원천세 summary + 부가세 summary
+다음: JC-044 직접 A2A 계약 확정 후 fallback 필요성·Scope·Preview 재검토
+fallback 최소 트랙: 간이지급 반기 + 원천세 summary + 부가세 summary
 ```
 
 ## 1. Scope
 
-### 포함 (v1)
+### 포함 (fallback)
 
 1. 신고 준비 허브 `/dashboard/filing-preparation` 내 **Path 2 handoff export 패널** (Path 1 베타 이후 신규 Preview 필요)
 2. 트랙 선택(체크박스) + 기간 컨텍스트 + 수신 사무소명 확인
@@ -46,9 +49,9 @@ v1 최소 트랙: 간이지급 반기 + 원천세 summary + 부가세 summary
 7. Validation blocking 시 export 차단 + UI blocker 목록
 8. 단위 테스트: manifest Zod, CSV 빌더, tenant 격리, empty/inapplicable track, validation gating
 
-### 제외 (v1)
+### 제외 (fallback)
 
-- SemuAgent↔GIWA API push, invitation link, receipt sync (v2)
+- SemuAgent↔JARYO 직접 API 전달·사업자 화면 자동 등록·receipt sync (JC-044)
 - 세무대리인 마켓플레이스·알선·기장료 중개
 - 홈택스 로그인·공동인증서·자동 제출(JC-023)
 - Path 3 fcrypt·적합성 검정 파일을 Path 2 필수 산출물로 취급

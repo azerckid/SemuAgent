@@ -1,6 +1,6 @@
 # Filing Preparation Pipeline Product Direction
 > Created: 2026-07-04 17:13
-> Last Updated: 2026-07-10
+> Last Updated: 2026-07-16 02:03 KST
 
 ## 1. Purpose
 
@@ -28,7 +28,9 @@ SemuAgent는 신고서를 대신 제출하지 않는다. 베타의 신고 완료
 ([Product Baseline §3 Filing Path Priority](./01_PRODUCT_BASELINE.md)).
 
 - **Path 1 (현재·베타):** 양식이 있으면 SemuAgent가 공식 비암호화 업로드 파일을 만들고(1a), 없으면 확정 데이터를 `항목 = 값`으로 화면에 정리한다(1b). 사용자가 값을 확인한 뒤 홈택스에서 직접 업로드하거나 직접 입력·제출한다. 양식이 없다는 이유로 세목을 `blocked`로 두지 않는다. (**구현 현황:** 근로소득 간이지급명세서와 원천세는 1b 값 정리 화면 구현 완료. 간이지급명세서의 과거 파일 후보 생성기는 활성 화면에서 제거. 부가세는 1b 대상으로 결정됐으나 **값 정리 화면은 아직 미구현**. 세목별 상태는 [Backlog JC-030](../04_Logic_Progress/00_BACKLOG.md).)
-- **Path 2 (후순위):** Path 1 베타 이후 기존 세무회계사무소로 넘길 ZIP handoff를 검토한다.
+- **Path 2 (후순위):** Path 1 베타 이후 연결된 세무회계사무소의 JARYO 사업자 화면으로
+  구조화 자료와 원본을 직접 전달한다(JC-044). 수신 직후에는 검토 대기로 두며, ZIP은
+  비연동·장애 상황의 수동 fallback(JC-034)으로만 사용한다.
 - **Path 3 (범위 밖):** fcrypt·적합성 검정·암호화 파일은 현재 제품에 포함하지 않는다.
 - 홈택스 화면에 옮겨 적을 값과 **신고 메뉴 경로·화면명·행/칸 위치**를 함께 보여주는 **직접입력 정리(1b)** 는 베타 범위다. 화면 캡처 기반 클릭별 튜토리얼과 자동 입력은 범위가 아니다.
 
@@ -67,7 +69,7 @@ SemuAgent의 책임 경계는 명확하다.
 - SemuAgent는 신고서에 넣을 확정 데이터를 준비한다.
 - SemuAgent는 Path 1의 산출물(1a 공식 비암호화 업로드 파일 또는 1b 직접입력용 값 정리), 사전검증, 업로드·입력 안내를 제공한다.
 - 사용자는 다운로드 전 양식에 채워질 값을 확인하고, 홈택스에서 직접 업로드·제출한다.
-- Path 2 handoff 패키지(JC-034)는 Path 1 베타 이후 검토한다.
+- Path 2 직접 A2A(JC-044)와 ZIP fallback(JC-034)은 Path 1 베타 이후 검토한다.
 - Path 3 인증·암호화 파일은 현재 제품 범위 밖이며 UI·generator·가이드에서 제공하지 않는다.
 - 직접입력용 값 정리(1b)는 Path 1 완료 경로다. 완료하려면 사용자가 옮겨 적을 정확한 화면·행·칸과 값이 함께 표시되어야 한다.
 - 자동 제출은 JC-023의 별도 법무·보안·사용자 승인 게이트 없이는 도입하지 않는다.
@@ -122,7 +124,7 @@ SemuAgent의 책임 경계는 명확하다.
 - **Concept_Design**: [Product Baseline — Path 1 Beta Priority](./01_PRODUCT_BASELINE.md)
 - **Technical_Specs**: [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) - 홈택스 양식 기입·세목 확대 순서 (최우선)
 - **Technical_Specs**: [Path 1 End-to-End Filing Readiness Audit](../03_Technical_Specs/40_PATH1_END_TO_END_FILING_READINESS_AUDIT.md) - 자료수집부터 양식 채움 확인까지의 현재 상태와 갭
-- **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) - v1 ZIP Export 범위 (구현 보류)
+- **Technical_Specs**: [JC-034 GIWA Handoff Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) - 수동 ZIP fallback 범위 (구현 보류)
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 신고 준비 화면 흐름과 데이터 입출력
 - **UI_Screens**: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 신고 준비 화면 컴포넌트와 내비게이션 규칙
 - **UI_Screens**: [Filing Preparation Preview](../02_UI_Screens/previews/08_filing_preparation.html) - 브라우저 확인용 HTML Preview

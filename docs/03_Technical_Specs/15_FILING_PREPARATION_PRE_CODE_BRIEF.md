@@ -1,12 +1,12 @@
 # Filing Preparation Hub Pre-Code Technical Brief
 > Created: 2026-07-04 21:20
-> Last Updated: 2026-07-07 23:04 KST
+> Last Updated: 2026-07-16 02:03 KST
 
 ## 0. Governing Principle
 
 JC-029 신고 준비 허브는 "홈택스·위택스에 넣을 확정 데이터가 어디까지 준비됐는가"를 한 화면에서 보여주는 **read-only 현황 허브**다. 달력/일정표가 중심이 아니다.
 
-- **실행 우선순위:** 신고 완료는 **Path 1(홈택스 업로드용 양식·파일 작성)** 이 최우선이다. Path 2(JC-034 ZIP) 구현은 Path 1 베타 이후 ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)).
+- **실행 우선순위:** 신고 완료는 **Path 1(홈택스 업로드용 양식·파일 작성)** 이 최우선이다. Path 2(JC-044 직접 A2A, JC-034 ZIP fallback) 구현은 Path 1 베타 이후다 ([Path 1 Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)).
 
 - **신규 산출 엔진·신규 DB 테이블·세액 계산 로직·자동 제출은 범위 밖.** 이 화면은 기존 도메인 read model을 집계·재프레임할 뿐이다.
 - 최종 제출·납부는 사용자가 홈택스·위택스에서 직접 수행한다(자동 제출은 JC-023 게이트 전 미도입).

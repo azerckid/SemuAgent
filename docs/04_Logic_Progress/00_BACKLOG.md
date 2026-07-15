@@ -1,6 +1,6 @@
 # SemuAgent Backlog
 > Created: 2026-07-01 17:57
-> Last Updated: 2026-07-14
+> Last Updated: 2026-07-16 02:39 KST
 
 ## Status Legend
 
@@ -42,7 +42,7 @@
 | JC-027 | done | 지방소득세 연동 지원 (원천세 특별징수분 한정, 신고 준비 허브 마지막 트랙) | `lib/local-income-tax`, `app/(dashboard)/dashboard/filing-preparation/local-income-tax`, `lib/filing-support`, `lib/filing-preparation` | **구현 완료(2026-07-05).** "지방소득세 전체"가 아니라 **원천세 특별징수분만**. 종합소득세분·법인세분 지방소득세는 JC-025/026 이후. 급여에 이미 실제 기록된 `payrollEmployeeLine.localIncomeTaxKrw`를 집계하는 read-only 전용 화면을 추가하고, 신고 준비 허브(JC-029)의 `local_income` 트랙을 roadmap→live 전환했다. **데이터 정합성 수정 포함**: 신고지원(JC-013)이 `withholdingTaxKrw`를 10%/11로 근사 분리하던 방식을 제거하고, JC-027과 동일한 확정 라인 실제 `incomeTaxKrw`·`localIncomeTaxKrw` 합계로 교체했다. `needs_review` 라인은 확인 필요·blocker에는 포함하지만 Hero/표 합계/신고지원 입력값에는 포함하지 않는다. 위택스 자동제출·신규 세액 계산 엔진은 범위 밖. |
 | JC-028 | done | 사업장현황신고 지원 (면세 개인사업자) | `lib/business-status-report`, `app/(dashboard)/dashboard/filing-preparation/business-status-report`, `lib/filing-preparation` | **구현 완료(2026-07-05).** 부가세 비대상 **면세 개인사업자**가 2월 10일까지 하는 사업장현황신고 준비 데이터를 검토한다. 수입금액·매입/경비 자료는 자료수집·기장검토의 확정 거래 데이터로 구성하며, 신고 준비 허브의 `business_status` 트랙은 roadmap→live 전환 완료. 홈택스 제출·전자신고 파일·자동제출은 범위 밖. |
 | JC-029 | done | 신고 준비 현황 허브 (신고 데이터 준비 파이프라인) | `app/(dashboard)/dashboard/filing-preparation`(신규), 각 도메인 read model, 리마인드(JC-016) | **우선순위: 높음 (JC-024보다 선행) · 저위험(read-only 현황).** 사이드바에 "신고 준비" 추가(신고지원 아래). 목적은 달력/일정표가 아니라 홈택스·위택스에 넣을 확정 데이터가 준비됐는지 보여주는 것. 공통 기반(자료수집→기장검토)과 병렬 트랙(원천세·부가세·지급명세서/연말정산·지방소득세)의 입력·산출·handoff 상태를 표시한다. 세무 일정은 보조 섹션으로 강등. 신규 산출 엔진·신규 DB·자동제출은 범위 밖. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) 참조. |
-| JC-034 | todo | GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1) | `lib/giwa-handoff`, `lib/filing-preparation`, JC-030 Validation | **우선순위: 전체 Path 1 베타(1a+1b) 이후.** 필수 산출물이 원천세·부가세 등 summary CSV라 1b 요약 작업이 선행. 문서만 보존, 기존 Preview는 Path 1 우선 화면으로 supersede, **구현 착수 보류**. ZIP(manifest + CSV + README). [Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [Pre-Code Brief](../03_Technical_Specs/35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md) |
+| JC-034 | todo | GIWA handoff 수동 fallback — ZIP Export | `lib/giwa-handoff`, `lib/filing-preparation`, JC-030 Validation | **direct A2A 비연동·장애 상황의 보조 경로, 구현 보류.** ZIP(manifest + CSV + README) 계약은 보존하되 A2A 주 경로로 표시하지 않는다. [Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [Pre-Code Brief](../03_Technical_Specs/35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md) |
 | JC-030 | todo | 전자신고 검증 및 파일 생성 (Validation / Path 1a·1b) | `lib/efiling-*`, JC-024·013 | **최우선 — Path 1 세목 확대.** 자료대조 Phase 2 완료. **간이지급명세서·원천세·부가세·근로소득 지급명세서는 Path 1b 화면 구현·검증 완료.** 근로소득 지급명세서는 Stage A~F를 완료했으며, 확정 급여 기초자료는 SemuAgent, 공제신고서와 최종 지급명세서는 홈택스 정본으로 분리한다. 세액 계산·역산·민감정보 저장은 하지 않는다. 지방소득세 특별징수는 Path 1a 후보지만 로그인 위택스 원본 입수까지 외부 대기다. 사업장현황신고는 면세 개인사업자 조건부 후순위다. Path 3 암호화·회계파일은 범위 밖. [Path 1 Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) · [Annual Wage Stage A Audit](../03_Technical_Specs/55_JC030_ANNUAL_WAGE_STATEMENT_STAGE_A_AUDIT.md) · [Annual Wage Stage B Mapping](../03_Technical_Specs/56_JC030_ANNUAL_WAGE_STATEMENT_FIELD_MAPPING.md) · [Annual Wage Stage C Contract](../03_Technical_Specs/57_JC030_ANNUAL_WAGE_STATEMENT_CANONICAL_SOURCE_CONTRACT.md) |
 | JC-035 | done | 부가세 AI 세무판단 보조 | `lib/vat`, `vat_deduction_review`, exact VAT fact, 기존 AI orchestration | **완료(done) · VAI-0~6b 구현·머지(PR #200)·dev/prod migration `0070`·브라우저 E2E 완료.** 공제/불공제/안분과 과세/영세율/면세 가능성을 공식 규칙·이전 확정 패턴·조건부 AI로 설명하고, 홈택스에서 확인·수정할 항목과 근거·필요 증빙을 보여준 뒤 사용자가 최종 확정한다. AI 자동확정·세무대리·단계별 직접입력 가이드·공식 규격 미확인 양식 생성은 제외. [Completion Contract](../03_Technical_Specs/44_VAT_AI_TAX_TREATMENT_COMPLETION_CONTRACT.md) · [Rule Matrix](../03_Technical_Specs/45_VAT_AI_TAX_TREATMENT_RULE_MATRIX.md) · [Pre-Code Brief](../03_Technical_Specs/46_VAT_AI_TAX_TREATMENT_PRE_CODE_BRIEF.md) |
 | JC-036 | done | Cadence 기반 내비게이션 재구성 | `sidebar.tsx`, 회사 홈, 기존 filing routes | **runtime 구현 완료(2026-07-11), 지급명세서·연말정산 분리(2026-07-13).** 상위 메뉴를 급여·지급(월) / 부가세(분기·반기) / 연간신고(연)로 재구성하고 신고지원·신고 준비 상위 메뉴를 제거했다. 직원 명부·원천세·지급명세서·연말정산·지방소득세는 급여·지급 하위에 각각 노출한다. 지급명세서는 반기 집계·Path 1b, 연말정산은 연간 지급·기납부 검토 전용 라우트로 분리하되 기존 read model을 공유한다. 법인세/종합소득세/사업장현황신고는 사업자 유형(`client.taxEntityType`)에 따라 연간신고 하위에 조건부 노출한다. [Cadence Navigation Review](../02_UI_Screens/13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) |
@@ -51,6 +51,8 @@
 | JC-039 | done | 부가세 AI 근거 탐색·명확 판단 계약 | JC-035 Rule Matrix·exact VAT fact·연결 증빙·이전 확정·AI orchestration | **완료(VAI-8a~8e).** AI 판단과 workflow를 분리하고 실제 근거 reference·잠정 결론·홈택스 행동을 제공한다. 특례 근거가 없으면 보수적 기본 방향을 적용하며, 담당자 이관은 필수 사실 부재·근거 충돌·공식 규칙 공백/합의 실패에만 허용한다. [Pre-Code Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) |
 | JC-040 | todo | 간이세액표 소득세 실시간 재계산 연결 (엔진 → 급여 편집 경로) | `lib/payroll/simplified-tax-table.ts`, `lib/payroll-workspace/recalculate.ts`, `lib/payroll-workspace/summary.ts`, 급여 편집 API | **우선순위: 중 · 저위험. JC-012 후속.** 현재 `lookupSimplifiedIncomeTax`(별표2 조회)는 첫 가입 샘플 시드 생성 시점(`lib/first-run-sample/seed.ts`)에서만 정규직 소득세를 산출하고, 런타임 재계산(`recalculatePayrollPeriodSummary`)은 저장된 `incomeTaxKrw`를 합산만 한다. 사용자가 급여대장에서 기본급·수당·공제대상가족수(`dependent_count`)를 직접 입력·수정하면 정규직 소득세를 간이세액표로 자동 재조회해 반영하도록 연결한다. 프리랜서(3.3%)·일용직(일용 산식)은 각 산식 유지하고, 고용형태별 분기(guard)로 정규직 경로만 격리한다. 조회 범위 밖 급여 구간 처리(반올림·상·하한·보간 여부)와 수동 override 허용 정책을 착수 전 확정한다. 세무조정·연말정산 확정 계산은 범위 밖. 상세: [49_SIMPLIFIED_TAX_TABLE_LOOKUP](../03_Technical_Specs/49_SIMPLIFIED_TAX_TABLE_LOOKUP.md). |
 | JC-041 | done | 절세 가능성 탐지·정리 (부가세 매입 재분류부터) | JC-039 evidence resolver·Rule Matrix, `lib/vat/tax-treatment-ai.ts`, 기장 계정과목 분류 | **완료(VAI-9a~9e).** 접대비 불공제 후보를 신뢰도와 무관하게 넓게 보여주되 공제 전환은 업무 목적·참석자·적격증빙·사용자 명시 확인을 서버에서 재검증한다. 최대 추가 공제 가능성은 저장된 정확한 매입세액만 사용하며 canonical 값은 사용자의 확정 전 바꾸지 않는다. [Pre-Code Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md) |
+| JC-043 | todo | 대화형 세무 작업공간 — 첫 화면·오케스트레이션 | 기존 회사 홈·자료수집·워크스페이스·AI orchestration | **제품 방향 문서 완료, runtime 미착수.** 대화로 요청·업로드·설명을 제공하고 실제 검토·확정은 구조화 화면과 canonical DB에서 수행한다. CUI-0 Q&A → CUI-1 HTML Preview 승인 전 구현 금지. [Concept](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) |
+| JC-044 | todo | SemuAgent↔JARYO 직접 A2A 전달 | A2A Master Plan, 양쪽 사업자 매핑·ingest·원본 전송 | **제품 방향 승인, 상세 Q&A 진행 중, 구현 미승인.** 연결된 사업자의 Ready 자료와 원본을 JARYO 해당 사업자 화면에 자동 등록하고 최초 상태를 검토 대기로 둔다. ZIP은 JC-034 fallback. [Master Plan](../01_Concept_Design/03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
 
@@ -687,7 +689,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 ### JC-030 · 신고 입력값 검증 및 Path 1a/1b — Validation / Path 1
 
 - Related Concept: [Product Baseline — Strategic Direction](../01_Concept_Design/01_PRODUCT_BASELINE.md) — self-filing 편의 경로 중 **홈택스 업로드용 양식·파일 작성 지원** 단계. [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md) — 확정 데이터 준비→handoff 경계. [Path 1 Form Fill Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md) — **세목 확대 최우선**.
-- Related Domain: 신고지원(JC-013) 확정 산출물 · 부가세(JC-011)·급여/원천세(JC-012) read model. JC-034(Path 2 ZIP)는 전체 Path 1 베타(1a+1b) 후순위. 자동제출 후속은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
+- Related Domain: 신고지원(JC-013) 확정 산출물 · 부가세(JC-011)·급여/원천세(JC-012) read model. JC-044(Path 2 직접 A2A)와 JC-034(ZIP fallback)는 전체 Path 1 베타(1a+1b) 후순위. 자동제출 후속은 [JC-023](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md).
 - Related Technical Docs: [E-Filing File Generation Scope Gate](../03_Technical_Specs/19_EFILING_FILE_GENERATION_SCOPE_GATE.md) — JC-030 v1 대상·Gate. [PII Policy](../03_Technical_Specs/27_JC030_EFILING_FILE_PII_POLICY.md). [Layout Acquisition](../03_Technical_Specs/28_JC030_SIMPLIFIED_WAGE_EFILING_LAYOUT_ACQUISITION.md). [Field Mapping](../03_Technical_Specs/29_JC030_SIMPLIFIED_WAGE_EFILING_FIELD_MAPPING.md). [Pre-Code Brief](../03_Technical_Specs/30_JC030_EFILING_FILE_PRE_CODE_BRIEF.md). [Path 1 E2E Readiness Audit](../03_Technical_Specs/40_PATH1_END_TO_END_FILING_READINESS_AUDIT.md). [Local Income Stage A Audit](../03_Technical_Specs/54_JC030_LOCAL_INCOME_TAX_UPLOAD_TEMPLATE_ACQUISITION.md). [Annual Wage Stage A Audit](../03_Technical_Specs/55_JC030_ANNUAL_WAGE_STATEMENT_STAGE_A_AUDIT.md). [Annual Wage Stage B Mapping](../03_Technical_Specs/56_JC030_ANNUAL_WAGE_STATEMENT_FIELD_MAPPING.md). [Annual Wage Stage C Contract](../03_Technical_Specs/57_JC030_ANNUAL_WAGE_STATEMENT_CANONICAL_SOURCE_CONTRACT.md). [NTS Crypto Spec](../03_Technical_Specs/31_JC030_NTS_CRYPTO_SPEC_ACQUISITION.md) — 과거 조사 보존, 현재 제품 범위 밖.
 - Related Completion Contract: [Open Backlog Completion Contracts §3 / JC-030](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) — 전자신고 파일 생성·검증의 착수 게이트와 done 조건
 - Related Research: [JC-023 Hometax Auto-submit Research §2.1·§2.5](../03_Technical_Specs/13_JC023_HOMETAX_AUTOSUBMIT_RESEARCH.md) — 세목별 전자신고 파일 규격·파일변환신고 관문·적합성 검정. JC-030은 이 리서치의 "파일 생성·파일변환신고까지"의 실현가능 구간을 독립 기능으로 승격한 것.
@@ -729,7 +731,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] **근로소득 지급명세서 Stage E Pre-Code** — 승인 Preview 기준 Screen Flow·UI Design·Pre-Code Brief와 급여/보험/기납부세액 read model, 완료 연도 상태 3종, 화면 상태를 동기화했다. 첫 runtime은 `client_filing_profile` migration 없이 기존 급여·직원 DB의 read-only 확장으로 고정(2026-07-14)
   - [x] **근로소득 지급명세서 Stage F Runtime~Closeout** — 승인 Preview 구조로 실제 DB를 연결하고 tenant·사업장·연도 격리, 합계/상태, 진행 중 연도, PII 비수집을 단위·정적·브라우저에서 검증했다. 신규 schema·mutation API·AI 없음 (2026-07-14)
   - [ ] **사업장현황신고(조건부 후순위)** — 면세 개인사업자 대상성 gate와 대상 fixture를 먼저 마련. 비대상 사업자에게 메뉴·badge·blocker를 노출하지 않고, 대상 공식 업로드 양식 확인 시 1a A~G 승격
-  - [ ] JC-034 Path 2 ZIP이 Validation 출력 소비 (전체 Path 1 베타 1a+1b 이후)
+  - [ ] JC-044 직접 A2A와 JC-034 ZIP fallback이 같은 Validation 출력을 소비 (전체 Path 1 베타 1a+1b 이후)
 - Acceptance Criteria (JC-030 epic / planned Path 1 matrix):
   - [ ] 확정된 신고 데이터로 홈택스 업로드용 양식·파일을 생성하고, 다운로드 전 양식에 채워질 값을 확인한다
   - [ ] 생성 파일의 형식·정합성을 검증하고 오류/경고를 사용자에게 표시한다
@@ -985,9 +987,100 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-14, Slice D2): 표시 전용 `PeriodContextControl`을 추가해 신고 준비 허브·지급명세서·지방소득세·사업장현황신고·연말정산의 Topbar 기간 표시를 통일했다. 기존 도메인 resolver가 최신 허용 기간을 결정하고, 별도 순수 URL 어댑터가 실제 href만 전달하므로 공통 컴포넌트는 기간을 추정하거나 라우팅 상태를 만들지 않는다.
 - Document Sync Check (2026-07-14, Slice D3): 표시 전용 `FilingPortalGuide`를 추가해 원천세 홈택스 직접작성 안내와 지방소득세 위택스 안내를 `대상 세목 → 준비값 → 사용자 행동 → 포털 이동` 순서로 통일했다. 위택스는 공식 Excel 원본 미입수 사실에 따라 `source_pending`을 유지하며 파일 다운로드·업로드 가능·검증 완료로 표시하지 않는다. DB·API·세액 계산·신고 gate는 변경하지 않았다.
 
-### JC-034 · GIWA handoff 패키지 — Filing Path 2 (ZIP Export v1)
+### JC-043 · 대화형 세무 작업공간 — 첫 화면·오케스트레이션
 
-- Related Concept: [Product Baseline §Filing Path Priority](../01_Concept_Design/01_PRODUCT_BASELINE.md) — Path 2는 전체 Path 1 베타(1a+1b) 이후 자료기와 연결 후보.
+- Status: `todo` (제품 방향 승인, UI 질의응답·Preview 대기, runtime 미착수)
+- Related Concept Docs: [Conversational Tax Workspace Product Direction](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 대화 진입과 구조화 확정의 역할 정본.
+- Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 현행 회사 홈과 향후 대화형 진입 경계.
+- Related HTML Preview: N/A - CUI-1에서 신규 Preview를 제작하고 오너 확인 전에는 runtime을 구현하지 않는다.
+- Related Technical Docs: N/A - CUI-1 승인 후 기존 upload·AI·read model 재사용 계약을 Pre-Code Brief로 작성한다.
+- Related QA Docs: N/A - Pre-Code Brief 승인 후 상태·보안·성능·브라우저 시나리오를 작성한다.
+- Component & Library Plan: N/A - CUI-1 승인 후 기존 shadcn·streaming·upload·state 자산의 재사용/신규/제외 목록을 Pre-Code Brief에 고정한다.
+- Origin: 2026-07-16 프로젝트 오너가 Codex형 대화 중심 첫 화면에서 자료 업로드·세무 정리·신고 준비를 진행하는 방향을 제안했다. 순수 채팅이 아니라 대화가 작업을 운전하고, 표에서 검토·확정하는 하이브리드 방향으로 승인했다.
+- Fixed Order:
+  1. **CUI-0**: 기존 회사 홈·워크스페이스·파일 업로드·AI 호출·mutation 경계 감사와 오너 Q&A.
+  2. **CUI-1**: 대화형 첫 화면 HTML Preview 제작, 데스크톱·모바일 오너 확인.
+  3. **CUI-2**: read-only 대화 홈과 canonical 상태 카드.
+  4. **CUI-3**: 기존 자료수집 API를 통한 파일 업로드·작업 라우팅.
+  5. **CUI-4**: 결과 카드에서 실제 확인 필요 행의 구조화 화면 진입.
+  6. **CUI-5**: 구조화 확정·서버 gate·fingerprint·감사·undo 연결.
+  7. **CUI-6**: 브라우저 E2E·성능·접근성·모바일 검증.
+- Implementation Preconditions:
+  - [x] 제품 방향과 핵심 문장 승인 — 대화로 시키고 이해하며, 표에서 검토하고 확정한다.
+  - [x] 기존 구조화 워크스페이스와 canonical DB를 정본으로 유지한다.
+  - [ ] CUI-0 진입·CTA·직접 이동·데이터 흐름·AI 호출·로딩/빈/오류 상태 질의응답 완료
+  - [ ] CUI-1 HTML Preview 제작·문서 연결·오너 승인
+  - [ ] Pre-Code Brief와 Component & Library Plan 작성·오너 승인
+  - [ ] QA 시나리오 작성
+- Acceptance Criteria:
+  - [ ] 첫 화면에서 대화·파일 업로드·다가오는 신고·미확정·Ready 상태를 함께 볼 수 있다.
+  - [ ] 최초 화면 로드는 LLM provider를 호출하지 않는다.
+  - [ ] 업로드는 기존 tenant-scoped 자료수집 저장·파싱·정규화 경로를 재사용한다.
+  - [ ] AI 처리 결과는 실제 DB 건수와 CTA 대상을 가진 action card로 표시한다.
+  - [ ] 사용자는 카드에서 해당 행으로 필터된 구조화 작업공간을 열 수 있다.
+  - [ ] 채팅 문장만으로 canonical 거래·급여·세액·신고 상태를 확정하지 않는다.
+  - [ ] mutation은 현재 fingerprint·권한·도메인 gate를 서버에서 재검증한다.
+  - [ ] 사이드 네비게이션과 직접 작업공간 진입을 유지한다.
+  - [ ] 데스크톱·모바일·키보드·스크린리더·오류·빈 상태 E2E를 통과한다.
+- Document Sync Check (2026-07-16): Concept 04에 대화 중심 첫 화면을 제품 방향으로 고정했다. 현행 회사 홈 runtime은 변경하지 않으며, UI-First Gate와 단계별 오너 확인을 새 작업 에픽의 선행조건으로 둔다.
+
+### JC-044 · SemuAgent↔JARYO 직접 A2A 전달
+
+- Status: `todo` (제품 방향 승인, A2A 질의응답 진행 중, 구현 미승인)
+- Related Concept Docs: [Agent-to-Agent Tax Collaboration Master Plan](../01_Concept_Design/03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md) - 연결·Ready·직접 수신·검토 대기 원칙의 임시 공통 정본. [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - Path 2 주 경로와 책임 경계.
+- Related UI Docs: N/A - A2A-7에서 SemuAgent 전송 화면과 JARYO 수신·검토 화면을 함께 정의한다.
+- Related HTML Preview: N/A - A2A-7에서 양쪽 화면 Preview를 제작하고 오너 승인 전 runtime을 구현하지 않는다.
+- Related Technical Docs: N/A - A2A-2~A2A-5 질의응답 후 versioned 공통 계약, API, 사업자 매핑, 원본 전송, 보안 명세를 작성한다.
+- Related QA Docs: N/A - 기술 계약 승인 후 tenant·사업자·세목·기간 격리, 재시도, 중복 수신, hash, 수신 상태 동기화 시나리오를 작성한다.
+- Component & Library Plan: N/A - A2A-7에서 양쪽 기존 자산 재사용 범위와 신규 공통 계약 모듈을 확정한다.
+- Origin: 사업자는 SemuAgent로 직접 신고할 수 있어야 하며, 신고 대행을 원하는 경우에는 정리 완료한 자료를 연결된 JARYO 사용 사무소로 직접 전달한다. 사무소는 다시 정리하지 않고 검토와 전문 판단에 집중하는 Agent-to-Agent 협업을 목표로 한다.
+- Fixed Order:
+  1. **A2A-2**: 사업자×세목×신고기간×snapshot version 전송 단위, Ready와 전송 원본 범위 확정.
+  2. **A2A-3**: JARYO 사업자 매핑, 자동 등록, `SemuAgent 수신 · 검토 대기`, 수신 승인 계약 확정.
+  3. **A2A-4**: 보완 요청·기술 오류·재전송·사무소 결과 동기화 계약 확정.
+  4. **A2A-5**: 동의·개인정보 역할·보관·감사·취소·철회 계약 확정.
+  5. **A2A-6**: 파트너 운영·비용·알선·중개 경계 확정.
+  6. **A2A-7**: 양쪽 HTML Preview, Pre-Code Brief, Component Plan, QA 시나리오 승인.
+- Implementation Preconditions:
+  - [x] 직접 연동을 주 경로, JC-034 ZIP을 장애·미연동 시 fallback으로 승인
+  - [x] JARYO 수신 직후 `검토 대기`, 담당자 수신 승인 전 사무소 정본 자동 승격 금지
+  - [x] 양쪽 DB 직접 공유·상대 DB 직접 쓰기 금지
+  - [x] 전송 정본을 사업자 1곳 × 세목 1개 × 신고기간 1개 × snapshot version 1개로 분리
+  - [x] 해당 전송의 Ready 판단·신고 준비값에 실제 사용된 원본·정리자료만 포함하고 전체 이력은 제외
+  - [x] 전송 직전 수신 사무소·세목/기간·준비값·원본 건수/목록·해결된 예외·Ready를 확인하고 명시적 CTA로 승인
+  - [x] 첫 구현·E2E·파트너 fixture 검증 세목을 부가세로 승인하고 이후 같은 계약으로 세목 확대
+  - [x] 부가세 Ready는 기존 VAT package gate `isReady`를 단일 원천으로 재사용하고 별도 공식을 만들지 않음
+  - [ ] A2A-2~A2A-6 질의응답·오너 승인 완료
+  - [ ] 공통 versioned schema·API·idempotency key·fingerprint·파일 hash 계약 승인
+  - [ ] SemuAgent 전송·JARYO 수신/검토 HTML Preview 오너 승인
+  - [ ] Pre-Code Brief·Component & Library Plan·QA 시나리오 승인
+- Acceptance Criteria:
+  - [ ] 연결된 사업자를 안정적으로 매핑하고 중복 사업자 생성을 방지한다.
+  - [ ] 사용자가 전송할 세목·기간·원본 범위를 확인하고 명시적으로 전송한다.
+  - [ ] 전송 직전 화면은 수신 사무소, 사업자, 세목·기간, snapshot version, 준비값, 원본 범위, 해결된 예외, blocker 0건을 표시한다.
+  - [ ] 확인한 fingerprint가 현재 서버 fingerprint와 다르거나 Ready가 해제되면 전송을 409로 차단한다.
+  - [ ] 전송 감사 이력에 사용자·시각·수신자·세목/기간·snapshot version·fingerprint·source scope를 저장한다.
+  - [ ] 전송 manifest가 포함된 원본·정규화 행·증빙 연결·사용자 결정·해결된 예외를 source reference로 추적한다.
+  - [ ] 무관 세목·무관 기간·미참조 초안·전체 과거 자료가 전송에 포함되지 않는다.
+  - [ ] 화면에서 여러 세목을 함께 선택해도 세목별 독립 transfer ID·Ready·승인·반송 상태를 생성한다.
+  - [ ] 한 전송의 blocker·보완·기술 오류가 다른 세목 전송 상태를 변경하지 않는다.
+  - [ ] Ready 구조화 자료와 그 판단에 사용된 원본을 JARYO로 직접 전달한다.
+  - [ ] JARYO 해당 사업자 화면에 원본·정리자료·Ready snapshot이 자동 등록된다.
+  - [ ] 수신 자료의 최초 상태는 `SemuAgent 수신 · 검토 대기`다.
+  - [ ] 수신만으로 JARYO 확정 장부·신고 정본을 변경하지 않는다.
+  - [ ] 재시도는 멱등이며 contract version·fingerprint·파일 hash를 검증한다.
+  - [ ] 수신 승인·보완 요청·기술 오류·재전송 상태가 양쪽에 일관되게 표시된다.
+  - [ ] 직접 연동 사용 불가 시에만 JC-034 ZIP fallback을 제공한다.
+  - [ ] 첫 부가세 slice가 Ready→사용자 전송→JARYO 검토 대기→수신 승인/보완/기술 오류 E2E를 통과한다.
+  - [ ] 부가세 전송은 summary·source·reconciliation·deduction·tax treatment·provenance gate가 모두 ready일 때만 가능하다.
+  - [ ] 보류·전문가 확인·필수 증빙·안분 근거 미완료와 stale fingerprint는 UI·API 양쪽에서 전송을 차단한다.
+  - [ ] upstream에서 완료된 예외는 이유·확인자·확인시각과 함께 전달하고 blocker로 중복 계산하지 않는다.
+  - [ ] 부가세 전용 필드를 공통 계약에 하드코딩하지 않고 후속 세목 확장 경계를 유지한다.
+- Document Sync Check (2026-07-16): 직접 A2A를 Path 2 주 경로로, ZIP을 fallback으로 고정했다. A2A-2 전송 단위는 사업자×세목×신고기간×snapshot version의 독립 이벤트이며, 해당 이벤트에 실제 사용된 원본·정리자료만 포함한다. 전송 직전 사용자는 수신자·준비값·원본 범위·해결된 예외·Ready를 확인하고 명시적으로 전송한다. 첫 구현·E2E 세목은 부가세이며 Ready는 기존 VAT package gate를 그대로 재사용한다. 완료 후 같은 계약으로 다른 세목을 확대한다. 구현은 나머지 질의응답·양쪽 UI-First Gate·공통 기술 계약 승인 전까지 시작하지 않는다.
+
+### JC-034 · GIWA handoff 수동 fallback — ZIP Export
+
+- Related Concept: [Product Baseline §Filing Path Priority](../01_Concept_Design/01_PRODUCT_BASELINE.md) · [Agent-to-Agent Tax Collaboration Master Plan](../01_Concept_Design/03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md) — JC-044 직접 A2A가 주 경로이며, JC-034는 비연동·장애 상황의 수동 ZIP fallback만 정의한다.
 - **우선순위:** 전체 Path 1 베타(1a+1b) 테스트 **이후**. 문서만 보존, **코드 착수 보류**.
 - Related Domain: JC-029 · JC-024~028 · JC-030 Validation · JARYO-GIWA.
 - Related Technical Docs: [JC-034 Scope Gate](../03_Technical_Specs/34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md) · [JC-034 Pre-Code Brief](../03_Technical_Specs/35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md)
@@ -995,17 +1088,19 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Related HTML Preview: N/A — 기존 `08_filing_preparation.html` Path 2 패널은 Path 1 우선 결정으로 supersede. Path 2 재개 시 신규 UI-First Gate 필요.
 - Prototype Review / 승인: [ ] — 전체 Path 1 베타(1a+1b) 이후 Path 2를 재개할 때 다시 승인.
 - Implementation Preconditions:
-  - [x] Filing Path 2 · v1 ZIP 범위 확정
+  - [x] Filing Path 2 수동 fallback ZIP 범위 확정
+  - [x] 직접 연동 주 경로와 분리하고, ZIP을 비연동·장애 상황으로 한정
   - [ ] **UI-First Gate**: 전체 Path 1 베타(1a+1b) 이후 신규 Preview로 재승인
   - [x] **Pre-Code Brief**: [35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md](../03_Technical_Specs/35_JC034_GIWA_HANDOFF_PACKAGE_PRE_CODE_BRIEF.md) — 승인(2026-07-07)
   - [ ] **Path 1 선행:** 원천세 등 세목 Path 1 안정 ([Roadmap](../03_Technical_Specs/36_PATH1_FORM_FILL_ROADMAP.md))
   - [ ] JC-030 Validation 연동
-- Acceptance Criteria (v1):
+- Acceptance Criteria (fallback):
   - [ ] ZIP Export (manifest + tracks + README)
   - [ ] Validation blocking 시 export 차단
   - [ ] handoff 확인·감사 로그
-  - [ ] v1 API 없음 · 알선 없음
-- Document Sync Check: 2026-07-07 Path 2 재정의 후 2026-07-07 23:04 Path 1 우선 결정으로 기존 Preview supersede. **구현은 전체 Path 1 베타(1a+1b) 이후**.
+  - [ ] 직접 A2A 불가 사유를 사용자에게 알리고 ZIP fallback임을 명확히 표시
+  - [ ] API 직접 연동·알선 없음
+- Document Sync Check: 2026-07-07 Path 2 재정의 후 기존 Preview를 supersede했다. **구현은 전체 Path 1 베타(1a+1b) 이후**다. 2026-07-16 오너 결정으로 JC-044 직접 A2A가 주 경로가 되었고, 이 항목은 비연동·장애 상황의 수동 ZIP fallback으로만 보존한다.
 
 ### JC-031 · 레거시 GIWA upload/email 서브시스템 은퇴 (에픽 · 착수 전 영향 감사 필수)
 

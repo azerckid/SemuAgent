@@ -1,6 +1,6 @@
 # Path 1 End-to-End Filing Readiness Audit
 > Created: 2026-07-07 23:29 KST
-> Last Updated: 2026-07-14 KST
+> Last Updated: 2026-07-16 02:24 KST
 
 ## 0. Purpose
 
@@ -243,8 +243,9 @@ The authoritative sequence and completion lines are in
 8. **Run Path 1a beta after two compatible tax types satisfy the per-tax 1a
    completion line; simplified wage and withholding Path 1b are already live.**
 
-Path 2, encrypted Path 3, screenshot-by-screenshot direct-entry tutorials and
-automatic submission do not interrupt this sequence.
+Path 2 (JC-044 direct A2A with JC-034 ZIP fallback), encrypted Path 3,
+screenshot-by-screenshot direct-entry tutorials and automatic submission do not interrupt
+this sequence.
 
 ## 7. Completion Decisions
 
@@ -255,15 +256,15 @@ automatic submission do not interrupt this sequence.
 | Path 1a beta | Two compatible tax types pass official non-encrypted upload verification and beta flow |
 | Path 1b coverage | Every applicable tax type without a confirmed form is assigned to Path 1b and its direct-entry preparation screen is built. Simplified wage·withholding·VAT·annual wage — **done**. Business status — conditional. Local income — Path 1a candidate. No applicable tax type ends `blocked` |
 | Planned tax matrix decision | Withholding, VAT and annual wage are live Path 1b; local income is a Path 1a candidate awaiting the original workbook; business status requires an applicability gate before its Stage A |
-| Path 2 restart | Full Path 1 beta (1a files + 1b summary screens) is stable and a new UI-First Gate is approved |
+| Path 2 restart | Full Path 1 beta is stable, A2A-2~A2A-7 contracts are approved, and both products pass a new UI-First Gate |
 
 ## 8. Documentation Sync
 
 This audit supersedes wording that presents Path 1, Path 2, and Path 3 as equal
-current choices. For beta:
+current choices. For beta and the later Path 2 handoff:
 
 - Path 1 is the product path, with 1a (official form upload) and 1b (direct-entry value summary) branches; no tax type ends `blocked`.
-- Path 2 is after the full Path 1 beta (1a files + 1b summary screens); JC-034's required outputs are the per-tax summary CSVs that depend on 1b work, with Path 1a files only optional attachments.
+- Path 2 is after the full Path 1 beta. JC-044 direct A2A is the primary delivery path into the linked JARYO business review queue, with initial status `SemuAgent 수신 · 검토 대기`; JC-034 ZIP is only a manual fallback for unavailable integration or outages. Both consume the same per-tax summaries, Ready snapshot and validation output.
 - Encrypted Path 3 is outside the current product scope.
 - Exact Hometax menu/screen/row/field mapping is included in Path 1b; screenshot-by-screenshot click tutorials and automatic navigation are excluded.
 
@@ -271,8 +272,10 @@ current choices. For beta:
 
 - [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md)
 - [Filing Preparation Pipeline](../01_Concept_Design/02_FILING_PREPARATION_PIPELINE.md)
+- [Agent-to-Agent Tax Collaboration Master Plan](../01_Concept_Design/03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md)
 - [Path 1 Form Fill Roadmap](./36_PATH1_FORM_FILL_ROADMAP.md)
 - [Open Backlog Completion Contracts](./22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md)
+- [JC-034 GIWA Handoff ZIP Fallback Scope Gate](./34_JC034_GIWA_HANDOFF_PACKAGE_SCOPE_GATE.md)
 - [Reconciliation Ledger Phase 2 Pre-Code Brief](./41_RECONCILIATION_LEDGER_V2_PRE_CODE_BRIEF.md)
 - [VAT Confirmed-Ledger Provenance Audit](./42_VAT_CONFIRMED_LEDGER_PROVENANCE_AUDIT.md)
 - [Withholding W0 Final Audit](./37_JC030_WITHHOLDING_EFILING_LAYOUT_ACQUISITION.md)
