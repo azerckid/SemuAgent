@@ -1034,6 +1034,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-17, CUI-1/CUI-2 shell): Preview `19_sebiseo.html`과 runtime `/dashboard/sebiseo` UI 셸을 추가했다. SemuAgent 사이드바만 유지(채팅 이력 레일 없음), 참고 세무 일정 1카드, `#171717` 입구, ChatGPT형 아이콘(비활성), 고지 문구 확정. 회사 홈 페이지는 유지. LLM·업로드·mutation은 후속.
 - Document Sync Check (2026-07-17, CUI-2 trust fix): 가짜 DB 상태 데모 대화를 중립 첫 화면으로 교체하고, composer 컨트롤을 `disabled`+준비 중 안내로 고정했다. 일정 카드는 `세무 일정(참고)`로 하향해 공통 법정 일정임을 명시한다. Concept 04 Status에서 `runtime change not approved`를 CUI-2 셸 진행 / CUI-3+ 미승인으로 갱신했다.
 - Document Sync Check (2026-07-17, CUI-2 merge + CUI-3 docs): PR #265 머지 완료. CUI-3 Pre-Code Brief(62)·QA(12) draft와 Concept/Screen Flow/Backlog 링크를 추가했다. runtime 업로드·대화는 Brief 오너 승인 전 착수하지 않는다.
+- Document Sync Check (2026-07-17, CUI-3 review fix): Brief에 업로드 전 적용 기간 확인·chat 요청 계약(history≤8·2000자·redaction 시점·파일 원문 미포함)·서버 MIME 정본(CSV/ZIP 제외)을 반영했다. 자료수집 클라이언트 accept/문구를 서버와 맞췄다. QA P-03은 visible 안내로 수정. 오너 결정 4항은 Brief §10에 기록.
 
 ### JC-044 · SemuAgent↔JARYO 직접 A2A 전달
 

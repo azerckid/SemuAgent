@@ -70,7 +70,7 @@ mutation 경계·외부 포털 미노출·tenant 격리를 함께 검증한다.
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
 | S-60 | 허용 형식 PDF ≤50MB | 드롭존 업로드 | `upload_file` 저장 + status uploaded→analyzing | Pending |
-| S-61 | 미지원 형식 | 업로드 시도 | 거부·사용자 오류 메시지, DB 저장 없음 | Pending |
+| S-61 | 미지원 형식(CSV·ZIP 포함) | 업로드 시도 | 거부·사용자 오류 메시지, DB 저장 없음(서버 MIME 정본) | Pending |
 | S-62 | 파싱 실패 파일 | "다시 시도" | analyze 재호출, 상태 갱신 | Pending |
 | S-63 | 암호 보호 Excel | 비밀번호 입력 | password flow 후 분석 재개 | Pending |
 | S-64 | 세션 생성 | 첫 업로드 전 | `source='staff_direct'`, tenant·client scope | Pending |

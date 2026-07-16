@@ -9,13 +9,11 @@ import { verifyUploadClientTokenAvailable } from '@/lib/upload/client-token-pref
 import { resolveUploadedFileDisplay } from '@/lib/upload/file-display'
 import { cn } from '@/lib/utils'
 
+// Keep in sync with app/api/upload/route.ts ALLOWED_CONTENT_TYPES (server is source of truth).
 const ACCEPTED_TYPES = [
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.ms-excel',
-  'text/csv',
-  'application/zip',
-  'application/x-zip-compressed',
   'image/jpeg',
   'image/png',
   'image/webp',
@@ -265,7 +263,7 @@ export function SourceCollectionUploadDropzone({
             세금계산서 · 통장 거래내역 · 카드 매입내역 · 영수증 · 급여 파일 · 홈택스 내보내기 파일을 끌어다 놓거나 선택하세요.
           </p>
           <p className="mt-2 text-[11.5px] text-company-fg-subtle">
-            지원 형식: XLSX · CSV · PDF · 이미지(JPG/PNG) · ZIP · 최대 50MB
+            지원 형식: PDF · XLSX · XLS · 이미지(JPG/PNG/WebP) · 최대 50MB
           </p>
         </div>
         <button

@@ -181,8 +181,9 @@ Read model·화면에서 읽지 않거나 링크하지 않는다.
   `canRetry=true`이면 CTA "다시 시도".
 - 자료유형 매핑(초안): `item_group` / AI 분류 결과 → `SourceCollectionSourceType`.
   매핑 불가 시 `unknown`, 타일은 "기타"로 합산.
-- 지원 형식(Preview 기준): XLSX, CSV, PDF, 이미지(JPEG/PNG/WebP), ZIP(≤50MB).
-  기존 `ACCEPTED_TYPES`에 ZIP·CSV가 없으면 구현 단계에서 확장.
+- 지원 형식(서버 정본 `ALLOWED_CONTENT_TYPES`): PDF, XLSX, XLS, 이미지(JPEG/PNG/WebP), ≤50MB.
+  CSV·ZIP은 서버가 거부한다. 클라이언트 `accept`·안내 문구도 서버와 일치시킨다(JC-043 CUI-3 정합).
+  CSV·ZIP 실지원은 별도 에픽(서버 허용 + 파서) 전까지 보류.
 
 ## 7. Mutation and State
 
@@ -234,7 +235,7 @@ Read model·화면에서 읽지 않거나 링크하지 않는다.
 ## 10. Acceptance Criteria
 
 - `/dashboard/direct-upload`가 승인 Preview 구조(완결성 → 업로드 → 타일 → 표 → 미수집)를 따른다.
-- 회사 내부 사용자가 XLSX/CSV/PDF/이미지/ZIP(≤50MB)을 업로드하면 저장 후 파싱 큐에 등록된다.
+- 회사 내부 사용자가 PDF/XLSX/XLS/이미지(≤50MB)을 업로드하면 저장 후 파싱 큐에 등록된다.
 - 자료유형별 집계·정규화 상태가 타일과 표에 표시된다.
 - 파싱 오류 건은 danger 상태 + "다시 시도" CTA가 있다.
 - 수집 완결성(미수집 건수)과 미수집·확인 필요 목록이 표시된다.
@@ -249,7 +250,7 @@ Read model·화면에서 읽지 않거나 링크하지 않는다.
 - `client_request_event` 브리지 제거·세션 생성 API 회사용 rename — JC-004 후속 chore.
 - 다사업장 선택 UI — JC-005 `business_entity` 확정 후.
 - 정규화 확정 mutation 상세 — 기장검토(JC-010)와 경계 조율.
-- ZIP·CSV MIME 확장 — 구현 시 `ACCEPTED_TYPES`·서버 검증 동기화.
+- ZIP·CSV MIME 확장 — **보류**. 현재는 서버 미지원이며 클라이언트 표기를 서버에 맞춤(JC-043 CUI-3).
 
 ## 12. Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 회사 셀프사용 책임 경계
