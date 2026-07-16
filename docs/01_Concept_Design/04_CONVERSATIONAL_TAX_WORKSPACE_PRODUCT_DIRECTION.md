@@ -1,7 +1,7 @@
 # Conversational Tax Workspace Product Direction
 > Created: 2026-07-16 01:43
 > Last Updated: 2026-07-17 05:10
-> Status: CUI-0/CUI-1/CUI-2 완료 · CUI-3 Brief 승인(PR #266) · CUI-3a 기간 확인·업로드 완료(PR #267) · CUI-3b chat API·ephemeral UI 코드/전체 자동검증 완료·PR/브라우저 확인 대기 · CUI-3c+ 미착수
+> Status: CUI-0/CUI-1/CUI-2 완료 · CUI-3 Brief 승인(PR #266) · CUI-3a 업로드(PR #267) · CUI-3b chat API·ephemeral UI 머지+E2E 완료(PR #268) · CUI-3c 화면 이동 CTA 코드/자동검증 완료·PR 검토 대기 · CUI-3d 미착수
 
 ## 1. Purpose
 

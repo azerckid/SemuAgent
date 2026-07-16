@@ -22,6 +22,7 @@ import {
   type SebiseoModelOutput,
 } from './schemas'
 import { classifySebiseoScope } from './scope-classifier'
+import { resolveSebiseoScreenActions } from './screen-actions'
 
 export type SebiseoChatContext = {
   tenantId: string
@@ -105,7 +106,8 @@ export async function handleSebiseoChat(
     return sebiseoChatResponseSchema.parse({
       status: 'answered',
       answer: redacted.text,
-      suggestedActions: [],
+      // CUI-3c: 허용된 답변에만 서버 고정 목록 기반 화면 이동 버튼을 붙인다.
+      suggestedActions: resolveSebiseoScreenActions(sanitized.message),
     })
   } catch (error) {
     if (error instanceof UsageHelpRateLimitError) throw error

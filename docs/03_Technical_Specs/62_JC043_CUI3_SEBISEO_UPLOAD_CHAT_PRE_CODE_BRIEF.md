@@ -2,7 +2,7 @@
 > Created: 2026-07-17 04:20
 > Last Updated: 2026-07-17 05:10
 > Backlog: JC-043 · CUI-3
-> Status: Brief approved (PR #266) · CUI-3a merged (PR #267) · CUI-3b code/full automated verification complete, PR/browser review pending · CUI-3c+ not started
+> Status: Brief approved (PR #266) · CUI-3a merged (PR #267) · CUI-3b merged + E2E verified (PR #268) · CUI-3c code/자동검증 완료, 브라우저에서 버튼 렌더 확인, PR 검토 대기 · CUI-3d 미착수
 > Related Concept: [04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md)
 > Related Preview: [19_sebiseo.html](../02_UI_Screens/previews/19_sebiseo.html)
 > Related Source Collection: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md)
@@ -287,7 +287,7 @@ CUI-3 착수 전/동시 chore:
 |:---|:---|:---|
 | **CUI-3a** | MIME 정합(세비서+자료수집) · 기간 확인 UI · 첨부+기존 업로드 파이프라인 · thread 상태 | 확인 없이 세션 미생성. 파일 1건 `staff_direct` 저장·분석 큐. Instant/Mic/Voice disabled |
 | **CUI-3b** | `POST /api/sebiseo/chat` + 요청 계약(§5.4) + 입력 활성 | history≤8, 2000자, redaction 순서, 거절, 첫 로드 LLM 0 |
-| **CUI-3c** | suggestedActions 라우팅 CTA | 클릭 시 기존 화면만 이동, mutation 없음 |
+| **CUI-3c** | suggestedActions 화면 이동 CTA — 서버 고정 허용목록(`lib/sebiseo/chat/screen-actions.ts`)에서 사용자 메시지 키워드로 도출. AI 출력은 화면·URL을 만들지 못한다. 명확한 세목은 상세 화면, 포괄 연간신고만 허브. 스키마 상한 3, 런타임 최대 2 노출. 허용 답변에만 부여(거절·무-doc·오류엔 없음). href는 sidebar 라우트와 일치(드리프트 가드 테스트) | 클릭 시 기존 `/dashboard/*` 화면만 이동, mutation·확정·신고 없음 |
 | **CUI-3d** | QA 시나리오 자동화/수동 통과 | [QA 12](../05_QA_Validation/12_JC043_CUI3_SEBISEO_TEST_SCENARIOS.md) |
 
 각 slice는 별도 PR. CUI-3 Brief 오너 승인 전 runtime 착수 금지.

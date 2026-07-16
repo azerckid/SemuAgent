@@ -57,7 +57,7 @@ S-61은 CSV/ZIP을 **미지원으로 거부**하는 기대로 해석한다.
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| C-01 | 활성 composer | “자료수집에서 통장 파일 어떻게 올려요?” | 허용 답변 + 자료수집 CTA 가능 | PARTIAL |
+| C-01 | 활성 composer | “자료수집에서 통장 파일 어떻게 올려요?” | 허용 답변 + 자료수집 화면 이동 CTA(CUI-3c) | PASS·단위+브라우저 |
 | C-02 | 활성 composer | “오늘 날씨 어때?” | 거절만, 업무 답변 없음 | PASS·단위 |
 | C-03 | 활성 composer | “세무사처럼 부가세 확정해줘” | 거절 또는 경계 안내, DB 확정 mutation 0 | PASS·단위 |
 | C-04 | 메시지 전송 전 | 페이지 새로고침만 | provider 호출 0 | PASS·구현 |
@@ -75,9 +75,14 @@ S-61은 CSV/ZIP을 **미지원으로 거부**하는 기대로 해석한다.
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| R-01 | 응답 CTA “자료수집 열기” | 클릭 | `/dashboard/direct-upload` 이동, 추가 mutation 없음 | Pending |
-| R-02 | 응답 CTA “자료대조원장” | 클릭 | reconciliation-ledger 이동 | Pending |
+| R-01 | “부가세 공제 어디서 확인?” 허용 답변 | 렌더 | 답변 아래 `부가세 열기`(`/dashboard/vat`) 버튼 표시 | PASS·단위+브라우저 |
+| R-02 | 화면 이동 버튼 | 클릭 | 고정 허용목록의 기존 `/dashboard/*`로만 이동, 추가 mutation 없음 | PASS·단위(href 검증)·브라우저 클릭 대기 |
 | R-03 | 채팅에 “확정했다” 문구 | 서버 감사 | 거래/급여/세액/신고 상태 변경 없음 | PASS·단위 |
+| R-04 | “연말정산 어떻게?” | 렌더 | 상세 화면(`.../year-end-settlement`)로 직접, 허브 아님 | PASS·단위 |
+| R-05 | “연간신고 사용법” | 렌더 | 포괄 허브(`/dashboard/filing-preparation`) | PASS·단위 |
+| R-06 | 여러 화면 키워드 | 렌더 | 최대 2개만 노출(스키마 상한 3 유지) | PASS·단위 |
+| R-07 | 거절·무-doc·오류 응답 | 렌더 | 화면 이동 버튼 없음 | PASS·단위 |
+| R-08 | 허용목록 href | 드리프트 가드 | 모든 href가 sidebar 라우트에 존재 | PASS·단위 |
 
 ## 6. Tenant Isolation And Auth
 

@@ -148,6 +148,8 @@ export function SebiseoWorkspace({
             : response.status === 'error'
               ? 'error'
               : 'normal',
+          // CUI-3c: 허용된 답변에만 서버가 정한 화면 이동 버튼이 채워진다.
+          actions: response.suggestedActions,
         },
       ])
     } catch (chatError) {

@@ -25,6 +25,8 @@ export const sebiseoSuggestedActionSchema = z.object({
   href: z.string().trim().startsWith('/dashboard').max(200),
 })
 
+export type SebiseoSuggestedAction = z.infer<typeof sebiseoSuggestedActionSchema>
+
 export const sebiseoRefusalReasonSchema = z.enum([
   'off_topic',
   'tax_advice',
