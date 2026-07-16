@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'crypto'
+import { createHash } from 'crypto'
 import { and, desc, eq, or } from 'drizzle-orm'
 import { z } from 'zod'
 import {
@@ -7,6 +7,7 @@ import {
   billingWebhookEvent,
   tenantSubscription,
 } from '@/lib/db/schema'
+import { safeSecretEqual } from '@/lib/security/constant-time'
 import { now, toDBString } from '@/lib/time'
 import type { TossPaymentResponse } from './toss'
 import type { BillingInvoiceEventType, TenantSubscriptionStatus } from './subscription'
@@ -75,13 +76,6 @@ function getHeader(headers: HeaderSource, name: string): string | null {
   return exactValue ?? null
 }
 
-function safeEqual(a: string, b: string): boolean {
-  const aBuffer = Buffer.from(a)
-  const bBuffer = Buffer.from(b)
-  if (aBuffer.length !== bBuffer.length) return false
-  return timingSafeEqual(aBuffer, bBuffer)
-}
-
 export function verifyTossWebhookEndpointSecret(params: {
   requestUrl: string
   headers: HeaderSource
@@ -93,7 +87,7 @@ export function verifyTossWebhookEndpointSecret(params: {
   const headerSecret = getHeader(params.headers, 'x-jaryo-toss-webhook-secret')
 
   return [urlSecret, headerSecret].some((candidate) => (
-    typeof candidate === 'string' && safeEqual(candidate, params.expectedSecret!)
+    safeSecretEqual(candidate, params.expectedSecret)
   ))
 }
 

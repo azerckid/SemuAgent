@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { and, eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { uploadSession } from '@/lib/db/schema'
+import { safeSecretEqual } from '@/lib/security/constant-time'
 
 export const maxDuration = 60
 
@@ -12,7 +13,7 @@ const bodySchema = z.object({
 
 export async function POST(req: Request): Promise<Response> {
   const internalSecret = process.env.INTERNAL_API_SECRET
-  if (!internalSecret || req.headers.get('authorization') !== `Bearer ${internalSecret}`) {
+  if (!internalSecret || !safeSecretEqual(req.headers.get('authorization'), `Bearer ${internalSecret}`)) {
     return new Response('Unauthorized', { status: 401 })
   }
 

@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { cronRun } from '@/lib/db/schema'
 import { isUniqueConstraintError } from '@/lib/locks/send-lock'
+import { safeSecretEqual } from '@/lib/security/constant-time'
 import { now, toDBString } from '@/lib/time'
 
 // Vercel Cron은 CRON_SECRET을 Authorization: Bearer {secret} 헤더로 전달한다.
@@ -9,7 +10,7 @@ import { now, toDBString } from '@/lib/time'
 export function verifyCronAuth(req: Request): boolean {
   const secret = process.env.CRON_SECRET
   if (!secret) return false
-  return req.headers.get('authorization') === `Bearer ${secret}`
+  return safeSecretEqual(req.headers.get('authorization'), `Bearer ${secret}`)
 }
 
 // DB 잠금 레코드로 중복 실행 방지. 잠금 성공 시 lockId 반환, 이미 실행 중이면 null.

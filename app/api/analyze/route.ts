@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { analyzeFileAndMaybeFinalize } from '@/lib/ai/process'
+import { safeSecretEqual } from '@/lib/security/constant-time'
 
 export const maxDuration = 60
 
@@ -11,7 +12,7 @@ const bodySchema = z.object({
 export async function POST(req: Request): Promise<Response> {
   // 내부 API 인증 — secret 미설정 시에도 차단 (선택적 인증은 인증이 아님)
   const internalSecret = process.env.INTERNAL_API_SECRET
-  if (!internalSecret || req.headers.get('authorization') !== `Bearer ${internalSecret}`) {
+  if (!internalSecret || !safeSecretEqual(req.headers.get('authorization'), `Bearer ${internalSecret}`)) {
     return new Response('Unauthorized', { status: 401 })
   }
 
