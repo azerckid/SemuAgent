@@ -27,6 +27,7 @@ export function isUploadAllowedContentType(contentType: string | undefined | nul
 
 export function isUploadAllowedFile(file: Pick<File, 'type' | 'name'>): boolean {
   if (isUploadAllowedContentType(file.type)) return true
+  if (file.type) return false
   // Some browsers omit MIME for Excel; fall back to extension.
   const lower = file.name.toLowerCase()
   return (
