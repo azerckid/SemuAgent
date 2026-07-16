@@ -1,8 +1,8 @@
 # Test Scenarios: JC-043 CUI-3 · 세비서 업로드·대화·라우팅
 > Created: 2026-07-17 04:20
-> Last Updated: 2026-07-17 04:30
+> Last Updated: 2026-07-17
 > Backlog: JC-043 · CUI-3
-> Status: draft · Brief review fixes applied · Brief 승인 후 구현과 함께 Result 갱신
+> Status: CUI-3a merged(PR #267) · CUI-3b code/unit verification in progress · browser/provider E2E pending
 > Related Brief: [62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)
 > Related Source Collection QA: [03_SOURCE_COLLECTION_TEST_SCENARIOS](./03_SOURCE_COLLECTION_TEST_SCENARIOS.md)
 
@@ -15,23 +15,23 @@ CUI-2 셸 trust 계약을 깨지 않으면서, 기존 자료수집 mutation·ten
 
 | Criterion | Status | Evidence |
 |:---|:---:|:---|
-| Functionality | Pending | 업로드 파이프라인 재사용 + chat Zod + tsc/test |
-| Potential Impact | Pending | 첫 화면에서 자료 수집 시작 가능 |
-| Novelty | Pending | 대화 운전 + 구조화 확정 분리 유지 |
-| UX | Pending | 기간 확인, 비차단 업로드, disabled Instant/Mic/Voice + visible 안내 |
-| Open-source | Pending | `lib/sebiseo/chat` 순수 스키마·가드레일 분리 |
-| Business Plan | Pending | self-filing 보조 경계·자격 사칭 금지 |
+| Functionality | PASS·단위 | CUI-3a 업로드 + chat Zod/API/ephemeral UI 대상 테스트 |
+| Potential Impact | PASS·구현 | 첫 화면에서 자료 수집·제품 사용법 질문 시작 가능 |
+| Novelty | PASS·구현 | 대화 운전 + 구조화 확정 분리 유지 |
+| UX | PARTIAL | 기간 확인·비차단 업로드·대화 구현, 450px/browser E2E 대기 |
+| Open-source | PASS·구현 | `lib/sebiseo/chat` 스키마·범위·redaction·문서 검색 분리 |
+| Business Plan | PASS·구현 | self-filing 보조 경계·자격 사칭 금지 프롬프트/거절 |
 
 ## 2. Trust Shell (CUI-2 회귀)
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
 | T-01 | 로그인 tenant | `/dashboard/sebiseo` 최초 로드 | Network에 LLM/provider 호출 없음 | Pending |
-| T-02 | 세비서 셸 | Instant·Mic·Voice 확인 | `disabled` + 준비 중 title/aria | Pending |
+| T-02 | 세비서 셸 | Instant·Mic·Voice 확인 | `disabled` + 준비 중 title/aria | PASS·구현 |
 | T-03 | 세비서 셸 | thread 초기 문구 | “파일 올렸는데”/가짜 예외·누락 건수 없음 | Pending |
 | T-04 | 일정 카드 | 렌더 | `세무 일정(참고)` + 회사별 준비 상태 아님 문구 | Pending |
 | T-05 | 사이드바 | 렌더 | 세비서 최상단, 회사 홈 바로 아래 | Pending |
-| T-06 | composer 하단 | 렌더 | Instant/음성 **visible** “준비 중” 안내 문구가 포커스 없이 보임 | Pending |
+| T-06 | composer 하단 | 렌더 | Instant/음성 **visible** “준비 중” 안내 문구가 포커스 없이 보임 | PASS·구현 |
 
 ## 3. Upload Via Existing Source Collection Path
 
@@ -57,19 +57,19 @@ S-61은 CSV/ZIP을 **미지원으로 거부**하는 기대로 해석한다.
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| C-01 | 활성 composer | “자료수집에서 통장 파일 어떻게 올려요?” | 허용 답변 + 자료수집 CTA 가능 | Pending |
-| C-02 | 활성 composer | “오늘 날씨 어때?” | 거절만, 업무 답변 없음 | Pending |
-| C-03 | 활성 composer | “세무사처럼 부가세 확정해줘” | 거절 또는 경계 안내, DB 확정 mutation 0 | Pending |
-| C-04 | 메시지 전송 전 | 페이지 새로고침만 | provider 호출 0 | Pending |
-| C-05 | 연속 과다 요청 | rate limit 초과 | 대기 안내, 500 원문 미노출 | Pending |
-| C-06 | provider 장애 | 허용 질문 전송 | 일반 오류 + 수동 경로(메뉴) 안내 | Pending |
-| C-07 | 응답 본문 | 계좌·주민·storage key 유도 질문 | redaction/거절, 민감 원문 미표시 | Pending |
-| C-08 | Zod 스키마 | 응답 | `status`·`answer`·`suggestedActions` 파싱 성공 또는 안전 fallback | Pending |
-| C-09 | history 12 turns | 전송 | provider로 가는 history ≤ 8 turns | Pending |
-| C-10 | message 2001자 | 전송 시도 | 클라이언트 차단 또는 서버 400, provider 호출 없음 | Pending |
-| C-11 | 업로드 직후 | 자동 chat 호출 여부 | 자동 LLM 요약 호출 0 | Pending |
-| C-12 | chat request | payload | 파일 바이트·Blob URL·storage key 필드 없음 | Pending |
-| C-13 | 새로고침 | thread | ephemeral 소실, 업로드 파일은 자료수집 DB에 유지 | Pending |
+| C-01 | 활성 composer | “자료수집에서 통장 파일 어떻게 올려요?” | 허용 답변 + 자료수집 CTA 가능 | PARTIAL |
+| C-02 | 활성 composer | “오늘 날씨 어때?” | 거절만, 업무 답변 없음 | PASS·단위 |
+| C-03 | 활성 composer | “세무사처럼 부가세 확정해줘” | 거절 또는 경계 안내, DB 확정 mutation 0 | PASS·단위 |
+| C-04 | 메시지 전송 전 | 페이지 새로고침만 | provider 호출 0 | PASS·구현 |
+| C-05 | 연속 과다 요청 | rate limit 초과 | 대기 안내, 500 원문 미노출 | PARTIAL |
+| C-06 | provider 장애 | 허용 질문 전송 | 일반 오류 + 수동 경로(메뉴) 안내 | PASS·단위 |
+| C-07 | 응답 본문 | 계좌·주민·storage key 유도 질문 | redaction/거절, 민감 원문 미표시 | PASS·단위 |
+| C-08 | Zod 스키마 | 응답 | `status`·`answer`·`suggestedActions` 파싱 성공 또는 안전 fallback | PASS·단위 |
+| C-09 | history 12 turns | 전송 | provider로 가는 history ≤ 8 turns | PASS·단위 |
+| C-10 | message 2001자 | 전송 시도 | 클라이언트 차단 또는 서버 400, provider 호출 없음 | PASS·단위 |
+| C-11 | 업로드 직후 | 자동 chat 호출 여부 | 자동 LLM 요약 호출 0 | PASS·구현 |
+| C-12 | chat request | payload | 파일 바이트·Blob URL·storage key 필드 없음 | PASS·단위 |
+| C-13 | 새로고침 | thread | ephemeral 소실, 업로드 파일은 자료수집 DB에 유지 | PASS·구현 |
 
 ## 5. Work Routing (No Mutation)
 
@@ -77,7 +77,7 @@ S-61은 CSV/ZIP을 **미지원으로 거부**하는 기대로 해석한다.
 |:---|:---|:---|:---|:---:|
 | R-01 | 응답 CTA “자료수집 열기” | 클릭 | `/dashboard/direct-upload` 이동, 추가 mutation 없음 | Pending |
 | R-02 | 응답 CTA “자료대조원장” | 클릭 | reconciliation-ledger 이동 | Pending |
-| R-03 | 채팅에 “확정했다” 문구 | 서버 감사 | 거래/급여/세액/신고 상태 변경 없음 | Pending |
+| R-03 | 채팅에 “확정했다” 문구 | 서버 감사 | 거래/급여/세액/신고 상태 변경 없음 | PASS·단위 |
 
 ## 6. Tenant Isolation And Auth
 
@@ -88,17 +88,17 @@ S-61은 CSV/ZIP을 **미지원으로 거부**하는 기대로 해석한다.
 | I-03 | 사업장 A | 집계/상태 | 사업장 B 파일 미포함 | Pending |
 | I-04 | 비로그인 | `/dashboard/sebiseo` | `/sign-in` | Pending |
 | I-05 | 로그인·회사 없음 | 진입 | 온보딩 또는 기존 회사 등록 안내 | Pending |
-| I-06 | `POST /api/sebiseo/chat` | 세션 없음 | 401/리다이렉트 정책과 동일 | Pending |
+| I-06 | `POST /api/sebiseo/chat` | 세션 없음 | 401/리다이렉트 정책과 동일 | PASS·구현 |
 
 ## 7. Security And Non-Goals
 
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| N-01 | 세비서 | Instant/Mic/Voice 클릭 | 동작 없음(disabled) | Pending |
+| N-01 | 세비서 | Instant/Mic/Voice 클릭 | 동작 없음(disabled) | PASS·구현 |
 | N-02 | 세비서 | 채팅 이력 레일 | 존재하지 않음 | Pending |
-| N-03 | 업로드 완료 | 자동 장문 LLM 요약 | 호출 없음 | Pending |
+| N-03 | 업로드 완료 | 자동 장문 LLM 요약 | 호출 없음 | PASS·구현 |
 | N-04 | 외부 포털 링크 | 세비서 UI | `upload/[token]`·메일 요청 미노출 | Pending |
-| N-05 | ephemeral | localStorage/IndexedDB | chat transcript 미저장 | Pending |
+| N-05 | ephemeral | localStorage/IndexedDB | chat transcript 미저장 | PASS·구현 |
 
 ## 8. Performance / UX Smoke
 

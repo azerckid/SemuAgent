@@ -209,8 +209,8 @@
   }
   .composer .plus {
     width: 36px; height: 36px; border-radius: 999px;
-    display: grid; place-items: center; color: #6e6e6e; flex: none;
-    opacity: .5; cursor: not-allowed;
+    display: grid; place-items: center; color: #ececec; flex: none;
+    cursor: pointer;
   }
   .composer .plus svg {
     width: 20px; height: 20px; stroke: currentColor; fill: none;
@@ -218,10 +218,11 @@
   }
   .composer .field {
     flex: 1; min-width: 0;
-    color: #6e6e6e;
+    color: #ececec; background: transparent; border: 0; outline: 0;
     font-size: 15px;
     padding: 8px 6px;
   }
+  .composer .field::placeholder { color: #6e6e6e; }
   .composer .trail {
     display: flex; align-items: center; gap: 2px; flex: none;
   }
@@ -252,6 +253,15 @@
     opacity: .6; cursor: not-allowed;
   }
   .voice-btn svg { width: 16px; height: 16px; }
+  .send-btn {
+    width: 36px; height: 36px; border-radius: 999px;
+    background: #fff; color: #0d0d0d;
+    display: grid; place-items: center; cursor: pointer;
+  }
+  .send-btn svg {
+    width: 16px; height: 16px; stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
   .coming-soon-note {
     text-align: center;
     color: var(--chat-fg-subtle);
@@ -340,19 +350,19 @@
 
       <div class="welcome">
         <h2>무엇을 도와드릴까요?</h2>
-        <p>세무·회계 업무 안내를 돕는 세비서입니다. 지금은 대화·파일 업로드·음성 입력이 준비 중입니다.</p>
+        <p>세무·회계 업무 안내를 돕는 세비서입니다. 대화와 파일 첨부를 사용할 수 있고, Instant·음성은 아직 준비 중입니다.</p>
         <p>왼쪽 메뉴에서 자료수집·기장검토·부가세·연간신고 화면으로 바로 이동할 수 있습니다. <b>확정과 신고는 각 표·화면에서 직접</b> 진행해 주세요.</p>
       </div>
 
       <div class="composer-wrap">
         <div class="disclaimer">세비서도 실수할 수 있습니다. 중요한 정보는 다시 확인하세요.</div>
-        <div class="coming-soon-note">대화·첨부·음성은 준비 중입니다.</div>
-        <div class="composer" role="group" aria-label="메시지 입력 (준비 중)">
-          <button class="plus" type="button" disabled aria-disabled="true" title="준비 중 · 곧 연결됩니다" aria-label="첨부 · 준비 중 · 곧 연결됩니다">
+        <div class="coming-soon-note">Instant·음성은 준비 중입니다. 대화와 파일 첨부를 사용할 수 있습니다.</div>
+        <div class="composer" role="group" aria-label="세비서 메시지 입력">
+          <button class="plus" type="button" aria-label="파일 첨부">
             <!-- plus -->
             <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           </button>
-          <div class="field">세비서에게 묻기 (준비 중)</div>
+          <input class="field" type="text" placeholder="세비서에게 묻기" aria-label="세비서에게 묻기">
           <div class="trail">
             <button class="mode" type="button" disabled aria-disabled="true" title="준비 중 · 곧 연결됩니다" aria-label="Instant · 준비 중 · 곧 연결됩니다">
               Instant
@@ -361,6 +371,9 @@
             <button class="round-btn" type="button" disabled aria-disabled="true" title="준비 중 · 곧 연결됩니다" aria-label="음성 입력 · 준비 중 · 곧 연결됩니다">
               <!-- mic -->
               <svg viewBox="0 0 24 24"><path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect width="4" height="12" x="10" y="2" rx="2"/></svg>
+            </button>
+            <button class="send-btn" type="button" aria-label="메시지 보내기">
+              <svg viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
             </button>
             <button class="voice-btn" type="button" disabled aria-disabled="true" title="준비 중 · 곧 연결됩니다" aria-label="음성 모드 · 준비 중 · 곧 연결됩니다">
               <!-- audio-lines style waveform -->

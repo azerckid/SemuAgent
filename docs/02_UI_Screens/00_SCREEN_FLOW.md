@@ -5,7 +5,7 @@
 ## 1. 범위
 
 이 문서는 v1 화면의 사용자 흐름을 정의한다. 현재 정의된 화면:
-0. **세비서(Sebiseo)** — CUI-1 Preview·CUI-2 UI 셸 런타임(2026-07-17). 로그인 후 첫 화면·사이드바 최상단. ChatGPT형 입구이며 LLM 호출·업로드 오케스트레이션은 후속(JC-043).
+0. **세비서(Sebiseo)** — CUI-1 Preview·CUI-2 셸·CUI-3a 업로드 완료(PR #267), CUI-3b 화이트리스트 대화 코드/전체 자동검증 완료·PR/브라우저 확인 대기(2026-07-17). 로그인 후 첫 화면·사이드바 최상단.
 1. **회사 홈(Company Home)** — 승인 완료(2026-07-01). 세비서 아래 메뉴로 유지.
 2. **자료수집(Source Collection)** — 승인 완료(2026-07-01)
 3. **기장검토(Bookkeeping Review / 자료대조원장)** — 승인 완료(2026-07-01), Path 1 데이터 확정 관문 위치로 정리(2026-07-08)
@@ -33,18 +33,21 @@
   ├─▶ 회사 없음 → 회사 등록
   │     ├─ first-run sample dataset 자동 생성(샘플 표시 banner)
   │     └─ 세비서 (`/dashboard/sebiseo`)
-  └─▶ 회사 있음 → 세비서 (첫 진입 · JC-043 CUI-2)
+  └─▶ 회사 있음 → 세비서 (첫 진입 · JC-043 CUI-3)
         ├─ 세무 일정(참고) 카드 1건 — 공통 법정 일정, 회사 준비 상태 아님
-        ├─ 중립 첫 화면 + 대화 입구 셸(composer disabled · LLM 미호출)
+        ├─ 중립 첫 화면 + 명시적 질문 전송 전 LLM 미호출
+        ├─ 파일 첨부 → 적용 기간 확인 → 기존 자료수집 경로
+        ├─ 화이트리스트 대화 → 제품 화면·업무 흐름 안내만
         ├─ 사이드바에서 회사 홈·자료수집·기장·급여·부가세·연간신고 직접 이동
         └─ 회사 홈은 상태 대시보드로 유지(필수 첫 화면 아님)
 ```
 
-### 2.1 대화형 첫 화면 방향 (JC-043 · CUI-2 완료 · CUI-3 Brief 대기)
+### 2.1 대화형 첫 화면 방향 (JC-043 · CUI-3a 완료 · CUI-3b PR/브라우저 확인 대기)
 
-CUI-2(PR #265)는 `/dashboard/sebiseo` 진입 셸·내비·참고 일정까지다. CUI-3는
-[Pre-Code Brief 62](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)
-오너 승인 후 기존 자료수집 업로드·화이트리스트 대화·작업 라우팅만 연결한다.
+CUI-2(PR #265)는 `/dashboard/sebiseo` 진입 셸·내비·참고 일정, CUI-3a(PR #267)는
+기간 확인 후 기존 자료수집 업로드 연결까지다. CUI-3b는
+[Pre-Code Brief 62](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)의
+ephemeral·redaction·화이트리스트 계약으로 제품 사용 안내 대화만 연결한다.
 canonical 결과 카드는 CUI-4, 구조화 확정은 CUI-5다. 사이드 네비게이션은 대체하지 않는다.
 
 ```text
