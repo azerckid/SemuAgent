@@ -40,10 +40,12 @@
         └─ 회사 홈은 상태 대시보드로 유지(필수 첫 화면 아님)
 ```
 
-### 2.1 대화형 첫 화면 방향 (JC-043 · CUI-2 셸 이후 CUI-3+)
+### 2.1 대화형 첫 화면 방향 (JC-043 · CUI-2 완료 · CUI-3 Brief 대기)
 
-CUI-2는 `/dashboard/sebiseo` 진입 셸·내비·참고 일정까지다. 실제 대화·업로드·canonical 상태
-카드는 CUI-3+에서 연결하며, 구조화 워크스페이스와 사이드 네비게이션을 대체하지 않는다.
+CUI-2(PR #265)는 `/dashboard/sebiseo` 진입 셸·내비·참고 일정까지다. CUI-3는
+[Pre-Code Brief 62](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)
+오너 승인 후 기존 자료수집 업로드·화이트리스트 대화·작업 라우팅만 연결한다.
+canonical 결과 카드는 CUI-4, 구조화 확정은 CUI-5다. 사이드 네비게이션은 대체하지 않는다.
 
 ```text
 대화에서 요청·파일 업로드
