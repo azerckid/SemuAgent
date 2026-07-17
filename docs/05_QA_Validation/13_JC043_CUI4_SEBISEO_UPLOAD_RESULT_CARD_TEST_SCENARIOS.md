@@ -31,12 +31,12 @@ Out of scope: 기장검토 거래 건수 카드, CUI-5 확정, 법령 참고 int
 | R-01 | 카드 미표시 | 세션 없는 tenant로 `/dashboard/sebiseo` 진입 | 결과 카드 없음. LLM 미호출 | Pending |
 | R-02 | 카드 집계 | session 1건·파일 2건(`matched` 1, `needs_review` 1) | 카드 meta `정상 1건 · 확인 필요 1건`. 배지 `확인 필요 1` | Pending |
 | R-03 | CTA href | R-02 카드 CTA 확인 | `/dashboard/direct-upload?period={key}&sessionId={id}` 형태 | Pending |
-| R-04 | **같은 기간 다른 세션 혼입 없음** | (1) period P에 session S1(파일 A), S2(파일 B) 업로드. **fixture: `S1.createdAt > S2.createdAt`** 로 S1이 최근 세션 1건으로 선택되게 고정 (2) 카드가 S1을 표시하는지 확인 후 CTA 클릭 (3) 가져오기 상태 표 행 확인 | 카드 sessionId = S1. 표에 **S1 소속 파일만** 표시. S2 파일 B **미표시**. 행 수 = 카드 `totalCount` | Unit PASS (`session-deep-link.test` R-04) · Browser Pending |
+| R-04 | **같은 기간 다른 세션 혼입 없음** | (1) period P에 session S1(파일 A), S2(파일 B) 업로드. **fixture: `S1.createdAt > S2.createdAt`** 로 S1이 최근 세션 1건으로 선택되게 고정 (2) 카드가 S1을 표시하는지 확인 후 CTA 클릭 (3) 가져오기 상태 표 행 확인 | 카드 sessionId = S1. 표에 **S1 소속 파일만** 표시. S2 파일 B **미표시**. 행 수 = 카드 `totalCount` | Unit PASS · **Browser Pending** (로그인 staging에서 후속 확인) |
 | R-05 | 카드·표 status 정합 | R-04 landing 후 각 행 status | `needs_review`/`matched` 건수가 카드 버킷과 일치 | Pending |
 | R-06 | tenant 격리 | tenant B `sessionId`를 tenant A CTA에 수동 주입 | redirect로 `sessionId` strip. tenant B 파일 **0건** 노출 | Pending |
 | R-07 | 사업장 격리 | 다른 `clientId` sessionId 주입 | §4.3.3 redirect. 타 사업장 파일 0건 | Pending |
 | R-08 | period 불일치 | session의 `accountingPeriod`와 다른 `period` query + valid sessionId | redirect · sessionId strip | Pending |
-| R-09 | 무효 sessionId | 존재하지 않는 UUID. **추가:** 무효 `sessionId` + `fileId` query 동시 전달 | `/dashboard/direct-upload?period=…` (sessionId·fileId strip). 기간 전체 importRows로 머물지 않음 | Unit PASS (`session-deep-link.test` R-09) · Browser Pending |
+| R-09 | 무효 sessionId | 존재하지 않는 UUID. **추가:** 무효 `sessionId` + `fileId` query 동시 전달 | `/dashboard/direct-upload?period=…` (sessionId·fileId strip). 기간 전체 importRows로 머물지 않음 | Unit PASS · **Browser Pending** (로그인 staging에서 후속 확인) |
 | R-10 | sessionId 없는 진입 | `/dashboard/direct-upload?period=P` only | 기간 전체 importRows(기존 동작). 회귀 통과 | Pending |
 | R-11 | 업로드 후 갱신 | 세비서에서 새 업로드 | system 링크 대신 카드 갱신. 새 sessionId 반영 | Pending |
 | R-12 | mutation 없음 | 카드·CTA·표에서 확정/재분석 버튼 없음(기존 retry만 file 행 scope) | 채팅·카드에서 domain mutation 0 | Pending |

@@ -2,7 +2,7 @@
 > Created: 2026-07-17 18:55
 > Last Updated: 2026-07-17 20:00
 > Backlog: JC-043 · CUI-4
-> Status: Brief approved (PR #272) · **CUI-4a runtime in progress** · Preview 승인(PR #271)
+> Status: Brief approved (PR #272) · **CUI-4a runtime merged (PR #273)** · Browser R-04/R-09 Pending on logged-in staging
 > Related Concept: [04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md)
 > Related Preview: [19_sebiseo.html](../02_UI_Screens/previews/19_sebiseo.html) (CUI-4 결과 카드 · 오너 승인 PR #271)
 > Related Prior Brief: [62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF](./62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)
