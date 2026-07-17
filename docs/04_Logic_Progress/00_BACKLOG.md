@@ -989,7 +989,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-043 · 대화형 세무 작업공간 — 첫 화면·오케스트레이션
 
-- Status: `in_progress` (CUI-3a·CUI-3b(PR #268)·CUI-3c(PR #269) 머지 완료 · CUI-3d QA 진행 중 — Trust/Dialogue/Routing/Security 브라우저 검증 완료, 업로드 매트릭스·테넌트 격리 잔여)
+- Status: `in_progress` (CUI-3a·CUI-3b(PR #268)·CUI-3c(PR #269) 머지 완료 · CUI-3d QA 완료 — 업로드 뒷단만 §9.2 환경 제약으로 배포 검증 대상)
 - Related Concept Docs: [Conversational Tax Workspace Product Direction](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 대화 진입과 구조화 확정의 역할 정본.
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 세비서 첫 진입과 회사 홈 유지 경계.
 - Related HTML Preview: [세비서 Preview](../02_UI_Screens/previews/19_sebiseo.html) - 오너 피드백·trust fix 반영(채팅 이력 레일 제외, 참고 세무 일정 1카드, 중립 첫 화면, #171717, ChatGPT형 아이콘 disabled).
@@ -1017,7 +1017,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] CUI-3a runtime: 기간 확인 UI + 자료수집 업로드 경로 연결(PR #267)
   - [x] CUI-3b runtime: `POST /api/sebiseo/chat` + ephemeral 입력(머지+E2E, PR #268)
   - [x] CUI-3c runtime: 서버 고정 허용목록 기반 화면 이동 CTA(코드/자동검증 완료, PR 검토 대기)
-  - [ ] CUI-3d: QA 시나리오 통과 — T/C/R/N PASS, U-01~U-11·I-01~I-03·I-05·P-01·P-03 잔여([QA 12 §9.1](../05_QA_Validation/12_JC043_CUI3_SEBISEO_TEST_SCENARIOS.md))
+  - [x] CUI-3d: QA 시나리오 통과 — T/C/R/N/I/P PASS, 업로드 게이트·retry·비밀번호 검증 완료. U-02(및 U-01 일부)만 Vercel Blob 콜백이 localhost에서 발화하지 않는 환경 제약으로 배포 검증 대상([QA 12 §9.2](../05_QA_Validation/12_JC043_CUI3_SEBISEO_TEST_SCENARIOS.md))
 - Acceptance Criteria:
   - [x] 사이드바 최상단이 세비서이고 회사 홈이 그 아래에 유지된다.
   - [x] 로그인·온보딩 완료 후 `/dashboard/sebiseo`로 진입한다.
