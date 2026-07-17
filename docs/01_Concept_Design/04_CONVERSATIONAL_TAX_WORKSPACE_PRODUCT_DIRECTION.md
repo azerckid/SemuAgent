@@ -1,7 +1,7 @@
 # Conversational Tax Workspace Product Direction
 > Created: 2026-07-16 01:43
 > Last Updated: 2026-07-17 05:10
-> Status: CUI-0~CUI-3 구현·QA 완료(PR #270 검토 대기) · CUI-4 결과 카드 HTML Preview 제작·오너 확인 대기
+> Status: CUI-0~CUI-3 구현·QA 완료(PR #270 머지) · CUI-4 결과 카드 HTML Preview 오너 승인(PR #271) · CUI-4 Pre-Code Brief·runtime 대기
 
 ## 1. Purpose
 
