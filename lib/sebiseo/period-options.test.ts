@@ -5,6 +5,8 @@ import { DateTime } from '@/lib/time'
 import {
   buildSebiseoPeriodOptions,
   findSebiseoPeriodOption,
+  formatSebiseoPeriodLabel,
+  resolveSebiseoPeriodKeyFromAccountingPeriod,
 } from './period-options'
 
 describe('buildSebiseoPeriodOptions', () => {
@@ -41,5 +43,43 @@ describe('buildSebiseoPeriodOptions', () => {
     expect(source).not.toMatch(/from ['"]@\/lib\/company-home/)
     expect(source).not.toMatch(/from ['"]@\/lib\/db/)
     expect(source).not.toContain("import 'server-only'")
+  })
+})
+
+describe('resolveSebiseoPeriodKeyFromAccountingPeriod', () => {
+  it('maps month and half-year ranges', () => {
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2026-07')).toBe('2026-07')
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2026-01~2026-06')).toBe('2026-H1')
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2026-07~2026-12')).toBe('2026-H2')
+  })
+
+  it('returns null for non-canonical forms', () => {
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('')).toBeNull()
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2026-H1')).toBeNull()
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2026-Q1')).toBeNull()
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2025-01~2026-06')).toBeNull()
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2026-02~2026-06')).toBeNull()
+    expect(resolveSebiseoPeriodKeyFromAccountingPeriod('2026-07~2026-11')).toBeNull()
+  })
+})
+
+describe('formatSebiseoPeriodLabel', () => {
+  it('formats current-year month and half keys', () => {
+    expect(formatSebiseoPeriodLabel('2026-07')).toBe('2026년 7월')
+    expect(formatSebiseoPeriodLabel('2026-H1')).toBe('2026년 상반기')
+    expect(formatSebiseoPeriodLabel('2026-H2')).toBe('2026년 하반기')
+  })
+
+  it('formats past-year month and half keys without option list', () => {
+    expect(formatSebiseoPeriodLabel('2025-03')).toBe('2025년 3월')
+    expect(formatSebiseoPeriodLabel('2025-H1')).toBe('2025년 상반기')
+    expect(formatSebiseoPeriodLabel('2024-H2')).toBe('2024년 하반기')
+  })
+
+  it('returns null for unknown keys', () => {
+    expect(formatSebiseoPeriodLabel('')).toBeNull()
+    expect(formatSebiseoPeriodLabel('2026-Q1')).toBeNull()
+    expect(formatSebiseoPeriodLabel('2026-13')).toBeNull()
+    expect(formatSebiseoPeriodLabel('bad')).toBeNull()
   })
 })

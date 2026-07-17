@@ -113,3 +113,56 @@ export function findSebiseoPeriodOption(
 ): SebiseoPeriodOption | null {
   return options.find((option) => option.key === key) ?? null
 }
+
+const MONTH_PERIOD_RE = /^(\d{4})-(0[1-9]|1[0-2])$/
+const RANGE_PERIOD_RE = /^(\d{4})-(0[1-9]|1[0-2])~(\d{4})-(0[1-9]|1[0-2])$/
+const HALF_PERIOD_RE = /^(\d{4})-H([12])$/
+
+/**
+ * CUI-4: reverse map upload_session.accounting_period → period query key.
+ * Fail-closed: unknown / non-canonical forms return null (hide result card).
+ */
+export function resolveSebiseoPeriodKeyFromAccountingPeriod(value: string): string | null {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  const monthMatch = MONTH_PERIOD_RE.exec(trimmed)
+  if (monthMatch) return trimmed
+
+  const rangeMatch = RANGE_PERIOD_RE.exec(trimmed)
+  if (rangeMatch) {
+    const yearStart = rangeMatch[1]
+    const startMonth = rangeMatch[2]
+    const yearEnd = rangeMatch[3]
+    const endMonth = rangeMatch[4]
+    if (yearStart !== yearEnd) return null
+    if (startMonth === '01' && endMonth === '06') return `${yearStart}-H1`
+    if (startMonth === '07' && endMonth === '12') return `${yearStart}-H2`
+    return null
+  }
+
+  return null
+}
+
+/**
+ * CUI-4: pure display label for periodKey. Does not use buildSebiseoPeriodOptions().
+ * Fail-closed: unknown keys return null (hide result card).
+ */
+export function formatSebiseoPeriodLabel(periodKey: string): string | null {
+  const trimmed = periodKey.trim()
+  if (!trimmed) return null
+
+  const monthMatch = MONTH_PERIOD_RE.exec(trimmed)
+  if (monthMatch) {
+    return `${monthMatch[1]}년 ${Number(monthMatch[2])}월`
+  }
+
+  const halfMatch = HALF_PERIOD_RE.exec(trimmed)
+  if (halfMatch) {
+    return halfMatch[2] === '1'
+      ? `${halfMatch[1]}년 상반기`
+      : `${halfMatch[1]}년 하반기`
+  }
+
+  return null
+}

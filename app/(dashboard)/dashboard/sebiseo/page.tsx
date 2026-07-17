@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth-helpers'
 import { loadSourceCollectionSummary } from '@/lib/source-collection/summary'
 import { buildSebiseoPeriodOptions } from '@/lib/sebiseo/period-options'
+import { loadSebiseoUploadResultCard } from '@/lib/sebiseo/upload-result'
 import { now } from '@/lib/time'
 import { buildUpcomingSchedule } from '@/lib/tax-calendar'
 import { SebiseoWorkspace } from './_components/sebiseo-workspace'
@@ -20,6 +21,12 @@ export default async function SebiseoPage() {
     tenantId,
     periodKey: periodPayload.defaultKey,
   })
+  const uploadResult = summary.businessEntity
+    ? await loadSebiseoUploadResultCard({
+      tenantId,
+      businessEntityId: summary.businessEntity.id,
+    })
+    : null
 
   return (
     <SebiseoWorkspace
@@ -27,6 +34,7 @@ export default async function SebiseoPage() {
       businessEntity={summary.businessEntity}
       periodOptions={periodPayload.options}
       defaultPeriodKey={periodPayload.defaultKey}
+      initialUploadResult={uploadResult}
     />
   )
 }

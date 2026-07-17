@@ -3,6 +3,12 @@ import { and, desc, eq, gte, isNull, lte } from 'drizzle-orm'
 import { requireTenantSession } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 import { uploadFile, uploadSession } from '@/lib/db/schema'
+import { resolveSebiseoPeriodKeyFromAccountingPeriod } from '@/lib/sebiseo/period-options'
+import {
+  periodDefaultDirectUploadHref,
+  scopeImportRowsForSession,
+  shouldRedirectInvalidSessionId,
+} from '@/lib/source-collection/session-deep-link'
 import { loadSourceCollectionSummary } from '@/lib/source-collection/summary'
 import {
   SourceCollectionBusinessEntityEmptyState,
@@ -31,38 +37,13 @@ function extractRawToken(uploadUrl: string | null) {
 async function loadUploadSession(params: {
   tenantId: string
   businessEntityId: string
+  periodKey: string
   periodStartMonth: string
   periodEndMonth: string
   sessionId?: string | null
   fileId?: string | null
 }) {
-  if (params.fileId) {
-    const fileSessionRows = await db
-      .select({
-        id: uploadSession.id,
-        status: uploadSession.status,
-        uploadUrl: uploadSession.uploadUrl,
-        source: uploadSession.source,
-      })
-      .from(uploadFile)
-      .innerJoin(uploadSession, eq(uploadFile.uploadSessionId, uploadSession.id))
-      .where(and(
-        eq(uploadFile.id, params.fileId),
-        eq(uploadFile.tenantId, params.tenantId),
-        eq(uploadSession.tenantId, params.tenantId),
-        isNull(uploadSession.deletedAt),
-      ))
-      .limit(1)
-
-    const row = fileSessionRows[0]
-    if (!row || row.source !== 'staff_direct') return null
-    return {
-      id: row.id,
-      rawToken: extractRawToken(row.uploadUrl),
-      status: row.status,
-    }
-  }
-
+  // CUI-4: sessionId query is the deep-link authority. Validate it before fileId.
   if (params.sessionId) {
     const sessionRows = await db
       .select({
@@ -71,6 +52,7 @@ async function loadUploadSession(params: {
         uploadUrl: uploadSession.uploadUrl,
         source: uploadSession.source,
         clientId: uploadSession.clientId,
+        accountingPeriod: uploadSession.accountingPeriod,
       })
       .from(uploadSession)
       .where(and(
@@ -84,6 +66,42 @@ async function loadUploadSession(params: {
     if (!row || row.source !== 'staff_direct' || row.clientId !== params.businessEntityId) {
       return null
     }
+    const resolvedKey = resolveSebiseoPeriodKeyFromAccountingPeriod(row.accountingPeriod)
+    if (!resolvedKey || resolvedKey !== params.periodKey) {
+      return null
+    }
+    return {
+      id: row.id,
+      rawToken: extractRawToken(row.uploadUrl),
+      status: row.status,
+    }
+  }
+
+  if (params.fileId) {
+    const fileSessionRows = await db
+      .select({
+        id: uploadSession.id,
+        status: uploadSession.status,
+        uploadUrl: uploadSession.uploadUrl,
+        source: uploadSession.source,
+        clientId: uploadSession.clientId,
+        accountingPeriod: uploadSession.accountingPeriod,
+      })
+      .from(uploadFile)
+      .innerJoin(uploadSession, eq(uploadFile.uploadSessionId, uploadSession.id))
+      .where(and(
+        eq(uploadFile.id, params.fileId),
+        eq(uploadFile.tenantId, params.tenantId),
+        eq(uploadSession.tenantId, params.tenantId),
+        isNull(uploadSession.deletedAt),
+      ))
+      .limit(1)
+
+    const row = fileSessionRows[0]
+    if (!row || row.source !== 'staff_direct') return null
+    if (row.clientId !== params.businessEntityId) return null
+    const resolvedKey = resolveSebiseoPeriodKeyFromAccountingPeriod(row.accountingPeriod)
+    if (!resolvedKey || resolvedKey !== params.periodKey) return null
     return {
       id: row.id,
       rawToken: extractRawToken(row.uploadUrl),
@@ -135,20 +153,25 @@ export default async function StaffDirectUploadPage({ searchParams }: PageProps)
     return <SourceCollectionBusinessEntityEmptyState tenantName={summary.tenant.name} />
   }
 
-  const uploadSession = await loadUploadSession({
+  const uploadSessionRow = await loadUploadSession({
     tenantId,
     businessEntityId: summary.businessEntity.id,
+    periodKey: summary.period.key,
     periodStartMonth: summary.period.startMonth,
     periodEndMonth: summary.period.endMonth,
     sessionId,
     fileId,
   })
 
-  if (sessionId && !uploadSession && !fileId) {
-    redirect(`/dashboard/direct-upload?period=${summary.period.key}`)
+  // CUI-4 §4.3.3: invalid sessionId (alone or with fileId) → strip to period default.
+  if (shouldRedirectInvalidSessionId({
+    sessionId,
+    resolvedSessionId: uploadSessionRow?.id ?? null,
+  })) {
+    redirect(periodDefaultDirectUploadHref(summary.period.key))
   }
 
-  const uploadedFiles = uploadSession
+  const uploadedFiles = uploadSessionRow
     ? await db
       .select({
         id: uploadFile.id,
@@ -159,14 +182,26 @@ export default async function StaffDirectUploadPage({ searchParams }: PageProps)
         uploadedAt: uploadFile.uploadedAt,
       })
       .from(uploadFile)
-      .where(and(eq(uploadFile.uploadSessionId, uploadSession.id), eq(uploadFile.tenantId, tenantId)))
+      .where(and(
+        eq(uploadFile.uploadSessionId, uploadSessionRow.id),
+        eq(uploadFile.tenantId, tenantId),
+      ))
       .orderBy(desc(uploadFile.uploadedAt))
     : []
 
+  // CUI-4 §4.3.2: valid sessionId → import table shows that session only (R-04).
+  const importRows = scopeImportRowsForSession(summary.importRows, {
+    sessionId,
+    resolvedSessionId: uploadSessionRow?.id ?? null,
+  })
+
   return (
     <SourceCollectionView
-      summary={summary}
-      uploadSession={uploadSession}
+      summary={{
+        ...summary,
+        importRows,
+      }}
+      uploadSession={uploadSessionRow}
       uploadedFiles={uploadedFiles}
       focusFileId={fileId ?? null}
       retryAction={action === 'retry'}
