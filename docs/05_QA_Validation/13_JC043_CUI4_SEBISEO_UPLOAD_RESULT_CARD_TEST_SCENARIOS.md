@@ -36,7 +36,7 @@ Out of scope: 기장검토 거래 건수 카드, CUI-5 확정, 법령 참고 int
 | R-06 | tenant 격리 | tenant B `sessionId`를 tenant A CTA에 수동 주입 | redirect로 `sessionId` strip. tenant B 파일 **0건** 노출 | Pending |
 | R-07 | 사업장 격리 | 다른 `clientId` sessionId 주입 | §4.3.3 redirect. 타 사업장 파일 0건 | Pending |
 | R-08 | period 불일치 | session의 `accountingPeriod`와 다른 `period` query + valid sessionId | redirect · sessionId strip | Pending |
-| R-09 | 무효 sessionId | 존재하지 않는 UUID | `/dashboard/direct-upload?period=…` (sessionId 없음) | Pending |
+| R-09 | 무효 sessionId | 존재하지 않는 UUID. **추가:** 무효 `sessionId` + `fileId` query 동시 전달 | `/dashboard/direct-upload?period=…` (sessionId·fileId strip). 기간 전체 importRows로 머물지 않음 | Pending |
 | R-10 | sessionId 없는 진입 | `/dashboard/direct-upload?period=P` only | 기간 전체 importRows(기존 동작). 회귀 통과 | Pending |
 | R-11 | 업로드 후 갱신 | 세비서에서 새 업로드 | system 링크 대신 카드 갱신. 새 sessionId 반영 | Pending |
 | R-12 | mutation 없음 | 카드·CTA·표에서 확정/재분석 버튼 없음(기존 retry만 file 행 scope) | 채팅·카드에서 domain mutation 0 | Pending |

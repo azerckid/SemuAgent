@@ -158,8 +158,9 @@ export default async function StaffDirectUploadPage({ searchParams }: PageProps)
     fileId,
   })
 
-  // CUI-4 §4.3.3: invalid sessionId → strip and return to period default screen.
-  if (sessionId && !uploadSessionRow && !fileId) {
+  // CUI-4 §4.3.3: invalid sessionId → always strip and return to period default screen.
+  // fileId가 함께 있어도 sessionId가 무효면 redirect한다(기간 전체 importRows 노출 방지).
+  if (sessionId && !uploadSessionRow) {
     redirect(`/dashboard/direct-upload?period=${summary.period.key}`)
   }
 
