@@ -4,6 +4,11 @@ import { requireTenantSession } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 import { uploadFile, uploadSession } from '@/lib/db/schema'
 import { resolveSebiseoPeriodKeyFromAccountingPeriod } from '@/lib/sebiseo/period-options'
+import {
+  periodDefaultDirectUploadHref,
+  scopeImportRowsForSession,
+  shouldRedirectInvalidSessionId,
+} from '@/lib/source-collection/session-deep-link'
 import { loadSourceCollectionSummary } from '@/lib/source-collection/summary'
 import {
   SourceCollectionBusinessEntityEmptyState,
@@ -38,6 +43,40 @@ async function loadUploadSession(params: {
   sessionId?: string | null
   fileId?: string | null
 }) {
+  // CUI-4: sessionId query is the deep-link authority. Validate it before fileId.
+  if (params.sessionId) {
+    const sessionRows = await db
+      .select({
+        id: uploadSession.id,
+        status: uploadSession.status,
+        uploadUrl: uploadSession.uploadUrl,
+        source: uploadSession.source,
+        clientId: uploadSession.clientId,
+        accountingPeriod: uploadSession.accountingPeriod,
+      })
+      .from(uploadSession)
+      .where(and(
+        eq(uploadSession.id, params.sessionId),
+        eq(uploadSession.tenantId, params.tenantId),
+        isNull(uploadSession.deletedAt),
+      ))
+      .limit(1)
+
+    const row = sessionRows[0]
+    if (!row || row.source !== 'staff_direct' || row.clientId !== params.businessEntityId) {
+      return null
+    }
+    const resolvedKey = resolveSebiseoPeriodKeyFromAccountingPeriod(row.accountingPeriod)
+    if (!resolvedKey || resolvedKey !== params.periodKey) {
+      return null
+    }
+    return {
+      id: row.id,
+      rawToken: extractRawToken(row.uploadUrl),
+      status: row.status,
+    }
+  }
+
   if (params.fileId) {
     const fileSessionRows = await db
       .select({
@@ -63,40 +102,6 @@ async function loadUploadSession(params: {
     if (row.clientId !== params.businessEntityId) return null
     const resolvedKey = resolveSebiseoPeriodKeyFromAccountingPeriod(row.accountingPeriod)
     if (!resolvedKey || resolvedKey !== params.periodKey) return null
-    return {
-      id: row.id,
-      rawToken: extractRawToken(row.uploadUrl),
-      status: row.status,
-    }
-  }
-
-  if (params.sessionId) {
-    const sessionRows = await db
-      .select({
-        id: uploadSession.id,
-        status: uploadSession.status,
-        uploadUrl: uploadSession.uploadUrl,
-        source: uploadSession.source,
-        clientId: uploadSession.clientId,
-        accountingPeriod: uploadSession.accountingPeriod,
-      })
-      .from(uploadSession)
-      .where(and(
-        eq(uploadSession.id, params.sessionId),
-        eq(uploadSession.tenantId, params.tenantId),
-        isNull(uploadSession.deletedAt),
-      ))
-      .limit(1)
-
-    const row = sessionRows[0]
-    // CUI-4 §4.3: tenant already gated; also re-check business entity, source, period key.
-    if (!row || row.source !== 'staff_direct' || row.clientId !== params.businessEntityId) {
-      return null
-    }
-    const resolvedKey = resolveSebiseoPeriodKeyFromAccountingPeriod(row.accountingPeriod)
-    if (!resolvedKey || resolvedKey !== params.periodKey) {
-      return null
-    }
     return {
       id: row.id,
       rawToken: extractRawToken(row.uploadUrl),
@@ -158,10 +163,12 @@ export default async function StaffDirectUploadPage({ searchParams }: PageProps)
     fileId,
   })
 
-  // CUI-4 §4.3.3: invalid sessionId → always strip and return to period default screen.
-  // fileId가 함께 있어도 sessionId가 무효면 redirect한다(기간 전체 importRows 노출 방지).
-  if (sessionId && !uploadSessionRow) {
-    redirect(`/dashboard/direct-upload?period=${summary.period.key}`)
+  // CUI-4 §4.3.3: invalid sessionId (alone or with fileId) → strip to period default.
+  if (shouldRedirectInvalidSessionId({
+    sessionId,
+    resolvedSessionId: uploadSessionRow?.id ?? null,
+  })) {
+    redirect(periodDefaultDirectUploadHref(summary.period.key))
   }
 
   const uploadedFiles = uploadSessionRow
@@ -182,10 +189,11 @@ export default async function StaffDirectUploadPage({ searchParams }: PageProps)
       .orderBy(desc(uploadFile.uploadedAt))
     : []
 
-  // CUI-4 §4.3.2: when sessionId is valid, import status table shows that session only.
-  const importRows = sessionId && uploadSessionRow
-    ? summary.importRows.filter((row) => row.uploadSessionId === uploadSessionRow.id)
-    : summary.importRows
+  // CUI-4 §4.3.2: valid sessionId → import table shows that session only (R-04).
+  const importRows = scopeImportRowsForSession(summary.importRows, {
+    sessionId,
+    resolvedSessionId: uploadSessionRow?.id ?? null,
+  })
 
   return (
     <SourceCollectionView
