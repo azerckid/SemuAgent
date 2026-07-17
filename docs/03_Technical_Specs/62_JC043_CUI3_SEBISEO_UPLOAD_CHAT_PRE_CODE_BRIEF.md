@@ -2,7 +2,7 @@
 > Created: 2026-07-17 04:20
 > Last Updated: 2026-07-17 05:10
 > Backlog: JC-043 · CUI-3
-> Status: Brief approved (PR #266) · CUI-3a merged (PR #267) · CUI-3b merged + E2E (PR #268) · CUI-3c merged (PR #269) · CUI-3d QA 진행 중 — Trust/Dialogue/Routing/Security 브라우저 검증 완료, 업로드 매트릭스(U-01~U-11)·테넌트 격리(I-01~I-03·I-05) 잔여
+> Status: Brief approved (PR #266) · CUI-3a merged (PR #267) · CUI-3b merged + E2E (PR #268) · CUI-3c merged (PR #269) · CUI-3d QA 완료·PR #270 검토 대기(전용 Preview DB/Blob 업로드 E2E 포함)
 > Related Concept: [04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md)
 > Related Preview: [19_sebiseo.html](../02_UI_Screens/previews/19_sebiseo.html)
 > Related Source Collection: [05_SOURCE_COLLECTION_PRE_CODE_BRIEF](./05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md)
@@ -297,7 +297,7 @@ CUI-3 착수 전/동시 chore:
 - [x] 세비서에서 허용 파일을 올리면 기존 자료수집과 동일하게 `staff_direct` 세션·파일이 생성된다(PR #267).
 - [x] 업로드 직전 적용 기간 확인 UI가 있고, 확인 전에는 `staff-direct-upload`가 호출되지 않는다(PR #267).
 - [x] 세비서·자료수집 클라이언트가 CSV·ZIP을 허용/표기하지 않으며 서버 MIME과 일치한다(PR #267).
-- [ ] 업로드/분석 상태 문구는 실제 DB 상태를 반영하며 가짜 건수를 쓰지 않는다.
+- [x] 업로드/분석 상태 문구는 실제 DB 상태를 반영하며 가짜 건수를 쓰지 않는다(Preview E2E `analyzing`·`needs_review` 실측).
 - [x] Instant·마이크·음성은 disabled이며, **보이는** 준비 중 안내 문구가 있다(포커스 의존 금지).
 - [x] chat 요청은 history≤8·message≤2000·provider 직전 redaction·파일 원문 미포함을 지킨다.
 - [x] ephemeral thread는 브라우저 메모리만 사용한다.
@@ -305,8 +305,8 @@ CUI-3 착수 전/동시 chore:
 - [x] 화이트리스트 밖 질문은 거절되며 업무 답변을 생성하지 않는다.
 - [x] 채팅 응답만으로 거래·급여·세액·신고 canonical 상태가 바뀌지 않는다.
 - [x] chat API는 인증된 `tenantId`+`userId`로만 rate-limit scope를 구성하고 사업 데이터 read/mutation을 하지 않는다.
-- [ ] 자료수집 화면 기존 업로드·집계 회귀가 통과한다.
-- [x] Preview/Screen Flow/Backlog/Concept Status가 CUI-3b 구현 범위로 동기화된다.
+- [x] 자료수집 화면 기존 업로드·집계 회귀가 통과한다(QA 03 S-60~S-64).
+- [x] Preview/Screen Flow/Backlog/Concept Status가 CUI-3 완료 범위로 동기화된다.
 
 ## 10. Owner Decisions (2026-07-17)
 
@@ -317,7 +317,8 @@ CUI-3 착수 전/동시 chore:
 | 3 | 업로드 후 자동 LLM 요약 = 끔 | **승인** |
 | 4 | 상시 기간 선택기 없음 · 업로드 전 적용 기간 확인 필수 | **승인**(수정안) |
 
-추가 오픈 이슈 없음. CUI-3a는 PR #267로 머지됐고 CUI-3b는 코드·전체 자동검증 완료 후 PR·브라우저 확인 대기 상태다.
+추가 오픈 이슈 없음. CUI-3a~3c는 PR #267~#269로 머지됐고 CUI-3d는 PR #270의
+자동·통합·브라우저·전용 Preview 업로드 E2E로 완료했다. 다음 slice는 CUI-4다.
 
 ## 11. Document Sync Checklist (approval 시)
 
