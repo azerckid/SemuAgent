@@ -1,6 +1,6 @@
 # Test Scenarios: Source Collection
 > Created: 2026-07-01 23:55
-> Last Updated: 2026-07-01 23:55
+> Last Updated: 2026-07-17 (CUI-3d shared upload path regression)
 
 자료수집(JC-009) Layer 5 QA 시나리오. [Source Collection Pre-Code Brief](../03_Technical_Specs/05_SOURCE_COLLECTION_PRE_CODE_BRIEF.md)의
 Data Contract·Derivation Rules·Mutation·Acceptance Criteria를 검증 가능한 케이스로 옮긴다.
@@ -69,11 +69,11 @@ mutation 경계·외부 포털 미노출·tenant 격리를 함께 검증한다.
 ### 2.7 업로드·파싱 mutation
 | # | Given | When | Then | Result |
 |:---|:---|:---|:---|:---:|
-| S-60 | 허용 형식 PDF ≤50MB | 드롭존 업로드 | `upload_file` 저장 + status uploaded→analyzing | Pending |
-| S-61 | 미지원 형식(CSV·ZIP 포함) | 업로드 시도 | 거부·사용자 오류 메시지, DB 저장 없음(서버 MIME 정본) | Pending |
-| S-62 | 파싱 실패 파일 | "다시 시도" | analyze 재호출, 상태 갱신 | Pending |
-| S-63 | 암호 보호 Excel | 비밀번호 입력 | password flow 후 분석 재개 | Pending |
-| S-64 | 세션 생성 | 첫 업로드 전 | `source='staff_direct'`, tenant·client scope | Pending |
+| S-60 | 허용 형식 PDF ≤50MB | 드롭존 업로드 | `upload_file` 저장 + status uploaded→analyzing | PASS·Preview E2E(CUI-3d 공용 업로드 경로, PDF/XLSX callback·DB 상태 확인) |
+| S-61 | 미지원 형식(CSV·ZIP 포함) | 업로드 시도 | 거부·사용자 오류 메시지, DB 저장 없음(서버 MIME 정본) | PASS·단위(공용 MIME 정본·client 조기 거부) |
+| S-62 | 파싱 실패 파일 | "다시 시도" | analyze 재호출, 상태 갱신 | PASS·통합(`retry/route.test.ts`) |
+| S-63 | 암호 보호 Excel | 비밀번호 입력 | password flow 후 분석 재개 | PASS·단위(`file-password.test.ts`, 비밀번호 비저장 포함) |
+| S-64 | 세션 생성 | 첫 업로드 전 | `source='staff_direct'`, tenant·client scope | PASS·Preview+통합(`staff_direct`·`source_batch` 실측, A/B tenant fixture) |
 
 ### 2.8 JC-004·책임 경계
 | # | Given | When | Then | Result |
@@ -106,8 +106,9 @@ mutation 경계·외부 포털 미노출·tenant 격리를 함께 검증한다.
 
 - **구현 전(게이트)**: Pre-Code Brief·본 시나리오 문서 작성 완료. Result는 구현 후 채움.
 - **자동 단위 예정** (`lib/source-collection/summary.test.ts`): S-20~22, S-30~32, S-40 파생, S-72, 기간 필터 S-10·S-82.
-- **구현·수동/E2E 예정**: 구조(S-01~03), 업로드 mutation(S-60~64), 재시도(S-42·S-62), JC-004(S-70~71), 상태(S-90~92), 권한(S-100~101).
-- **후속**: 멀티테넌트 전용(S-80~81), ZIP/CSV MIME(S-61), 컴포넌트 E2E.
+- **구현·수동/E2E 예정**: 구조(S-01~03), JC-004(S-70~71), 상태(S-90~92), 권한(S-100~101).
+- **CUI-3d 공용 경로 검증 완료**: 업로드 mutation(S-60~64), 재시도(S-62), MIME 거부(S-61), password flow(S-63), tenant scope(S-64).
+- **후속**: 멀티테넌트 전용(S-80~81), 컴포넌트 E2E.
 
 ## 4. Implementation Verification
 
