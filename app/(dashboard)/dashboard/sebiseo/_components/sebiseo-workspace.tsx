@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { redactAssistantText } from '@/lib/assistant/text-redaction'
 import type { UpcomingScheduleItem } from '@/lib/tax-calendar'
@@ -10,6 +11,7 @@ import {
   findSebiseoPeriodOption,
   type SebiseoPeriodOption,
 } from '@/lib/sebiseo/period-options'
+import type { SebiseoUploadResultCard } from '@/lib/sebiseo/upload-result-schema'
 import {
   createSebiseoUploadSession,
   uploadSebiseoFiles,
@@ -21,12 +23,14 @@ import {
   SebiseoThread,
   type SebiseoThreadItem,
 } from './sebiseo-thread'
+import { SebiseoUploadResultCardView } from './sebiseo-upload-result-card'
 
 export type SebiseoWorkspaceProps = {
   readonly upcoming: UpcomingScheduleItem | null
   readonly businessEntity: { readonly id: string; readonly name: string } | null
   readonly periodOptions: readonly SebiseoPeriodOption[]
   readonly defaultPeriodKey: string
+  readonly initialUploadResult: SebiseoUploadResultCard | null
 }
 
 export function SebiseoWorkspace({
@@ -34,7 +38,9 @@ export function SebiseoWorkspace({
   businessEntity,
   periodOptions,
   defaultPeriodKey,
+  initialUploadResult,
 }: SebiseoWorkspaceProps) {
+  const router = useRouter()
   const [thread, setThread] = useState<SebiseoThreadItem[]>([])
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -96,13 +102,13 @@ export function SebiseoWorkspace({
       await uploadSebiseoFiles({ session, files: pendingFiles })
 
       const names = pendingFiles.map((file) => file.name).join(', ')
+      // CUI-4: CTA는 결과 카드로 일원화. system 텍스트는 상태만 알린다.
       pushSystem({
-        body: `${names} · ${period.confirmLabel}에 등록했습니다. 자료수집에서 분석 상태를 확인할 수 있습니다.`,
-        href: `/dashboard/direct-upload?period=${period.key}`,
-        hrefLabel: '자료수집 열기',
+        body: `${names} · ${period.confirmLabel}에 등록했습니다. 아래 결과 카드에서 분석 상태를 확인할 수 있습니다.`,
       })
       setPeriodOpen(false)
       setPendingFiles([])
+      router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : '파일 업로드에 실패했습니다')
     } finally {
@@ -192,6 +198,10 @@ export function SebiseoWorkspace({
             <p className="rounded-xl border border-[#303030] bg-[#212121] px-3.5 py-3 text-[13px] text-[#b4b4b4]">
               사업장이 없어 파일을 올릴 수 없습니다. 온보딩·설정에서 사업장을 등록해 주세요.
             </p>
+          ) : null}
+
+          {initialUploadResult ? (
+            <SebiseoUploadResultCardView card={initialUploadResult} />
           ) : null}
 
           <SebiseoThread items={thread} />
