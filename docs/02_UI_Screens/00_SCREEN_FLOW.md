@@ -5,7 +5,7 @@
 ## 1. 범위
 
 이 문서는 v1 화면의 사용자 흐름을 정의한다. 현재 정의된 화면:
-0. **세비서(Sebiseo)** — CUI-1~CUI-3 완료, CUI-4 Preview 승인(PR #271). [Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) 검토 대기. 로그인 후 첫 화면·사이드바 최상단.
+0. **세비서(Sebiseo)** — CUI-1~CUI-3 완료, CUI-4 Preview 승인(PR #271), [Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) 승인(PR #272). 다음 CUI-4a runtime. 로그인 후 첫 화면·사이드바 최상단.
 1. **회사 홈(Company Home)** — 승인 완료(2026-07-01). 세비서 아래 메뉴로 유지.
 2. **자료수집(Source Collection)** — 승인 완료(2026-07-01)
 3. **기장검토(Bookkeeping Review / 자료대조원장)** — 승인 완료(2026-07-01), Path 1 데이터 확정 관문 위치로 정리(2026-07-08)
@@ -43,13 +43,13 @@
         └─ 회사 홈은 상태 대시보드로 유지(필수 첫 화면 아님)
 ```
 
-### 2.1 대화형 첫 화면 방향 (JC-043 · CUI-3 완료 · CUI-4 Preview 승인 · Brief 63 검토 대기)
+### 2.1 대화형 첫 화면 방향 (JC-043 · CUI-3 완료 · CUI-4 Brief 승인 · CUI-4a runtime 대기)
 
 CUI-2(PR #265)는 `/dashboard/sebiseo` 진입 셸·내비·참고 일정, CUI-3a(PR #267)는
 기간 확인 후 기존 자료수집 업로드 연결까지다. CUI-3b는
 [Pre-Code Brief 62](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)의
 ephemeral·redaction·화이트리스트 계약으로 제품 사용 안내 대화만 연결한다.
-CUI-4는 최근 업로드 세션 1건의 실제 DB 파일 상태만 카드로 요약하고 `period + sessionId`로 좁힌 자료수집 화면을 연다. [Pre-Code Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) 오너 승인 후 runtime을 착수한다. 카드나 대화에서 확정하지 않으며 구조화 확정은 CUI-5다. 사이드 네비게이션은 대체하지 않는다.
+CUI-4는 최근 업로드 세션 1건의 실제 DB 파일 상태만 카드로 요약하고 `period + sessionId`로 좁힌 자료수집 화면을 연다. [Pre-Code Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md)은 PR #272로 오너 승인됐다. CUI-4a부터 runtime을 착수한다. 카드나 대화에서 확정하지 않으며 구조화 확정은 CUI-5다. 사이드 네비게이션은 대체하지 않는다.
 
 ```text
 대화에서 요청·파일 업로드

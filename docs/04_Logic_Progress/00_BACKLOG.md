@@ -51,7 +51,7 @@
 | JC-039 | done | 부가세 AI 근거 탐색·명확 판단 계약 | JC-035 Rule Matrix·exact VAT fact·연결 증빙·이전 확정·AI orchestration | **완료(VAI-8a~8e).** AI 판단과 workflow를 분리하고 실제 근거 reference·잠정 결론·홈택스 행동을 제공한다. 특례 근거가 없으면 보수적 기본 방향을 적용하며, 담당자 이관은 필수 사실 부재·근거 충돌·공식 규칙 공백/합의 실패에만 허용한다. [Pre-Code Brief](../03_Technical_Specs/50_VAT_AI_EVIDENCE_BACKED_DECISIVE_JUDGMENT_BRIEF.md) |
 | JC-040 | todo | 간이세액표 소득세 실시간 재계산 연결 (엔진 → 급여 편집 경로) | `lib/payroll/simplified-tax-table.ts`, `lib/payroll-workspace/recalculate.ts`, `lib/payroll-workspace/summary.ts`, 급여 편집 API | **우선순위: 중 · 저위험. JC-012 후속.** 현재 `lookupSimplifiedIncomeTax`(별표2 조회)는 첫 가입 샘플 시드 생성 시점(`lib/first-run-sample/seed.ts`)에서만 정규직 소득세를 산출하고, 런타임 재계산(`recalculatePayrollPeriodSummary`)은 저장된 `incomeTaxKrw`를 합산만 한다. 사용자가 급여대장에서 기본급·수당·공제대상가족수(`dependent_count`)를 직접 입력·수정하면 정규직 소득세를 간이세액표로 자동 재조회해 반영하도록 연결한다. 프리랜서(3.3%)·일용직(일용 산식)은 각 산식 유지하고, 고용형태별 분기(guard)로 정규직 경로만 격리한다. 조회 범위 밖 급여 구간 처리(반올림·상·하한·보간 여부)와 수동 override 허용 정책을 착수 전 확정한다. 세무조정·연말정산 확정 계산은 범위 밖. 상세: [49_SIMPLIFIED_TAX_TABLE_LOOKUP](../03_Technical_Specs/49_SIMPLIFIED_TAX_TABLE_LOOKUP.md). |
 | JC-041 | done | 절세 가능성 탐지·정리 (부가세 매입 재분류부터) | JC-039 evidence resolver·Rule Matrix, `lib/vat/tax-treatment-ai.ts`, 기장 계정과목 분류 | **완료(VAI-9a~9e).** 접대비 불공제 후보를 신뢰도와 무관하게 넓게 보여주되 공제 전환은 업무 목적·참석자·적격증빙·사용자 명시 확인을 서버에서 재검증한다. 최대 추가 공제 가능성은 저장된 정확한 매입세액만 사용하며 canonical 값은 사용자의 확정 전 바꾸지 않는다. [Pre-Code Brief](../03_Technical_Specs/51_VAT_INPUT_TAX_RECLASSIFICATION_SAVINGS_BRIEF.md) |
-| JC-043 | in_progress | 대화형 세무 작업공간 — 첫 화면·오케스트레이션 | 기존 회사 홈·자료수집·워크스페이스·AI orchestration | **CUI-4 Pre-Code Brief 초안 검토 대기.** Preview 승인 완료(PR #271). [Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) · [Concept](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) · [Brief 62](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md) · [QA 12](../05_QA_Validation/12_JC043_CUI3_SEBISEO_TEST_SCENARIOS.md) · [Preview](../02_UI_Screens/previews/19_sebiseo.html) |
+| JC-043 | in_progress | 대화형 세무 작업공간 — 첫 화면·오케스트레이션 | 기존 회사 홈·자료수집·워크스페이스·AI orchestration | **CUI-4 Brief 승인(PR #272). 다음 CUI-4a runtime.** Preview 승인(PR #271). [Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) · [Concept](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) · [Brief 62](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md) · [QA 12](../05_QA_Validation/12_JC043_CUI3_SEBISEO_TEST_SCENARIOS.md) · [QA 13](../05_QA_Validation/13_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_TEST_SCENARIOS.md) · [Preview](../02_UI_Screens/previews/19_sebiseo.html) |
 | JC-044 | todo | SemuAgent↔JARYO 직접 A2A 전달 | A2A Master Plan, 양쪽 사업자 매핑·ingest·원본 전송 | **제품 방향 승인, 상세 Q&A 진행 중, 구현 미승인.** 연결된 사업자의 Ready 자료와 원본을 JARYO 해당 사업자 화면에 자동 등록하고 최초 상태를 검토 대기로 둔다. ZIP은 JC-034 fallback. [Master Plan](../01_Concept_Design/03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md) |
 | JC-031 | todo | 레거시 GIWA upload/email 서브시스템 은퇴 (에픽) | `uploadSession`·`outbound_email`(각각 100여·수십 개 파일에 광범위하게 얽힘, 검색 범위·시점에 따라 변동) 스키마·도메인, sessions·`/upload/[token]` 포털·emails·request-events·mail-console | **에픽 · 의도적 보류(paused, 2026-07-06).** Slice 4-2c micro(`request_email_cc` DROP)까지 완료. **에픽은 미완료** — 4-3~4-5·잔여 `upload_session` 컬럼·테이블 은퇴 남음. 재개 시 [Completion Contract §3 Paused](../03_Technical_Specs/22_OPEN_BACKLOG_COMPLETION_CONTRACTS.md) 참조. 제품 backlog 우선 가능. |
 | JC-032 | done | 사업자 유형 전용 필드 (신고 준비 dimming 실데이터 연결) | `client.taxEntityType`, `/api/settings/business-entity`, 회사 설정 화면, `lib/filing-preparation/summary.ts` | **우선순위: 높음(JC-029 dimming 완성) · 저위험.** JC-029 신고 준비 허브의 사업자 유형별 흐림 규칙을 실데이터에 연결한다. `client`(사업장)에 `tax_entity_type`(개인/법인/면세, nullable) 컬럼 추가(migration 0059), 회사 설정 화면에서 선택·저장(TENANT_ADMIN), 신고 준비 read model이 이 값을 직접 사용(기존 billing-profile 휴리스틱 제거). 미지정(null)이면 흐림 없음. [Filing Preparation Hub Pre-Code Brief §4](../03_Technical_Specs/15_FILING_PREPARATION_PRE_CODE_BRIEF.md) 참조. |
@@ -989,7 +989,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-043 · 대화형 세무 작업공간 — 첫 화면·오케스트레이션
 
-- Status: `in_progress` (CUI-3 완료 · CUI-4 Preview 승인 PR #271 · **CUI-4 Pre-Code Brief 초안 검토 대기** · runtime 착수 금지)
+- Status: `in_progress` (CUI-3 완료 · CUI-4 Preview 승인 PR #271 · **CUI-4 Brief 승인 PR #272** · 다음 CUI-4a runtime)
 - Related Concept Docs: [Conversational Tax Workspace Product Direction](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 대화 진입과 구조화 확정의 역할 정본.
 - Related UI Docs: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) · [UI Design](../02_UI_Screens/01_UI_DESIGN.md) - 세비서 첫 진입과 회사 홈 유지 경계.
 - Related HTML Preview: [세비서 Preview](../02_UI_Screens/previews/19_sebiseo.html) - 중립 첫 화면은 유지하고, 접힌 CUI-4 상태 예시에서 최근 업로드 결과 카드 1개만 검토한다.
@@ -1019,7 +1019,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [x] CUI-3c runtime: 서버 고정 허용목록 기반 화면 이동 CTA(PR #269 머지)
   - [x] CUI-3d: T/U/C/R/I/N/P와 자료수집 S-60~S-64 통과. 전용 `semuagent-staging` DB + private `semuagent-preview` Blob에서 PDF/XLSX callback·DB 상태·자료수집 이동을 검증하고 QA 데이터는 전부 정리([QA 12 §9.2](../05_QA_Validation/12_JC043_CUI3_SEBISEO_TEST_SCENARIOS.md))
   - [x] CUI-4 HTML Preview: 최근 업로드 세션 결과 카드 1개·DB 정본 건수·`period + sessionId` 필터 CTA 오너 승인(PR #271)
-  - [ ] CUI-4 Pre-Code Brief: [63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) 오너 승인
+  - [x] CUI-4 Pre-Code Brief: [63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) 오너 승인(PR #272)
+  - [ ] CUI-4a runtime: period 역산·표시 헬퍼 + 결과 카드 + §4.3 import 표 세션 필터
 - Acceptance Criteria:
   - [x] 사이드바 최상단이 세비서이고 회사 홈이 그 아래에 유지된다.
   - [x] 로그인·온보딩 완료 후 `/dashboard/sebiseo`로 진입한다.
@@ -1047,6 +1048,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-17, CUI-4 Preview draft): 중립 첫 화면을 유지하고 `다른 상태 보기 · 업로드 결과` 안에 최근 세션 카드 1개만 추가했다. runtime은 현재 tenant·사업장·기간·session의 DB 상태에서 건수를 파생하고, CTA는 같은 `period + sessionId`로 좁힌 자료수집 화면만 열며 mutation·확정은 하지 않는 계약으로 오너 확인 대기다.
 - Document Sync Check (2026-07-17, CUI-4 Preview approved): Preview `19_sebiseo.html`의 업로드 결과 카드 1개·접힌 예시·모바일 레이아웃을 오너가 승인했다(PR #271). runtime/API/DB 변경은 Pre-Code Brief 승인 전 착수하지 않는다.
 - Document Sync Check (2026-07-17, CUI-4 Brief draft): [Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) 초안 — 최근 `staff_direct` 세션 1건 파일 집계 카드, `period+sessionId` CTA, §4.3 import 표 세션 필터·무효 sessionId strip redirect, mutation·AI 재실행 금지. [QA 13](../05_QA_Validation/13_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_TEST_SCENARIOS.md) draft. 오너 승인 대기.
+- Document Sync Check (2026-07-17, CUI-4 Brief approved): Brief 63 §4.2.1·§4.2.2 period 역산·순수 표시 라벨, §4.3 sessionId import 필터, Owner Decisions 1~8 오너 승인(PR #272). 다음은 CUI-4a runtime.
 
 ### JC-044 · SemuAgent↔JARYO 직접 A2A 전달
 

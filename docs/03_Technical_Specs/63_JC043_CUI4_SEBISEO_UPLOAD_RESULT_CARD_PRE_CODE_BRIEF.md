@@ -1,8 +1,8 @@
 # JC-043 CUI-4 · 세비서 업로드 결과 카드 Pre-Code Brief
 > Created: 2026-07-17 18:55
-> Last Updated: 2026-07-17 19:55
+> Last Updated: 2026-07-17 20:00
 > Backlog: JC-043 · CUI-4
-> Status: **Draft — 오너 승인 대기** (runtime 착수 금지)
+> Status: **Brief approved (PR #272)** · CUI-4a runtime 착수 가능 · Preview 승인(PR #271)
 > Related Concept: [04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md)
 > Related Preview: [19_sebiseo.html](../02_UI_Screens/previews/19_sebiseo.html) (CUI-4 결과 카드 · 오너 승인 PR #271)
 > Related Prior Brief: [62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF](./62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)
@@ -402,7 +402,7 @@ redirect(`/dashboard/direct-upload?period={resolvedPeriodKey}`)
 | **CUI-4b** | 업로드 직후 `router.refresh()`·system 링크 제거·CTA 일원화 | submit 후 카드가 같은 `sessionId`로 갱신 |
 | **CUI-4c** | QA 시나리오 + 회귀 | [QA 13](../05_QA_Validation/13_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_TEST_SCENARIOS.md) 통과 · 자료수집 S-60~S-64 회귀 |
 
-각 slice는 별도 PR. **본 Brief 오너 승인 전 runtime 착수 금지.**
+각 slice는 별도 PR. **본 Brief는 오너 승인됨(PR #272). CUI-4a부터 runtime 착수 가능.**
 
 ## 9. Acceptance Criteria
 
@@ -426,18 +426,18 @@ redirect(`/dashboard/direct-upload?period={resolvedPeriodKey}`)
 - [ ] Preview `19_sebiseo.html` 결과 카드 구조·톤과 시각적으로 정합한다.
 - [ ] 자료수집 기존 업로드·`sessionId` 없는 진입 회귀가 통과한다.
 
-## 10. Owner Decisions (승인 대기)
+## 10. Owner Decisions (2026-07-17 승인)
 
 | # | 질문 | 권장안 | 상태 |
 |:---|:---|:---|:---|
-| 1 | 최근 세션 선택 | tenant+사업장 전체에서 `createdAt` 최신 1건 | **승인 대기** |
-| 2 | 카드 수치 단위 | 파일 status 집계만 (거래 건수 제외) | **승인 대기** |
-| 3 | 분석 중 갱신 | 폴링 없음 · refresh/재진입 시 DB 재조회 | **승인 대기** |
-| 4 | 업로드 후 system 링크 | 제거하고 결과 카드 CTA로 통합 | **승인 대기** |
-| 5 | 신규 API | 없음 (server read + `router.refresh()`) | **승인 대기** |
-| 6 | CTA landing import 표 | 유효 `sessionId`일 때 해당 세션 파일만 표시 · 무효 sessionId strip redirect | **승인 대기** |
-| 7 | period 역산 | §4.2.1 표·의사코드 · 실패 시 카드 숨김(fail-closed) · `period-options`에 헬퍼+테스트 추가 | **승인 대기** |
-| 8 | period 표시 라벨 | §4.2.2 순수 헬퍼 · 옵션 후보 비의존 · 과거 연도 포함 · 실패 시 카드 숨김 | **승인 대기** |
+| 1 | 최근 세션 선택 | tenant+사업장 전체에서 `createdAt` 최신 1건 | **승인** |
+| 2 | 카드 수치 단위 | 파일 status 집계만 (거래 건수 제외) | **승인** |
+| 3 | 분석 중 갱신 | 폴링 없음 · refresh/재진입 시 DB 재조회 | **승인** |
+| 4 | 업로드 후 system 링크 | 제거하고 결과 카드 CTA로 통합 | **승인** |
+| 5 | 신규 API | 없음 (server read + `router.refresh()`) | **승인** |
+| 6 | CTA landing import 표 | 유효 `sessionId`일 때 해당 세션 파일만 표시 · 무효 sessionId strip redirect | **승인** |
+| 7 | period 역산 | §4.2.1 표·의사코드 · 실패 시 카드 숨김(fail-closed) · `period-options`에 헬퍼+테스트 추가 | **승인** |
+| 8 | period 표시 라벨 | §4.2.2 순수 헬퍼 · 옵션 후보 비의존 · 과거 연도 포함 · 실패 시 카드 숨김 | **승인** |
 
 ## 11. Document Sync (구현 전)
 
@@ -450,4 +450,4 @@ Brief 승인 시 동기화 대상:
 
 ---
 
-**다음 단계:** 오너가 §10 결정을 승인하면 CUI-4a runtime PR을 연다. Preview는 PR #271에서 이미 승인됐다.
+**다음 단계:** CUI-4a runtime PR — §4.2.1·§4.2.2 period 헬퍼 + 결과 카드 + §4.3 import 표 세션 필터.

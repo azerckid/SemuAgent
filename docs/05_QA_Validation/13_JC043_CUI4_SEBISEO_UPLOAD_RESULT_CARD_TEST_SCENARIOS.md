@@ -2,7 +2,7 @@
 > Created: 2026-07-17 19:15
 > Last Updated: 2026-07-17 19:55
 > Backlog: JC-043 · CUI-4
-> Status: **Draft** — Brief 63 승인·runtime 구현 후 실행
+> Status: **Brief 승인됨(PR #272)** — CUI-4a runtime 구현 후 실행
 > Related Brief: [63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md)
 > Related Preview: [19_sebiseo.html](../02_UI_Screens/previews/19_sebiseo.html)
 > Related Prior QA: [12_JC043_CUI3_SEBISEO_TEST_SCENARIOS](./12_JC043_CUI3_SEBISEO_TEST_SCENARIOS.md)
