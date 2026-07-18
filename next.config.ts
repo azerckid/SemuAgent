@@ -1,3 +1,4 @@
+// Force Preview QA rebuild for CUI-4 Closeout (2026-07-18).
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
