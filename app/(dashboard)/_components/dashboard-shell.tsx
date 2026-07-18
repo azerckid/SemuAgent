@@ -3,13 +3,14 @@
 import { PanelLeft, PanelLeftClose } from 'lucide-react'
 import {
   cloneElement,
-  useEffect,
-  useState,
+  useSyncExternalStore,
   type ReactElement,
   type ReactNode,
 } from 'react'
 import {
-  readSidebarCollapsed,
+  getSidebarCollapsedServerSnapshot,
+  getSidebarCollapsedSnapshot,
+  subscribeSidebarCollapsed,
   writeSidebarCollapsed,
 } from '@/lib/dashboard/sidebar-collapse'
 import { cn } from '@/lib/utils'
@@ -25,25 +26,15 @@ export function DashboardShell({
   readonly sidebar: ReactElement<SidebarCollapseProps>
   readonly children: ReactNode
 }) {
-  // Lazy init avoids setState-in-effect (CI eslint react-hooks/set-state-in-effect).
-  const [desktopCollapsed, setDesktopCollapsed] = useState(() => readSidebarCollapsed())
-
-  useEffect(() => {
-    const onStorage = () => setDesktopCollapsed(readSidebarCollapsed())
-    window.addEventListener('storage', onStorage)
-    window.addEventListener('semuagent-sidebar-collapsed', onStorage)
-    return () => {
-      window.removeEventListener('storage', onStorage)
-      window.removeEventListener('semuagent-sidebar-collapsed', onStorage)
-    }
-  }, [])
+  // ThemeModeMenu와 동일: server snapshot=false → hydration mismatch 없이 client store 구독.
+  const desktopCollapsed = useSyncExternalStore(
+    subscribeSidebarCollapsed,
+    getSidebarCollapsedSnapshot,
+    getSidebarCollapsedServerSnapshot,
+  )
 
   function toggleDesktopCollapse() {
-    setDesktopCollapsed((prev) => {
-      const next = !prev
-      writeSidebarCollapsed(next)
-      return next
-    })
+    writeSidebarCollapsed(!desktopCollapsed)
   }
 
   const toggleLabel = desktopCollapsed ? '사이드바 표시' : '사이드바 숨기기'
