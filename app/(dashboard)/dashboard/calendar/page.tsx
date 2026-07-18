@@ -236,7 +236,7 @@ export default async function CalendarPage({
             <Badge variant="info">Base</Badge>
           </div>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            {calendar.label} 세무 일정 {calendar.occurrences.length}건을 확인합니다.
+            {calendar.label} 공통 세무 일정 {calendar.occurrences.length}건입니다. 회사별 해당 여부와 준비 상태는 각 업무 화면에서 확인하세요.
           </p>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
@@ -357,6 +357,11 @@ export default async function CalendarPage({
                           {TAX_SCHEDULE_CATEGORY_LABEL[occurrence.category]}
                         </Badge>
                       </div>
+                      {occurrence.applicability ? (
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          해당 조건: {occurrence.applicability}
+                        </p>
+                      ) : null}
                     </div>
                   ))
                 ) : (

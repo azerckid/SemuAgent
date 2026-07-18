@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DateTime } from '@/lib/time'
 import {
+  buildCurrentMonthScheduleItems,
   buildTaxCalendarMonth,
   expandTaxSchedulesForMonth,
   parseTaxCalendarMonth,
@@ -40,6 +41,40 @@ describe('expandTaxSchedulesForMonth', () => {
 
     expect(january.some((occurrence) => occurrence.title === '부가가치세 확정신고')).toBe(true)
     expect(may.some((occurrence) => occurrence.title.includes('부가가치세'))).toBe(false)
+  })
+
+  it('uses the official July 2026 deadlines and includes conditional filing schedules', () => {
+    const july = expandTaxSchedulesForMonth(2026, 7)
+
+    expect(july.filter((item) => item.dateISO === '2026-07-10')).toHaveLength(2)
+    expect(july.find((item) => item.id === 'july-vat-final')?.dateISO).toBe('2026-07-27')
+    expect(july.filter((item) => item.dateISO === '2026-07-31')).toHaveLength(5)
+    expect(july.map((item) => item.title)).toEqual(expect.arrayContaining([
+      '일용근로소득 지급명세서',
+      '간이지급명세서(근로소득)',
+      '간이지급명세서(거주자의 사업소득)',
+      '간이지급명세서(거주자의 기타소득)',
+      '재산세 납부',
+    ]))
+  })
+
+  it('does not carry the verified 2026-only July additions into other years', () => {
+    const july2027 = expandTaxSchedulesForMonth(2027, 7)
+
+    expect(july2027.some((item) => item.id.startsWith('july-2026-'))).toBe(false)
+  })
+})
+
+describe('buildCurrentMonthScheduleItems', () => {
+  it('returns one row per applicable monthly schedule and keeps elapsed deadlines visible', () => {
+    const today = DateTime.fromISO('2026-07-19', { zone: 'Asia/Seoul' })
+    const items = buildCurrentMonthScheduleItems(today, { vat: true, payroll: true })
+
+    expect(items).toEqual([
+      expect.objectContaining({ dateLabel: '7/10', title: '원천세 신고', dDay: -9 }),
+      expect.objectContaining({ dateLabel: '7/27', title: '부가가치세 확정신고', dDay: 8 }),
+      expect.objectContaining({ dateLabel: '7/31', title: '간이지급명세서(근로소득)', dDay: 12 }),
+    ])
   })
 })
 
