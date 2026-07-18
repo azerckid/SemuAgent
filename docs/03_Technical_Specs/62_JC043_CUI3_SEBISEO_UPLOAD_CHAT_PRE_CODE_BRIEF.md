@@ -1,6 +1,6 @@
 # JC-043 CUI-3 · 세비서 업로드·대화·작업 라우팅 Pre-Code Brief
 > Created: 2026-07-17 04:20
-> Last Updated: 2026-07-17 05:10
+> Last Updated: 2026-07-19
 > Backlog: JC-043 · CUI-3
 > Status: Brief approved (PR #266) · CUI-3a~3d merged (PR #267~#270) · CUI-4 = [Brief 63](./63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md)
 > Related Concept: [04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md)
@@ -29,7 +29,7 @@ CUI-2 trust 계약은 유지한다. 가짜 DB 상태 문구를 다시 넣지 않
 | 항목 | 현재 |
 |:---|:---|
 | Route | `/dashboard/sebiseo` · 로그인/온보딩 기본 진입 · 사이드바 최상단 |
-| UI | `#171717` 셸, 중립 환영 문구, `세무 일정(참고)` 1카드 |
+| UI | 회사 셸, 월간 공통 세무 일정 1줄 요약 |
 | Composer | 첨부·Instant·Mic·Voice·입력 영역이 **disabled** |
 | LLM | 페이지 로드 시 provider 호출 없음 |
 | Upload | 세비서에서 미연결 · 회사는 `/dashboard/direct-upload`에서만 업로드 |
@@ -37,6 +37,8 @@ CUI-2 trust 계약은 유지한다. 가짜 DB 상태 문구를 다시 넣지 않
 | Chat history | 없음(레일·DB 없음) |
 
 이번 달 세무 일정처럼 앱에 등록된 공통 일정 조회는 일반 세무상담으로 거절하지 않는다. 이 질문은 고정 일정 데이터에서 직접 답하며 LLM 호출·문서 검색·요청 제한을 사용하지 않는다. 회사별 해당 여부와 준비 상태는 단정하지 않는다.
+
+첫 화면은 미래 일정 1건만 고르지 않고 **이번 달 등록 일정 전체 건수 + 다음 두 기한 묶음**을 한 줄로 요약한다. 이미 지난 월중 기한도 월간 건수와 상세 달력에서 사라지지 않는다. 2026년 7월 국세 일정은 [국세청 세무일정](https://www.nts.go.kr/nts/ad/taxSchdul/selectList.do?taxYear=2026&taxMonth=07), 재산세 납기는 [행정안전부 안내](https://www.mois.go.kr/frt/bbs/type010/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000008&nttId=110916)를 근거로 한다. 각 일정에는 적용 조건을 보존하며, 회사별 해당 여부로 단정하지 않는다.
 
 ## 2. Product Contract (CUI-3)
 
@@ -87,7 +89,7 @@ CUI-2 trust 계약은 유지한다. 가짜 DB 상태 문구를 다시 넣지 않
 | 세비서 대화 | 요청 접수, 업로드 안내, 설명, 거절, 라우팅 CTA | 아님 |
 | 자료수집 API·DB | 파일·세션·분석 상태 | `upload_session` / `upload_file` / `source_batch` |
 | 구조화 화면 | 검토·수정·확정 | 사용자 확정 + 도메인 테이블 |
-| 참고 일정 카드 | 공통 법정 일정 표시(회사 준비 상태 아님) | `lib/tax-calendar` 규칙 |
+| 참고 일정 한 줄 | 월간 공통 일정 전체 건수·다음 기한 표시(회사 준비 상태 아님) | `lib/tax-calendar` 규칙 |
 
 대화와 구조화 화면이 다르면 **DB canonical 상태를 우선**한다.
 

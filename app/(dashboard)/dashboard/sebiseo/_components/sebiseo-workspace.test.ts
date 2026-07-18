@@ -59,10 +59,10 @@ describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
   })
 
   it('shows the existing tax schedule as one friendly row above the thread', () => {
-    expect(workspaceSource).toContain('<ReferenceTaxScheduleRow item={upcoming} />')
+    expect(workspaceSource).toContain('<ReferenceTaxScheduleRow summary={scheduleSummary} />')
     expect(workspaceSource.indexOf('<ReferenceTaxScheduleRow'))
       .toBeLessThan(workspaceSource.indexOf('<SebiseoThread items={thread} />'))
-    expect(pageSource).toContain('buildUpcomingSchedule')
+    expect(pageSource).toContain('buildCurrentMonthScheduleSummary')
     expect(pageSource).not.toContain('loadCompanyHomeSummary')
   })
 

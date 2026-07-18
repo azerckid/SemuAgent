@@ -1,6 +1,6 @@
 # Test Scenarios: JC-043 CUI-3 · 세비서 업로드·대화·라우팅
 > Created: 2026-07-17 04:20
-> Last Updated: 2026-07-17 (CUI-3d QA pass)
+> Last Updated: 2026-07-19 (월간 일정 한 줄 교정)
 > Backlog: JC-043 · CUI-3
 > Status: CUI-3a(PR #267)·CUI-3b(PR #268)·CUI-3c(PR #269) 머지 완료 · **CUI-3d QA 완료·PR #270 검토 대기** — Trust/Dialogue/Routing/Security/테넌트 격리/업로드 전·후단을 전용 Preview 환경에서 모두 검증
 > Related Brief: [62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)
@@ -29,10 +29,10 @@ CUI-2 셸 trust 계약을 깨지 않으면서, 기존 자료수집 mutation·ten
 | T-01 | 로그인 tenant | `/dashboard/sebiseo` 최초 로드 | Network에 LLM/provider 호출 없음 | PASS·브라우저 |
 | T-02 | 세비서 셸 | Instant·Mic·Voice 확인 | `disabled` + 준비 중 title/aria | PASS·구현+브라우저 |
 | T-03 | 세비서 셸 | thread 초기 문구 | “파일 올렸는데”/가짜 예외·누락 건수 없음 | PASS·브라우저 |
-| T-04 | 일정 카드 | 렌더 | `세무 일정(참고)` + 회사별 준비 상태 아님 문구 | PASS·브라우저 |
+| T-04 | 일정 한 줄 | 2026-07-19 렌더 | `7월 세무 일정` + 등록 9건 + 다음 7/27 부가세 + 7/31 5건. 상세 달력 링크 | PASS·단위 |
 | T-05 | 사이드바 | 렌더 | 세비서 최상단, 회사 홈 바로 아래 | PASS·브라우저 |
 | T-06 | composer 하단 | 렌더 | Instant/음성 **visible** “준비 중” 안내 문구가 포커스 없이 보임 | PASS·구현 |
-| T-07 | 이번 달 세무 일정 | 이번달 세무 일정이 무엇인가? 전송 | 앱 등록 공통 일정 답변. LLM·문서 검색·요청 제한 호출 0회 | PASS·unit |
+| T-07 | 이번 달 세무 일정 | 이번달 세무 일정이 무엇인가? 전송 | 국세청·행안부 근거의 2026년 7월 공통 일정과 적용 조건 답변. 회사별 해당 여부를 단정하지 않음. LLM·문서 검색·요청 제한 호출 0회 | PASS·unit |
 
 ## 3. Upload Via Existing Source Collection Path
 

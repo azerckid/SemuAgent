@@ -1032,8 +1032,8 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Acceptance Criteria:
   - [x] 사이드바 최상단이 세비서이고 회사 홈이 그 아래에 유지된다.
   - [x] 로그인·온보딩 완료 후 `/dashboard/sebiseo`로 진입한다.
-  - [x] 첫 화면에 참고 세무 일정 카드 1건과 ChatGPT형 입구 셸이 있다(확인 필요/Ready 카드는 1차 제외).
-  - [x] 일정 카드는 공통 법정 일정임을 명시하고, 가짜 DB 상태 데모 대화를 쓰지 않는다.
+  - [x] 첫 화면에 이번 달 공통 세무 일정 전체 건수와 다음 두 기한을 한 줄로 표시한다(확인 필요/Ready 카드는 1차 제외).
+  - [x] 일정 한 줄은 회사별 해당 여부·준비 상태로 단정하지 않고, 가짜 DB 상태 데모 대화를 쓰지 않는다.
   - [x] 미연결 composer 컨트롤은 disabled이며 준비 중 안내를 제공한다.
   - [x] 최초 화면 로드는 LLM provider를 호출하지 않는다.
   - [ ] 첫 화면에서 대화·파일 업로드와 미확정 상태를 함께 다룰 수 있다(CUI-3~4).
@@ -1060,6 +1060,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-17, CUI-4a merged): PR #273 — 결과 카드 runtime, session deep-link helpers, R-04/R-09 unit PASS. Browser 실측은 로그인 staging에서 카드·CTA만 후속 확인.
 - Document Sync Check (2026-07-18, operating model and execution order): 세비서 운영모델을 JC-043 구현 입력으로 연결하고, 다음 순서를 CUI-4 마감 → CUI-4d 거래 read-only 연결 → CUI-5 구조화 확정 → 부가세 Readiness → CUI-6으로 고정했다. CUI-4d·CUI-5 runtime은 신규 HTML Preview와 각 Pre-Code Brief·QA 승인 전 착수하지 않는다.
 - Document Sync Check (2026-07-18, CUI-4 layout feedback): 프로젝트 오너 피드백에 따라 최근 업로드 진행 상황 카드를 데스크톱에서는 `세무 일정(참고)` 오른쪽에 배치하고, 모바일에서는 세로로 쌓는다. 기존 tenant-scoped read model·CTA·mutation 금지 계약은 그대로 유지한다.
+- Document Sync Check (2026-07-19, monthly schedule correction): 미래 일정 1건만 표시하던 첫 화면을 월간 전체 등록 건수 + 다음 두 기한 한 줄로 교정했다. 2026년 7월 국세청 일정(부가세 7/27, 지급명세서 7/31)과 행정안전부 재산세 납기를 반영하고, 지난 월중 기한도 월간 건수·상세 달력에서 유지한다. 회사별 적용 여부와 준비 상태는 단정하지 않는다.
 
 ### JC-045 · 전역 라이트·다크 테마 시스템
 

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { redactAssistantText } from '@/lib/assistant/text-redaction'
-import type { UpcomingScheduleItem } from '@/lib/tax-calendar'
+import type { CurrentMonthScheduleSummary } from '@/lib/tax-calendar'
 import { requestSebiseoChat } from '@/lib/sebiseo/chat/client'
 import { recentSebiseoHistory } from '@/lib/sebiseo/chat/schemas'
 import {
@@ -31,7 +31,7 @@ import {
 
 export type SebiseoWorkspaceProps = {
   readonly tenantId: string
-  readonly upcoming: UpcomingScheduleItem | null
+  readonly scheduleSummary: CurrentMonthScheduleSummary
   readonly businessEntity: { readonly id: string; readonly name: string } | null
   readonly periodOptions: readonly SebiseoPeriodOption[]
   readonly defaultPeriodKey: string
@@ -39,7 +39,7 @@ export type SebiseoWorkspaceProps = {
 
 export function SebiseoWorkspace({
   tenantId,
-  upcoming,
+  scheduleSummary,
   businessEntity,
   periodOptions,
   defaultPeriodKey,
@@ -218,7 +218,7 @@ export function SebiseoWorkspace({
       <div className="px-6 pt-3.5 pb-2 text-[15px] font-semibold">세비서</div>
 
       <div className="mx-auto w-full max-w-[768px] px-6 pb-4">
-        <ReferenceTaxScheduleRow item={upcoming} />
+        <ReferenceTaxScheduleRow summary={scheduleSummary} />
       </div>
 
       <div className="flex-1 overflow-auto px-6 pb-[150px]">
@@ -270,36 +270,22 @@ export function SebiseoWorkspace({
  * 기존 세무 일정 카드와 같은 정보.
  * 여러 줄 큰 카드가 아니라, 한 줄로 읽기 쉽게 보여 준다.
  */
-function ReferenceTaxScheduleRow({ item }: { readonly item: UpcomingScheduleItem | null }) {
-  if (!item) {
-    return (
-      <div className="flex items-center gap-3 rounded-xl border border-company-border bg-company-surface px-4 py-3">
-        <span className="shrink-0 text-[12px] font-semibold text-company-fg-subtle">
-          세무 일정
-        </span>
-        <span className="text-[14px] text-company-fg-muted">가까운 일정이 없습니다</span>
-      </div>
-    )
-  }
-
+function ReferenceTaxScheduleRow({
+  summary,
+}: {
+  readonly summary: CurrentMonthScheduleSummary
+}) {
   return (
     <Link
-      href={item.href}
+      href={summary.href}
       className="flex items-center gap-3 rounded-xl border border-company-border bg-company-surface px-4 py-3 transition-colors hover:border-company-border-strong"
-      aria-label={`세무 일정 ${item.dateLabel} ${item.title} D-${item.dDay}`}
+      aria-label={summary.ariaLabel}
     >
       <span className="shrink-0 text-[12px] font-semibold text-company-fg-subtle">
-        세무 일정
-      </span>
-      <span className="shrink-0 text-[15px] font-bold tracking-tight text-foreground">
-        {item.dateLabel}
+        {summary.monthLabel}
       </span>
       <span className="min-w-0 flex-1 truncate text-[14px] text-foreground">
-        {item.title}
-      </span>
-      <span className="shrink-0 text-[13px] text-company-fg-muted">
-        D-
-        {item.dDay}
+        {summary.detail}
       </span>
     </Link>
   )

@@ -3,7 +3,7 @@ import { getSession } from '@/lib/auth-helpers'
 import { loadSourceCollectionSummary } from '@/lib/source-collection/summary'
 import { buildSebiseoPeriodOptions } from '@/lib/sebiseo/period-options'
 import { now } from '@/lib/time'
-import { buildUpcomingSchedule } from '@/lib/tax-calendar'
+import { buildCurrentMonthScheduleSummary } from '@/lib/tax-calendar'
 import { SebiseoWorkspace } from './_components/sebiseo-workspace'
 
 export default async function SebiseoPage() {
@@ -15,7 +15,7 @@ export default async function SebiseoPage() {
 
   // 첫 화면 로드에서 LLM provider를 호출하지 않는다(JC-043 Trust Contract).
   const today = now('Asia/Seoul')
-  const [upcoming = null] = buildUpcomingSchedule(today, 1)
+  const scheduleSummary = buildCurrentMonthScheduleSummary(today)
   const periodPayload = buildSebiseoPeriodOptions({ today })
   const summary = await loadSourceCollectionSummary({
     tenantId,
@@ -25,7 +25,7 @@ export default async function SebiseoPage() {
   return (
     <SebiseoWorkspace
       tenantId={tenantId}
-      upcoming={upcoming}
+      scheduleSummary={scheduleSummary}
       businessEntity={summary.businessEntity}
       periodOptions={periodPayload.options}
       defaultPeriodKey={periodPayload.defaultKey}
