@@ -2,7 +2,7 @@
 > Created: 2026-07-19 00:52
 > Last Updated: 2026-07-19 00:52
 > Backlog: JC-043 · CUI-4d
-> Status: Draft — owner review pending (runtime 착수 금지)
+> Status: **Draft PR** — S2 HTML Preview Gate·오너 화면 확인 전까지 Ready/병합 대상 아님. runtime 착수 금지.
 > Related Concept: [04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) · [05_SEBISEO_OPERATING_MODEL](../01_Concept_Design/05_SEBISEO_OPERATING_MODEL.md)
 > Related Execution Plan: [01_EXECUTION_PLAN.md](../04_Logic_Progress/01_EXECUTION_PLAN.md) §S3–S4
 > Related Prior Brief: [63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF](./63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md) (파일 단위 CUI-4)
@@ -71,8 +71,8 @@ CUI-4 파일 카드(`direct-upload?period&sessionId`)는 **유지**한다. CUI-4
 
    | query | 의미 | 서버 |
    |:---|:---|:---|
-   | `period` | CUI-4 §4.2.1 역산 `periodKey` | 세션 `accountingPeriod`와 불일치 시 sessionId strip + fail-closed |
-   | `sessionId` | 최근 `staff_direct` 세션 | tenant·사업장·source·deletedAt 재검증. 실패 시 strip |
+   | `period` | CUI-4 §4.2.1 역산 `periodKey` | 세션과 불일치 시 §4.3 fail-closed(**0행**) |
+   | `sessionId` | 최근 `staff_direct` 세션 | 검증 실패 시 §4.3 fail-closed(**0행**, 기간 전체 fallback 금지) |
    | `source` | 고정 값 `needs_decision` (CUI-4d 진입) | 허용 allowlist에 추가. 그 외 값은 기존 ledger 동작 유지 |
    | `display`, `row` | 기존 | CUI-4d CTA는 넣지 않음 |
 
@@ -82,8 +82,8 @@ CUI-4 파일 카드(`direct-upload?period&sessionId`)는 **유지**한다. CUI-4
 
 5. **자료대조원장 landing**
    - `sessionId`가 유효하면: 표는 **해당 세션 + 확인 필요 status 집합** 행만.
-   - `sessionId` 없음(사이드바 일반 진입): **기존 기간 전체 ledger 동작 유지**(회귀).
-   - 잘못된 tenant/사업장/기간/sessionId: sessionId(및 필요 시 source) strip, 타 tenant 행 **0건**.
+   - **일반 진입**(사이드바 등, `sessionId` query **없음**): **기존 기간 전체 ledger 동작 유지**(회귀). CUI-4d CTA와 무관.
+   - **CUI-4d deep link 실패**(무효 `sessionId` · 타 tenant · 타 사업장 · 기간 불일치): 아래 §4.3 **단일 fail-closed**만 적용한다. 기간 전체 원장으로 fallback하지 **않는다**.
 
 6. **갱신**
    - 세비서 페이지 로드·`router.refresh()` 시 거래 집계 재조회.
@@ -152,13 +152,24 @@ SebiseoNeedsReviewTxnCard = {
 
 ```text
 resolveReconciliationSessionScope({ tenantId, clientId, periodKey, sessionId })
-→ { ok: true, sessionId } | { ok: false }  // false면 query에서 sessionId 제거
+→ { ok: true, sessionId } | { ok: false }
 ```
 
 검증: 세션 존재, `source='staff_direct'`, `deletedAt` null, tenant/client 일치,
 `accountingPeriod` ↔ `periodKey` 역산 일치(CUI-4 §4.2.1 재사용).
 
-필터 적용 후 행 집합 정의는 §4.2 status 집합과 **동일 함수**를 쓴다.
+**Fail-closed (단일 계약 — QA T-06~T-09 공통):**
+
+CUI-4d deep link로 `sessionId`가 **있었으나** 검증이 `ok: false`인 경우(무효 UUID · 타 tenant · 타 사업장 · 기간 불일치 포함):
+
+1. query에서 `sessionId`를 제거한다.
+2. `source=needs_decision`이 함께 온 경우에도 **기간 전체 확인 필요 행을 보여 주지 않는다.**
+3. landing 표는 **확인 필요 필터 결과 0행**인 안전 빈 상태로 둔다.
+4. 타 tenant·타 사업장·다른 세션 행은 **0건** 노출.
+
+이유: 카드 건수와 landing 행의 **1:1**을 검증하려면 “기간 전체 fallback”과 “빈 상태”를 동시에 허용하면 안 된다.
+
+**예외(회귀):** URL에 `sessionId`가 **처음부터 없는** 일반 원장 진입은 기존 기간 전체 동작을 유지한다(T-10).
 
 ## 5. UI Contract
 
