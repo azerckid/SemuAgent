@@ -27,6 +27,14 @@ const chatClientSource = readFileSync(
   join(workspaceRoot, 'lib/sebiseo/chat/client.ts'),
   'utf8',
 )
+const threadSource = readFileSync(
+  join(workspaceRoot, 'app/(dashboard)/dashboard/sebiseo/_components/sebiseo-thread.tsx'),
+  'utf8',
+)
+const typewriterSource = readFileSync(
+  join(workspaceRoot, 'app/(dashboard)/dashboard/sebiseo/_components/sebiseo-typewriter.tsx'),
+  'utf8',
+)
 
 describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
   it('keeps trust shell and enables attach with period confirm gate', () => {
@@ -66,4 +74,12 @@ describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
     expect(workspaceSource).toContain('createSebiseoUploadSession')
     expect(workspaceSource).toContain('Period confirm is required before any staff-direct-upload call')
   })
+  it("animates only normal assistant answers and respects reduced motion", () => {
+    expect(threadSource).toContain("SebiseoTypewriter")
+    expect(threadSource).toContain("item.tone ===")
+    expect(threadSource).toContain("complete ? <AssistantActions")
+    expect(typewriterSource).toContain("prefers-reduced-motion: reduce")
+    expect(typewriterSource).toContain("aria-live={isComplete")
+  })
+
 })
