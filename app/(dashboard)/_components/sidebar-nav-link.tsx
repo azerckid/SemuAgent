@@ -51,7 +51,7 @@ export function SidebarNavLink({
     >
       {children}
       {showBadge ? (
-        <span className="ml-auto rounded-full border border-[#fecaca] bg-[#fef2f2] px-[7px] py-px text-[10.5px] font-bold leading-4 text-[#dc2626]">
+        <span className="ml-auto rounded-full border border-destructive/30 bg-destructive/10 px-[7px] py-px text-[10.5px] font-bold leading-4 text-destructive">
           {badge}
         </span>
       ) : null}

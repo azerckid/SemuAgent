@@ -1,7 +1,7 @@
 # JC-045 App Theme System Pre-Code Brief
 
 > Created: 2026-07-18
-> Status: Approved (T0) - runtime T1 not started
+> Status: Approved (T0) - T1 runtime in progress (Sebiseo literals deferred to T2)
 > Related: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [Component & Library Plan](./02_COMPONENT_LIBRARY_PLAN.md) · [Theme QA](../05_QA_Validation/14_JC045_APP_THEME_SYSTEM_TEST_SCENARIOS.md) · [Backlog JC-045](../04_Logic_Progress/00_BACKLOG.md)
 
 ## 1. Decision To Make
