@@ -1,5 +1,6 @@
 export type SebiseoScopeResult =
   | { kind: 'allowed' }
+  | { kind: 'schedule' }
   | {
       kind: 'refused'
       reason: 'off_topic' | 'tax_advice' | 'action' | 'out_of_scope'
@@ -66,6 +67,11 @@ const PRODUCT_CONTEXT_PATTERNS = [
   /(?:어디|어떻게|무슨\s*뜻|보려면|올리려면|입력)/,
 ] as const
 
+const CURRENT_MONTH_SCHEDULE_PATTERNS = [
+  /(?:이번\s*달|이번달|이달|당월).*(?:세무\s*)?(?:일정|신고\s*일정|마감)/,
+  /(?:세무\s*일정|신고\s*일정).*(?:이번\s*달|이번달|이달|당월)/,
+] as const
+
 function matchesAny(text: string, patterns: readonly RegExp[]) {
   return patterns.some((pattern) => pattern.test(text))
 }
@@ -75,6 +81,7 @@ export function classifySebiseoScope(message: string): SebiseoScopeResult {
   if (!normalized) return { kind: 'refused', reason: 'out_of_scope' }
   if (matchesAny(normalized, ACTION_PATTERNS)) return { kind: 'refused', reason: 'action' }
   if (matchesAny(normalized, OFF_TOPIC_PATTERNS)) return { kind: 'refused', reason: 'off_topic' }
+  if (matchesAny(normalized, CURRENT_MONTH_SCHEDULE_PATTERNS)) return { kind: 'schedule' }
 
   const hasProductTerm = PRODUCT_TERMS.some((term) => normalized.includes(term))
   const hasProductContext = matchesAny(normalized, PRODUCT_CONTEXT_PATTERNS)

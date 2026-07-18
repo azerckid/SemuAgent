@@ -32,6 +32,7 @@ CUI-2 셸 trust 계약을 깨지 않으면서, 기존 자료수집 mutation·ten
 | T-04 | 일정 카드 | 렌더 | `세무 일정(참고)` + 회사별 준비 상태 아님 문구 | PASS·브라우저 |
 | T-05 | 사이드바 | 렌더 | 세비서 최상단, 회사 홈 바로 아래 | PASS·브라우저 |
 | T-06 | composer 하단 | 렌더 | Instant/음성 **visible** “준비 중” 안내 문구가 포커스 없이 보임 | PASS·구현 |
+| T-07 | 이번 달 세무 일정 | 이번달 세무 일정이 무엇인가? 전송 | 앱 등록 공통 일정 답변. LLM·문서 검색·요청 제한 호출 0회 | PASS·unit |
 
 ## 3. Upload Via Existing Source Collection Path
 
@@ -69,7 +70,7 @@ S-61은 CSV/ZIP을 **미지원으로 거부**하는 기대로 해석한다.
 | C-10 | message 2001자 | 전송 시도 | 클라이언트 차단 또는 서버 400, provider 호출 없음 | PASS·단위 |
 | C-11 | 업로드 직후 | 자동 chat 호출 여부 | 자동 LLM 요약 호출 0 | PASS·구현 |
 | C-12 | chat request | payload | 파일 바이트·Blob URL·storage key 필드 없음 | PASS·단위 |
-| C-13 | 새로고침 | thread | ephemeral 소실, 업로드 파일은 자료수집 DB에 유지 | PASS·구현 |
+| C-13 | 새로고침·메뉴 이동 후 세비서 복귀 | thread | 같은 탭의 최근 8개 사용자/세비서 메시지 복원. 업로드 파일은 자료수집 DB에 유지 | PASS·unit |
 
 ## 5. Work Routing (No Mutation)
 
@@ -103,7 +104,7 @@ S-61은 CSV/ZIP을 **미지원으로 거부**하는 기대로 해석한다.
 | N-02 | 세비서 | 채팅 이력 레일 | 존재하지 않음 | PASS·브라우저 |
 | N-03 | 업로드 완료 | 자동 장문 LLM 요약 | 호출 없음 | PASS·구현 |
 | N-04 | 외부 포털 링크 | 세비서 UI | `upload/[token]`·메일 요청 미노출 | PASS·브라우저 |
-| N-05 | ephemeral | localStorage/IndexedDB | chat transcript 미저장 | PASS·구현 |
+| N-05 | ephemeral | localStorage/IndexedDB/서버 DB | chat transcript 미저장. 같은 탭 `sessionStorage`만 허용 | PASS·unit |
 
 ## 8. Performance / UX Smoke
 

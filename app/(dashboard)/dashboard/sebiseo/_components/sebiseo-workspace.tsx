@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { redactAssistantText } from '@/lib/assistant/text-redaction'
 import type { UpcomingScheduleItem } from '@/lib/tax-calendar'
 import { requestSebiseoChat } from '@/lib/sebiseo/chat/client'
@@ -24,8 +24,15 @@ import {
   type SebiseoThreadItem,
 } from './sebiseo-thread'
 import { SebiseoUploadResultCardView } from './sebiseo-upload-result-card'
+import {
+  buildSebiseoSessionThreadStorageKey,
+  readSebiseoSessionThread,
+  writeSebiseoSessionThread,
+  type SebiseoStoredThreadItem,
+} from '@/lib/sebiseo/thread-session-storage'
 
 export type SebiseoWorkspaceProps = {
+  readonly tenantId: string
   readonly upcoming: UpcomingScheduleItem | null
   readonly businessEntity: { readonly id: string; readonly name: string } | null
   readonly periodOptions: readonly SebiseoPeriodOption[]
@@ -34,6 +41,7 @@ export type SebiseoWorkspaceProps = {
 }
 
 export function SebiseoWorkspace({
+  tenantId,
   upcoming,
   businessEntity,
   periodOptions,
@@ -42,6 +50,7 @@ export function SebiseoWorkspace({
 }: SebiseoWorkspaceProps) {
   const router = useRouter()
   const [thread, setThread] = useState<SebiseoThreadItem[]>([])
+  const skipThreadPersistRef = useRef(true)
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
@@ -49,6 +58,39 @@ export function SebiseoWorkspace({
   const [selectedPeriodKey, setSelectedPeriodKey] = useState(defaultPeriodKey)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const sessionThreadStorageKey = businessEntity
+    ? buildSebiseoSessionThreadStorageKey(tenantId, businessEntity.id)
+    : null
+
+  useEffect(() => {
+    skipThreadPersistRef.current = true
+    if (!sessionThreadStorageKey) {
+      setThread([])
+      return
+    }
+
+    // 복원분은 이미 읽은 답변이므로 typewriter를 다시 돌리지 않는다(CTA 지연 방지).
+    setThread(
+      readSebiseoSessionThread(window.sessionStorage, sessionThreadStorageKey).map((item) => ({
+        ...item,
+        animate: false,
+      })),
+    )
+  }, [sessionThreadStorageKey])
+
+  useEffect(() => {
+    if (!sessionThreadStorageKey) return
+    if (skipThreadPersistRef.current) {
+      skipThreadPersistRef.current = false
+      return
+    }
+
+    const persistable = thread.filter((item): item is SebiseoStoredThreadItem =>
+      item.kind === 'user' || item.kind === 'assistant',
+    )
+    writeSebiseoSessionThread(window.sessionStorage, sessionThreadStorageKey, persistable)
+  }, [sessionThreadStorageKey, thread])
 
   const canAttach = Boolean(businessEntity) && !uploading
 

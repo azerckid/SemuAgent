@@ -41,6 +41,24 @@ describe('handleSebiseoChat', () => {
     expect(consumeRateLimit).not.toHaveBeenCalled()
   })
 
+  it('answers current-month schedules without retrieval, rate limit, or provider calls', async () => {
+    const retrieve = vi.fn(async () => snippet)
+    const generate = vi.fn()
+    const consumeRateLimit = vi.fn()
+
+    const response = await handleSebiseoChat(request({ message: '이번달 세무 일정이 무엇인가?' }), context, {
+      retrieve,
+      generate,
+      consumeRateLimit,
+    })
+
+    expect(response.status).toBe('answered')
+    expect(response.answer).toContain('SemuAgent 등록 공통 세무 일정')
+    expect(retrieve).not.toHaveBeenCalled()
+    expect(generate).not.toHaveBeenCalled()
+    expect(consumeRateLimit).not.toHaveBeenCalled()
+  })
+
   it('redacts message and history before retrieval and provider invocation', async () => {
     const retrieve = vi.fn(async (message: string) => {
       void message

@@ -1,4 +1,5 @@
 import { redactAssistantText } from '@/lib/assistant/text-redaction'
+import { now } from '@/lib/time'
 import {
   assertAndConsumeUsageHelpLlmRateLimit,
   UsageHelpRateLimitError,
@@ -22,6 +23,7 @@ import {
   type SebiseoModelOutput,
 } from './schemas'
 import { classifySebiseoScope } from './scope-classifier'
+import { buildSebiseoCurrentMonthScheduleAnswer } from './schedule-answer'
 import { resolveSebiseoScreenActions } from './screen-actions'
 
 export type SebiseoChatContext = {
@@ -80,6 +82,9 @@ export async function handleSebiseoChat(
   const sanitized = sanitizeRequest(request)
   const scope = classifySebiseoScope(sanitized.message)
   if (scope.kind === 'refused') return buildSebiseoRefusal(scope.reason)
+  if (scope.kind === 'schedule') {
+    return buildSebiseoCurrentMonthScheduleAnswer(now('Asia/Seoul'))
+  }
 
   try {
     const snippets = await dependencies.retrieve(sanitized.message)

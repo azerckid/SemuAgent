@@ -33,7 +33,10 @@ CUI-2 trust 계약은 유지한다. 가짜 DB 상태 문구를 다시 넣지 않
 | Composer | 첨부·Instant·Mic·Voice·입력 영역이 **disabled** |
 | LLM | 페이지 로드 시 provider 호출 없음 |
 | Upload | 세비서에서 미연결 · 회사는 `/dashboard/direct-upload`에서만 업로드 |
+
 | Chat history | 없음(레일·DB 없음) |
+
+이번 달 세무 일정처럼 앱에 등록된 공통 일정 조회는 일반 세무상담으로 거절하지 않는다. 이 질문은 고정 일정 데이터에서 직접 답하며 LLM 호출·문서 검색·요청 제한을 사용하지 않는다. 회사별 해당 여부와 준비 상태는 단정하지 않는다.
 
 ## 2. Product Contract (CUI-3)
 
@@ -175,8 +178,8 @@ CUI-3 착수 전/동시 chore:
 
 | 규칙 | 결정 |
 |:---|:---|
-| 보존 위치 | **브라우저 메모리(React state)만**. `localStorage`/IndexedDB/서버 chat 테이블 없음 |
-| 새로고침 | thread 소실(의도적). canonical 상태는 자료수집·도메인 DB에만 남음 |
+| 보존 위치 | **같은 탭의 브라우저 메모리 + `sessionStorage`**. tenant·사업장별 최근 8개 사용자/세비서 메시지만 저장한다. `localStorage`/IndexedDB/서버 chat 테이블 없음 |
+| 새로고침·메뉴 이동 | 같은 브라우저 탭에서는 최근 대화를 복원한다. 탭 종료 시 소실하며 canonical 상태는 자료수집·도메인 DB에만 남음 |
 | 파일 원문 | provider·chat API에 **파일 바이트·Blob URL·storage key를 넣지 않음** |
 | 업로드 상태 문구 | DB status/safe filename 기반 로컬 시스템 메시지로만 표시 |
 
@@ -300,7 +303,7 @@ CUI-3 착수 전/동시 chore:
 - [x] 업로드/분석 상태 문구는 실제 DB 상태를 반영하며 가짜 건수를 쓰지 않는다(Preview E2E `analyzing`·`needs_review` 실측).
 - [x] Instant·마이크·음성은 disabled이며, **보이는** 준비 중 안내 문구가 있다(포커스 의존 금지).
 - [x] chat 요청은 history≤8·message≤2000·provider 직전 redaction·파일 원문 미포함을 지킨다.
-- [x] ephemeral thread는 브라우저 메모리만 사용한다.
+- [x] ephemeral thread는 같은 탭의 브라우저 메모리·`sessionStorage`만 사용하며, 최근 8개 사용자/세비서 메시지만 복원한다.
 - [x] 사용자 메시지 전송 전에 LLM provider 호출이 없다. 업로드 후 자동 LLM 요약도 없다.
 - [x] 화이트리스트 밖 질문은 거절되며 업무 답변을 생성하지 않는다.
 - [x] 채팅 응답만으로 거래·급여·세액·신고 canonical 상태가 바뀌지 않는다.
@@ -313,7 +316,7 @@ CUI-3 착수 전/동시 chore:
 | # | 결정 | 상태 |
 |:---|:---|:---|
 | 1 | 신규 `POST /api/sebiseo/chat` | **승인** |
-| 2 | CUI-3 대화 이력 = ephemeral만 · 보존·전송 범위는 §5.3~§5.4 | **승인** |
+| 2 | CUI-3 대화 이력 = 같은 탭에서만 복원되는 ephemeral 상태 · 보존·전송 범위는 §5.3~§5.4 | **승인** |
 | 3 | 업로드 후 자동 LLM 요약 = 끔 | **승인** |
 | 4 | 상시 기간 선택기 없음 · 업로드 전 적용 기간 확인 필수 | **승인**(수정안) |
 

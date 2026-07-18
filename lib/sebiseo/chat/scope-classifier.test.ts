@@ -7,6 +7,10 @@ describe('classifySebiseoScope', () => {
     expect(classifySebiseoScope('부가세 화면의 추가 공제 가능성은 뭐예요?')).toEqual({ kind: 'allowed' })
   })
 
+  it('answers current-month schedule questions from the app schedule', () => {
+    expect(classifySebiseoScope('이번달 세무 일정이 무엇인가?')).toEqual({ kind: 'schedule' })
+  })
+
   it('refuses off-topic, tax advice, and delegated actions', () => {
     expect(classifySebiseoScope('오늘 날씨 어때?')).toMatchObject({ kind: 'refused', reason: 'off_topic' })
     expect(classifySebiseoScope('접대비가 공제 가능한가요?')).toMatchObject({ kind: 'refused', reason: 'tax_advice' })

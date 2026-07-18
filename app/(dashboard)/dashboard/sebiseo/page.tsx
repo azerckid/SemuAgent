@@ -30,6 +30,7 @@ export default async function SebiseoPage() {
 
   return (
     <SebiseoWorkspace
+      tenantId={tenantId}
       upcoming={upcoming}
       businessEntity={summary.businessEntity}
       periodOptions={periodPayload.options}

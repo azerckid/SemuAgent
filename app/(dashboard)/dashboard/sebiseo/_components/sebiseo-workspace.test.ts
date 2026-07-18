@@ -27,6 +27,14 @@ const chatClientSource = readFileSync(
   join(workspaceRoot, 'lib/sebiseo/chat/client.ts'),
   'utf8',
 )
+const threadSource = readFileSync(
+  join(workspaceRoot, 'app/(dashboard)/dashboard/sebiseo/_components/sebiseo-thread.tsx'),
+  'utf8',
+)
+const typewriterSource = readFileSync(
+  join(workspaceRoot, 'app/(dashboard)/dashboard/sebiseo/_components/sebiseo-typewriter.tsx'),
+  'utf8',
+)
 
 describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
   it('keeps trust shell and enables attach with period confirm gate', () => {
@@ -51,9 +59,11 @@ describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
     expect(pageSource).not.toContain('anthropic')
   })
 
-  it('keeps chat ephemeral and redacts before the client request', () => {
+  it('restores only same-tab redacted chat messages and keeps them out of durable storage', () => {
     expect(workspaceSource).toContain("useState<SebiseoThreadItem[]>([])")
     expect(workspaceSource).toContain('redactAssistantText(message)')
+    expect(workspaceSource).toContain('sessionStorage')
+    expect(workspaceSource).toContain("item.kind === \u0027user\u0027 || item.kind === \u0027assistant\u0027")
     expect(workspaceSource).not.toContain('localStorage')
     expect(workspaceSource).not.toContain('indexedDB')
   })
@@ -66,4 +76,18 @@ describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
     expect(workspaceSource).toContain('createSebiseoUploadSession')
     expect(workspaceSource).toContain('Period confirm is required before any staff-direct-upload call')
   })
+  it("animates only normal assistant answers and respects reduced motion", () => {
+    expect(threadSource).toContain("SebiseoTypewriter")
+    expect(threadSource).toContain("item.tone ===")
+    expect(threadSource).toContain("item.animate !== false")
+    expect(threadSource).toContain("complete ? <AssistantActions")
+    expect(typewriterSource).toContain("prefers-reduced-motion: reduce")
+    expect(typewriterSource).toContain("aria-live={isComplete")
+  })
+
+  it('skips typewriter replay for same-tab restored assistant messages', () => {
+    expect(workspaceSource).toContain('animate: false')
+    expect(workspaceSource).toContain('readSebiseoSessionThread')
+  })
+
 })
