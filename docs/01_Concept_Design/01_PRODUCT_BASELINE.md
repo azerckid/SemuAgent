@@ -1,6 +1,6 @@
 # SemuAgent Product Baseline
 > Created: 2026-07-01 17:55
-> Last Updated: 2026-07-16 02:03 KST
+> Last Updated: 2026-07-18 19:34 KST
 
 ## Purpose
 
@@ -38,6 +38,8 @@ separately approved JC-023 flow exists.
 제품 원칙은 **대화로 시키고 이해하며, 표에서 검토하고 확정한다**이다. 현재 runtime 회사 홈은
 변경하지 않으며, [Conversational Tax Workspace Direction](./04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md)의
 질의응답과 HTML UI Preview 오너 승인 후에만 구현을 시작한다.
+세비서의 업무 식별·상태 전이·차단 요인·Ready·확인·복구 계약은
+[Sebiseo Operating Model](./05_SEBISEO_OPERATING_MODEL.md)을 따른다.
 
 ## Filing Path Priority (신고 완료 경로 우선순위)
 
@@ -243,6 +245,7 @@ Every reused flow must be checked for operator mismatch:
 ## Related Documents
 - **Concept_Design**: [Agent-to-Agent Tax Collaboration Master Plan](./03_AGENT_TO_AGENT_TAX_COLLABORATION_MASTER_PLAN.md) - SemuAgent와 JARYO-GIWA 공통 장기 방향·질의응답 정본
 - **Concept_Design**: [Conversational Tax Workspace Product Direction](./04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 대화 중심 첫 화면과 구조화 확정의 역할 분리
+- **Concept_Design**: [Sebiseo Operating Model](./05_SEBISEO_OPERATING_MODEL.md) - 세비서의 업무 식별·상태 전이·Ready·확인·복구 운영 계약
 - **Concept_Design**: [Filing Preparation Pipeline](./02_FILING_PREPARATION_PIPELINE.md) - 신고 준비 파이프라인 방향
 - **UI_Screens**: [MVP UX Baseline](../02_UI_Screens/01_MVP_UX_BASELINE.md) - 6개 워크스페이스 UX 기준선
 - **UI_Screens**: [Screen Flow](../02_UI_Screens/00_SCREEN_FLOW.md) - 화면 흐름 및 데이터 입출력
