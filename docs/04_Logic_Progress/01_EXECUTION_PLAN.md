@@ -93,16 +93,17 @@ Gate Out:
 
 ### S3. CUI-4d Pre-Code Brief and QA Draft
 
-- [ ] 거래 단위 확인 필요 read model의 데이터 소스 확정
-- [ ] `tenant + 사업자 + 기간 + session/source scope` 필터 계약 확정
-- [ ] 파일 상태와 거래 상태의 집계 단위 분리
-- [ ] 확인 필요 거래 수와 필터된 행 집합의 1:1 대응 계약
-- [ ] CTA URL·허용 query·서버 재검증 계약
-- [ ] 잘못된·다른 tenant·다른 기간 query의 fail-closed 처리 확정
-- [ ] 카드와 CTA가 mutation을 수행하지 않는 테스트 작성
-- [ ] 로딩·빈 상태·오류·권한 없음 QA 시나리오 작성
-- [ ] 기존 자료수집·자료대조원장 회귀 범위 명시
+- [x] 거래 단위 확인 필요 read model의 데이터 소스 확정 (draft: `bookkeeping_transaction_classification`)
+- [x] `tenant + 사업자 + 기간 + session/source scope` 필터 계약 확정 (draft Brief 65)
+- [x] 파일 상태와 거래 상태의 집계 단위 분리
+- [x] 확인 필요 거래 수와 필터된 행 집합의 1:1 대응 계약
+- [x] CTA URL·허용 query·서버 재검증 계약
+- [x] 잘못된·다른 tenant·다른 기간 query의 fail-closed 처리 확정
+- [x] 카드와 CTA가 mutation을 수행하지 않는 테스트 작성 (QA 15 T-12)
+- [x] 로딩·빈 상태·오류·권한 없음 QA 시나리오 작성 (QA 15)
+- [x] 기존 자료수집·자료대조원장 회귀 범위 명시
 - [ ] Brief·QA 오너 승인
+- [ ] S2 HTML Preview Gate 통과 (runtime 선행)
 
 Gate Out:
 
