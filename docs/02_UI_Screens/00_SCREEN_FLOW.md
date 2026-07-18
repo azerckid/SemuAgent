@@ -1,6 +1,6 @@
 # SemuAgent Screen Flow
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-17
+> Last Updated: 2026-07-18
 
 ## 1. 범위
 
@@ -25,6 +25,14 @@
 
 외부 연동(고객 업로드 포털 `/upload/[token]`, 외부 세무사 검토 흐름)은 v1 범위에서 제외한다.
 회사 내부 운영 화면만 다룬다.
+
+
+### 1.1 전역 테마 (JC-045 · T0 Approved)
+
+로그인 후 모든 화면은 같은 전역 테마를 사용한다. 기본값은 운영체제의 light/dark 설정이며,
+사용자는 Sidebar 하단에서 System/Light/Dark를 고른다. 테마는 현재 화면·기간·대화·폼·업로드·세무
+판단을 바꾸지 않는 표시 환경설정이다. 세비서도 독립 다크 화면이 아니라 이 전역 선택을 따른다.
+상세 token·rollout·QA 계약은 [Theme Brief](../03_Technical_Specs/64_JC045_APP_THEME_SYSTEM_PRE_CODE_BRIEF.md)를 따른다.
 
 ## 2. 전체 여정 (세비서 첫 진입)
 

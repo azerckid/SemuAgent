@@ -1,6 +1,6 @@
 # SemuAgent UI Design
 > Created: 2026-07-01 19:40
-> Last Updated: 2026-07-16 06:10
+> Last Updated: 2026-07-18
 
 ## 1. 디자인 방향
 
@@ -31,6 +31,33 @@
 | radius | `12px` | 카드 모서리 |
 
 상태칩은 각 색상의 soft 배경 + 동일 색 테두리로 표현한다 (ok/warn/danger/muted).
+
+
+### 2.1 라이트·다크 테마 계약 (JC-045 · T0 Approved)
+
+- 모든 인증 후 화면은 시스템 설정·라이트·다크를 지원한다. 첫 방문은 운영체제 설정을 따르고,
+  사용자가 고른 모드는 브라우저의 비업무 UI 환경설정으로 유지한다.
+- 전역 테마 전환은 Sidebar 사용자/하단 영역에서 제공한다. 세비서만의 다크 모드나 개별 화면
+  전용 테마 선택은 두지 않는다.
+- 기본 테마 언어는 neutral 기반의 업무 도구다. 다크 모드는 ChatGPT와 유사한 차분한 charcoal
+  대화 밀도를 참고하되, SemuAgent의 브랜드·세무 상태·표 구조를 그대로 유지한다.
+- 색상은 background·surface·foreground·muted·border·sidebar·primary·상태 토큰처럼 의미로
+  사용한다. 컴포넌트 안의 특정 라이트/다크 색상 직접 지정은 점진적으로 제거한다.
+- 상태는 항상 색상과 텍스트 라벨을 함께 쓴다. 다크 모드에서 경고·오류·비활성·포커스가
+  서로 비슷하게 보이지 않도록 contrast를 검증한다.
+- 테마 전환은 표시만 바꾼다. 자료·세액·AI 판단·신고 gate·권한·현재 폼 값을 변경하거나
+  요청을 새로 보내지 않는다.
+
+| 의미 | 라이트 | 다크 |
+|:---|:---|:---|
+| 앱 배경 | 따뜻하지 않은 밝은 neutral | 낮은 대비의 charcoal |
+| 카드·패널 | 흰 neutral surface | 계층이 구분되는 charcoal surface |
+| 본문/보조 텍스트 | near-black / 읽기 쉬운 gray | near-white / 읽기 쉬운 gray-white |
+| 경계·입력 | soft gray + 명확한 focus ring | low-contrast light border + 명확한 focus ring |
+| primary·링크 | 접근성 있는 blue | 접근성 있는 blue |
+| ok/warn/danger | soft surface + 테두리 + 라벨 | soft surface + 테두리 + 라벨 |
+
+상세 구현·전환 순서·QA는 [Theme System Pre-Code Brief](../03_Technical_Specs/64_JC045_APP_THEME_SYSTEM_PRE_CODE_BRIEF.md)를 따른다.
 
 ## 3. 레이아웃 구조
 

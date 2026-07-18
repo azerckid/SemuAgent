@@ -1,6 +1,6 @@
 # Component & Library Plan
 > Created: 2026-07-01 20:05
-> Last Updated: 2026-07-11
+> Last Updated: 2026-07-18
 
 ## 1. 목적 및 범위
 
@@ -29,10 +29,18 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 ## 3. UI Theme Strategy
 
-- **기존 GIWA 테마(neutral · base-nova) 그대로 유지.** 새 테마 도입 없음.
-- 디자인 토큰은 UI Design 문서 기준(중립 팔레트, radius 12px, ok/warn/danger/muted/blue 상태색).
+- **JC-045 (T0 Approved):** 인증 후 SemuAgent 전체에 System/Light/Dark를 제공한다. 첫 방문은 OS 설정을 따르고,
+  사용자는 Sidebar 하단의 접근 가능한 selector로 모드를 바꾼다. 상세 계약은
+  [Theme System Pre-Code Brief](./64_JC045_APP_THEME_SYSTEM_PRE_CODE_BRIEF.md)를 따른다.
+- 기존 neutral · base-nova와 CSS variable 기반은 유지한다. 새 디자인 시스템은 도입하지 않고,
+  root ThemeProvider와 mode별 semantic token 값을 보강한다.
+- 후보 라이브러리는 next-themes 하나다. 테마는 HTML class에 적용하며 browser-local preference만
+  사용한다. tenant/user DB 설정, 세무 데이터 migration, 별도 color state manager는 추가하지 않는다.
+- 디자인 토큰은 UI Design 문서 기준(중립 팔레트, radius 12px, ok/warn/danger/muted/blue 상태색)을
+  light/dark 양쪽에서 의미로 유지한다. 상태는 색상만으로 전달하지 않는다.
 - 아이콘: lucide-react 사용(HTML Preview의 문자 아이콘은 구현 시 lucide로 대체).
-- shadcn preset action: **`apply --only theme` 불필요**(테마 유지). 필요한 개별 컴포넌트만 `apply`.
+- shadcn preset action: apply --only theme는 사용하지 않는다. 현재 theme를 token으로 확장하고,
+  필요한 개별 컴포넌트만 apply한다.
 
 ## 4. 기존 shadcn/ui 인벤토리 (`components/ui`)
 
