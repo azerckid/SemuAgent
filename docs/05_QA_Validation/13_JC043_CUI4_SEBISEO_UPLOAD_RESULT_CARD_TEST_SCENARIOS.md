@@ -38,7 +38,7 @@ Out of scope: 기장검토 거래 건수 카드, CUI-5 확정, 법령 참고 int
 | R-08 | period 불일치 | session의 `accountingPeriod`와 다른 `period` query + valid sessionId | redirect · sessionId strip | **PASS · Preview browser (2026-07-18)** |
 | R-09 | 무효 sessionId | 존재하지 않는 UUID. **추가:** 무효 `sessionId` + `fileId` query 동시 전달 | `/dashboard/direct-upload?period=…` (sessionId·fileId strip). 기간 전체 importRows로 머물지 않음 | **PASS · unit + Preview browser (2026-07-18)** |
 | R-10 | sessionId 없는 진입 | `/dashboard/direct-upload?period=P` only | 기간 전체 importRows(기존 동작). 회귀 통과 | **PASS · Preview browser (2026-07-18)** |
-| R-11 | 업로드 후 갱신 | 세비서에서 새 업로드 | system 링크 대신 카드 갱신. 새 sessionId 반영 | Pending |
+| R-11 | 업로드 후 갱신 | 세비서에서 새 업로드 | system 링크 대신 카드 갱신. 새 sessionId 반영 | **PASS · Preview browser (2026-07-18)** |
 | R-12 | mutation 없음 | 카드·CTA·표에서 확정/재분석 버튼 없음(기존 retry만 file 행 scope) | 채팅·카드에서 domain mutation 0 | **PASS · Preview browser (2026-07-18)** |
 
 ## 4. Regression
@@ -56,6 +56,7 @@ Out of scope: 기장검토 거래 건수 카드, CUI-5 확정, 법령 참고 int
 - 2026-07-18 자동 회귀: CUI-4·CUI-3 업로드·자료수집·tenant scope 대상 Vitest 8 파일, 41 테스트가 통과했다. 전체 테스트 실행의 별도 실패 1건은 `bookkeeping-review.test.ts`의 기존 색상 class assertion으로, CUI-4 변경 파일과 무관하다.
 - 같은 날 Preview fixture에서 S1(최신 `needs_review`)·S2(이전 `matched`)를 만들고, 카드가 S1 CTA만 표시하며 자료수집 표가 S1 파일 1건만 표시함을 확인했다. 다른 tenant·사업장 sessionId는 모두 `period` 기본 URL로 strip됐다. fixture와 임시 Preview deployment는 검증 직후 삭제했고 staging alias는 기존 검증 deployment로 복구했다.
 - 별도 Preview fixture에서 최신 세션의 `matched` 1건과 `needs_review` 1건을 확인했다. 카드는 `자료 2건`, `정상 1건 · 확인 필요 1건`, 배지 `확인 필요 1`을 표시했다. fixture와 임시 Preview deployment는 즉시 삭제했고 staging alias를 복구했다.
+- 세비서에서 합성 PDF 1건을 실제 업로드해 새 `sessionId`의 결과 카드로 즉시 갱신되는 것을 확인했다. 채팅 영역에는 상태 문장만 남았고, 별도 system 링크는 생기지 않았다. 분석·검증 하위 레코드, 파일, Blob을 정리한 뒤 카드가 기존 session으로 돌아온 것도 확인했다.
 - localhost Blob callback 한계는 CUI-3d와 동일. `needs_review` 실측은 staging DB 권장.
 - period 역산·표시 단위 테스트(월·H1·H2·과거 연도·fail-closed)는 Brief §4.2.1·§4.2.2 / CUI-4a에 포함. QA 표의 별도 ID는 두지 않는다.
 - 카드 라벨은 `formatSebiseoPeriodLabel`만 사용한다. `buildSebiseoPeriodOptions` 후보에 없는 과거 세션도 라벨이 나와야 한다.
