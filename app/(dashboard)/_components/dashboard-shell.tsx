@@ -1,47 +1,44 @@
 'use client'
 
 import { PanelLeft, PanelLeftClose } from 'lucide-react'
+import type { ReactNode } from 'react'
 import {
-  cloneElement,
-  useSyncExternalStore,
-  type ReactElement,
-  type ReactNode,
-} from 'react'
-import {
-  getSidebarCollapsedServerSnapshot,
-  getSidebarCollapsedSnapshot,
-  subscribeSidebarCollapsed,
-  writeSidebarCollapsed,
-} from '@/lib/dashboard/sidebar-collapse'
+  SidebarCollapseProvider,
+  useSidebarCollapse,
+} from '@/lib/dashboard/sidebar-collapse-context'
 import { cn } from '@/lib/utils'
 
-type SidebarCollapseProps = {
-  desktopCollapsed?: boolean
-}
-
+/**
+ * Dashboard chrome. Collapse state is provided via context so the Server
+ * Component layout can pass `<Sidebar />` as a prop; collapse state is shared
+ * through context instead of cloning the RSC-provided element.
+ */
 export function DashboardShell({
   sidebar,
   children,
 }: {
-  readonly sidebar: ReactElement<SidebarCollapseProps>
+  readonly sidebar: ReactNode
   readonly children: ReactNode
 }) {
-  // ThemeModeMenu와 동일: server snapshot=false → hydration mismatch 없이 client store 구독.
-  const desktopCollapsed = useSyncExternalStore(
-    subscribeSidebarCollapsed,
-    getSidebarCollapsedSnapshot,
-    getSidebarCollapsedServerSnapshot,
+  return (
+    <SidebarCollapseProvider>
+      <DashboardShellFrame sidebar={sidebar}>{children}</DashboardShellFrame>
+    </SidebarCollapseProvider>
   )
+}
 
-  function toggleDesktopCollapse() {
-    writeSidebarCollapsed(!desktopCollapsed)
-  }
-
+function DashboardShellFrame({
+  sidebar,
+  children,
+}: {
+  readonly sidebar: ReactNode
+  readonly children: ReactNode
+}) {
+  const { desktopCollapsed, toggleDesktopCollapse } = useSidebarCollapse()
   const toggleLabel = desktopCollapsed ? '사이드바 표시' : '사이드바 숨기기'
 
   return (
     <div className="flex h-dvh flex-col bg-company-bg text-foreground">
-      {/* Desktop: persistent top bar. Body below is flex-1 so the nav never scrolls under it. */}
       <header className="z-50 hidden shrink-0 border-b border-company-border bg-company-surface px-3 py-2.5 md:block">
         <div className="flex w-fit max-w-full items-start gap-2">
           <div className="min-w-0">
@@ -70,9 +67,7 @@ export function DashboardShell({
           desktopCollapsed ? 'md:grid-cols-1' : 'md:grid-cols-[248px_minmax(0,1fr)]',
         )}
       >
-        {cloneElement(sidebar, {
-          desktopCollapsed,
-        })}
+        {sidebar}
         <div className="flex min-h-0 min-w-0 flex-col overflow-y-auto bg-company-bg">{children}</div>
       </div>
     </div>

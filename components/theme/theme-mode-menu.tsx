@@ -1,14 +1,8 @@
 'use client'
 
-import { Check, Monitor, Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { Monitor, Moon, Sun } from 'lucide-react'
 import { useSyncExternalStore } from 'react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { useTheme } from '@/lib/theme/theme-context'
 import {
   THEME_MODE_OPTIONS,
   parseThemeMode,
@@ -31,6 +25,7 @@ function useIsClient() {
   return useSyncExternalStore(subscribeNoop, () => true, () => false)
 }
 
+/** Sidebar theme control. Native select avoids base-ui Menu SSR/hydration crashes. */
 export function ThemeModeMenu() {
   const { theme, setTheme } = useTheme()
   const mounted = useIsClient()
@@ -51,40 +46,26 @@ export function ThemeModeMenu() {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
+    <label
+      className={cn(
+        'inline-flex h-9 w-full items-center gap-2 rounded-lg border border-company-border bg-company-surface px-2.5 text-[13px] font-medium text-foreground',
+        'hover:bg-company-nav-hover focus-within:ring-3 focus-within:ring-ring/50',
+      )}
+    >
+      <ModeIcon mode={selectedMode} className="size-4 shrink-0" />
+      <span className="sr-only">테마 선택</span>
+      <select
         aria-label="테마 선택"
-        aria-haspopup="menu"
-        className={cn(
-          'inline-flex h-9 w-full items-center justify-start gap-2 rounded-lg border border-company-border bg-company-surface px-2.5 text-[13px] font-medium text-foreground',
-          'hover:bg-company-nav-hover focus-visible:ring-3 focus-visible:ring-ring/50',
-        )}
+        value={selectedMode}
+        onChange={(event) => setTheme(event.target.value)}
+        className="min-w-0 flex-1 truncate bg-transparent text-[13px] font-medium text-foreground outline-none"
       >
-        <ModeIcon mode={selectedMode} className="size-4 shrink-0" />
-        <span className="truncate">{themeModeLabel(selectedMode)}</span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="top" sideOffset={6} className="min-w-[12.5rem]">
-        {THEME_MODE_OPTIONS.map((option) => {
-          const selected = selectedMode === option.value
-          return (
-            <DropdownMenuItem
-              key={option.value}
-              role="menuitemradio"
-              aria-checked={selected}
-              aria-label={option.label}
-              onClick={() => setTheme(option.value)}
-              className="justify-between"
-            >
-              <span className="inline-flex items-center gap-2">
-                <ModeIcon mode={option.value} className="size-4" />
-                {option.label}
-              </span>
-              {selected ? <Check className="size-4 text-primary" aria-hidden="true" /> : null}
-              {selected ? <span className="sr-only">선택됨</span> : null}
-            </DropdownMenuItem>
-          )
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        {THEME_MODE_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {themeModeLabel(option.value)}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }

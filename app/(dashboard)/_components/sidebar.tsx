@@ -1,16 +1,9 @@
 'use client'
 
-import { Menu } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
 import type { FilingPrepBusinessType } from '@/lib/filing-preparation/summary'
+import { useSidebarCollapse } from '@/lib/dashboard/sidebar-collapse-context'
 import { ThemeModeMenu } from '@/components/theme/theme-mode-menu'
 import { cn } from '@/lib/utils'
 import { SidebarNavLink } from './sidebar-nav-link'
@@ -75,8 +68,6 @@ interface SidebarProps {
   filingPrepAttentionCount?: number
   reminderAttentionCount?: number
   businessType?: FilingPrepBusinessType
-  /** Desktop-only: hide the sticky nav column (mobile Sheet unchanged). */
-  desktopCollapsed?: boolean
 }
 
 
@@ -102,7 +93,7 @@ function annualFilingChildNav(businessType: FilingPrepBusinessType) {
 
 export function Sidebar(props: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { desktopCollapsed = false } = props
+  const { desktopCollapsed } = useSidebarCollapse()
 
   return (
     <>
@@ -115,29 +106,36 @@ export function Sidebar(props: SidebarProps) {
         <SidebarContent {...props} />
       </aside>
 
-      <div className="flex items-center justify-between border-b border-company-border bg-company-surface px-4 py-3 text-foreground md:hidden">
-        <div>
-          <p className="text-sm font-semibold">SemuAgent</p>
-          <p className="text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
-        </div>
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger
-            aria-label="전체 메뉴 열기"
+      <div className="border-b border-company-border bg-company-surface text-foreground md:hidden">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold">SemuAgent</p>
+            <p className="text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
+          </div>
+          <button
+            type="button"
+            aria-label={mobileOpen ? '전체 메뉴 닫기' : '전체 메뉴 열기'}
+            aria-expanded={mobileOpen}
             title="전체 메뉴"
             className="inline-flex size-9 items-center justify-center rounded-lg border border-company-border bg-company-surface text-company-fg-muted hover:bg-company-nav-hover hover:text-foreground"
+            onClick={() => setMobileOpen((open) => !open)}
           >
-            <Menu className="size-4.5" aria-hidden="true" />
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[min(88vw,20rem)] bg-company-surface text-foreground">
-            <SheetHeader className="sr-only">
-              <SheetTitle>전체 메뉴</SheetTitle>
-              <SheetDescription>회사 세무·회계 운영 화면으로 이동합니다.</SheetDescription>
-            </SheetHeader>
-            <div className="flex min-h-[calc(100dvh-2rem)] flex-col pt-2">
-              <SidebarContent {...props} onNavigate={() => setMobileOpen(false)} />
-            </div>
-          </SheetContent>
-        </Sheet>
+            {mobileOpen ? (
+              <X className="size-4.5" aria-hidden="true" />
+            ) : (
+              <Menu className="size-4.5" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+        {mobileOpen ? (
+          <div
+            className="max-h-[min(85dvh,40rem)] overflow-y-auto border-t border-company-border px-3.5 py-3"
+            role="dialog"
+            aria-label="전체 메뉴"
+          >
+            <SidebarContent {...props} onNavigate={() => setMobileOpen(false)} />
+          </div>
+        ) : null}
       </div>
     </>
   )

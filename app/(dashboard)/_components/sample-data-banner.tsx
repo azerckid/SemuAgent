@@ -1,20 +1,10 @@
-"use client"
+'use client'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, RefreshCw, Sparkles, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import { sampleStatusLabel, type FirstRunSampleState } from '@/lib/first-run-sample/shared'
 
 interface SampleDataBannerProps {
@@ -23,7 +13,7 @@ interface SampleDataBannerProps {
 
 export function SampleDataBanner({ state }: Readonly<SampleDataBannerProps>) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const visible = state.visible
 
@@ -56,7 +46,7 @@ export function SampleDataBanner({ state }: Readonly<SampleDataBannerProps>) {
         return
       }
       toast.success('샘플 데이터를 삭제했습니다. 이제 회사 자료로 시작하세요.')
-      setOpen(false)
+      setConfirmOpen(false)
       router.refresh()
     })
   }
@@ -82,6 +72,35 @@ export function SampleDataBanner({ state }: Readonly<SampleDataBannerProps>) {
             {isFailed && state.errorMessage && (
               <p className="mt-1 text-[12px] text-[#b91c1c]">{state.errorMessage}</p>
             )}
+            {confirmOpen ? (
+              <div className="mt-2 space-y-2 rounded-lg border border-[#fed7aa] bg-white p-3 text-[13px] text-[#9a3412]">
+                <p className="font-semibold text-[#431407]">샘플 데이터를 삭제할까요?</p>
+                <p>삭제 대상은 첫 가입 안내를 위해 만든 샘플 데이터뿐입니다.</p>
+                <p>샘플 업로드, 기장검토, 부가세, 급여, 신고지원, 직원 명부, 리마인드 데이터가 삭제됩니다.</p>
+                <p>사용자가 직접 올린 실제 데이터는 registry에 없으면 삭제하지 않습니다.</p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isBusy}
+                    onClick={() => setConfirmOpen(false)}
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    disabled={isBusy}
+                    onClick={remove}
+                  >
+                    <Trash2 className="size-3.5" />
+                    {isBusy ? '삭제 중' : '샘플 삭제'}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -92,34 +111,16 @@ export function SampleDataBanner({ state }: Readonly<SampleDataBannerProps>) {
               샘플 데이터 다시 만들기
             </Button>
           ) : (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger render={<Button type="button" variant="outline" size="sm" disabled={isBusy} />}>
-                <Trash2 className="size-3.5" />
-                샘플 데이터 삭제하고 실제 사용 시작
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>샘플 데이터를 삭제할까요?</DialogTitle>
-                  <DialogDescription>
-                    삭제 대상은 첫 가입 안내를 위해 만든 샘플 데이터뿐입니다.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-2 rounded-lg border border-company-border bg-company-bg p-3 text-[13px] text-company-fg-muted">
-                  <p>샘플 업로드, 기장검토, 부가세, 급여, 신고지원, 직원 명부, 리마인드 데이터가 삭제됩니다.</p>
-                  <p>사용자가 직접 올린 실제 업로드·급여·신고 데이터는 registry에 없으면 삭제하지 않습니다.</p>
-                  <p>삭제 후에는 자동으로 다시 생성되지 않습니다.</p>
-                </div>
-                <DialogFooter>
-                  <DialogClose render={<Button type="button" variant="outline" disabled={isBusy} />}>
-                    취소
-                  </DialogClose>
-                  <Button type="button" variant="destructive" onClick={remove} disabled={isBusy}>
-                    <Trash2 className="size-3.5" />
-                    {isBusy ? '삭제 중' : '샘플 삭제'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isBusy || confirmOpen}
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Trash2 className="size-3.5" />
+              샘플 데이터 삭제하고 실제 사용 시작
+            </Button>
           )}
         </div>
       </div>

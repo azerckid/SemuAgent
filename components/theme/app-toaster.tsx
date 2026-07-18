@@ -1,7 +1,7 @@
 'use client'
 
-import { useTheme } from 'next-themes'
 import { Toaster } from 'sonner'
+import { useTheme } from '@/lib/theme/theme-context'
 
 /** Toast chrome follows the resolved app theme; no tax/API side effects. */
 export function AppToaster() {

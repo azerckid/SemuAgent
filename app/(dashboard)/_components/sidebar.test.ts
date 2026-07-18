@@ -100,13 +100,13 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     expect(sidebarSource).toContain("label: '종합소득세'")
   })
 
-  it('uses a mobile menu sheet instead of a fixed 248px sidebar below md', () => {
+  it('uses a mobile menu panel instead of a fixed 248px sidebar below md', () => {
     expect(sidebarSource).toContain('hidden')
     expect(sidebarSource).toContain('w-[248px]')
     expect(sidebarSource).toContain('md:flex')
     expect(sidebarSource).toContain('md:hidden')
-    expect(sidebarSource).toContain('aria-label="전체 메뉴 열기"')
-    expect(sidebarSource).toContain('<SheetContent side="left"')
+    expect(sidebarSource).toContain('전체 메뉴 열기')
+    expect(sidebarSource).not.toContain("from '@/components/ui/sheet'")
     expect(sidebarSource).toContain('<SidebarContent {...props}')
     expect(layoutSource).toContain('DashboardShell')
     expect(dashboardShellSource).toContain('grid-cols-1')
@@ -116,6 +116,10 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
   })
 
   it('keeps a persistent desktop top bar with SemuAgent and sidebar toggle', () => {
+    const collapseContextSource = readFileSync(
+      join(workspaceRoot, 'lib/dashboard/sidebar-collapse-context.tsx'),
+      'utf8',
+    )
     expect(layoutSource).toContain('DashboardShell')
     expect(dashboardShellSource).toContain('<header')
     expect(dashboardShellSource).toContain('SemuAgent')
@@ -123,8 +127,11 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     expect(dashboardShellSource).toContain('사이드바 표시')
     expect(dashboardShellSource).toContain('PanelLeftClose')
     expect(dashboardShellSource).toContain('PanelLeft')
-    expect(dashboardShellSource).toContain('useSyncExternalStore')
-    expect(dashboardShellSource).toContain('getSidebarCollapsedServerSnapshot')
+    // Collapse store lives in context — avoids RSC→Client cloneElement crash.
+    expect(dashboardShellSource).toContain('SidebarCollapseProvider')
+    expect(dashboardShellSource).not.toMatch(/\bcloneElement\s*\(/)
+    expect(collapseContextSource).toContain('useSyncExternalStore')
+    expect(collapseContextSource).toContain('getSidebarCollapsedServerSnapshot')
     expect(dashboardShellSource).not.toContain('useState')
     expect(dashboardShellSource).not.toContain('useEffect')
     expect(dashboardShellSource).toContain('h-dvh')
@@ -134,6 +141,7 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     expect(sidebarSource).not.toContain('PanelLeftClose')
     expect(sidebarSource).not.toContain('사이드바 숨기기')
     expect(sidebarSource).not.toContain('sticky top-0')
+    expect(sidebarSource).toContain('useSidebarCollapse')
     const headerAt = dashboardShellSource.indexOf('<header')
     const brandAt = dashboardShellSource.indexOf('>SemuAgent<', headerAt)
     const toggleAt = dashboardShellSource.indexOf('aria-label={toggleLabel}', headerAt)
