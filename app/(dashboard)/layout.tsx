@@ -10,6 +10,7 @@ import { loadFilingSupportAttentionCount } from '@/lib/filing-support/summary'
 import { loadFirstRunSampleState } from '@/lib/first-run-sample/summary'
 import { loadInternalReminderAttentionCount } from '@/lib/internal-reminders/summary'
 import { loadPayrollSidebarEmployeeCount } from '@/lib/payroll-workspace/summary'
+import { DashboardShell } from './_components/dashboard-shell'
 import { SampleDataBanner } from './_components/sample-data-banner'
 import { Sidebar } from './_components/sidebar'
 
@@ -52,21 +53,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ])
 
   return (
-    <div className="grid min-h-screen grid-cols-1 bg-company-bg text-foreground md:grid-cols-[248px_minmax(0,1fr)]">
-      <Sidebar
-        userName={session.user.name}
-        tenantName={tenantName}
-        bookkeepingPendingCount={bookkeepingPendingCount}
-        payrollEmployeeCount={payrollEmployeeCount}
-        filingAttentionCount={filingAttentionCount}
-        filingPrepAttentionCount={filingPrepAttentionCount}
-        reminderAttentionCount={reminderAttentionCount}
-        businessType={businessType}
-      />
-      <main className="flex min-w-0 flex-col bg-company-bg">
-        <SampleDataBanner state={firstRunSampleState} />
-        {children}
-      </main>
-    </div>
+    <DashboardShell
+      sidebar={
+        <Sidebar
+          userName={session.user.name}
+          tenantName={tenantName}
+          bookkeepingPendingCount={bookkeepingPendingCount}
+          payrollEmployeeCount={payrollEmployeeCount}
+          filingAttentionCount={filingAttentionCount}
+          filingPrepAttentionCount={filingPrepAttentionCount}
+          reminderAttentionCount={reminderAttentionCount}
+          businessType={businessType}
+        />
+      }
+    >
+      <SampleDataBanner state={firstRunSampleState} />
+      {children}
+    </DashboardShell>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { Menu } from 'lucide-react'
+import { Menu, PanelLeftClose } from 'lucide-react'
 import { useState } from 'react'
 import {
   Sheet,
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sheet'
 import type { FilingPrepBusinessType } from '@/lib/filing-preparation/summary'
 import { ThemeModeMenu } from '@/components/theme/theme-mode-menu'
+import { cn } from '@/lib/utils'
 import { SidebarNavLink } from './sidebar-nav-link'
 import { SidebarSignOutButton } from './sidebar-sign-out-button'
 
@@ -74,6 +75,9 @@ interface SidebarProps {
   filingPrepAttentionCount?: number
   reminderAttentionCount?: number
   businessType?: FilingPrepBusinessType
+  /** Desktop-only: hide the sticky nav column (mobile Sheet unchanged). */
+  desktopCollapsed?: boolean
+  onToggleDesktopCollapse?: () => void
 }
 
 function userInitial(userName: string) {
@@ -98,11 +102,17 @@ function annualFilingChildNav(businessType: FilingPrepBusinessType) {
 
 export function Sidebar(props: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { desktopCollapsed = false, onToggleDesktopCollapse } = props
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-1 border-r border-company-border bg-company-surface px-3.5 py-5 text-foreground md:flex">
-        <SidebarContent {...props} />
+      <aside
+        className={cn(
+          'sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-1 border-r border-company-border bg-company-surface px-3.5 py-5 text-foreground md:flex',
+          desktopCollapsed && 'md:hidden',
+        )}
+      >
+        <SidebarContent {...props} onToggleDesktopCollapse={onToggleDesktopCollapse} />
       </aside>
 
       <div className="flex items-center justify-between border-b border-company-border bg-company-surface px-4 py-3 text-foreground md:hidden">
@@ -146,6 +156,7 @@ function SidebarContent({
   reminderAttentionCount = 0,
   businessType = 'unknown',
   onNavigate,
+  onToggleDesktopCollapse,
 }: SidebarProps & { onNavigate?: () => void }) {
   const annualFilingChildren = annualFilingChildNav(businessType)
 
@@ -156,14 +167,28 @@ function SidebarContent({
         if (event.target instanceof Element && event.target.closest('a')) onNavigate?.()
       }}
     >
-      <div className="flex items-center gap-2.5 px-2 pb-[18px]">
-        <div className="flex size-[30px] items-center justify-center rounded-lg bg-foreground text-[15px] font-bold text-background">
+      <div className="flex items-start gap-2 px-2 pb-[18px]">
+        <div className="flex size-[30px] shrink-0 items-center justify-center rounded-lg bg-foreground text-[15px] font-bold text-background">
           자
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-[15px] font-semibold tracking-tight">SemuAgent</p>
           <p className="truncate text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
         </div>
+        {onToggleDesktopCollapse ? (
+          <button
+            type="button"
+            className="mt-0.5 hidden size-8 shrink-0 items-center justify-center rounded-lg text-company-fg-muted hover:bg-company-nav-hover hover:text-foreground md:inline-flex"
+            aria-label="사이드바 숨기기"
+            title="사이드바 숨기기"
+            onClick={(event) => {
+              event.stopPropagation()
+              onToggleDesktopCollapse()
+            }}
+          >
+            <PanelLeftClose className="size-4" aria-hidden="true" />
+          </button>
+        ) : null}
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">

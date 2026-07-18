@@ -90,7 +90,15 @@
   .sebiseo-nav {
     border-right: 1px solid var(--chat-border); padding-right: 10px; font-size: 12px; color: var(--chat-fg-muted);
   }
-  .sebiseo-nav .brand { font-weight: 700; color: var(--chat-fg); margin-bottom: 12px; }
+  .sebiseo-nav .brand-row {
+    display: flex; align-items: flex-start; gap: 6px; margin-bottom: 12px;
+  }
+  .sebiseo-nav .brand { font-weight: 700; color: var(--chat-fg); flex: 1; min-width: 0; }
+  .sebiseo-nav .hide-nav {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 6px;
+    border: 1px solid var(--chat-border); background: var(--chat-surface);
+    color: var(--chat-fg-muted); display: grid; place-items: center; font-size: 14px;
+  }
   .sebiseo-nav a {
     display: block; padding: 6px 8px; border-radius: 6px; color: var(--chat-fg-muted); margin-bottom: 2px;
   }
@@ -246,7 +254,10 @@
       <div class="panel-body">
         <div class="sebiseo">
           <nav class="sebiseo-nav" aria-label="사이드바">
-            <div class="brand">SemuAgent</div>
+            <div class="brand-row">
+              <div class="brand">SemuAgent</div>
+              <button class="hide-nav" type="button" title="사이드바 숨기기" aria-label="사이드바 숨기기">⊟</button>
+            </div>
             <a class="active" href="19_sebiseo.html">세비서</a>
             <a href="00_company_home.html">회사 홈</a>
             <a href="01_source_collection.html">자료수집</a>
@@ -419,7 +430,10 @@
       <div class="panel-body">
         <div class="sebiseo">
           <nav class="sebiseo-nav" aria-label="사이드바">
-            <div class="brand">SemuAgent</div>
+            <div class="brand-row">
+              <div class="brand">SemuAgent</div>
+              <button class="hide-nav" type="button" title="사이드바 숨기기" aria-label="사이드바 숨기기">⊟</button>
+            </div>
             <a class="active" href="19_sebiseo.html">세비서</a>
             <a href="12_reconciliation_ledger.html">자료대조원장</a>
             <p class="note">직접 진입 경로 유지</p>
