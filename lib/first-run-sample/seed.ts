@@ -38,6 +38,7 @@ import { lookupSimplifiedIncomeTax } from '@/lib/payroll/simplified-tax-table'
 import {
   buildReconciliationBankSampleRows,
 } from './reconciliation-bank-sample'
+import { FIRST_RUN_SAMPLE_EMPLOYEES } from './payroll-sample-employees'
 
 export const FIRST_RUN_SAMPLE_SEED_VERSION = '2026-07-11.v3'
 export const FIRST_RUN_SAMPLE_PERIOD_KEY = '2026-H1'
@@ -292,46 +293,6 @@ function buildSampleVatReviews(params: SeedParams) {
     updatedAt: params.timestamp,
   }))
 }
-
-type SampleEmploymentType = '정규직' | '프리랜서' | '일용직'
-
-type SampleEmployeeSpec = {
-  code: string
-  name: string
-  department: string
-  jobTitle: string
-  employmentType: SampleEmploymentType
-  baseSalaryKrw: number
-  allowanceKrw: number
-  // 비과세 식대(월 20만원 한도). 지급계에는 포함되지만 과세소득·4대보험 기준에서는 제외한다.
-  mealAllowanceKrw?: number
-  // 정규직 전용: 근로소득 간이세액표(별표2) 조회에 쓰는 공제대상가족수(본인 포함).
-  // 프리랜서는 3.3%, 일용직은 일급 기준 산식으로 산출하며 이 값을 쓰지 않는다.
-  dependentCount?: number
-  // 일용직 전용: 일용근로소득세 산식 입력값 (일급·근무일수).
-  dailyWageKrw?: number
-  workDays?: number
-  needsReview?: boolean
-}
-
-// 고용형태별 샘플 직원. 정규직 6 / 프리랜서 2 / 일용직 3, 기본급 200만~600만 분포.
-// 정규직 소득세는 근로소득 간이세액표(별표2) 조회값(sampleDeductionsFor), 프리랜서는 3.3%,
-// 일용직은 일급 기준 산식으로 산출한다. 4대보험 근사 요율은 데모 표시용이다.
-// 정규직 과세소득(기본급+수당)은 전부 간이세액표에 담긴 급여 구간(240·280·300·360·440·600만원)에
-// 정확히 안착하도록 배치했다(dependentCount로 부양가족 효과 시연).
-const FIRST_RUN_SAMPLE_EMPLOYEES: SampleEmployeeSpec[] = [
-  { code: 'E001', name: '김대표', department: '경영', jobTitle: '대표', employmentType: '정규직', baseSalaryKrw: 6_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, dependentCount: 4 },
-  { code: 'E002', name: '이수민', department: '영업', jobTitle: '팀장', employmentType: '정규직', baseSalaryKrw: 4_200_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, dependentCount: 3 },
-  { code: 'E003', name: '박지훈', department: '운영', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_400_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, dependentCount: 2 },
-  { code: 'E004', name: '최민준', department: '제품', jobTitle: '매니저', employmentType: '정규직', baseSalaryKrw: 3_000_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, dependentCount: 1 },
-  { code: 'E005', name: '정하늘', department: '영업', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_600_000, allowanceKrw: 200_000, mealAllowanceKrw: 200_000, dependentCount: 2 },
-  { code: 'E006', name: '오세린', department: '운영', jobTitle: '사원', employmentType: '정규직', baseSalaryKrw: 2_400_000, allowanceKrw: 0, mealAllowanceKrw: 200_000, dependentCount: 1 },
-  { code: 'E007', name: '한유진', department: '제품', jobTitle: '외주 디자이너', employmentType: '프리랜서', baseSalaryKrw: 3_500_000, allowanceKrw: 0 },
-  { code: 'E008', name: '서도윤', department: '제품', jobTitle: '외주 개발', employmentType: '프리랜서', baseSalaryKrw: 2_000_000, allowanceKrw: 0 },
-  { code: 'E009', name: '문가람', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_200_000, allowanceKrw: 0, dailyWageKrw: 200_000, workDays: 11 },
-  { code: 'E010', name: '장서우', department: '운영', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_600_000, allowanceKrw: 0, dailyWageKrw: 200_000, workDays: 13 },
-  { code: 'E011', name: '윤태오', department: '물류', jobTitle: '일용 작업', employmentType: '일용직', baseSalaryKrw: 2_040_000, allowanceKrw: 0, dailyWageKrw: 170_000, workDays: 12 },
-]
 
 // 정수 분자로 계산해 부동소수점(예: 0.03) 절사 오차를 피한다.
 const floorToTen = (value: number) => Math.floor(value / 10) * 10
