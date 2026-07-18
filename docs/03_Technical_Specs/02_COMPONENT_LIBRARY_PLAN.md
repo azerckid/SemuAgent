@@ -29,7 +29,7 @@ Component & Library Planning Gate 충족을 위한 계획. React 구현 전, 사
 
 ## 3. UI Theme Strategy
 
-- **JC-045 Draft:** 인증 후 SemuAgent 전체에 System/Light/Dark를 제공한다. 첫 방문은 OS 설정을 따르고,
+- **JC-045 (T0 Approved):** 인증 후 SemuAgent 전체에 System/Light/Dark를 제공한다. 첫 방문은 OS 설정을 따르고,
   사용자는 Sidebar 하단의 접근 가능한 selector로 모드를 바꾼다. 상세 계약은
   [Theme System Pre-Code Brief](./64_JC045_APP_THEME_SYSTEM_PRE_CODE_BRIEF.md)를 따른다.
 - 기존 neutral · base-nova와 CSS variable 기반은 유지한다. 새 디자인 시스템은 도입하지 않고,

@@ -1,13 +1,17 @@
 # JC-045 App Theme System Test Scenarios
 
 > Created: 2026-07-18
-> Status: Draft - runtime implementation has not started
+> Status: Approved contract (T0) - runtime implementation has not started
 > Related: [Theme Pre-Code Brief](../03_Technical_Specs/64_JC045_APP_THEME_SYSTEM_PRE_CODE_BRIEF.md)
 
 ## 1. Scope
 
 These scenarios verify appearance only. They must not be used as evidence that a tax calculation,
 upload, AI decision, filing gate or data mutation is correct.
+
+T1 verification targets TH-01 through TH-07 and TH-10 through TH-15 (shared shell and overlays).
+TH-20 (Sebiseo) and other workspace rows are T2+; a post-T1 Sebiseo that still uses fixed charcoal
+literals is an expected interim state, not a separate dark-product failure.
 
 ## 2. Mode Selection And Persistence
 

@@ -1,7 +1,7 @@
 # JC-045 App Theme System Pre-Code Brief
 
 > Created: 2026-07-18
-> Status: Draft - owner approval required before runtime changes
+> Status: Approved (T0) - runtime T1 not started
 > Related: [UI Design](../02_UI_Screens/01_UI_DESIGN.md) · [Component & Library Plan](./02_COMPONENT_LIBRARY_PLAN.md) · [Theme QA](../05_QA_Validation/14_JC045_APP_THEME_SYSTEM_TEST_SCENARIOS.md) · [Backlog JC-045](../04_Logic_Progress/00_BACKLOG.md)
 
 ## 1. Decision To Make
@@ -150,12 +150,16 @@ Business read models and domain functions must never receive a theme parameter.
 2. Convert dashboard canvas, sidebar, topbars, common cards, dialogs, popovers, inputs, buttons,
    tables and toast treatment.
 3. Verify no first-paint flash produces a light dashboard inside a requested dark mode, or the reverse.
+4. **T1 exit covers shared shell and overlays only.** Sebiseo may still render with its current fixed
+   charcoal/white literals after T1. That interim look is an expected migration lag, not a product
+   decision to keep a separate dark island. Do not treat T1 as failed because Sebiseo has not yet
+   consumed global theme tokens.
 
 ### T2 - Workspace rollout
 
 Apply and review one coherent group at a time:
 
-1. Sebiseo and company home.
+1. Sebiseo first (retire dark-only literals; consume conversational semantic tokens), then company home.
 2. Source collection and bookkeeping/reconciliation.
 3. Payroll, employees, withholding, payment statements, year-end settlement and local income tax.
 4. VAT, filing-preparation, business-status report, reminders and settings.
@@ -190,11 +194,13 @@ review. Only then mark JC-045 complete.
 
 ## 9. Acceptance Criteria
 
+JC-045 complete (after T3). T1 alone does not require Sebiseo token migration.
+
 - [ ] 시스템 설정/라이트/다크 modes are available from the authenticated persistent sidebar and have accessible
   names and selected state.
 - [ ] First use follows OS preference; explicit user choice survives dashboard navigation and refresh.
-- [ ] The entire dashboard shell and Sebiseo use shared semantic tokens in both modes.
-- [ ] No authenticated workspace is unintentionally dark-only or light-only.
+- [ ] The entire dashboard shell and Sebiseo use shared semantic tokens in both modes (Sebiseo from T2).
+- [ ] No authenticated workspace is unintentionally dark-only or light-only after its T2 group lands.
 - [ ] Text, border, focus, disabled, selected, hover and status states remain distinguishable in both modes.
 - [ ] Tables, forms, dialogs, sheets, menus, toasts and file-upload states remain legible in both modes.
 - [ ] The switch changes no canonical data, API request, AI request, filing gate or user permission.
@@ -202,12 +208,13 @@ review. Only then mark JC-045 complete.
 
 ## 10. Owner Decisions
 
-The following are proposed for approval before T1 implementation:
+Approved for T1 implementation (T0 complete):
 
 1. All authenticated SemuAgent screens support light and dark; 시스템 설정 is the default.
 2. A persistent sidebar menu exposes System, Light, Dark.
 3. Browser-local theme preference is sufficient; no server/tenant setting in v1.
-4. Sebiseo follows the selected app theme and no longer owns a dark-only palette.
+4. Sebiseo follows the selected app theme and no longer owns a dark-only palette (migration lands in T2;
+   T1 shell may still show Sebiseo literals temporarily).
 5. The rollout is token foundation -> shell -> workspace groups -> full QA; no single global class flip.
 6. Public/sign-in screens are outside the first implementation slice.
 
