@@ -57,7 +57,7 @@ CUI-2(PR #265)는 `/dashboard/sebiseo` 진입 셸·내비·참고 일정, CUI-3a
 기간 확인 후 기존 자료수집 업로드 연결까지다. CUI-3b는
 [Pre-Code Brief 62](../03_Technical_Specs/62_JC043_CUI3_SEBISEO_UPLOAD_CHAT_PRE_CODE_BRIEF.md)의
 ephemeral·redaction·화이트리스트 계약으로 제품 사용 안내 대화만 연결한다.
-CUI-4는 최근 업로드 세션 1건의 실제 DB 파일 상태만 카드로 요약하고 `period + sessionId`로 좁힌 자료수집 화면을 연다. [Pre-Code Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md)은 PR #272로 오너 승인됐다. CUI-4a부터 runtime을 착수한다. 카드나 대화에서 확정하지 않으며 구조화 확정은 CUI-5다. 사이드 네비게이션은 대체하지 않는다.
+CUI-4는 최근 업로드 세션 1건의 실제 DB 파일 상태만 카드로 요약하고 `period + sessionId`로 좁힌 자료수집 화면을 연다. 진행 상황 카드는 데스크톱에서 `세무 일정(참고)` 오른쪽에 나란히 두고, 좁은 화면에서는 일정 아래에 쌓는다. [Pre-Code Brief 63](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md)은 PR #272로 오너 승인됐다. 카드나 대화에서 확정하지 않으며 구조화 확정은 CUI-5다. 사이드 네비게이션은 대체하지 않는다.
 
 ```text
 대화에서 요청·파일 업로드

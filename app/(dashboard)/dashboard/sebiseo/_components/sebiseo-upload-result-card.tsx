@@ -15,8 +15,8 @@ export function SebiseoUploadResultCardView({
 
   return (
     <article
-      className="rounded-xl border border-company-border bg-company-surface p-3.5"
-      aria-label="업로드 결과 카드"
+      className="flex h-full flex-col rounded-xl border border-company-border bg-company-surface p-3.5"
+      aria-label="진행 상황 · 업로드 결과 카드"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         <div className="min-w-0 flex-1">
@@ -38,7 +38,7 @@ export function SebiseoUploadResultCardView({
           </span>
         ) : null}
       </div>
-      <div className="mt-3 flex justify-end">
+      <div className="mt-auto flex justify-end pt-3">
         <Link
           href={card.ctaHref}
           className="inline-flex w-full items-center justify-center rounded-lg border border-company-border-strong bg-muted px-3 py-1.5 text-[12.5px] font-semibold text-primary transition-colors hover:bg-company-nav-hover sm:w-auto"

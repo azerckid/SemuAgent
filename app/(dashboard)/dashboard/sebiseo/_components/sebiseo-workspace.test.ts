@@ -52,6 +52,15 @@ describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
     expect(periodConfirmSource).toContain('확인 후 업로드')
   })
 
+  it('places the latest upload progress beside the reference schedule on wider screens', () => {
+    expect(workspaceSource).toContain('sm:flex-row sm:items-stretch')
+    expect(workspaceSource).toContain('sm:max-w-[300px]')
+    expect(workspaceSource.indexOf('<ReferenceTaxScheduleCard item={upcoming} />'))
+      .toBeLessThan(workspaceSource.indexOf('<SebiseoUploadResultCardView card={initialUploadResult} />'))
+    expect(workspaceSource.indexOf('<SebiseoUploadResultCardView card={initialUploadResult} />'))
+      .toBeLessThan(workspaceSource.indexOf('<SebiseoThread items={thread} />'))
+  })
+
   it('keeps Instant/Mic/Voice disabled and enables explicit chat only', () => {
     expect(composerSource).toContain('Instant')
     expect(composerSource).toContain('AudioLines')

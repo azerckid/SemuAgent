@@ -1059,6 +1059,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-17, CUI-4 Brief approved): Brief 63 §4.2.1·§4.2.2 period 역산·순수 표시 라벨, §4.3 sessionId import 필터, Owner Decisions 1~8 오너 승인(PR #272). 다음은 CUI-4a runtime.
 - Document Sync Check (2026-07-17, CUI-4a merged): PR #273 — 결과 카드 runtime, session deep-link helpers, R-04/R-09 unit PASS. Browser 실측은 로그인 staging에서 카드·CTA만 후속 확인.
 - Document Sync Check (2026-07-18, operating model and execution order): 세비서 운영모델을 JC-043 구현 입력으로 연결하고, 다음 순서를 CUI-4 마감 → CUI-4d 거래 read-only 연결 → CUI-5 구조화 확정 → 부가세 Readiness → CUI-6으로 고정했다. CUI-4d·CUI-5 runtime은 신규 HTML Preview와 각 Pre-Code Brief·QA 승인 전 착수하지 않는다.
+- Document Sync Check (2026-07-18, CUI-4 layout feedback): 프로젝트 오너 피드백에 따라 최근 업로드 진행 상황 카드를 데스크톱에서는 `세무 일정(참고)` 오른쪽에 배치하고, 모바일에서는 세로로 쌓는다. 기존 tenant-scoped read model·CTA·mutation 금지 계약은 그대로 유지한다.
 
 ### JC-045 · 전역 라이트·다크 테마 시스템
 

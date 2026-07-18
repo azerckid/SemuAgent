@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sheet'
 import type { FilingPrepBusinessType } from '@/lib/filing-preparation/summary'
 import { ThemeModeMenu } from '@/components/theme/theme-mode-menu'
+import { cn } from '@/lib/utils'
 import { SidebarNavLink } from './sidebar-nav-link'
 import { SidebarSignOutButton } from './sidebar-sign-out-button'
 
@@ -74,7 +75,10 @@ interface SidebarProps {
   filingPrepAttentionCount?: number
   reminderAttentionCount?: number
   businessType?: FilingPrepBusinessType
+  /** Desktop-only: hide the sticky nav column (mobile Sheet unchanged). */
+  desktopCollapsed?: boolean
 }
+
 
 function userInitial(userName: string) {
   const trimmed = userName.trim()
@@ -98,20 +102,23 @@ function annualFilingChildNav(businessType: FilingPrepBusinessType) {
 
 export function Sidebar(props: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { desktopCollapsed = false } = props
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-1 border-r border-company-border bg-company-surface px-3.5 py-5 text-foreground md:flex">
+      <aside
+        className={cn(
+          'hidden h-full min-h-0 w-[248px] shrink-0 flex-col gap-1 overflow-y-auto border-r border-company-border bg-company-surface px-3.5 py-4 text-foreground md:flex',
+          desktopCollapsed && 'md:hidden',
+        )}
+      >
         <SidebarContent {...props} />
       </aside>
 
       <div className="flex items-center justify-between border-b border-company-border bg-company-surface px-4 py-3 text-foreground md:hidden">
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-foreground text-[15px] font-bold text-background">자</div>
-          <div>
-            <p className="text-sm font-semibold">SemuAgent</p>
-            <p className="text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
-          </div>
+        <div>
+          <p className="text-sm font-semibold">SemuAgent</p>
+          <p className="text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
         </div>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger
@@ -156,16 +163,6 @@ function SidebarContent({
         if (event.target instanceof Element && event.target.closest('a')) onNavigate?.()
       }}
     >
-      <div className="flex items-center gap-2.5 px-2 pb-[18px]">
-        <div className="flex size-[30px] items-center justify-center rounded-lg bg-foreground text-[15px] font-bold text-background">
-          자
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-[15px] font-semibold tracking-tight">SemuAgent</p>
-          <p className="truncate text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
-        </div>
-      </div>
-
       <nav className="flex flex-1 flex-col gap-1">
         <SidebarNavLink href={SEBISEO_NAV.href}>
           <NavGlyph>{SEBISEO_NAV.glyph}</NavGlyph>

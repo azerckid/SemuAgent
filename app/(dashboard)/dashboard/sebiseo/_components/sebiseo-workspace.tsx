@@ -221,8 +221,15 @@ export function SebiseoWorkspace({
     <div className="flex min-h-[calc(100dvh-3.5rem)] flex-1 flex-col bg-company-bg text-foreground md:min-h-screen">
       <div className="px-6 pt-3.5 pb-2 text-[15px] font-semibold">세비서</div>
 
-      <div className="mx-auto w-full max-w-[768px] px-6 pb-4">
-        <ReferenceTaxScheduleCard item={upcoming} />
+      <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-6 pb-4 sm:flex-row sm:items-stretch">
+        <div className="w-full sm:max-w-[300px]">
+          <ReferenceTaxScheduleCard item={upcoming} />
+        </div>
+        {initialUploadResult ? (
+          <div className="min-w-0 flex-1">
+            <SebiseoUploadResultCardView card={initialUploadResult} />
+          </div>
+        ) : null}
       </div>
 
       <div className="flex-1 overflow-auto px-6 pb-[150px]">
@@ -231,10 +238,6 @@ export function SebiseoWorkspace({
             <p className="rounded-xl border border-company-border bg-company-surface px-3.5 py-3 text-[13px] text-company-fg-muted">
               사업장이 없어 파일을 올릴 수 없습니다. 온보딩·설정에서 사업장을 등록해 주세요.
             </p>
-          ) : null}
-
-          {initialUploadResult ? (
-            <SebiseoUploadResultCardView card={initialUploadResult} />
           ) : null}
 
           <SebiseoThread items={thread} />
@@ -277,7 +280,7 @@ export function SebiseoWorkspace({
 function ReferenceTaxScheduleCard({ item }: { readonly item: UpcomingScheduleItem | null }) {
   if (!item) {
     return (
-      <div className="max-w-[300px] rounded-xl border border-company-border bg-company-surface px-3.5 py-3">
+      <div className="h-full w-full rounded-xl border border-company-border bg-company-surface px-3.5 py-3">
         <p className="text-[11.5px] font-semibold text-company-fg-subtle">세무 일정(참고)</p>
         <p className="mt-1.5 text-lg font-bold tracking-tight">일정 없음</p>
         <p className="mt-1 text-xs text-company-fg-muted">가까운 공통 법정 일정이 없습니다</p>
@@ -291,7 +294,7 @@ function ReferenceTaxScheduleCard({ item }: { readonly item: UpcomingScheduleIte
   return (
     <Link
       href={item.href}
-      className="block max-w-[300px] rounded-xl border border-company-border bg-company-surface px-3.5 py-3 transition-colors hover:border-company-border-strong"
+      className="block h-full w-full rounded-xl border border-company-border bg-company-surface px-3.5 py-3 transition-colors hover:border-company-border-strong"
     >
       <p className="text-[11.5px] font-semibold text-company-fg-subtle">세무 일정(참고)</p>
       <p className="mt-1.5 text-lg font-bold tracking-tight">{item.dateLabel}</p>
