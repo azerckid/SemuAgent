@@ -38,8 +38,11 @@ const typewriterSource = readFileSync(
 
 describe('세비서 workspace shell (JC-043 CUI-3b)', () => {
   it('keeps trust shell and enables attach with period confirm gate', () => {
-    expect(workspaceSource).toContain('bg-[#171717]')
+    expect(workspaceSource).toContain('bg-company-bg')
+    expect(workspaceSource).not.toContain('bg-[#171717]')
     expect(workspaceSource).toContain('세무 일정(참고)')
+    expect(composerSource).toContain('bg-company-surface')
+    expect(threadSource).toContain('bg-company-surface')
     expect(composerSource).toContain('세비서에게 묻기')
     expect(composerSource).toContain('대화와 파일 첨부를 사용할 수 있습니다')
     expect(workspaceSource).toContain('SebiseoPeriodConfirm')

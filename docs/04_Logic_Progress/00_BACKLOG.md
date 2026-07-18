@@ -1056,7 +1056,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 
 ### JC-045 · 전역 라이트·다크 테마 시스템
 
-- Status: todo (T0 문서 승인 · T1 구현 미착수)
+- Status: in_progress (T0 승인 · T1 shell · T2 Sebiseo 토큰 전환 진행)
 - Related UI Docs: [UI Design §2.1](../02_UI_Screens/01_UI_DESIGN.md) · [Screen Flow §1.1](../02_UI_Screens/00_SCREEN_FLOW.md) - 전체 인증 화면의 System/Light/Dark 계약.
 - Related Concept Docs: [Conversational Tax Workspace Product Direction](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 세비서 전역 테마 한 줄 연결.
 - Related Technical Docs: [App Theme System Pre-Code Brief](../03_Technical_Specs/64_JC045_APP_THEME_SYSTEM_PRE_CODE_BRIEF.md) - token, provider, rollout, non-goal, failure-safe 계약.
@@ -1079,7 +1079,9 @@ Technical, and QA docs first, then prepare a short implementation brief.
   - [ ] 상태 텍스트·disabled·focus·hover·경계·선택 행이 양 테마에서 구분되며 색상만으로 상태를 전달하지 않는다.
   - [ ] 테마 전환이 API/AI/DB mutation, 세무 계산, 신고 gate, 권한 또는 현재 form state를 바꾸지 않는다.
   - [ ] desktop/mobile/keyboard/reduced-motion QA가 양 테마에서 통과한다.
-- Document Sync Check: 2026-07-18 - Owner Decisions 1~6 승인. Brief 64 T1 exit(셸·오버레이만)·T2 Sebiseo 전환, QA 14 T1/T2 범위, README QA 링크, Conversational Direction 전역 테마 한 줄을 정합했다. 런타임은 미착수.
+- Document Sync Check: 2026-07-18 - Owner Decisions 1~6 승인. Brief 64 T1 exit(셸·오버레이만)·T2 Sebiseo 전환, QA 14 T1/T2 범위, README QA 링크, Conversational Direction 전역 테마 한 줄을 정합했다.
+- Document Sync Check: 2026-07-18 (T1 runtime) - next-themes AppThemeProvider(default system, storageKey semuagent-theme), Sidebar ThemeModeMenu(시스템 설정/라이트/다크·menuitemradio), company-* dark tokens + color-scheme, shell literal→token.
+- Document Sync Check: 2026-07-18 (T2 Sebiseo) - 세비서 workspace/composer/thread/period-confirm/upload-result-card 고정 hex를 company·semantic token으로 전환. 세무·AI·업로드 로직 미변경.
 
 ### JC-044 · SemuAgent↔JARYO 직접 A2A 전달
 

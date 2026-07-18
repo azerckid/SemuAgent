@@ -218,7 +218,7 @@ export function SebiseoWorkspace({
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-3.5rem)] flex-1 flex-col bg-[#171717] text-[#ececec] md:min-h-screen">
+    <div className="flex min-h-[calc(100dvh-3.5rem)] flex-1 flex-col bg-company-bg text-foreground md:min-h-screen">
       <div className="px-6 pt-3.5 pb-2 text-[15px] font-semibold">세비서</div>
 
       <div className="mx-auto w-full max-w-[768px] px-6 pb-4">
@@ -226,7 +226,7 @@ export function SebiseoWorkspace({
       </div>
 
       <div className="flex-1 overflow-auto px-6 pb-[150px]">
-        <div className="mx-auto w-full max-w-[768px] space-y-3.5 pt-6 text-[15.5px] leading-[1.7] text-[#ececec]">
+        <div className="mx-auto w-full max-w-[768px] space-y-3.5 pt-6 text-[15.5px] leading-[1.7] text-foreground">
           <p className="text-xl font-semibold tracking-tight">무엇을 도와드릴까요?</p>
           <p>
             세무·회계 업무 안내를 돕는 세비서입니다. 대화와 파일 첨부를 사용할 수 있고,
@@ -237,7 +237,7 @@ export function SebiseoWorkspace({
             <span className="font-semibold">확정과 신고는 각 표·화면에서 직접</span> 진행해 주세요.
           </p>
           {!businessEntity ? (
-            <p className="rounded-xl border border-[#303030] bg-[#212121] px-3.5 py-3 text-[13px] text-[#b4b4b4]">
+            <p className="rounded-xl border border-company-border bg-company-surface px-3.5 py-3 text-[13px] text-company-fg-muted">
               사업장이 없어 파일을 올릴 수 없습니다. 온보딩·설정에서 사업장을 등록해 주세요.
             </p>
           ) : null}
@@ -249,7 +249,7 @@ export function SebiseoWorkspace({
           <SebiseoThread items={thread} />
 
           {error ? (
-            <p className="text-[13px] text-[#fca5a5]" role="alert">
+            <p className="text-[13px] text-destructive" role="alert">
               {error}
             </p>
           ) : null}
@@ -286,11 +286,11 @@ export function SebiseoWorkspace({
 function ReferenceTaxScheduleCard({ item }: { readonly item: UpcomingScheduleItem | null }) {
   if (!item) {
     return (
-      <div className="max-w-[300px] rounded-xl border border-[#303030] bg-[#212121] px-3.5 py-3">
-        <p className="text-[11.5px] font-semibold text-[#8e8e8e]">세무 일정(참고)</p>
+      <div className="max-w-[300px] rounded-xl border border-company-border bg-company-surface px-3.5 py-3">
+        <p className="text-[11.5px] font-semibold text-company-fg-subtle">세무 일정(참고)</p>
         <p className="mt-1.5 text-lg font-bold tracking-tight">일정 없음</p>
-        <p className="mt-1 text-xs text-[#b4b4b4]">가까운 공통 법정 일정이 없습니다</p>
-        <p className="mt-1.5 text-[11px] leading-snug text-[#6e6e6e]">
+        <p className="mt-1 text-xs text-company-fg-muted">가까운 공통 법정 일정이 없습니다</p>
+        <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
           공통 세무 일정입니다. 회사별 준비 상태가 아닙니다.
         </p>
       </div>
@@ -300,14 +300,14 @@ function ReferenceTaxScheduleCard({ item }: { readonly item: UpcomingScheduleIte
   return (
     <Link
       href={item.href}
-      className="block max-w-[300px] rounded-xl border border-[#303030] bg-[#212121] px-3.5 py-3 transition-colors hover:border-[#404040]"
+      className="block max-w-[300px] rounded-xl border border-company-border bg-company-surface px-3.5 py-3 transition-colors hover:border-company-border-strong"
     >
-      <p className="text-[11.5px] font-semibold text-[#8e8e8e]">세무 일정(참고)</p>
+      <p className="text-[11.5px] font-semibold text-company-fg-subtle">세무 일정(참고)</p>
       <p className="mt-1.5 text-lg font-bold tracking-tight">{item.dateLabel}</p>
-      <p className="mt-1 text-xs text-[#b4b4b4]">
+      <p className="mt-1 text-xs text-company-fg-muted">
         {item.title} · D-{item.dDay}
       </p>
-      <p className="mt-1.5 text-[11px] leading-snug text-[#6e6e6e]">
+      <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
         공통 세무 일정입니다. 회사별 준비 상태가 아닙니다.
       </p>
     </Link>

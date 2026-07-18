@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import type { FilingPrepBusinessType } from '@/lib/filing-preparation/summary'
+import { ThemeModeMenu } from '@/components/theme/theme-mode-menu'
 import { SidebarNavLink } from './sidebar-nav-link'
 import { SidebarSignOutButton } from './sidebar-sign-out-button'
 
@@ -106,7 +107,7 @@ export function Sidebar(props: SidebarProps) {
 
       <div className="flex items-center justify-between border-b border-company-border bg-company-surface px-4 py-3 text-foreground md:hidden">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-[#18181b] text-[15px] font-bold text-white">자</div>
+          <div className="flex size-8 items-center justify-center rounded-lg bg-foreground text-[15px] font-bold text-background">자</div>
           <div>
             <p className="text-sm font-semibold">SemuAgent</p>
             <p className="text-[11px] text-company-fg-subtle">회사 세무·회계 운영</p>
@@ -156,7 +157,7 @@ function SidebarContent({
       }}
     >
       <div className="flex items-center gap-2.5 px-2 pb-[18px]">
-        <div className="flex size-[30px] items-center justify-center rounded-lg bg-[#18181b] text-[15px] font-bold text-white">
+        <div className="flex size-[30px] items-center justify-center rounded-lg bg-foreground text-[15px] font-bold text-background">
           자
         </div>
         <div className="min-w-0">
@@ -255,8 +256,11 @@ function SidebarContent({
       </nav>
 
       <div className="mt-2 border-t border-company-border pt-2">
+        <div className="px-2 pb-1.5">
+          <ThemeModeMenu />
+        </div>
         <div className="flex items-center gap-2.5 px-2 py-2.5">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#e4e4e7] text-xs font-semibold text-company-fg-muted">
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-company-fg-muted">
             {userInitial(userName)}
           </div>
           <div className="min-w-0">

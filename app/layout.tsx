@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Toaster } from "sonner";
+import { AppThemeProvider } from "@/components/theme/theme-provider";
+import { AppToaster } from "@/components/theme/app-toaster";
 import { absoluteUrl, siteConfig } from "@/lib/seo/site";
 import "./globals.css";
 
@@ -35,10 +36,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full antialiased font-sans">
+    <html lang="ko" suppressHydrationWarning className="h-full antialiased font-sans">
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster position="top-right" richColors closeButton />
+        <AppThemeProvider>
+          {children}
+          <AppToaster />
+        </AppThemeProvider>
       </body>
     </html>
   );

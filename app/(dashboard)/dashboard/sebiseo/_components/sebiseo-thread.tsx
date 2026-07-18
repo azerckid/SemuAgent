@@ -25,7 +25,7 @@ function AssistantActions({ actions }: { readonly actions: readonly SebiseoSugge
         <Link
           key={action.id}
           href={action.href}
-          className='inline-flex items-center rounded-lg border border-[#3a3a3a] bg-[#2a2a2a] px-3 py-1.5 text-[13px] font-semibold text-[#93c5fd] transition-colors hover:border-[#4a4a4a] hover:bg-[#303030]'
+          className='inline-flex items-center rounded-lg border border-company-border bg-muted px-3 py-1.5 text-[13px] font-semibold text-primary transition-colors hover:border-company-border-strong hover:bg-company-nav-hover'
         >
           {action.label}
         </Link>
@@ -61,10 +61,12 @@ export function SebiseoThread({ items }: { readonly items: readonly SebiseoThrea
               className={[
                 'max-w-[88%] rounded-2xl px-3.5 py-3 text-[14px] leading-relaxed',
                 item.kind === 'user'
-                  ? 'bg-[#303030] text-[#ececec]'
-                  : 'border border-[#303030] bg-[#212121] text-[#ececec]',
-                item.tone === 'error' ? 'border-[#7f1d1d] text-[#fecaca]' : '',
-                item.tone === 'refused' ? 'border-[#713f12] text-[#fde68a]' : '',
+                  ? 'bg-muted text-foreground'
+                  : 'border border-company-border bg-company-surface text-foreground',
+                item.tone === 'error' ? 'border-destructive/50 text-destructive' : '',
+                item.tone === 'refused'
+                  ? 'border-amber-600/40 text-amber-800 dark:text-amber-200'
+                  : '',
               ].join(' ')}
             >
               {animateAssistant ? <AnimatedAssistantMessage item={item} /> : (
@@ -73,7 +75,7 @@ export function SebiseoThread({ items }: { readonly items: readonly SebiseoThrea
                   {item.href && item.hrefLabel ? (
                     <Link
                       href={item.href}
-                      className='mt-2 inline-flex text-[13px] font-semibold text-[#93c5fd] underline-offset-2 hover:underline'
+                      className='mt-2 inline-flex text-[13px] font-semibold text-primary underline-offset-2 hover:underline'
                     >
                       {item.hrefLabel}
                     </Link>
