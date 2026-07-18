@@ -1,6 +1,6 @@
 # JC-043 CUI-4 · 세비서 업로드 결과 카드 QA 시나리오
 > Created: 2026-07-17 19:15
-> Last Updated: 2026-07-18
+> Last Updated: 2026-07-19 05:26
 > Backlog: JC-043 · CUI-4
 > Status: **Brief 승인됨(PR #272)** — CUI-4a runtime 구현 후 실행
 > Related Brief: [63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF](../03_Technical_Specs/63_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_PRE_CODE_BRIEF.md)
@@ -22,7 +22,8 @@ Out of scope: 기장검토 거래 건수 카드, CUI-5 확정, 법령 참고 int
 
 - tenant A에 활성 사업장 1건
 - CUI-3 업로드 경로(`staff_direct`) 사용 가능
-- 테스트 fixture 또는 staging DB에서 **같은 period에 서로 다른 session 2건**을 만들 수 있음
+- [정본 기반 업로드 fixture](./fixtures/seed-derived-upload-2026-01-to-07/README.md) 또는 staging DB에서 **같은 period에 서로 다른 session 2건**을 만들 수 있음
+- 화면은 localhost에서 확인할 수 있으나, Blob callback·DB 결과 행 검증은 Preview/staging에서 실행하고 종료 후 QA 데이터·Blob을 정리함
 
 ## 3. Scenarios
 
@@ -59,5 +60,6 @@ Out of scope: 기장검토 거래 건수 카드, CUI-5 확정, 법령 참고 int
 - 세비서에서 합성 PDF 1건을 실제 업로드해 새 `sessionId`의 결과 카드로 즉시 갱신되는 것을 확인했다. 채팅 영역에는 상태 문장만 남았고, 별도 system 링크는 생기지 않았다. 분석·검증 하위 레코드, 파일, Blob을 정리한 뒤 카드가 기존 session으로 돌아온 것도 확인했다.
 - R-01은 현재 사업장의 `staff_direct` 세션을 일시 숨겨 카드 미표시를 확인한 뒤, 원래 `deletedAt` 값으로 즉시 복구했다. 파일·분석 데이터는 삭제하지 않았고, 임시 Preview deployment도 삭제했다.
 - localhost Blob callback 한계는 CUI-3d와 동일. `needs_review` 실측은 staging DB 권장.
+- 2026-07-19부터 CUI-4 Closeout의 파일 입력은 `seed-derived-upload-2026-01-to-07`을 정본으로 쓴다. 이 묶음은 기존 첫 실행 샘플의 은행·카드·세금계산서·급여 관계를 보존하며, 별도 독립 합성 거래를 허용하지 않는다.
 - period 역산·표시 단위 테스트(월·H1·H2·과거 연도·fail-closed)는 Brief §4.2.1·§4.2.2 / CUI-4a에 포함. QA 표의 별도 ID는 두지 않는다.
 - 카드 라벨은 `formatSebiseoPeriodLabel`만 사용한다. `buildSebiseoPeriodOptions` 후보에 없는 과거 세션도 라벨이 나와야 한다.

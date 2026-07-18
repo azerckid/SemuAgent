@@ -1,6 +1,6 @@
 # Development Setup
 > Created: 2026-07-01 17:56
-> Last Updated: 2026-07-12 06:50
+> Last Updated: 2026-07-19 05:26
 
 ## Runtime and Package Manager
 
@@ -111,6 +111,17 @@ This guard was added after 468 deployments were created between 2026-07-03 and
 2026-07-12 (287 Preview and 181 Production), producing 11,320 billable Build CPU
 Minutes. Keep Production merges intentional and avoid splitting one reviewable
 change into multiple deployment-triggering pushes.
+
+## Release Completion Check
+
+`main` 병합만으로 릴리스 완료라고 하지 않는다. production 배포가 필요한 작업은 다음을 모두 만족해야 한다.
+
+- 로컬 `main`이 clean이고 `origin/main`과 같은 SHA다.
+- 열려 있는 PR이 없다.
+- `https://semuagent.vercel.app` production alias가 `Ready` deployment를 가리킨다.
+- 그 deployment의 Git SHA가 `origin/main`의 최신 SHA와 같다.
+
+실패하거나 오래된 deployment가 있어도 production alias가 최신 SHA를 가리키지 않으면 완료로 보고하지 않는다. Vercel의 deployment inspect/API로 alias와 Git SHA를 직접 확인한다.
 
 ## Related Documents
 - **Concept_Design**: [Product Baseline](../01_Concept_Design/01_PRODUCT_BASELINE.md) - 제품 목적 및 재사용 방침

@@ -31,3 +31,14 @@ pnpm exec tsx scripts/qa/create-seed-derived-upload-fixtures.ts
 기본 출력은 이 폴더입니다. 다른 안전한 임시 폴더로 만들려면 경로를 첫 번째 인자로 넘깁니다.
 
 PG·현금영수증 원천 자료는 기존 첫 실행 샘플 정본에 없으므로, 이 자료에 임의로 추가하지 않았습니다.
+
+## CUI-4 Closeout 사용
+
+이 파일 묶음은 CUI-4 결과 카드와 자료수집 회귀의 입력 정본이다. 임의 합성 파일을 새로 만들지 않고 이 묶음을 사용해 파일 형식별 추출·결과 카드·같은 `period + sessionId` CTA·다른 세션 미혼입을 검증한다.
+
+화면 확인은 localhost에서 할 수 있지만, 실제 Blob 업로드 callback과 DB 결과 행 생성은 공개 URL이 필요하다. 따라서 업로드 E2E는 production 데이터와 분리된 Preview/staging 환경에서 실행하고, 종료 후 QA 행과 Blob을 정리한다.
+
+## Related Documents
+
+- **QA_Validation**: [CUI-4 Upload Result Card QA](../../13_JC043_CUI4_SEBISEO_UPLOAD_RESULT_CARD_TEST_SCENARIOS.md) - 이 fixture를 쓰는 결과 카드·세션 격리 검증.
+- **Logic_Progress**: [Sebiseo Execution Plan](../../../04_Logic_Progress/01_EXECUTION_PLAN.md) - CUI-4 Closeout 완료 조건.

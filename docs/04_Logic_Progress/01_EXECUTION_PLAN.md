@@ -1,6 +1,6 @@
 # SemuAgent Execution Plan - Sebiseo CUI-4 Closeout to CUI-6
 > Created: 2026-07-18 19:34
-> Last Updated: 2026-07-18 19:34
+> Last Updated: 2026-07-19 05:26
 > Status: Draft - owner review pending
 
 ## 1. Context
@@ -37,6 +37,7 @@
 - [x] CUI-3 업로드·화이트리스트 대화·화면 라우팅 구현과 QA
 - [x] CUI-4 Preview·Pre-Code Brief 승인
 - [x] CUI-4a 최근 업로드 파일 결과 카드와 세션 필터 runtime 머지
+- [x] CUI-4 Closeout용 정본 기반 업로드 fixture 생성(은행·카드·홈택스·급여의 기존 샘플 관계 보존)
 - [ ] CUI-4 browser follow-up 완료
 - [ ] 업로드 직후 카드 갱신·system 링크 일원화 잔여 확인
 - [ ] QA 13 잔여 시나리오와 자료수집 회귀 완료
@@ -59,6 +60,7 @@ Gate Out:
 ### S1. CUI-4 Closeout
 
 - [ ] 로그인 staging에서 최근 업로드 카드 표시를 실측
+- [ ] 정본 기반 fixture로 파일 형식별 업로드·추출을 실행하고 QA 행·Blob 정리
 - [ ] CTA가 같은 `period + sessionId` 자료수집 화면을 여는지 실측
 - [ ] R-04 tenant·사업장·기간·세션 격리를 브라우저에서 확인
 - [ ] R-09 같은 기간 다른 세션 파일 혼입 0건을 브라우저에서 확인

@@ -1061,6 +1061,7 @@ Technical, and QA docs first, then prepare a short implementation brief.
 - Document Sync Check (2026-07-18, operating model and execution order): 세비서 운영모델을 JC-043 구현 입력으로 연결하고, 다음 순서를 CUI-4 마감 → CUI-4d 거래 read-only 연결 → CUI-5 구조화 확정 → 부가세 Readiness → CUI-6으로 고정했다. CUI-4d·CUI-5 runtime은 신규 HTML Preview와 각 Pre-Code Brief·QA 승인 전 착수하지 않는다.
 - Document Sync Check (2026-07-18, CUI-4 layout feedback): 프로젝트 오너 피드백에 따라 최근 업로드 진행 상황 카드를 데스크톱에서는 `세무 일정(참고)` 오른쪽에 배치하고, 모바일에서는 세로로 쌓는다. 기존 tenant-scoped read model·CTA·mutation 금지 계약은 그대로 유지한다.
 - Document Sync Check (2026-07-19, monthly schedule correction): 일반회사에 무관한 국세청·운영 달력 항목을 합산 표시하지 않는다. 회사 자료에 부가세·정규직 급여가 확인된 샘플컴퍼니는 원천세(7/10), 부가세(7/27), 근로소득 간이지급명세서(7/31) 세 줄만 표시한다. 지난 월중 기한은 숨기지 않고 `기한 지남`으로 표시한다.
+- Document Sync Check (2026-07-19, Closeout fixture and release): CUI-4 Closeout의 업로드 입력은 첫 실행 샘플 정본의 거래·대조 관계를 보존한 은행·카드사·홈택스·급여 fixture로 고정했다. localhost는 화면 확인만 하고 Blob callback E2E는 분리된 Preview/staging에서 실행·정리한다. 릴리스 완료는 main 병합만으로 판단하지 않고 production alias가 최신 main SHA의 `Ready` deployment를 가리키는지 확인한다.
 
 ### JC-045 · 전역 라이트·다크 테마 시스템
 
