@@ -465,6 +465,9 @@
 - Preview (회사 설정): [16_company_settings.html](./previews/16_company_settings.html)
 - Preview (신고 준비 공통 패턴): [17_shared_filing_patterns.html](./previews/17_shared_filing_patterns.html)
 - Preview (A2A 전송 확인): [18_a2a_transfer_confirmation.html](./previews/18_a2a_transfer_confirmation.html)
+- Preview (세비서): [19_sebiseo.html](./previews/19_sebiseo.html)
+- Preview (세비서 첫 세로 여정 S2): [20_sebiseo_first_vertical_journey.html](./previews/20_sebiseo_first_vertical_journey.html)
+- Prototype Review (세비서 첫 세로 여정 S2): [19_SEBISEO_FIRST_VERTICAL_JOURNEY_PROTOTYPE_REVIEW.md](./19_SEBISEO_FIRST_VERTICAL_JOURNEY_PROTOTYPE_REVIEW.md)
 
 ## 7. Related Documents
 - **Concept_Design**: [Conversational Tax Workspace Product Direction](../01_Concept_Design/04_CONVERSATIONAL_TAX_WORKSPACE_PRODUCT_DIRECTION.md) - 대화 진입과 구조화 검토·확정의 역할 계약
@@ -484,6 +487,7 @@
 - **UI_Screens**: [Cadence Navigation Prototype Review](./13_CADENCE_NAVIGATION_PROTOTYPE_REVIEW.md) - cadence 기반 사이드바 계약
 - **UI_Screens**: [Company Direct-Use Settings Prototype Review](./16_COMPANY_SETTINGS_PROTOTYPE_REVIEW.md) - 회사 직접사용 셸 UI-First 검토
 - **UI_Screens**: [Shared Filing UI Patterns Prototype Review](./17_SHARED_FILING_PATTERNS_PROTOTYPE_REVIEW.md) - 공통 blocker·기간·포털 안내 UI-First 검토
+- **UI_Screens**: [Sebiseo First Vertical Journey Prototype Review](./19_SEBISEO_FIRST_VERTICAL_JOURNEY_PROTOTYPE_REVIEW.md) - S2 파일/거래 구분·필터 원장 여정 (오너 확인 대기)
 - **UI_Screens**: [HTML Preview 폴더](./previews/) - 브라우저 확인용 프로토타입
 - **Technical_Specs**: [Payroll Pre-Code Brief](../03_Technical_Specs/08_PAYROLL_PRE_CODE_BRIEF.md) - 급여 구현 전 데이터·mutation 계약
 - **Technical_Specs**: [Employee Directory Pre-Code Brief](../03_Technical_Specs/10_EMPLOYEE_DIRECTORY_PRE_CODE_BRIEF.md) - 직원 명부 구현 전 데이터·mutation 계약

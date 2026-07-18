@@ -3,6 +3,7 @@
 > Last Updated: 2026-07-19
 > Status: **Owner screen review pending** (HTML UI Preview Gate / UI-First Gate)
 > Related Screen Flow: [00_SCREEN_FLOW.md §2.1](./00_SCREEN_FLOW.md)
+> Related UI Design: [01_UI_DESIGN.md §6–7](./01_UI_DESIGN.md)
 > Related Preview: [20_sebiseo_first_vertical_journey.html](./previews/20_sebiseo_first_vertical_journey.html)
 > Related Execution Plan: [01_EXECUTION_PLAN.md §S2](../04_Logic_Progress/01_EXECUTION_PLAN.md)
 > Base: `main` after shell PR #286 · **CUI-4d Brief/runtime 미포함**
@@ -61,6 +62,6 @@
 
 - [ ] HTML UI Preview Gate — 오너가 `20_` 화면 확인
 - [ ] UI-First Gate — §4 결정 확인·피드백 기록
-- [ ] Screen Flow §2.1 · 본 Prototype Review 링크 유지
+- [ ] Screen Flow §2.1 · UI Design §6–7 · 본 Prototype Review 링크 유지
 
 Gate 통과 후에만 CUI-4d Brief(#287 Draft) Ready 전환·승인을 진행한다.

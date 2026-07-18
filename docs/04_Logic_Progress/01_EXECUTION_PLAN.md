@@ -84,7 +84,7 @@ Gate Out:
 - [x] 직접 사이드바 진입과 AI 장애 복구 경로 유지
 - [x] 데스크톱·모바일 HTML Preview 제작 — [20_sebiseo_first_vertical_journey.html](../02_UI_Screens/previews/20_sebiseo_first_vertical_journey.html)
 - [ ] 오너 화면 확인과 피드백 기록 — [Prototype Review](../02_UI_Screens/19_SEBISEO_FIRST_VERTICAL_JOURNEY_PROTOTYPE_REVIEW.md)
-- [x] Screen Flow·Prototype Review 링크 동기화 (UI Design 세부는 오너 확인 후)
+- [x] Screen Flow·UI Design·Prototype Review 링크 동기화
 
 Gate Out:
 
