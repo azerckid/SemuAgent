@@ -25,10 +25,10 @@ export function DashboardShell({
   readonly sidebar: ReactElement<SidebarCollapseProps>
   readonly children: ReactNode
 }) {
-  const [desktopCollapsed, setDesktopCollapsed] = useState(false)
+  // Lazy init avoids setState-in-effect (CI eslint react-hooks/set-state-in-effect).
+  const [desktopCollapsed, setDesktopCollapsed] = useState(() => readSidebarCollapsed())
 
   useEffect(() => {
-    setDesktopCollapsed(readSidebarCollapsed())
     const onStorage = () => setDesktopCollapsed(readSidebarCollapsed())
     window.addEventListener('storage', onStorage)
     window.addEventListener('semuagent-sidebar-collapsed', onStorage)
@@ -49,9 +49,9 @@ export function DashboardShell({
   const toggleLabel = desktopCollapsed ? '사이드바 표시' : '사이드바 숨기기'
 
   return (
-    <div className="flex min-h-screen flex-col bg-company-bg text-foreground">
-      {/* Desktop: persistent top bar (expanded and collapsed). Mobile uses Sidebar header. */}
-      <header className="sticky top-0 z-50 hidden border-b border-company-border bg-company-surface px-3 py-2.5 md:block">
+    <div className="flex h-dvh flex-col bg-company-bg text-foreground">
+      {/* Desktop: persistent top bar. Body below is flex-1 so the nav never scrolls under it. */}
+      <header className="z-50 hidden shrink-0 border-b border-company-border bg-company-surface px-3 py-2.5 md:block">
         <div className="flex w-fit max-w-full items-start gap-2">
           <div className="min-w-0">
             <p className="truncate text-[15px] font-semibold tracking-tight">SemuAgent</p>
@@ -82,7 +82,7 @@ export function DashboardShell({
         {cloneElement(sidebar, {
           desktopCollapsed,
         })}
-        <div className="flex min-w-0 flex-col bg-company-bg">{children}</div>
+        <div className="flex min-h-0 min-w-0 flex-col overflow-y-auto bg-company-bg">{children}</div>
       </div>
     </div>
   )

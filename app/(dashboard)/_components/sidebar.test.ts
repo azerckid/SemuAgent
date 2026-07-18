@@ -123,10 +123,13 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     expect(dashboardShellSource).toContain('사이드바 표시')
     expect(dashboardShellSource).toContain('PanelLeftClose')
     expect(dashboardShellSource).toContain('PanelLeft')
-    expect(dashboardShellSource).toContain('sticky top-0')
+    expect(dashboardShellSource).toContain('h-dvh')
+    expect(dashboardShellSource).toContain('shrink-0')
+    expect(dashboardShellSource).toContain('overflow-y-auto')
     // Brand toggle lives in the shell top bar, not inside the nav column.
     expect(sidebarSource).not.toContain('PanelLeftClose')
     expect(sidebarSource).not.toContain('사이드바 숨기기')
+    expect(sidebarSource).not.toContain('sticky top-0')
     const headerAt = dashboardShellSource.indexOf('<header')
     const brandAt = dashboardShellSource.indexOf('>SemuAgent<', headerAt)
     const toggleAt = dashboardShellSource.indexOf('aria-label={toggleLabel}', headerAt)
@@ -135,4 +138,3 @@ describe('dashboard sidebar cadence navigation (JC-036)', () => {
     expect(toggleAt).toBeGreaterThan(brandAt)
   })
 })
-

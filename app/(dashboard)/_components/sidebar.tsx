@@ -108,7 +108,7 @@ export function Sidebar(props: SidebarProps) {
     <>
       <aside
         className={cn(
-          'sticky top-0 hidden h-full min-h-0 w-[248px] shrink-0 flex-col gap-1 overflow-y-auto border-r border-company-border bg-company-surface px-3.5 py-4 text-foreground md:flex',
+          'hidden h-full min-h-0 w-[248px] shrink-0 flex-col gap-1 overflow-y-auto border-r border-company-border bg-company-surface px-3.5 py-4 text-foreground md:flex',
           desktopCollapsed && 'md:hidden',
         )}
       >
