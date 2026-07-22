@@ -9,5 +9,7 @@ describe('first-run sample API route contract', () => {
     expect(source).toContain('getActiveStaffForUser')
     expect(source).toContain('ensureFirstRunSampleDataset')
     expect(source).toContain('deleteFirstRunSampleDataset')
+    expect(source).toContain('purgeFirstRunSampleDataset')
+    expect(source).toContain('after(async () =>')
   })
 })

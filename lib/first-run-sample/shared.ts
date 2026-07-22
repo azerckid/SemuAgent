@@ -5,9 +5,17 @@
 
 export type FirstRunSampleVisibleStatus = 'creating' | 'active' | 'delete_pending' | 'failed'
 
+export const FIRST_RUN_SAMPLE_CURRENT_VERSION = '2026-07-19.v6'
+
 export type FirstRunSampleState =
   | { status: 'none'; visible: false }
-  | { status: 'deleted'; visible: false; datasetId: string; clientId: string }
+  | {
+      status: 'deleted'
+      visible: false
+      datasetId: string
+      clientId: string
+      cleanupPending: boolean
+    }
   | {
       status: FirstRunSampleVisibleStatus
       visible: true
@@ -15,12 +23,17 @@ export type FirstRunSampleState =
       clientId: string
       clientName: string | null
       seedVersion: string
+      needsRefresh: boolean
       periodKey: string
       payrollPeriodKey: string
       errorMessage: string | null
     }
 
 export const VISIBLE_SAMPLE_STATUSES = ['creating', 'active', 'delete_pending', 'failed'] as const
+
+export function shouldBlockDashboardForSampleCleanup(state: FirstRunSampleState) {
+  return state.status === 'deleted' && state.cleanupPending
+}
 
 export function sampleStatusLabel(status: FirstRunSampleVisibleStatus) {
   switch (status) {

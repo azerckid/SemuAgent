@@ -34,9 +34,9 @@
 | S-20 | Labeling | sample active 상태에서 각 dashboard 화면을 연다. | 전역 banner 또는 badge가 샘플 데이터임을 명확히 표시한다. | PASS · unit |
 | S-21 | Labeling | sample banner의 삭제 CTA를 확인한다. | "샘플 데이터 삭제하고 실제 사용 시작" CTA가 표시된다. | PASS · unit |
 | S-22 | Labeling | 사용자가 삭제 dialog를 연다. | 실제 데이터는 삭제하지 않고 sample만 삭제한다는 설명이 보인다. | PASS · unit |
-| S-30 | Deletion | sample 삭제를 확정한다. | registry에 기록된 sample domain row만 삭제되고 dataset은 deleted 상태가 된다. | Pending |
+| S-30 | Deletion | sample 삭제를 확정한다. | dataset은 즉시 deleted 상태로 전환된다. 정리 중에는 기존 workspace를 숨기고 전환 안내만 보이며, registry·파생 sample row 정리가 끝나면 empty/default 화면을 보인다. | Pending |
 | S-31 | Deletion | sample 삭제 API를 두 번 호출한다. | 두 번째 호출은 idempotent하게 성공 또는 no-op 처리된다. | Pending |
-| S-32 | Deletion | sample 삭제 후 회사 홈을 연다. | sample banner가 사라지고 실제 empty/default 상태가 보인다. | Pending |
+| S-32 | Deletion | sample 삭제 후 회사 홈·자료수집·기장검토·부가세·급여·신고지원·직원명부·리마인드를 연다. | 정리 중에는 본문·사이드바 어느 곳에도 sample 집계·준비 상태가 보이지 않고, 완료 뒤 실제 empty/default 상태가 보인다. | Pending |
 | S-33 | Deletion | sample 삭제 후 사용자가 실제 파일을 업로드한다. | 실제 업로드 row는 sample registry에 들어가지 않는다. | Pending |
 | S-34 | Deletion | 실데이터가 있는 tenant에서 sample 삭제를 호출한다. | registry에 없는 실데이터 row는 삭제되지 않는다. | Pending |
 | S-40 | Scope | tenant A가 tenant B의 sampleDatasetId로 삭제 API를 호출한다. | tenant scope mismatch로 거부되거나 삭제 0건 처리된다. | PASS · unit |

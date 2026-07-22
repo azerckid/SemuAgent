@@ -17,6 +17,11 @@ describe('first-run sample cleanup safety', () => {
   it('removes dynamic VAT treatment audits before deleting their sample classification rows', () => {
     const source = readFileSync(new URL('./cleanup.ts', import.meta.url), 'utf8')
 
+    expect(source).toContain('.delete(vatDeductionReview)')
+    expect(source).toContain('inArray(vatDeductionReview.classificationRowId, sampleClassificationRowIds)')
+    expect(source.indexOf('.delete(vatDeductionReview)')).toBeLessThan(
+      source.indexOf('for (const ref of refs)'),
+    )
     expect(source).toContain('.delete(vatTaxTreatmentReview)')
     expect(source).toContain('inArray(vatTaxTreatmentReview.classificationRowId, sampleClassificationRowIds)')
     expect(source.indexOf('.delete(vatTaxTreatmentReview)')).toBeLessThan(
@@ -34,7 +39,18 @@ describe('first-run sample cleanup safety', () => {
 
     expect(source).not.toContain('delete from ${')
     expect(source).not.toContain('sql`delete')
-    expect(source).toContain('switch (ref.entityTable)')
+    expect(source).toContain('switch (entityTable)')
+  })
+
+  it('hides the dataset before the deferred physical cleanup runs', () => {
+    const source = readFileSync(new URL('./cleanup.ts', import.meta.url), 'utf8')
+
+    expect(source).toContain(".set({ status: 'deleted', updatedAt: timestamp, deletedAt: timestamp })")
+    expect(source).toContain('export async function purgeFirstRunSampleDataset')
+    expect(source).toContain('inArray(sourceBatch.legacyUploadSessionId, entityIds)')
+    expect(source).toContain('.delete(sampleEntityRef)')
+    expect(source).toContain('if (skippedUnknownTableCount > 0)')
+    expect(source.indexOf('if (skippedUnknownTableCount > 0)')).toBeLessThan(source.indexOf('.delete(sampleEntityRef)'))
   })
 
   it('registers a delete case for every table seed.ts registers sample rows under (JC-031 source_batch regression)', () => {

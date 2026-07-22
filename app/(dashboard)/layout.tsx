@@ -1,16 +1,20 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { after } from 'next/server'
 import { eq } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { loadBookkeepingReviewPendingCount } from '@/lib/bookkeeping-review/summary'
 import { db } from '@/lib/db'
 import { tenant } from '@/lib/db/schema'
-import { loadFilingPreparationAttentionCount, loadPrimaryBusinessEntityType } from '@/lib/filing-preparation/summary'
+import { loadFilingPreparationAttentionCount, loadPrimaryBusinessEntityType, type FilingPrepBusinessType } from '@/lib/filing-preparation/summary'
 import { loadFilingSupportAttentionCount } from '@/lib/filing-support/summary'
 import { loadFirstRunSampleState } from '@/lib/first-run-sample/summary'
+import { purgeFirstRunSampleDataset } from '@/lib/first-run-sample/cleanup'
+import { shouldBlockDashboardForSampleCleanup } from '@/lib/first-run-sample/shared'
 import { loadInternalReminderAttentionCount } from '@/lib/internal-reminders/summary'
 import { loadPayrollSidebarEmployeeCount } from '@/lib/payroll-workspace/summary'
 import { DashboardShell } from './_components/dashboard-shell'
+import { SampleCleanupTransition } from './_components/sample-cleanup-transition'
 import { SampleDataBanner } from './_components/sample-data-banner'
 import { Sidebar } from './_components/sidebar'
 
@@ -34,23 +38,35 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .where(eq(tenant.id, tenantId))
     .limit(1)
   tenantName = tenantRows[0]?.name ?? '회사'
+  const firstRunSampleState = await loadFirstRunSampleState(tenantId)
+  const blockDashboardForSampleCleanup = shouldBlockDashboardForSampleCleanup(firstRunSampleState)
   const [
     bookkeepingPendingCount,
     payrollEmployeeCount,
     filingAttentionCount,
     filingPrepAttentionCount,
     reminderAttentionCount,
-    firstRunSampleState,
     businessType,
-  ] = await Promise.all([
-    loadBookkeepingReviewPendingCount(tenantId),
-    loadPayrollSidebarEmployeeCount(tenantId),
-    loadFilingSupportAttentionCount(tenantId),
-    loadFilingPreparationAttentionCount(tenantId),
-    loadInternalReminderAttentionCount(tenantId, session.user.id),
-    loadFirstRunSampleState(tenantId),
-    loadPrimaryBusinessEntityType(tenantId),
-  ])
+  ]: [number, number, number, number, number, FilingPrepBusinessType] = blockDashboardForSampleCleanup
+    ? [0, 0, 0, 0, 0, 'unknown']
+    : await Promise.all([
+      loadBookkeepingReviewPendingCount(tenantId),
+      loadPayrollSidebarEmployeeCount(tenantId),
+      loadFilingSupportAttentionCount(tenantId),
+      loadFilingPreparationAttentionCount(tenantId),
+      loadInternalReminderAttentionCount(tenantId, session.user.id),
+      loadPrimaryBusinessEntityType(tenantId),
+    ])
+
+  if (blockDashboardForSampleCleanup && firstRunSampleState.status === 'deleted') {
+    after(async () => {
+      try {
+        await purgeFirstRunSampleDataset({ tenantId, datasetId: firstRunSampleState.datasetId })
+      } catch (err) {
+        console.error('[dashboard sample cleanup retry]', err)
+      }
+    })
+  }
 
   return (
     <DashboardShell
@@ -68,7 +84,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       }
     >
       <SampleDataBanner state={firstRunSampleState} />
-      {children}
+      {blockDashboardForSampleCleanup
+        ? <SampleCleanupTransition />
+        : children}
     </DashboardShell>
   )
 }

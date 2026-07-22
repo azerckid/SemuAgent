@@ -1,7 +1,8 @@
 import { and, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
-import { client, sampleDataset } from '@/lib/db/schema'
+import { client, sampleDataset, sampleEntityRef } from '@/lib/db/schema'
 import {
+  FIRST_RUN_SAMPLE_CURRENT_VERSION,
   VISIBLE_SAMPLE_STATUSES,
   type FirstRunSampleState,
   type FirstRunSampleVisibleStatus,
@@ -15,6 +16,10 @@ export {
   type FirstRunSampleState,
   type FirstRunSampleVisibleStatus,
 } from './shared'
+
+export function hasPendingFirstRunSampleCleanup(registryRowCount: number) {
+  return registryRowCount > 0
+}
 
 export async function loadFirstRunSampleState(tenantId: string): Promise<FirstRunSampleState> {
   const visibleRows = await db
@@ -51,6 +56,7 @@ export async function loadFirstRunSampleState(tenantId: string): Promise<FirstRu
       clientId: visible.clientId,
       clientName: clientRow?.name ?? null,
       seedVersion: visible.seedVersion,
+      needsRefresh: visible.seedVersion !== FIRST_RUN_SAMPLE_CURRENT_VERSION,
       periodKey: visible.periodKey,
       payrollPeriodKey: visible.payrollPeriodKey,
       errorMessage: visible.errorMessage,
@@ -65,7 +71,25 @@ export async function loadFirstRunSampleState(tenantId: string): Promise<FirstRu
     .limit(1)
 
   const deleted = deletedRows[0]
-  if (deleted) return { status: 'deleted', visible: false, datasetId: deleted.id, clientId: deleted.clientId }
+  if (deleted) {
+    const pendingRows = await db
+      .select({ id: sampleEntityRef.id })
+      .from(sampleEntityRef)
+      .where(and(
+        eq(sampleEntityRef.tenantId, tenantId),
+        eq(sampleEntityRef.clientId, deleted.clientId),
+        eq(sampleEntityRef.sampleDatasetId, deleted.id),
+      ))
+      .limit(1)
+
+    return {
+      status: 'deleted',
+      visible: false,
+      datasetId: deleted.id,
+      clientId: deleted.clientId,
+      cleanupPending: hasPendingFirstRunSampleCleanup(pendingRows.length),
+    }
+  }
 
   return { status: 'none', visible: false }
 }

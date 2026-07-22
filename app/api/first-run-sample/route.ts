@@ -1,8 +1,8 @@
 import { revalidatePath } from 'next/cache'
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 import { requireTenantSession } from '@/lib/auth-helpers'
 import { getActiveStaffForUser } from '@/lib/bookkeeping/classification-service'
-import { deleteFirstRunSampleDataset } from '@/lib/first-run-sample/cleanup'
+import { deleteFirstRunSampleDataset, purgeFirstRunSampleDataset } from '@/lib/first-run-sample/cleanup'
 import { ensureFirstRunSampleDataset } from '@/lib/first-run-sample/seed'
 
 const DASHBOARD_PATHS = [
@@ -55,6 +55,17 @@ export async function DELETE() {
 
     const result = await deleteFirstRunSampleDataset({ tenantId })
     revalidateDashboards()
+
+    const { datasetId } = result
+    if (datasetId) {
+      after(async () => {
+        try {
+          await purgeFirstRunSampleDataset({ tenantId, datasetId })
+        } catch (err) {
+          console.error('[DELETE /api/first-run-sample cleanup]', err)
+        }
+      })
+    }
 
     return NextResponse.json({ ok: true, result })
   } catch (err) {
