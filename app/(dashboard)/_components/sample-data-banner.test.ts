@@ -9,6 +9,18 @@ describe('sample data banner integration', () => {
     expect(source).toContain('<SampleDataBanner state={firstRunSampleState} />')
   })
 
+  it('blocks workspace content and sidebar counts while sample cleanup is pending (S-30/S-32)', () => {
+    const layoutSource = readFileSync(new URL('../layout.tsx', import.meta.url), 'utf8')
+    const transitionSource = readFileSync(new URL('./sample-cleanup-transition.tsx', import.meta.url), 'utf8')
+
+    expect(layoutSource).toContain('shouldBlockDashboardForSampleCleanup')
+    expect(layoutSource).toContain('[0, 0, 0, 0, 0, \'unknown\']')
+    expect(layoutSource).toContain('<SampleCleanupTransition />')
+    expect(layoutSource).toContain('purgeFirstRunSampleDataset')
+    expect(transitionSource).toContain('setInterval')
+    expect(transitionSource).toContain('router.refresh()')
+  })
+
   it('uses the first-run sample API and destructive confirmation copy (S-21/S-22)', () => {
     const source = readFileSync(new URL('./sample-data-banner.tsx', import.meta.url), 'utf8')
 
