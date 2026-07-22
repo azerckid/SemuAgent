@@ -75,9 +75,7 @@ export function SampleDataBanner({ state }: Readonly<SampleDataBannerProps>) {
             {confirmOpen ? (
               <div className="mt-2 space-y-2 rounded-lg border border-[#fed7aa] bg-white p-3 text-[13px] text-[#9a3412]">
                 <p className="font-semibold text-[#431407]">샘플 데이터를 삭제할까요?</p>
-                <p>삭제 대상은 첫 가입 안내를 위해 만든 샘플 데이터뿐입니다.</p>
-                <p>샘플 업로드, 기장검토, 부가세, 급여, 신고지원, 직원 명부, 리마인드 데이터가 삭제됩니다.</p>
-                <p>사용자가 직접 올린 실제 데이터는 registry에 없으면 삭제하지 않습니다.</p>
+                <p>삭제 후에는 자동으로 다시 생성되지 않습니다.</p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <Button
                     type="button"
