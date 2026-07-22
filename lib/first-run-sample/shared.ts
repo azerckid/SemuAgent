@@ -5,8 +5,6 @@
 
 export type FirstRunSampleVisibleStatus = 'creating' | 'active' | 'delete_pending' | 'failed'
 
-export const FIRST_RUN_SAMPLE_CURRENT_VERSION = '2026-07-19.v6'
-
 export type FirstRunSampleState =
   | { status: 'none'; visible: false }
   | {
@@ -23,7 +21,6 @@ export type FirstRunSampleState =
       clientId: string
       clientName: string | null
       seedVersion: string
-      needsRefresh: boolean
       periodKey: string
       payrollPeriodKey: string
       errorMessage: string | null

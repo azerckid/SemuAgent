@@ -2,7 +2,6 @@ import { and, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { client, sampleDataset, sampleEntityRef } from '@/lib/db/schema'
 import {
-  FIRST_RUN_SAMPLE_CURRENT_VERSION,
   VISIBLE_SAMPLE_STATUSES,
   type FirstRunSampleState,
   type FirstRunSampleVisibleStatus,
@@ -56,7 +55,6 @@ export async function loadFirstRunSampleState(tenantId: string): Promise<FirstRu
       clientId: visible.clientId,
       clientName: clientRow?.name ?? null,
       seedVersion: visible.seedVersion,
-      needsRefresh: visible.seedVersion !== FIRST_RUN_SAMPLE_CURRENT_VERSION,
       periodKey: visible.periodKey,
       payrollPeriodKey: visible.payrollPeriodKey,
       errorMessage: visible.errorMessage,

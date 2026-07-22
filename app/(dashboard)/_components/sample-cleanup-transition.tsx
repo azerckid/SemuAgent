@@ -3,12 +3,21 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+const CLEANUP_REFRESH_INTERVAL_MS = 800
+
 export function SampleCleanupTransition() {
   const router = useRouter()
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => router.refresh(), 800)
-    return () => window.clearTimeout(timeout)
+    // layout soft navigation으로는 이 화면이 언마운트되지 않을 수 있어,
+    // 정리 완료까지 주기적으로 refresh한다. 완료되면 layout이 children으로 교체한다.
+    const refresh = () => {
+      router.refresh()
+    }
+
+    refresh()
+    const interval = window.setInterval(refresh, CLEANUP_REFRESH_INTERVAL_MS)
+    return () => window.clearInterval(interval)
   }, [router])
 
   return (
